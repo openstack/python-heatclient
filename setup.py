@@ -21,7 +21,7 @@ setuptools.setup(
     name="python-heatclient",
     version=setup.get_post_version('heatclient'),
     description="Client library for Heat orchestration API",
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
     url='https://github.com/heat-api/python-heatclient',
     license='Apache',
     author='Heat API Developers',
