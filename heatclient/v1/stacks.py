@@ -86,6 +86,20 @@ class StackManager(base.Manager):
 
         return paginate(params)
 
+    def create(self, **kwargs):
+        """Create a stack"""
+        template_data = None
+        hdrs = {}
+
+        resp, body_iter = self.api.raw_request(
+                'POST', '/stacks', headers=hdrs, body=template_data)
+        body = json.loads(''.join([c for c in body_iter]))
+        return Stack(self, body)
+
+    def delete(self, stack_id):
+        """Delete a stack."""
+        self._delete("/stacks/%s" % stack_id)
+
 #    def get(self, image_id):
 #        """Get the metadata for a specific stack.
 #
@@ -115,36 +129,6 @@ class StackManager(base.Manager):
 #        """Delete an image."""
 #        self._delete("/v1/images/%s" % base.getid(image))
 #
-#    def create(self, **kwargs):
-#        """Create an image
-#
-#        TODO(bcwaldon): document accepted params
-#        """
-#        image_data = kwargs.pop('data', None)
-#        if image_data is not None:
-#            image_size = self._get_file_size(image_data)
-#            if image_size != 0:
-#                kwargs.setdefault('size', image_size)
-#            else:
-#                image_data = None
-#
-#        fields = {}
-#        for field in kwargs:
-#            if field in CREATE_PARAMS:
-#                fields[field] = kwargs[field]
-#            else:
-#                msg = 'create() got an unexpected keyword argument \'%s\''
-#                raise TypeError(msg % field)
-#
-#        copy_from = fields.pop('copy_from', None)
-#        hdrs = self._image_meta_to_headers(fields)
-#        if copy_from is not None:
-#            hdrs['x-heat-api-copy-from'] = copy_from
-#
-#        resp, body_iter = self.api.raw_request(
-#                'POST', '/v1/images', headers=hdrs, body=image_data)
-#        body = json.loads(''.join([c for c in body_iter]))
-#        return Stack(self, self._format_image_meta_for_user(body['image']))
 #
 #    def update(self, image, **kwargs):
 #        """Update an image

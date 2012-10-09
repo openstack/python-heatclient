@@ -30,9 +30,15 @@ from heatclient.common import utils
            help='Stack creation timeout in minutes. Default: 60')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack.')
+@utils.arg('name', metavar='<STACK_NAME>',
+           help='Name of the stack to create.')
 def do_create(hc, args):
     '''Create the stack'''
-    pass
+    # Filter out None values
+    fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
+    print fields
+    stack = hc.stacks.create(**fields)
+    utils.print_dict(stack)
 
 
 @utils.arg('id', metavar='<STACK_ID>', help='ID of stack to delete.')
