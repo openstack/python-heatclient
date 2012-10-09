@@ -22,22 +22,12 @@ import urllib
 from heatclient.common import base
 from heatclient.common import utils
 
-UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
-                 'min_ram', 'owner', 'size', 'is_public', 'protected',
-                 'location', 'checksum', 'copy_from', 'properties',
-                 #NOTE(bcwaldon: an attempt to update 'deleted' will be
-                 # ignored, but we need to support it for backwards-
-                 # compatibility with the legacy client library
-                 'deleted')
-
-CREATE_PARAMS = UPDATE_PARAMS + ('id',)
-
 DEFAULT_PAGE_SIZE = 20
 
 
 class Stack(base.Resource):
     def __repr__(self):
-        return "<Image %s>" % self._info
+        return "<Stack %s>" % self._info
 
     def update(self, **fields):
         self.manager.update(self, **fields)
@@ -51,31 +41,6 @@ class Stack(base.Resource):
 
 class StackManager(base.Manager):
     resource_class = Stack
-
-#    def get(self, image_id):
-#        """Get the metadata for a specific stack.
-#
-#        :param image: image object or id to look up
-#        :rtype: :class:`Image`
-#        """
-#        resp, body = self.api.raw_request('HEAD', '/v1/images/%s' % image_id)
-#        meta = self._image_meta_from_headers(dict(resp.getheaders()))
-#        return Stack(self, meta)
-#
-#    def data(self, image, do_checksum=True):
-#        """Get the raw data for a specific image.
-#
-#        :param image: image object or id to look up
-#        :param do_checksum: Enable/disable checksum validation
-#        :rtype: iterable containing image data
-#        """
-#        image_id = base.getid(image)
-#        resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
-#        checksum = resp.getheader('x-image-meta-checksum', None)
-#        if do_checksum and checksum is not None:
-#            return utils.integrity_iter(body, checksum)
-#        else:
-#            return body
 
     def list(self, **kwargs):
         """Get a list of stacks.
@@ -121,6 +86,31 @@ class StackManager(base.Manager):
 
         return paginate(params)
 
+#    def get(self, image_id):
+#        """Get the metadata for a specific stack.
+#
+#        :param image: image object or id to look up
+#        :rtype: :class:`Image`
+#        """
+#        resp, body = self.api.raw_request('HEAD', '/v1/images/%s' % image_id)
+#        meta = self._image_meta_from_headers(dict(resp.getheaders()))
+#        return Stack(self, meta)
+#
+#    def data(self, image, do_checksum=True):
+#        """Get the raw data for a specific image.
+#
+#        :param image: image object or id to look up
+#        :param do_checksum: Enable/disable checksum validation
+#        :rtype: iterable containing image data
+#        """
+#        image_id = base.getid(image)
+#        resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
+#        checksum = resp.getheader('x-image-meta-checksum', None)
+#        if do_checksum and checksum is not None:
+#            return utils.integrity_iter(body, checksum)
+#        else:
+#            return body
+#
 #    def delete(self, image):
 #        """Delete an image."""
 #        self._delete("/v1/images/%s" % base.getid(image))
