@@ -1,0 +1,5 @@
+include AUTHORS
+include ChangeLog
+include heatclient/versioninfo
+exclude .gitignore
+exclude .gitreview
