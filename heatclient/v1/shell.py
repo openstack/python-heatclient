@@ -21,6 +21,18 @@ import sys
 from heatclient.common import utils
 
 
+def format_parameters(params):
+    '''
+    Reformat parameters into dict of format expected by the API
+    '''
+    parameters = {}
+    if params:
+        for count, p in enumerate(params.split(';'), 1):
+            (n, v) = p.split('=')
+            parameters[n] = v
+    return parameters
+
+
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -35,8 +47,15 @@ from heatclient.common import utils
 def do_create(hc, args):
     '''Create the stack'''
     # Filter out None values
-    fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
+    fields = {'stackname': args.name,
+              'timeoutmins': args.create_timeout,
+              'parameters': format_parameters(args.parameters)}
     print fields
+    if args.template_file:
+        fields['template'] = open(args.template_file).read()
+    elif args.template_url:
+        fields['template_url'] = args.template_url
+
     stack = hc.stacks.create(**fields)
     utils.print_dict(stack)
 

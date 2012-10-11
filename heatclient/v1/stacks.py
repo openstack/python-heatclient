@@ -88,11 +88,8 @@ class StackManager(base.Manager):
 
     def create(self, **kwargs):
         """Create a stack"""
-        template_data = None
-        hdrs = {}
-
-        resp, body_iter = self.api.raw_request(
-                'POST', '/stacks', headers=hdrs, body=template_data)
+        resp, body_iter = self.api.json_request(
+                'POST', '/stacks', body=kwargs)
         body = json.loads(''.join([c for c in body_iter]))
         return Stack(self, body)
 
