@@ -1,17 +1,19 @@
-import os
-import sys
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+import os
 import setuptools
 
 from heatclient.openstack.common import setup
-
-
-requires = setup.parse_requirements()
-dependency_links = setup.parse_dependency_links()
-tests_require = setup.parse_requirements(['tools/test-requires'])
-
-if sys.version_info < (2, 6):
-    requires.append('simplejson')
 
 
 def read(fname):
@@ -20,14 +22,17 @@ def read(fname):
 setuptools.setup(
     name="python-heatclient",
     version=setup.get_post_version('heatclient'),
-    description="Client library for Heat orchestration API",
-    long_description=read('README.md'),
-    url='https://github.com/heat-api/python-heatclient',
-    license='Apache',
     author='Heat API Developers',
     author_email='discuss@heat-api.org',
+    description="Client library for Heat orchestration API",
+    long_description=read('README.md'),
+    license='Apache',
+    url='https://github.com/heat-api/python-heatclient',
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     include_package_data=True,
+    install_requires=setup.parse_requirements(),
+    test_suite="nose.collector",
+    cmdclass=setup.get_cmdclass(),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -37,11 +42,10 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    cmdclass=setup.get_cmdclass(),
-    install_requires=requires,
-    dependency_links=dependency_links,
-    tests_require=tests_require,
+    entry_points={
+        'console_scripts': ['heat = heatclient.shell:main']
+    },
+    dependency_links=setup.parse_dependency_links(),
+    tests_require=setup.parse_requirements(['tools/test-requires']),
     setup_requires=['setuptools-git>=0.4'],
-    test_suite="nose.collector",
-    entry_points={'console_scripts': ['heat = heatclient.shell:main']},
 )

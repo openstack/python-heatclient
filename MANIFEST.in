@@ -1,5 +1,10 @@
 include AUTHORS
+include HACKING
+include LICENSE
+include README.rst
 include ChangeLog
+include tox.ini
 include heatclient/versioninfo
-exclude .gitignore
-exclude .gitreview
+recursive-include doc *
+recursive-include tests *
+recursive-include tools *
