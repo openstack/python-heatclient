@@ -15,15 +15,25 @@ Command-line interface to the OpenStack Images API.
 """
 
 import argparse
+import glob
+import httplib2
+import imp
+import itertools
+import os
+import pkgutil
+import sys
 import logging
 import re
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
+import heatclient
 from heatclient import exc
 from heatclient import client as heatclient
 from heatclient.common import utils
+
+logger = logging.getLogger(__name__)
 
 
 class HeatShell(object):
@@ -192,21 +202,6 @@ class HeatShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
-    # TODO(dtroyer): move this into the common client support?
-    # Compatibility check to remove API version as the trailing component
-    # in a service endpoint; also removes a trailing '/'
-    def _strip_version(self, endpoint):
-        """Strip a version from the last component of an endpoint if present"""
-
-        # Get rid of trailing '/' if present
-        if endpoint.endswith('/'):
-            endpoint = endpoint[:-1]
-        url_bits = endpoint.split('/')
-        # regex to match 'v1' or 'v2.0' etc
-        if re.match('v\d+\.?\d*', url_bits[-1]):
-            endpoint = '/'.join(url_bits[:-1])
-        return endpoint
-
     def _get_ksclient(self, **kwargs):
         """Get an endpoint and auth token from Keystone.
 
@@ -225,15 +220,27 @@ class HeatShell(object):
 
     def _get_endpoint(self, client, **kwargs):
         """Get an endpoint using the provided keystone client."""
-        endpoint = client.service_catalog.url_for(
+        return client.service_catalog.url_for(
                 service_type=kwargs.get('service_type') or 'orchestration',
                 endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
-        return self._strip_version(endpoint)
+
+    def _setup_debugging(self, debug):
+        if not debug:
+            return
+
+        streamhandler = logging.StreamHandler()
+        streamformat = "%(levelname)s (%(module)s:%(lineno)d) %(message)s"
+        streamhandler.setFormatter(logging.Formatter(streamformat))
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(streamhandler)
+
+        httplib2.debuglevel = 1
 
     def main(self, argv):
         # Parse args once to find version
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
+        self._setup_debugging(options.debug)
 
         # build available subcommands based on version
         api_version = options.heat_api_version
@@ -253,10 +260,6 @@ class HeatShell(object):
         if args.func == self.do_help:
             self.do_help(args)
             return 0
-
-        LOG = logging.getLogger('heatclient')
-        LOG.addHandler(logging.StreamHandler())
-        LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
         heat_url = args.heat_url
         auth_reqd = (utils.is_authentication_required(args.func) and

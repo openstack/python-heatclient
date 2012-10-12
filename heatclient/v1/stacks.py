@@ -122,11 +122,6 @@ class StackManager(base.Manager):
 #        else:
 #            return body
 #
-#    def delete(self, image):
-#        """Delete an image."""
-#        self._delete("/v1/images/%s" % base.getid(image))
-#
-#
 #    def update(self, image, **kwargs):
 #        """Update an image
 #
