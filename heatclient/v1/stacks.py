@@ -53,7 +53,6 @@ class StackManager(base.Manager):
                         structure of a stack object
         :rtype: list of :class:`Stack`
         """
-        print kwargs
         absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
@@ -88,9 +87,8 @@ class StackManager(base.Manager):
 
     def create(self, **kwargs):
         """Create a stack"""
-        resp, body_iter = self.api.json_request(
+        resp, body = self.api.json_request(
                 'POST', '/stacks', body=kwargs)
-        body = json.loads(''.join([c for c in body_iter]))
         return Stack(self, body)
 
     def delete(self, stack_id):

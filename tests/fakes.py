@@ -1,5 +1,6 @@
 
 import httplib
+import mox
 
 from keystoneclient.v2_0 import client as ksclient
 
@@ -12,17 +13,6 @@ def script_keystone_client():
                 tenant_name='tenant_name',
                 username='username').AndReturn(
                 FakeKeystone('abcd1234'))
-
-
-def script_get(url):
-    httplib.HTTPConnection.request('GET',
-            url,
-            headers=fake_headers())
-
-
-def script_response(status, reason, headers, body):
-    httplib.HTTPConnection.getresponse().AndReturn(
-    FakeHTTPResponse(status, reason, headers, body))
 
 
 def fake_headers():

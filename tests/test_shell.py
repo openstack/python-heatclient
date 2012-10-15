@@ -9,6 +9,7 @@ import unittest
 from keystoneclient.v2_0 import client as ksclient
 
 from heatclient import exc
+from heatclient.v1 import client as v1client
 import heatclient.shell
 import fakes
 
@@ -19,8 +20,9 @@ class ShellTest(unittest.TestCase):
     def setUp(self):
         self.m = mox.Mox()
         self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(httplib.HTTPConnection, 'request')
-        self.m.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
+        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        #self.m.StubOutWithMock(httplib.HTTPConnection, 'request')
+        #self.m.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
 
         global _old_env
         fake_env = {
@@ -85,12 +87,36 @@ class ShellTest(unittest.TestCase):
 
     def test_list(self):
         fakes.script_keystone_client()
-        fakes.script_get('/v1/f14b41234/stacks?limit=20')
-        fakes.script_response(200,
+        resp = fakes.FakeHTTPResponse(200,
                               'success, yo',
                               {'content-type': 'application/json'},
                               '{"stacks": {}}')
+        v1client.Client.json_request('GET',
+            '/stacks?limit=20').AndReturn((resp, {'stacks': []}))
 
         self.m.ReplayAll()
 
         list_text = self.shell('list')
+
+        self.assertEqual('\n', list_text)
+        self.m.VerifyAll()
+
+    def test_create(self):
+        fakes.script_keystone_client()
+        resp = fakes.FakeHTTPResponse(201,
+                                'Created',
+                                {'content-type': 'application/json'},
+                                '[{"foo": "bar"}]')
+        v1client.Client.json_request('POST', '/stacks',
+                          body=mox.IgnoreArg()).AndReturn((resp, [{'foo': 'bar'}]))
+
+        self.m.ReplayAll()
+
+        create_text = self.shell('create  teststack '
+            '--template-file=minimal.template '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"')
+
+        self.assertEqual('\n', create_text)
+        self.m.VerifyAll()

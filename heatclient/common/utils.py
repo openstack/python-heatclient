@@ -53,7 +53,6 @@ def print_list(objs, fields, formatters={}):
                 data = getattr(o, field_name, None) or ''
                 row.append(data)
         pt.add_row(row)
-
     print pt.get_string(sortby=fields[0])
 
 
