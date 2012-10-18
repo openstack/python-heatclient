@@ -17,6 +17,9 @@ from heatclient.v1 import client as v1client
 import heatclient.shell
 import fakes
 
+TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                            'var'))
+
 
 class ShellTest(unittest.TestCase):
 
@@ -140,11 +143,12 @@ class ShellTest(unittest.TestCase):
 
         self.m.ReplayAll()
 
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell('create teststack '
-            '--template-file=minimal.template '
+            '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
-            'LinuxDistribution=F17"')
+            'LinuxDistribution=F17"' % template_file)
 
         required = [
             'id',
