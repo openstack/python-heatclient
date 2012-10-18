@@ -228,11 +228,9 @@ class HeatShell(object):
         if not debug:
             return
 
-        streamhandler = logging.StreamHandler()
-        streamformat = "%(levelname)s (%(module)s:%(lineno)d) %(message)s"
-        streamhandler.setFormatter(logging.Formatter(streamformat))
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(streamhandler)
+        logging.basicConfig(
+            format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
+            level=logging.DEBUG)
 
         httplib2.debuglevel = 1
 
