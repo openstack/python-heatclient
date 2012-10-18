@@ -57,7 +57,7 @@ def do_create(hc, args):
         fields['template_url'] = args.template_url
 
     stack = hc.stacks.create(**fields)
-    utils.print_dict(stack)
+    utils.print_dict(stack.to_dict())
 
 
 @utils.arg('id', metavar='<STACK_ID>', help='ID of stack to delete.')
