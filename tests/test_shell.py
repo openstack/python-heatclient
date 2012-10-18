@@ -6,6 +6,10 @@ import sys
 
 import mox
 import unittest
+try:
+    import json
+except ImportError:
+    import simplejson as json
 from keystoneclient.v2_0 import client as ksclient
 
 from heatclient import exc
@@ -87,36 +91,66 @@ class ShellTest(unittest.TestCase):
 
     def test_list(self):
         fakes.script_keystone_client()
+        resp_dict = {"stacks": [{
+                "id": "arn:openstack:heat::service:stacks/teststack/1",
+                "name": 'teststack',
+                "status": 'CREATE_COMPLETE'
+            },
+            {
+                "id": "arn:openstack:heat::service:stacks/teststack/2",
+                "name": 'teststack',
+                "status": 'IN_PROGRESS'
+            }]
+        }
         resp = fakes.FakeHTTPResponse(200,
                               'success, yo',
                               {'content-type': 'application/json'},
-                              '{"stacks": {}}')
+                              json.dumps(resp_dict))
         v1client.Client.json_request('GET',
-            '/stacks?limit=20').AndReturn((resp, {'stacks': []}))
+            '/stacks?limit=20').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
 
         list_text = self.shell('list')
 
-        self.assertEqual('\n', list_text)
+        required = [
+            'ID',
+            'Name',
+            'Status',
+            'teststack/1',
+            'CREATE_COMPLETE',
+            'IN_PROGRESS',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
         self.m.VerifyAll()
 
     def test_create(self):
         fakes.script_keystone_client()
+        resp_dict = {"stacks": {
+            "id": "arn:openstack:heat::service:stacks/teststack/1"
+        }}
         resp = fakes.FakeHTTPResponse(201,
-                                'Created',
-                                {'content-type': 'application/json'},
-                                '[{"foo": "bar"}]')
+            'Created',
+            {'content-type': 'application/json'},
+            json.dumps(resp_dict))
         v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, [{'foo': 'bar'}]))
+                          body=mox.IgnoreArg()).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
 
-        create_text = self.shell('create  teststack '
+        create_text = self.shell('create teststack '
             '--template-file=minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"')
 
-        self.assertEqual('\n', create_text)
+        required = [
+            'id',
+            'teststack/1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
         self.m.VerifyAll()
