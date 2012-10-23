@@ -15,20 +15,12 @@ Command-line interface to the OpenStack Images API.
 """
 
 import argparse
-import glob
 import httplib2
-import imp
-import itertools
-import os
-import pkgutil
-import sys
 import logging
-import re
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
-import heatclient
 from heatclient import exc
 from heatclient import client as heatclient
 from heatclient.common import utils
@@ -260,43 +252,36 @@ class HeatShell(object):
             return 0
 
         heat_url = args.heat_url
-        auth_reqd = (utils.is_authentication_required(args.func) and
-                     not (args.os_auth_token and heat_url))
+        if not args.os_username:
+            raise exc.CommandError("You must provide a username via"
+                    " either --os-username or env[OS_USERNAME]")
 
-        if not auth_reqd:
-            endpoint = heat_url
-            token = args.os_auth_token
-        else:
-            if not args.os_username:
-                raise exc.CommandError("You must provide a username via"
-                        " either --os-username or env[OS_USERNAME]")
+        if not args.os_password:
+            raise exc.CommandError("You must provide a password via"
+                    " either --os-password or env[OS_PASSWORD]")
 
-            if not args.os_password:
-                raise exc.CommandError("You must provide a password via"
-                        " either --os-password or env[OS_PASSWORD]")
+        if not (args.os_tenant_id or args.os_tenant_name):
+            raise exc.CommandError("You must provide a tenant_id via"
+                    " either --os-tenant-id or via env[OS_TENANT_ID]")
 
-            if not (args.os_tenant_id or args.os_tenant_name):
-                raise exc.CommandError("You must provide a tenant_id via"
-                        " either --os-tenant-id or via env[OS_TENANT_ID]")
+        if not args.os_auth_url:
+            raise exc.CommandError("You must provide an auth url via"
+                    " either --os-auth-url or via env[OS_AUTH_URL]")
+        kwargs = {
+            'username': args.os_username,
+            'password': args.os_password,
+            'tenant_id': args.os_tenant_id,
+            'tenant_name': args.os_tenant_name,
+            'auth_url': args.os_auth_url,
+            'service_type': args.os_service_type,
+            'endpoint_type': args.os_endpoint_type,
+            'insecure': args.insecure
+        }
+        _ksclient = self._get_ksclient(**kwargs)
+        token = args.os_auth_token or _ksclient.auth_token
 
-            if not args.os_auth_url:
-                raise exc.CommandError("You must provide an auth url via"
-                        " either --os-auth-url or via env[OS_AUTH_URL]")
-            kwargs = {
-                'username': args.os_username,
-                'password': args.os_password,
-                'tenant_id': args.os_tenant_id,
-                'tenant_name': args.os_tenant_name,
-                'auth_url': args.os_auth_url,
-                'service_type': args.os_service_type,
-                'endpoint_type': args.os_endpoint_type,
-                'insecure': args.insecure
-            }
-            _ksclient = self._get_ksclient(**kwargs)
-            token = args.os_auth_token or _ksclient.auth_token
-
-            endpoint = args.heat_url or \
-                    self._get_endpoint(_ksclient, **kwargs)
+        endpoint = args.heat_url or \
+                self._get_endpoint(_ksclient, **kwargs)
 
         kwargs = {
             'token': token,

@@ -19,6 +19,7 @@ import os
 import sys
 
 from heatclient.common import utils
+import heatclient.exc as exc
 
 
 def format_parameters(params):
@@ -33,10 +34,30 @@ def format_parameters(params):
     return parameters
 
 
-@utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+def _set_template_fields(hc, args, fields):
+    if args.template_file:
+        fields['template'] = open(args.template_file).read()
+    elif args.template_url:
+        fields['template_url'] = args.template_url
+    elif args.template_object:
+        template_body = hc.raw_request('GET', args.template_object)
+        if template_body:
+            fields['template'] = template_body
+        else:
+            raise exc.CommandError('Could not fetch template from %s'
+                                   % args.template_object)
+    else:
+        raise exc.CommandError('Need to specify exactly one of '
+                               '--template-file, --template-url '
+                               'or --template-object')
+
+
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-u', '--template-url', metavar='<URL>',
+           help='URL of template.')
+@utils.arg('-o', '--template-object', metavar='<URL>',
+           help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
            help='Stack creation timeout in minutes. Default: 60')
@@ -46,15 +67,10 @@ def format_parameters(params):
            help='Name of the stack to create.')
 def do_create(hc, args):
     '''Create the stack'''
-    # Filter out None values
-    fields = {'stackname': args.name,
+    fields = {'stack_name': args.name,
               'timeoutmins': args.create_timeout,
               'parameters': format_parameters(args.parameters)}
-    print fields
-    if args.template_file:
-        fields['template'] = open(args.template_file).read()
-    elif args.template_url:
-        fields['template_url'] = args.template_url
+    _set_template_fields(hc, args, fields)
 
     stack = hc.stacks.create(**fields)
     utils.print_dict(stack.to_dict())
@@ -72,23 +88,30 @@ def do_describe(hc, args):
     pass
 
 
-@utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-u', '--template-url', metavar='<URL>',
+           help='URL of template.')
+@utils.arg('-o', '--template-object', metavar='<URL>',
+           help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack.')
 def do_update(hc, args):
     '''Update the stack'''
-    pass
+    fields = {'parameters': format_parameters(args.parameters)}
+    _set_template_fields(hc, args, fields)
+
+    stack = hc.stacks.update(**fields)
+    utils.print_dict(stack.to_dict())
 
 
 def do_list(hc, args):
     '''List the user's stacks'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
-    columns = ['ID', 'Name', 'Status']
-    utils.print_list(stacks, columns)
+    field_labels = ['URL', 'Name', 'Status', 'Created']
+    fields = ['stack_url', 'stack_name', 'stack_status', 'creation_time']
+    utils.print_list(stacks, fields, field_labels)
 
 
 @utils.arg('id', metavar='<STACK_ID>',
