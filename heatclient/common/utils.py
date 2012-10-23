@@ -39,8 +39,8 @@ def pretty_choice_list(l):
     return ', '.join("'%s'" % i for i in l)
 
 
-def print_list(objs, fields, formatters={}):
-    pt = prettytable.PrettyTable([f for f in fields], caching=False)
+def print_list(objs, fields, field_labels, formatters={}):
+    pt = prettytable.PrettyTable([f for f in field_labels], caching=False)
     pt.align = 'l'
 
     for o in objs:
@@ -49,11 +49,10 @@ def print_list(objs, fields, formatters={}):
             if field in formatters:
                 row.append(formatters[field](o))
             else:
-                field_name = field.lower().replace(' ', '_')
-                data = getattr(o, field_name, None) or ''
+                data = getattr(o, field, None) or ''
                 row.append(data)
         pt.add_row(row)
-    print pt.get_string(sortby=fields[0])
+    print pt.get_string(sortby=field_labels[0])
 
 
 def print_dict(d):
@@ -86,21 +85,6 @@ def find_resource(manager, name_or_id):
         msg = "No %s with a name or ID of '%s' exists." % \
               (manager.resource_class.__name__.lower(), name_or_id)
         raise exc.CommandError(msg)
-
-
-def skip_authentication(f):
-    """Function decorator used to indicate a caller may be unauthenticated."""
-    f.require_authentication = False
-    return f
-
-
-def is_authentication_required(f):
-    """Checks to see if the function requires authentication.
-
-    Use the skip_authentication decorator to indicate a caller may
-    skip the authentication step.
-    """
-    return getattr(f, 'require_authentication', True)
 
 
 def string_to_bool(arg):
