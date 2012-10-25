@@ -217,14 +217,16 @@ class HeatShell(object):
                 endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
 
     def _setup_debugging(self, debug):
-        if not debug:
-            return
-
-        logging.basicConfig(
-            format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
-            level=logging.DEBUG)
-
-        httplib2.debuglevel = 1
+        if debug:
+            logging.basicConfig(
+                format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
+                level=logging.DEBUG)
+    
+            httplib2.debuglevel = 1
+        else:
+            logging.basicConfig(
+                format="%(levelname)s %(message)s",
+                level=logging.INFO)
 
     def main(self, argv):
         # Parse args once to find version
