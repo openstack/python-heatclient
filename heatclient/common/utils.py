@@ -55,10 +55,15 @@ def print_list(objs, fields, field_labels, formatters={}):
     print pt.get_string(sortby=field_labels[0])
 
 
-def print_dict(d):
+def print_dict(d, formatters={}):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
-    [pt.add_row(list(r)) for r in d.iteritems()]
+    
+    for field in d.keys():
+        if field in formatters:
+            pt.add_row([field, formatters[field](d[field])])
+        else:
+            pt.add_row([field, d[field]])
     print pt.get_string(sortby='Property')
 
 
