@@ -196,14 +196,14 @@ class ShellTest(unittest.TestCase):
     def test_list(self):
         fakes.script_keystone_client()
         resp_dict = {"stacks": [{
-                "id": "arn:openstack:heat::service:stacks/teststack/1",
-                "name": 'teststack',
-                "status": 'CREATE_COMPLETE'
+                "id": "teststack/1",
+                "stack_status": 'CREATE_COMPLETE',
+                "creation_time": "2012-10-25T01:58:47Z"
             },
             {
-                "id": "arn:openstack:heat::service:stacks/teststack/2",
-                "name": 'teststack',
-                "status": 'IN_PROGRESS'
+                "id": "teststack/2",
+                "stack_status": 'IN_PROGRESS',
+                "creation_time": "2012-10-25T01:58:47Z"
             }]
         }
         resp = fakes.FakeHTTPResponse(200,
@@ -219,8 +219,8 @@ class ShellTest(unittest.TestCase):
 
         required = [
             'ID',
-            'Name',
             'Status',
+            'Created',
             'teststack/1',
             'CREATE_COMPLETE',
             'IN_PROGRESS',

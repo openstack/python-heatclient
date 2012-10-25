@@ -89,7 +89,6 @@ class StackManager(base.Manager):
         """Create a stack"""
         resp, body = self.api.json_request(
                 'POST', '/stacks', body=kwargs)
-        return Stack(self, body)
 
     def update(self, **kwargs):
         """Create a stack"""
@@ -108,59 +107,18 @@ class StackManager(base.Manager):
         """
         resp, body = self.api.json_request('GET', '/stacks/%s' % stack_id)
         return Stack(self, body['stack'])
-#
-#    def data(self, image, do_checksum=True):
-#        """Get the raw data for a specific image.
-#
-#        :param image: image object or id to look up
-#        :param do_checksum: Enable/disable checksum validation
-#        :rtype: iterable containing image data
-#        """
-#        image_id = base.getid(image)
-#        resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
-#        checksum = resp.getheader('x-image-meta-checksum', None)
-#        if do_checksum and checksum is not None:
-#            return utils.integrity_iter(body, checksum)
-#        else:
-#            return body
-#
-#    def update(self, image, **kwargs):
-#        """Update an image
-#
-#        TODO(bcwaldon): document accepted params
-#        """
-#        hdrs = {}
-#        image_data = kwargs.pop('data', None)
-#        if image_data is not None:
-#            image_size = self._get_file_size(image_data)
-#            if image_size != 0:
-#                kwargs.setdefault('size', image_size)
-#                hdrs['Content-Length'] = image_size
-#            else:
-#                image_data = None
-#
-#        try:
-#            purge_props = 'true' if kwargs.pop('purge_props') else 'false'
-#        except KeyError:
-#            pass
-#        else:
-#            hdrs['x-heat-registry-purge-props'] = purge_props
-#
-#        fields = {}
-#        for field in kwargs:
-#            if field in UPDATE_PARAMS:
-#                fields[field] = kwargs[field]
-#            else:
-#                msg = 'update() got an unexpected keyword argument \'%s\''
-#                raise TypeError(msg % field)
-#
-#        copy_from = fields.pop('copy_from', None)
-#        hdrs.update(self._image_meta_to_headers(fields))
-#        if copy_from is not None:
-#            hdrs['x-heat-api-copy-from'] = copy_from
-#
-#        url = '/v1/images/%s' % base.getid(image)
-#        resp, body_iter = self.api.raw_request(
-#                'PUT', url, headers=hdrs, body=image_data)
-#        body = json.loads(''.join([c for c in body_iter]))
-#        return Stack(self, self._format_image_meta_for_user(body['image']))
+
+    def template(self, stack_id):
+        """Get the template content for a specific stack as a parsed JSON
+        object.
+
+        :param stack_id: Stack ID to get the template for
+        """
+        resp, body = self.api.json_request('GET', '/stacks/%s/template' % stack_id)
+        return body
+
+    def validate(self, **kwargs):
+        """Validate a stack template"""
+        resp, body = self.api.json_request(
+                'POST', '/validate', body=kwargs)
+        return body
