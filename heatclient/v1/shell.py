@@ -17,6 +17,7 @@ import argparse
 import copy
 import os
 import sys
+import textwrap
 
 from heatclient.common import utils
 import heatclient.exc as exc
@@ -85,7 +86,20 @@ def do_delete(hc, args):
 @utils.arg('id', metavar='<STACK_ID>', help='ID of stack to describe.')
 def do_describe(hc, args):
     '''Describe the stack'''
-    pass
+    fields = {'stack_id': args.id}
+    stack = hc.stacks.get(**fields)
+    
+    text_wrap = lambda d: '\n'.join(textwrap.wrap(d, 55))
+    p_format = lambda p: '\n'.join(['%s = %s' % (k, v) for k, v in p.items()])
+    link_format = lambda links: '\n'.join([l['href'] for l in links])
+    formatters = {
+        'description': text_wrap,
+        'template_description': text_wrap,
+        'stack_status_reason': text_wrap,
+        'parameters': p_format,
+        'links': link_format
+    }
+    utils.print_dict(stack.to_dict(), formatters=formatters)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -109,8 +123,8 @@ def do_list(hc, args):
     '''List the user's stacks'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
-    field_labels = ['URL', 'Name', 'Status', 'Created']
-    fields = ['stack_url', 'stack_name', 'stack_status', 'creation_time']
+    field_labels = ['URI', 'Status', 'Created']
+    fields = ['id', 'stack_status', 'creation_time']
     utils.print_list(stacks, fields, field_labels)
 
 

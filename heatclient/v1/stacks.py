@@ -91,19 +91,23 @@ class StackManager(base.Manager):
                 'POST', '/stacks', body=kwargs)
         return Stack(self, body)
 
+    def update(self, **kwargs):
+        """Create a stack"""
+        resp, body = self.api.json_request(
+                'PUT', '/stacks', body=kwargs)
+        return Stack(self, body)
+
     def delete(self, stack_id):
         """Delete a stack."""
         self._delete("/stacks/%s" % stack_id)
 
-#    def get(self, image_id):
-#        """Get the metadata for a specific stack.
-#
-#        :param image: image object or id to look up
-#        :rtype: :class:`Image`
-#        """
-#        resp, body = self.api.raw_request('HEAD', '/v1/images/%s' % image_id)
-#        meta = self._image_meta_from_headers(dict(resp.getheaders()))
-#        return Stack(self, meta)
+    def get(self, stack_id):
+        """Get the metadata for a specific stack.
+
+        :param stack_id: Stack ID to lookup
+        """
+        resp, body = self.api.json_request('GET', '/stacks/%s' % stack_id)
+        return Stack(self, body['stack'])
 #
 #    def data(self, image, do_checksum=True):
 #        """Get the raw data for a specific image.
