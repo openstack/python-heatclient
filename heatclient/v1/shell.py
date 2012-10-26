@@ -78,7 +78,7 @@ def do_create(hc, args):
     do_list(hc, {})
 
 
-@utils.arg('id', metavar='<STACK_ID>', help='ID of stack to delete.')
+@utils.arg('id', metavar='<NAME/ID>', help='Name and ID of stack to delete.')
 def do_delete(hc, args):
     '''Delete the stack'''
     fields = {'stack_id': args.id}
@@ -90,7 +90,7 @@ def do_delete(hc, args):
         do_list(hc, {})
 
 
-@utils.arg('id', metavar='<STACK_ID>', help='ID of stack to describe.')
+@utils.arg('id', metavar='<NAME/ID>', help='Name and ID of stack to describe.')
 def do_describe(hc, args):
     '''Describe the stack'''
     fields = {'stack_id': args.id}
@@ -135,13 +135,16 @@ def do_list(hc, args):
     '''List the user's stacks'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
-    field_labels = ['ID', 'Status', 'Created']
+    field_labels = ['Name/ID', 'Status', 'Created']
     fields = ['id', 'stack_status', 'creation_time']
-    utils.print_list(stacks, fields, field_labels, sortby=2)
+    formatters = {
+        'id': lambda row: '%s/%s' % (row.stack_name, row.id)
+    }
+    utils.print_list(stacks, fields, field_labels, formatters=formatters, sortby=2)
 
 
-@utils.arg('id', metavar='<STACK_ID>',
-           help='ID of stack to get the template for.')
+@utils.arg('id', metavar='<NAME/ID>',
+           help='Name and ID of stack to get the template for.')
 def do_gettemplate(hc, args):
     '''Get the template'''
     fields = {'stack_id': args.id}
@@ -151,15 +154,6 @@ def do_gettemplate(hc, args):
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
         print json.dumps(template, indent=2)
-
-# TODO only need to implement this once the server supports it
-#@utils.arg('-u', '--template-url', metavar='<URL>',
-#           help='URL of template.')
-#@utils.arg('-f', '--template-file', metavar='<FILE>',
-#           help='Path to the template.')
-#def do_estimate_template_cost(hc, args):
-#    '''Returns the estimated monthly cost of a template'''
-#    pass
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
@@ -178,32 +172,41 @@ def do_validate(hc, args):
     validation = hc.stacks.validate(**fields)
     print json.dumps(validation, indent=2)
 
-
-@utils.arg('id', metavar='<STACK_ID>',
-           help='ID of stack to show the events for.')
-def do_event_list(hc, args):
-    '''List events for a stack'''
-    pass
-
-
-@utils.arg('-r', '--resource', metavar='<RESOURCE_ID>',
-           help='ID of the resource to show the details for.')
-@utils.arg('id', metavar='<STACK_ID>',
-           help='ID of stack to show the resource for.')
-def do_resource(hc, args):
-    '''Describe the resource'''
-    pass
-
-
-@utils.arg('id', metavar='<STACK_ID>',
-           help='ID of stack to show the resources for.')
-def do_resource_list(hc, args):
-    '''Show list of resources belonging to a stack'''
-    pass
-
-
-@utils.arg('id', metavar='<STACK_ID>',
-           help='ID of stack to show the resource details for.')
-def do_resource_list_details(hc, args):
-    '''Detailed view of resources belonging to a stack'''
-    pass
+# TODO only need to implement this once the server supports it
+#@utils.arg('-u', '--template-url', metavar='<URL>',
+#           help='URL of template.')
+#@utils.arg('-f', '--template-file', metavar='<FILE>',
+#           help='Path to the template.')
+#def do_estimate_template_cost(hc, args):
+#    '''Returns the estimated monthly cost of a template'''
+#    pass
+#
+#
+#@utils.arg('id', metavar='<NAME/ID>',
+#           help='Name and ID of stack to show the events for.')
+#def do_event_list(hc, args):
+#    '''List events for a stack'''
+#    pass
+#
+#
+#@utils.arg('-r', '--resource', metavar='<RESOURCE_ID>',
+#           help='ID of the resource to show the details for.')
+#@utils.arg('id', metavar='<NAME/ID>',
+#           help='Name and ID of stack to show the resource for.')
+#def do_resource(hc, args):
+#    '''Describe the resource'''
+#    pass
+#
+#
+#@utils.arg('id', metavar='<NAME/ID>',
+#           help='Name and ID of stack to show the resources for.')
+#def do_resource_list(hc, args):
+#    '''Show list of resources belonging to a stack'''
+#    pass
+#
+#
+#@utils.arg('id', metavar='<NAME/ID>',
+#           help='Name and ID of stack to show the resource details for.')
+#def do_resource_list_details(hc, args):
+#    '''Detailed view of resources belonging to a stack'''
+#    pass
