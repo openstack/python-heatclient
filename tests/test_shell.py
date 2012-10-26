@@ -195,23 +195,7 @@ class ShellTest(unittest.TestCase):
 
     def test_list(self):
         fakes.script_keystone_client()
-        resp_dict = {"stacks": [{
-                "id": "teststack/1",
-                "stack_status": 'CREATE_COMPLETE',
-                "creation_time": "2012-10-25T01:58:47Z"
-            },
-            {
-                "id": "teststack/2",
-                "stack_status": 'IN_PROGRESS',
-                "creation_time": "2012-10-25T01:58:47Z"
-            }]
-        }
-        resp = fakes.FakeHTTPResponse(200,
-                              'success, yo',
-                              {'content-type': 'application/json'},
-                              json.dumps(resp_dict))
-        v1client.Client.json_request('GET',
-            '/stacks?limit=20').AndReturn((resp, resp_dict))
+        fakes.script_heat_list()
 
         self.m.ReplayAll()
 
@@ -230,17 +214,49 @@ class ShellTest(unittest.TestCase):
 
         self.m.VerifyAll()
 
-    def test_create(self):
+    def test_describe(self):
         fakes.script_keystone_client()
-        resp_dict = {"stacks": {
-            "id": "arn:openstack:heat::service:stacks/teststack/1"
-        }}
-        resp = fakes.FakeHTTPResponse(201,
-            'Created',
+        resp_dict = {"stack": {
+                "id": "1",
+                "stack_name": "teststack",
+                "stack_status": 'CREATE_COMPLETE',
+                "creation_time": "2012-10-25T01:58:47Z"
+            }
+        }
+        resp = fakes.FakeHTTPResponse(200,
+            'OK',
             {'content-type': 'application/json'},
             json.dumps(resp_dict))
+        v1client.Client.json_request('GET',
+            '/stacks/teststack/1').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        list_text = self.shell('describe teststack/1')
+
+        required = [
+            'id',
+            'stack_name',
+            'stack_status',
+            'creation_time',
+            'teststack',
+            'CREATE_COMPLETE',
+            '2012-10-25T01:58:47Z'
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+        self.m.VerifyAll()
+
+    def test_create(self):
+        fakes.script_keystone_client()
+        resp = fakes.FakeHTTPResponse(201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
         v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, resp_dict))
+                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        fakes.script_heat_list()
 
         self.m.ReplayAll()
 
@@ -252,7 +268,7 @@ class ShellTest(unittest.TestCase):
             'LinuxDistribution=F17"' % template_file)
 
         required = [
-            'id',
+            'Name/ID',
             'teststack/1'
         ]
         for r in required:
@@ -263,15 +279,13 @@ class ShellTest(unittest.TestCase):
     def test_create_url(self):
 
         fakes.script_keystone_client()
-        resp_dict = {"stacks": {
-            "id": "arn:openstack:heat::service:stacks/teststack/2"
-        }}
         resp = fakes.FakeHTTPResponse(201,
             'Created',
-            {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
         v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, resp_dict))
+                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        fakes.script_heat_list()
 
         self.m.ReplayAll()
 
@@ -282,8 +296,8 @@ class ShellTest(unittest.TestCase):
             'LinuxDistribution=F17"')
 
         required = [
-            'id',
-            'teststack/2'
+            'Name/ID',
+            'teststack2/2'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
@@ -299,27 +313,77 @@ class ShellTest(unittest.TestCase):
                           'http://no.where/container/minimal.template',
                           ).AndReturn(template_data)
 
-        resp_dict = {"stacks": {
-            "id": "arn:openstack:heat::service:stacks/teststack/3"
-        }}
         resp = fakes.FakeHTTPResponse(201,
             'Created',
-            {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
         v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, resp_dict))
+                          body=mox.IgnoreArg()).AndReturn((resp, None))
+
+        fakes.script_heat_list()
 
         self.m.ReplayAll()
 
-        create_text = self.shell('create teststack '
+        create_text = self.shell('create teststack2 '
             '--template-object=http://no.where/container/minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"')
 
         required = [
-            'id',
-            'teststack/3'
+            'Name/ID',
+            'teststack2/2'
+        ]
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
+        self.m.VerifyAll()
+
+    def test_update(self):
+        fakes.script_keystone_client()
+        resp = fakes.FakeHTTPResponse(202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        v1client.Client.json_request('PUT', '/stacks/teststack2/2',
+                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        create_text = self.shell('update teststack2/2 '
+            '--template-file=%s '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'Name/ID',
+            'teststack/1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
+        self.m.VerifyAll()
+
+    def test_delete(self):
+        fakes.script_keystone_client()
+        resp = fakes.FakeHTTPResponse(204,
+            'No Content',
+            {},
+            None)
+        v1client.Client.raw_request('DELETE', '/stacks/teststack2/2',
+                          ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        create_text = self.shell('delete teststack2/2')
+
+        required = [
+            'Name/ID',
+            'teststack/1'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)

@@ -221,7 +221,7 @@ class HeatShell(object):
             logging.basicConfig(
                 format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
                 level=logging.DEBUG)
-    
+
             httplib2.debuglevel = 1
         else:
             logging.basicConfig(

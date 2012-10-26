@@ -13,14 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import errno
-import json
-import os
 import urllib
 
 from heatclient.common import base
-from heatclient.common import utils
 
 DEFAULT_PAGE_SIZE = 20
 
@@ -91,10 +86,10 @@ class StackManager(base.Manager):
                 'POST', '/stacks', body=kwargs)
 
     def update(self, **kwargs):
-        """Create a stack"""
+        """Update a stack"""
+        stack_id = kwargs.pop('stack_id')
         resp, body = self.api.json_request(
-                'PUT', '/stacks', body=kwargs)
-        return Stack(self, body)
+                'PUT', '/stacks/%s' % stack_id, body=kwargs)
 
     def delete(self, stack_id):
         """Delete a stack."""
@@ -114,7 +109,8 @@ class StackManager(base.Manager):
 
         :param stack_id: Stack ID to get the template for
         """
-        resp, body = self.api.json_request('GET', '/stacks/%s/template' % stack_id)
+        resp, body = self.api.json_request(
+            'GET', '/stacks/%s/template' % stack_id)
         return body
 
     def validate(self, **kwargs):

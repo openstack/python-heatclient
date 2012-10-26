@@ -1,8 +1,10 @@
 
 import httplib
+import json
 import mox
 
 from keystoneclient.v2_0 import client as ksclient
+from heatclient.v1 import client as v1client
 
 
 def script_keystone_client():
@@ -13,6 +15,28 @@ def script_keystone_client():
                 tenant_name='tenant_name',
                 username='username').AndReturn(
                 FakeKeystone('abcd1234'))
+
+
+def script_heat_list():
+    resp_dict = {"stacks": [{
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        },
+        {
+            "id": "2",
+            "stack_name": "teststack2",
+            "stack_status": 'IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }]
+    }
+    resp = FakeHTTPResponse(200,
+        'success, yo',
+        {'content-type': 'application/json'},
+        json.dumps(resp_dict))
+    v1client.Client.json_request('GET',
+        '/stacks?limit=20').AndReturn((resp, resp_dict))
 
 
 def fake_headers():

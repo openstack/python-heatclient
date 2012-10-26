@@ -13,11 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import argparse
-import copy
 import json
-import os
-import sys
 import textwrap
 
 from heatclient.common import utils
@@ -75,7 +71,7 @@ def do_create(hc, args):
     _set_template_fields(hc, args, fields)
 
     hc.stacks.create(**fields)
-    do_list(hc, {})
+    do_list(hc)
 
 
 @utils.arg('id', metavar='<NAME/ID>', help='Name and ID of stack to delete.')
@@ -87,7 +83,7 @@ def do_delete(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        do_list(hc, {})
+        do_list(hc)
 
 
 @utils.arg('id', metavar='<NAME/ID>', help='Name and ID of stack to describe.')
@@ -100,7 +96,6 @@ def do_describe(hc, args):
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
         text_wrap = lambda d: '\n'.join(textwrap.wrap(d, 55))
-        p_format = lambda p: '\n'.join(['%s = %s' % (k, v) for k, v in p.items()])
         link_format = lambda links: '\n'.join([l['href'] for l in links])
         json_format = lambda js: json.dumps(js, indent=2)
         formatters = {
@@ -122,16 +117,19 @@ def do_describe(hc, args):
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack.')
+@utils.arg('id', metavar='<NAME/ID>',
+           help='Name and ID of stack to update.')
 def do_update(hc, args):
     '''Update the stack'''
-    fields = {'parameters': format_parameters(args.parameters)}
+    fields = {'stack_id': args.id,
+              'parameters': format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
 
-    stack = hc.stacks.update(**fields)
-    utils.print_dict(stack.to_dict())
+    hc.stacks.update(**fields)
+    do_list(hc)
 
 
-def do_list(hc, args):
+def do_list(hc, args={}):
     '''List the user's stacks'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
@@ -140,7 +138,8 @@ def do_list(hc, args):
     formatters = {
         'id': lambda row: '%s/%s' % (row.stack_name, row.id)
     }
-    utils.print_list(stacks, fields, field_labels, formatters=formatters, sortby=2)
+    utils.print_list(stacks, fields, field_labels,
+        formatters=formatters, sortby=2)
 
 
 @utils.arg('id', metavar='<NAME/ID>',
