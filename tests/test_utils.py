@@ -13,13 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import unittest
-import heatclient.v1.shell as shell
+from heatclient.common import utils
 
 
 class shellTest(unittest.TestCase):
 
     def test_format_parameters(self):
-        p = shell.format_parameters('InstanceType=m1.large;DBUsername=wp;'
+        p = utils.format_parameters('InstanceType=m1.large;DBUsername=wp;'
                                 'DBPassword=verybadpassword;KeyName=heat_key;'
                                 'LinuxDistribution=F17')
         self.assertEqual({'InstanceType': 'm1.large',
@@ -28,4 +28,4 @@ class shellTest(unittest.TestCase):
                           'KeyName': 'heat_key',
                           'LinuxDistribution': 'F17'
                           }, p)
-        self.assertEqual({}, shell.format_parameters(None))
+        self.assertEqual({}, utils.format_parameters(None))

@@ -167,7 +167,14 @@ class HTTPClient(object):
             raise exc.from_response(resp)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            return self._http_request(resp['location'], method, **kwargs)
+            location = dict(resp.getheaders())['location']
+            if location.startswith(self.endpoint):
+                # shave off the endpoint, it will be prepended when we recurse
+                location = location[len(self.endpoint):]
+            else:
+                message = "Prohibited endpoint redirect %s" % location
+                raise exc.InvalidEndpoint(message=message)
+            return self._http_request(location, method, **kwargs)
         elif resp.status == 300:
             raise exc.from_response(resp)
 

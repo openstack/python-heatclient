@@ -120,3 +120,15 @@ def exit(msg=''):
     if msg:
         print >> sys.stderr, msg
     sys.exit(1)
+
+
+def format_parameters(params):
+    '''
+    Reformat parameters into dict of format expected by the API
+    '''
+    parameters = {}
+    if params:
+        for count, p in enumerate(params.split(';'), 1):
+            (n, v) = p.split('=')
+            parameters[n] = v
+    return parameters

@@ -218,7 +218,8 @@ class ShellTest(TestCase):
             'ID',
             'Status',
             'Created',
-            'teststack/1',
+            'teststack',
+            '1',
             'CREATE_COMPLETE',
             'IN_PROGRESS',
         ]
@@ -281,9 +282,12 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"' % template_file)
 
         required = [
-            'Name/ID',
-            'teststack/1'
+            'Name',
+            'ID',
+            'teststack',
+            '1'
         ]
+
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
@@ -309,8 +313,10 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"')
 
         required = [
-            'Name/ID',
-            'teststack2/2'
+            'Name',
+            'ID',
+            'teststack2',
+            '2'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
@@ -344,8 +350,10 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"')
 
         required = [
-            'Name/ID',
-            'teststack2/2'
+            'Name',
+            'ID',
+            'teststack2',
+            '2'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
@@ -372,8 +380,10 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"' % template_file)
 
         required = [
-            'Name/ID',
-            'teststack/1'
+            'Name',
+            'ID',
+            'teststack2',
+            '1'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
@@ -395,8 +405,10 @@ class ShellTest(TestCase):
         create_text = self.shell('delete teststack2/2')
 
         required = [
-            'Name/ID',
-            'teststack/1'
+            'Name',
+            'ID',
+            'teststack',
+            '1'
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
