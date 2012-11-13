@@ -167,8 +167,11 @@ class HTTPClient(object):
             raise exc.from_response(resp)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            location = dict(resp.getheaders())['location']
-            if location.startswith(self.endpoint):
+            location = resp.getheader('location', None)
+            if location == None:
+                message = "Location not returned with 302"
+                raise exc.InvalidEndpoint(message=message)
+            elif location.startswith(self.endpoint):
                 # shave off the endpoint, it will be prepended when we recurse
                 location = location[len(self.endpoint):]
             else:
