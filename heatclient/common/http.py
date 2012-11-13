@@ -51,6 +51,8 @@ class HTTPClient(object):
     def __init__(self, endpoint, **kwargs):
         self.endpoint = endpoint
         self.auth_token = kwargs.get('token')
+        self.username = kwargs.get('username')
+        self.password = kwargs.get('password')
         self.connection_params = self.get_connection_params(endpoint, **kwargs)
 
     @staticmethod
@@ -129,6 +131,10 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
+        if self.username:
+            kwargs['headers'].setdefault('X-Auth-User', self.username)
+        if self.password:
+            kwargs['headers'].setdefault('X-Auth-Key', self.password)
 
         self.log_curl_request(method, url, kwargs)
         conn = self.get_connection()

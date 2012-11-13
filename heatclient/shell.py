@@ -157,6 +157,12 @@ class HeatShell(object):
         parser.add_argument('--os_endpoint_type',
             help=argparse.SUPPRESS)
 
+        parser.add_argument('-t', '--token-only',
+            default=bool(False),
+            action='store_true',
+            help='Only send a token for auth, do not send username and '
+                 'password as well.')
+
         return parser
 
     def get_subcommand_parser(self, version):
@@ -293,6 +299,9 @@ class HeatShell(object):
             'cert_file': args.cert_file,
             'key_file': args.key_file,
         }
+        if not args.token_only:
+            kwargs['username'] = args.os_username
+            kwargs['password'] = args.os_password
 
         client = heatclient.Client(api_version, endpoint, **kwargs)
 

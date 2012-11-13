@@ -1,7 +1,7 @@
 import cStringIO
 import os
 import httplib2
-import httplib
+import re
 import sys
 
 import mox
@@ -21,7 +21,20 @@ TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
 
 
-class ShellValidationTest(unittest.TestCase):
+class TestCase(unittest.TestCase):
+    # required for testing with Python 2.6
+    def assertRegexpMatches(self, text, expected_regexp, msg=None):
+        """Fail the test unless the text matches the regular expression."""
+        if isinstance(expected_regexp, basestring):
+            expected_regexp = re.compile(expected_regexp)
+        if not expected_regexp.search(text):
+            msg = msg or "Regexp didn't match"
+            msg = '%s: %r not found in %r' % (msg, expected_regexp.pattern,
+                text)
+            raise self.failureException(msg)
+
+
+class ShellValidationTest(TestCase):
 
     def test_missing_auth(self):
         _old_env, os.environ = os.environ, {
@@ -123,7 +136,7 @@ class ShellValidationTest(unittest.TestCase):
         return err
 
 
-class ShellTest(unittest.TestCase):
+class ShellTest(TestCase):
 
     # Patch os.environ to avoid required auth info.
     def setUp(self):
