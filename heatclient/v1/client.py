@@ -15,6 +15,7 @@
 
 from heatclient.common import http
 from heatclient.v1 import stacks
+from heatclient.v1 import resources
 
 
 class Client(http.HTTPClient):
@@ -31,3 +32,4 @@ class Client(http.HTTPClient):
         """ Initialize a new client for the Heat v1 API. """
         super(Client, self).__init__(*args, **kwargs)
         self.stacks = stacks.StackManager(self)
+        self.resources = resources.ResourceManager(self)

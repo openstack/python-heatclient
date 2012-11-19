@@ -156,41 +156,66 @@ def do_validate(hc, args):
     validation = hc.stacks.validate(**fields)
     print json.dumps(validation, indent=2)
 
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to show the resources for.')
+def do_resource_list(hc, args):
+    '''Show list of resources belonging to a stack'''
+    fields = {'stack_id': args.id}
+    try:
+        resources = hc.resources.list(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        field_labels = ['Name', 'Type',
+                        'Status', 'Updated']
+        fields = ['logical_resource_id', 'resource_type',
+                  'resource_status', 'updated_time']
+        utils.print_list(resources, fields, field_labels, sortby=3)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to show the resource for.')
+@utils.arg('resource', metavar='<RESOURCE NAME or ID>',
+           help='Name or ID of the resource to show the details for.')
+def do_resource(hc, args):
+    '''Describe the resource'''
+    fields = {'stack_id': args.id,
+              'resource_id': args.resource}
+    try:
+        resource = hc.resources.get(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or resource not found: %s %s' %
+            (args.id, args.resource))
+    else:
+        link_format = lambda links: '\n'.join([l['href'] for l in links])
+        json_format = lambda js: json.dumps(js, indent=2)
+        formatters = {
+            'links': link_format
+        }
+        utils.print_dict(resource.to_dict(), formatters=formatters)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to show the resource metadata for.')
+@utils.arg('resource', metavar='<RESOURCE NAME or ID>',
+           help='Name or ID of the resource to show the metadata for.')
+def do_resource_metadata(hc, args):
+    '''List resource metadata'''
+    fields = {'stack_id': args.id,
+              'resource_id': args.resource}
+    try:
+        resource = hc.resources.metadata(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or resource not found: %s %s' %
+            (args.id, args.resource))
+    else:
+        formatters = {}
+        utils.print_dict(resource.to_dict(), formatters=formatters)
+
 # TODO only need to implement this once the server supports it
-#@utils.arg('-u', '--template-url', metavar='<URL>',
-#           help='URL of template.')
-#@utils.arg('-f', '--template-file', metavar='<FILE>',
-#           help='Path to the template.')
-#def do_estimate_template_cost(hc, args):
-#    '''Returns the estimated monthly cost of a template'''
-#    pass
-#
-#
 #@utils.arg('id', metavar='<NAME or ID>',
 #           help='Name or ID of stack to show the events for.')
 #def do_event_list(hc, args):
 #    '''List events for a stack'''
-#    pass
-#
-#
-#@utils.arg('-r', '--resource', metavar='<RESOURCE_ID>',
-#           help='ID of the resource to show the details for.')
-#@utils.arg('id', metavar='<NAME or ID>',
-#           help='Name or ID of stack to show the resource for.')
-#def do_resource(hc, args):
-#    '''Describe the resource'''
-#    pass
-#
-#
-#@utils.arg('id', metavar='<NAME or ID>',
-#           help='Name or ID of stack to show the resources for.')
-#def do_resource_list(hc, args):
-#    '''Show list of resources belonging to a stack'''
-#    pass
-#
-#
-#@utils.arg('id', metavar='<NAME or ID>',
-#           help='Name or ID of stack to show the resource details for.')
-#def do_resource_list_details(hc, args):
-#    '''Detailed view of resources belonging to a stack'''
 #    pass
