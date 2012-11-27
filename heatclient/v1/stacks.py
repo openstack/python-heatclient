@@ -16,6 +16,7 @@
 import urllib
 
 from heatclient.common import base
+import heatclient.exc as exc
 
 DEFAULT_PAGE_SIZE = 20
 
@@ -118,3 +119,16 @@ class StackManager(base.Manager):
         resp, body = self.api.json_request(
                 'POST', '/validate', body=kwargs)
         return body
+
+
+class StackChildManager(base.Manager):
+
+    def _resolve_stack_id(self, stack_id):
+        # if the id already has a slash in it,
+        # then it is already {stack_name}/{stack_id}
+        if stack_id.find('/') > 0:
+            return stack_id
+        resp, body = self.api.json_request('GET',
+                '/stacks/%s' % stack_id)
+        stack = body['stack']
+        return '%s/%s' % (stack['stack_name'], stack['id'])

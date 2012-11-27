@@ -14,6 +14,7 @@
 #    under the License.
 
 from heatclient.common import base
+from heatclient.v1 import stacks
 import heatclient.exc as exc
 
 DEFAULT_PAGE_SIZE = 20
@@ -33,7 +34,7 @@ class Resource(base.Resource):
         return self.manager.data(self, **kwargs)
 
 
-class ResourceManager(base.Manager):
+class ResourceManager(stacks.StackChildManager):
     resource_class = Resource
 
     def list(self, stack_id):
@@ -43,38 +44,27 @@ class ResourceManager(base.Manager):
         url = '/stacks/%s/resources' % stack_id
         return self._list(url, "resources")
 
-    def get(self, stack_id, resource_id):
+    def get(self, stack_id, resource_name):
         """Get the details for a specific resource.
 
         :param stack_id: ID of stack containing the resource
-        :param resource_id: ID of resource to get the details for
+        :param resource_name: ID of resource to get the details for
         """
-        resp, body = self._get_resolve_fallback(stack_id, resource_id,
-            '/stacks/%s/resources/%s')
+        stack_id = self._resolve_stack_id(stack_id)
+        resp, body = self.api.json_request('GET',
+            '/stacks/%s/resources/%s' %
+            (stack_id, resource_name))
+
         return Resource(self, body['resource'])
 
-    def metadata(self, stack_id, resource_id):
+    def metadata(self, stack_id, resource_name):
         """Get the metadata for a specific resource.
 
         :param stack_id: ID of stack containing the resource
-        :param resource_id: ID of resource to get metadata for
+        :param resource_name: ID of resource to get metadata for
         """
-        resp, body = self._get_resolve_fallback(stack_id, resource_id,
-            '/stacks/%s/resources/%s/metadata')
-        return Resource(self, body['metadata'])
-
-    def _get_resolve_fallback(self, stack_id, resource_id, path_pattern):
-        try:
-            resp, body = self.api.json_request('GET',
-                path_pattern % (stack_id, resource_id))
-        except exc.HTTPNotFound:
-            stack_id = self._resolve_stack_id(stack_id)
-            resp, body = self.api.json_request('GET',
-                path_pattern % (stack_id, resource_id))
-        return (resp, body)
-
-    def _resolve_stack_id(self, stack_id):
+        stack_id = self._resolve_stack_id(stack_id)
         resp, body = self.api.json_request('GET',
-                '/stacks/%s' % stack_id)
-        stack = body['stack']
-        return '%s/%s' % (stack['stack_name'], stack['id'])
+            '/stacks/%s/resources/%s/metadata' %
+            (stack_id, resource_name))
+        return Resource(self, body['metadata'])

@@ -176,12 +176,12 @@ def do_resource_list(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the resource for.')
-@utils.arg('resource', metavar='<RESOURCE NAME or ID>',
-           help='Name or ID of the resource to show the details for.')
+@utils.arg('resource', metavar='<RESOURCE>',
+           help='Name of the resource to show the details for.')
 def do_resource(hc, args):
     '''Describe the resource'''
     fields = {'stack_id': args.id,
-              'resource_id': args.resource}
+              'resource_name': args.resource}
     try:
         resource = hc.resources.get(**fields)
     except exc.HTTPNotFound:
@@ -198,12 +198,12 @@ def do_resource(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the resource metadata for.')
-@utils.arg('resource', metavar='<RESOURCE NAME or ID>',
-           help='Name or ID of the resource to show the metadata for.')
+@utils.arg('resource', metavar='<RESOURCE>',
+           help='Name of the resource to show the metadata for.')
 def do_resource_metadata(hc, args):
     '''List resource metadata'''
     fields = {'stack_id': args.id,
-              'resource_id': args.resource}
+              'resource_name': args.resource}
     try:
         resource = hc.resources.metadata(**fields)
     except exc.HTTPNotFound:
@@ -213,9 +213,47 @@ def do_resource_metadata(hc, args):
         formatters = {}
         utils.print_dict(resource.to_dict(), formatters=formatters)
 
-# TODO only need to implement this once the server supports it
-#@utils.arg('id', metavar='<NAME or ID>',
-#           help='Name or ID of stack to show the events for.')
-#def do_event_list(hc, args):
-#    '''List events for a stack'''
-#    pass
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to show the events for.')
+@utils.arg('-r', '--resource', metavar='<RESOURCE>',
+           help='Name of the resource to filter events by')
+def do_event_list(hc, args):
+    '''List events for a stack'''
+    fields = {'stack_id': args.id,
+              'resource_name': args.resource}
+    try:
+        events = hc.events.list(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        field_labels = ['Resource', 'ID', 'Reason',
+                        'Status', 'Event time']
+        fields = ['logical_resource_id', 'id', 'resource_status_reason',
+                  'resource_status', 'event_time']
+        utils.print_list(events, fields, field_labels, sortby=4)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to show the events for.')
+@utils.arg('resource', metavar='<RESOURCE>',
+           help='Name of the resource the event belongs to.')
+@utils.arg('event', metavar='<EVENT>',
+           help='ID of event to display details for')
+def do_event(hc, args):
+    '''Describe the event'''
+    fields = {'stack_id': args.id,
+              'resource_name': args.resource,
+              'event_id': args.event}
+    try:
+        event = hc.events.get(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        link_format = lambda links: '\n'.join([l['href'] for l in links])
+        json_format = lambda js: json.dumps(js, indent=2)
+        formatters = {
+            'links': link_format,
+            'resource_properties': json_format
+        }
+        utils.print_dict(event.to_dict(), formatters=formatters)
