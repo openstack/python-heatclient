@@ -22,7 +22,11 @@ import heatclient.exc as exc
 
 def _set_template_fields(hc, args, fields):
     if args.template_file:
-        fields['template'] = json.loads(open(args.template_file).read())
+        tpl = open(args.template_file).read()
+        if tpl.startswith('{'):
+            fields['template'] = json.loads(tpl)
+        else:
+            fields['template'] = tpl
     elif args.template_url:
         fields['template_url'] = args.template_url
     elif args.template_object:
