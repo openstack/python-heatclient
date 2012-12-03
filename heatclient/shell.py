@@ -11,7 +11,7 @@
 #    under the License.
 
 """
-Command-line interface to the OpenStack Images API.
+Command-line interface to the Heat API.
 """
 
 import argparse
@@ -58,7 +58,7 @@ class HeatShell(object):
         parser.add_argument('-k', '--insecure',
             default=False,
             action='store_true',
-            help="Explicitly allow glanceclient to perform \"insecure\" "
+            help="Explicitly allow the client to perform \"insecure\" "
                  "SSL (https) requests. The server's certificate will "
                  "not be verified against any certificate authorities. "
                  "This option should be used with caution.")
@@ -73,7 +73,7 @@ class HeatShell(object):
 
         parser.add_argument('--ca-file',
             help='Path of CA SSL certificate(s) used to verify the remote '
-                 'server\'s certificate. Without this option glance looks '
+                 'server\'s certificate. Without this option the client looks '
                  'for the default system CA certificates.')
 
         parser.add_argument('--timeout',
