@@ -195,11 +195,11 @@ class ShellTest(TestCase):
 
     def test_help_on_subcommand(self):
         required = [
-            '^usage: heat list',
+            '^usage: heat stack-list',
             "(?m)^List the user's stacks",
         ]
         argstrings = [
-            'help list',
+            'help stack-list',
         ]
         for argstr in argstrings:
             help_text = self.shell(argstr)
