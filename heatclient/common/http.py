@@ -163,9 +163,7 @@ class HTTPClient(object):
             self.log_http_response(resp)
 
         if 400 <= resp.status < 600:
-            if resp.status != 404:
-                LOG.warn("Request returned failure status %s" % resp.status)
-            raise exc.from_response(resp)
+            raise exc.from_response(resp, body_iter)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             location = resp.getheader('location', None)
@@ -180,7 +178,7 @@ class HTTPClient(object):
                 raise exc.InvalidEndpoint(message=message)
             return self._http_request(location, method, **kwargs)
         elif resp.status == 300:
-            raise exc.from_response(resp)
+            raise exc.from_response(resp, body_iter)
 
         return resp, body_iter
 
