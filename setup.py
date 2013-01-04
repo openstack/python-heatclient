@@ -1,3 +1,5 @@
+#!/usr/bin/python
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,6 +16,7 @@ import os
 import setuptools
 
 from heatclient.openstack.common import setup
+from heatclient.version import version_info as version
 
 
 def read(fname):
@@ -21,7 +24,7 @@ def read(fname):
 
 setuptools.setup(
     name="python-heatclient",
-    version=setup.get_post_version('heatclient'),
+    version=version.canonical_version_string(always=True),
     author='Heat API Developers',
     author_email='discuss@heat-api.org',
     description="Client library for Heat orchestration API",

@@ -15,5 +15,8 @@
 
 from heatclient.openstack.common import version as common_version
 
+NEXT_VERSION = '0.2.0'
+
 version_info = common_version.VersionInfo('heatclient',
+                                          pre_version=NEXT_VERSION,
                                           python_package='python-heatclient')
