@@ -1,4 +1,6 @@
 argparse
-prettytable>=0.6,<0.7
+httplib2
+iso8601>=0.1.4
+prettytable>=0.5,<0.7
 python-keystoneclient>=0.2,<0.3
 warlock<2
