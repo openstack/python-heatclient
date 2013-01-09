@@ -52,4 +52,5 @@ setuptools.setup(
     dependency_links=setup.parse_dependency_links(),
     tests_require=setup.parse_requirements(['tools/test-requires']),
     setup_requires=['setuptools-git>=0.4'],
+    data_files=[('heatclient', ['heatclient/versioninfo'])]
 )
