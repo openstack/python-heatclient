@@ -31,13 +31,13 @@ from setuptools.command import sdist
 def parse_mailmap(mailmap='.mailmap'):
     mapping = {}
     if os.path.exists(mailmap):
-        fp = open(mailmap, 'r')
-        for l in fp:
-            l = l.strip()
-            if not l.startswith('#') and ' ' in l:
-                canonical_email, alias = [x for x in l.split(' ')
-                                          if x.startswith('<')]
-                mapping[alias] = canonical_email
+        with open(mailmap, 'r') as fp:
+            for l in fp:
+                l = l.strip()
+                if not l.startswith('#') and ' ' in l:
+                    canonical_email, alias = [x for x in l.split(' ')
+                                              if x.startswith('<')]
+                    mapping[alias] = canonical_email
     return mapping
 
 
@@ -54,7 +54,8 @@ def canonicalize_emails(changelog, mapping):
 def get_reqs_from_files(requirements_files):
     for requirements_file in requirements_files:
         if os.path.exists(requirements_file):
-            return open(requirements_file, 'r').read().split('\n')
+            with open(requirements_file, 'r') as fil:
+                return fil.read().split('\n')
     return []
 
 
@@ -116,8 +117,12 @@ def write_requirements():
 
 
 def _run_shell_command(cmd):
-    output = subprocess.Popen(["/bin/sh", "-c", cmd],
-                              stdout=subprocess.PIPE)
+    if os.name == 'nt':
+        output = subprocess.Popen(["cmd.exe", "/C", cmd],
+                                  stdout=subprocess.PIPE)
+    else:
+        output = subprocess.Popen(["/bin/sh", "-c", cmd],
+                                  stdout=subprocess.PIPE)
     out = output.communicate()
     if len(out) == 0:
         return None
@@ -135,15 +140,17 @@ def _get_git_next_version_suffix(branch_name):
     _run_shell_command("git fetch origin +refs/meta/*:refs/remotes/meta/*")
     milestone_cmd = "git show meta/openstack/release:%s" % branch_name
     milestonever = _run_shell_command(milestone_cmd)
-    if not milestonever:
-        milestonever = ""
+    if milestonever:
+        first_half = "%s~%s" % (milestonever, datestamp)
+    else:
+        first_half = datestamp
+
     post_version = _get_git_post_version()
     # post version should look like:
     # 0.1.1.4.gcc9e28a
     # where the bit after the last . is the short sha, and the bit between
     # the last and second to last is the revno count
     (revno, sha) = post_version.split(".")[-2:]
-    first_half = "%s~%s" % (milestonever, datestamp)
     second_half = "%s%s.%s" % (revno_prefix, revno, sha)
     return ".".join((first_half, second_half))
 
@@ -236,7 +243,8 @@ def read_versioninfo(project):
 
 def write_versioninfo(project, version):
     """Write a simple file containing the version of the package."""
-    open(os.path.join(project, 'versioninfo'), 'w').write("%s\n" % version)
+    with open(os.path.join(project, 'versioninfo'), 'w') as fil:
+        fil.write("%s\n" % version)
 
 
 def get_cmdclass():
@@ -268,6 +276,9 @@ def get_cmdclass():
         from sphinx.setup_command import BuildDoc
 
         class LocalBuildDoc(BuildDoc):
+
+            builders = ['html', 'man']
+
             def generate_autoindex(self):
                 print "**Autodocumenting from %s" % os.path.abspath(os.curdir)
                 modules = {}
@@ -303,14 +314,19 @@ def get_cmdclass():
                 if not os.getenv('SPHINX_DEBUG'):
                     self.generate_autoindex()
 
-                for builder in ['html', 'man']:
+                for builder in self.builders:
                     self.builder = builder
                     self.finalize_options()
                     self.project = self.distribution.get_name()
                     self.version = self.distribution.get_version()
                     self.release = self.distribution.get_version()
                     BuildDoc.run(self)
+
+        class LocalBuildLatex(LocalBuildDoc):
+            builders = ['latex']
+
         cmdclass['build_sphinx'] = LocalBuildDoc
+        cmdclass['build_sphinx_latex'] = LocalBuildLatex
     except ImportError:
         pass
 
