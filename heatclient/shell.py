@@ -229,10 +229,6 @@ class HeatShell(object):
                 level=logging.DEBUG)
 
             httplib2.debuglevel = 1
-        else:
-            logging.basicConfig(
-                format="%(levelname)s %(message)s",
-                level=logging.INFO)
 
     def main(self, argv):
         # Parse args once to find version
