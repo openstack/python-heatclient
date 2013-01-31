@@ -129,6 +129,12 @@ class HeatShell(object):
         parser.add_argument('--os_auth_token',
             help=argparse.SUPPRESS)
 
+        parser.add_argument('--os-no-client-auth',
+            default=utils.env('OS_NO_CLIENT_AUTH'),
+            action='store_true',
+            help="Do not contact keystone for a token.\
+                  Defaults to env[OS_NO_CLIENT_AUTH]")
+
         parser.add_argument('--heat-url',
             default=utils.env('HEAT_URL'),
             help='Defaults to env[HEAT_URL]')
@@ -281,20 +287,25 @@ class HeatShell(object):
             'endpoint_type': args.os_endpoint_type,
             'insecure': args.insecure
         }
-        _ksclient = self._get_ksclient(**kwargs)
-        token = args.os_auth_token or _ksclient.auth_token
 
-        endpoint = args.heat_url or \
-                self._get_endpoint(_ksclient, **kwargs)
+        endpoint = args.heat_url
 
-        kwargs = {
-            'token': token,
-            'insecure': args.insecure,
-            'timeout': args.timeout,
-            'ca_file': args.ca_file,
-            'cert_file': args.cert_file,
-            'key_file': args.key_file,
-        }
+        if not args.os_no_client_auth:
+            _ksclient = self._get_ksclient(**kwargs)
+            token = args.os_auth_token or _ksclient.auth_token
+
+            kwargs = {
+                'token': token,
+                'insecure': args.insecure,
+                'timeout': args.timeout,
+                'ca_file': args.ca_file,
+                'cert_file': args.cert_file,
+                'key_file': args.key_file,
+            }
+
+            if not endpoint:
+                endpoint = self._get_endpoint(_ksclient, **kwargs)
+
         if not args.token_only:
             kwargs['username'] = args.os_username
             kwargs['password'] = args.os_password

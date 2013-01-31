@@ -50,6 +50,7 @@ class HTTPClient(object):
 
     def __init__(self, endpoint, **kwargs):
         self.endpoint = endpoint
+        self.auth_url = kwargs.get('auth_url')
         self.auth_token = kwargs.get('token')
         self.username = kwargs.get('username')
         self.password = kwargs.get('password')
@@ -131,6 +132,8 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
+        if self.auth_url:
+            kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
         if self.username:
             kwargs['headers'].setdefault('X-Auth-User', self.username)
         if self.password:
