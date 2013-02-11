@@ -35,13 +35,13 @@ for arg in "$@"; do
 done
 
 if [ $just_pep8 -eq 1 ]; then
-  tox -e pep8
-  exit
+  exec tox -e pep8
 fi
 
-tox -e py27 $toxargs 2>&1 | tee run_tests.err.log  || exit
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
-  exit ${PIPESTATUS[0]}
+tox -e py27 $toxargs 2>&1 | tee run_tests.err.log  || exit 1
+tox_exit_code=${PIPESTATUS[0]}
+if [ 0$tox_exit_code -ne 0 ]; then
+  exit $tox_exit_code
 fi
 
 if [ -z "$toxargs" ]; then
