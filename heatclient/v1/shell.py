@@ -51,6 +51,8 @@ def _set_template_fields(hc, args, fields):
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
            help='Stack creation timeout in minutes. Default: 60')
+@utils.arg('-D', '--disable-rollback', default=False, action="store_true",
+           help='Disable rollback on create/update failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack.')
 @utils.arg('name', metavar='<STACK_NAME>',
@@ -69,6 +71,8 @@ def do_create(hc, args):
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
            help='Stack creation timeout in minutes. Default: 60')
+@utils.arg('-D', '--disable-rollback', default=False, action="store_true",
+           help='Disable rollback on create/update failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack.')
 @utils.arg('name', metavar='<STACK_NAME>',
@@ -77,6 +81,7 @@ def do_stack_create(hc, args):
     '''Create the stack'''
     fields = {'stack_name': args.name,
               'timeout_mins': args.create_timeout,
+              'disable_rollback': args.disable_rollback,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
 
