@@ -76,7 +76,7 @@ def do_create(hc, args):
 def do_stack_create(hc, args):
     '''Create the stack'''
     fields = {'stack_name': args.name,
-              'timeoutmins': args.create_timeout,
+              'timeout_mins': args.create_timeout,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
 
