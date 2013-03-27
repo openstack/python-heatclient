@@ -301,13 +301,13 @@ class HeatShell(object):
                 'ca_file': args.ca_file,
                 'cert_file': args.cert_file,
                 'key_file': args.key_file,
+                'username': args.os_username
             }
 
             if not endpoint:
                 endpoint = self._get_endpoint(_ksclient, **kwargs)
 
         if not args.token_only:
-            kwargs['username'] = args.os_username
             kwargs['password'] = args.os_password
 
         client = heatclient.Client(api_version, endpoint, **kwargs)
