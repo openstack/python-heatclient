@@ -291,13 +291,12 @@ def do_resource_metadata(hc, args):
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     try:
-        resource = hc.resources.metadata(**fields)
+        metadata = hc.resources.metadata(**fields)
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack or resource not found: %s %s' %
             (args.id, args.resource))
     else:
-        formatters = {}
-        utils.print_dict(resource.to_dict(), formatters=formatters)
+        print json.dumps(metadata, indent=2)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
