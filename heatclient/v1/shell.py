@@ -182,9 +182,8 @@ def do_stack_list(hc, args={}):
     '''List the user's stacks'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
-    field_labels = ['ID', 'Name', 'Status', 'Created']
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
-    utils.print_list(stacks, fields, field_labels, sortby=3)
+    utils.print_list(stacks, fields, sortby=3)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -247,11 +246,9 @@ def do_resource_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        field_labels = ['Name', 'Type',
-                        'Status', 'Updated']
         fields = ['logical_resource_id', 'resource_type',
                   'resource_status', 'updated_time']
-        utils.print_list(resources, fields, field_labels, sortby=3)
+        utils.print_list(resources, fields, sortby=3)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -316,11 +313,9 @@ def do_event_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        field_labels = ['Resource', 'ID', 'Reason',
-                        'Status', 'Event time']
         fields = ['logical_resource_id', 'id', 'resource_status_reason',
                   'resource_status', 'event_time']
-        utils.print_list(events, fields, field_labels, sortby=4)
+        utils.print_list(events, fields, sortby=4)
 
 
 @utils.arg('id', metavar='<NAME or ID>',

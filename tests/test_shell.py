@@ -215,9 +215,9 @@ class ShellTest(TestCase):
         list_text = self.shell('list')
 
         required = [
-            'ID',
-            'Status',
-            'Created',
+            'id',
+            'stack_status',
+            'creation_time',
             'teststack',
             '1',
             'CREATE_COMPLETE',
@@ -282,8 +282,8 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"' % template_file)
 
         required = [
-            'Name',
-            'ID',
+            'stack_name',
+            'id',
             'teststack',
             '1'
         ]
@@ -313,8 +313,8 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"')
 
         required = [
-            'Name',
-            'ID',
+            'stack_name',
+            'id',
             'teststack2',
             '2'
         ]
@@ -350,8 +350,8 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"')
 
         required = [
-            'Name',
-            'ID',
+            'stack_name',
+            'id',
             'teststack2',
             '2'
         ]
@@ -380,8 +380,8 @@ class ShellTest(TestCase):
             'LinuxDistribution=F17"' % template_file)
 
         required = [
-            'Name',
-            'ID',
+            'stack_name',
+            'id',
             'teststack2',
             '1'
         ]
@@ -405,8 +405,8 @@ class ShellTest(TestCase):
         create_text = self.shell('delete teststack2/2')
 
         required = [
-            'Name',
-            'ID',
+            'stack_name',
+            'id',
             'teststack',
             '1'
         ]
