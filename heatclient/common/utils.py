@@ -39,7 +39,8 @@ def pretty_choice_list(l):
     return ', '.join("'%s'" % i for i in l)
 
 
-def print_list(objs, fields, field_labels, formatters={}, sortby=0):
+def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
+    field_labels = field_labels or fields
     pt = prettytable.PrettyTable([f for f in field_labels], caching=False)
     pt.align = 'l'
 
