@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 from heatclient.common import base
 from heatclient.v1 import stacks
 import heatclient.exc as exc
@@ -67,4 +68,4 @@ class ResourceManager(stacks.StackChildManager):
         resp, body = self.api.json_request('GET',
             '/stacks/%s/resources/%s/metadata' %
             (stack_id, resource_name))
-        return Resource(self, body['metadata'])
+        return body['metadata']
