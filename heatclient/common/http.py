@@ -160,7 +160,7 @@ class HTTPClient(object):
         self.log_http_response(resp, body_str)
 
         if 400 <= resp.status < 600:
-            raise exc.from_response(resp, body_iter)
+            raise exc.from_response(resp, body_str)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             location = resp.getheader('location', None)
@@ -175,7 +175,7 @@ class HTTPClient(object):
                 raise exc.InvalidEndpoint(message=message)
             return self._http_request(location, method, **kwargs)
         elif resp.status == 300:
-            raise exc.from_response(resp, body_iter)
+            raise exc.from_response(resp, body_str)
 
         return resp, body_str
 
@@ -187,10 +187,10 @@ class HTTPClient(object):
         if 'body' in kwargs:
             kwargs['body'] = json.dumps(kwargs['body'])
 
-        resp, body_iter = self._http_request(url, method, **kwargs)
+        resp, body_str = self._http_request(url, method, **kwargs)
 
         if 'application/json' in resp.getheader('content-type', None):
-            body = ''.join([chunk for chunk in body_iter])
+            body = body_str
             try:
                 body = json.loads(body)
             except ValueError:
