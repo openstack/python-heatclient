@@ -41,7 +41,8 @@ def pretty_choice_list(l):
 
 def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
     field_labels = field_labels or fields
-    pt = prettytable.PrettyTable([f for f in field_labels], caching=False)
+    pt = prettytable.PrettyTable([f for f in field_labels],
+                                 caching=False, print_empty=False)
     pt.align = 'l'
 
     for o in objs:
@@ -57,7 +58,8 @@ def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
 
 
 def print_dict(d, formatters={}):
-    pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
+    pt = prettytable.PrettyTable(['Property', 'Value'],
+                                 caching=False, print_empty=False)
     pt.align = 'l'
 
     for field in d.keys():
