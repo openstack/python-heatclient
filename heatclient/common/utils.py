@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import errno
-import hashlib
 import os
 import sys
 import uuid

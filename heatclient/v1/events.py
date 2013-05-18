@@ -15,7 +15,6 @@
 
 from heatclient.common import base
 from heatclient.v1 import stacks
-import heatclient.exc as exc
 
 DEFAULT_PAGE_SIZE = 20
 
@@ -43,7 +42,7 @@ class EventManager(stacks.StackChildManager):
         :param resource_name: Optional name of resources to filter events by
         :rtype: list of :class:`Event`
         """
-        if resource_name == None:
+        if resource_name is None:
             url = '/stacks/%s/events' % stack_id
         else:
             stack_id = self._resolve_stack_id(stack_id)

@@ -13,4 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+__all__ = ['Client']
+
 from heatclient.v1.client import Client

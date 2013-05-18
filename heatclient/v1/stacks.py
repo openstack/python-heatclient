@@ -16,7 +16,6 @@
 import urllib
 
 from heatclient.common import base
-import heatclient.exc as exc
 
 DEFAULT_PAGE_SIZE = 20
 

@@ -1,16 +1,5 @@
-import StringIO
-import os
-import httplib2
-import httplib
-import sys
-
 import mox
 import unittest
-try:
-    import json
-except ImportError:
-    import simplejson as json
-from keystoneclient.v2_0 import client as ksclient
 
 from heatclient import exc
 from heatclient.common import http
@@ -36,9 +25,11 @@ class HttpClientTest(unittest.TestCase):
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/octet-stream',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'application/octet-stream'},
-                                         ''))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/octet-stream'},
+                ''))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -55,9 +46,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'application/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -74,9 +67,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'application/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -93,9 +88,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'not/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'not/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -112,9 +109,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'application/json'},
-                                         'invalid-json'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                'invalid-json'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -131,9 +130,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(302, 'Found',
-                                         {'location': 'http://example.com:8004'
-                                         }, ''))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                302, 'Found',
+                {'location': 'http://example.com:8004'},
+                ''))
         # Record the following 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
                                                 '', timeout=600.0)
@@ -141,9 +142,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(200, 'OK',
-                                         {'content-type': 'application/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -160,9 +163,11 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(302, 'Found',
-                                         {'location': 'http://prohibited.example.com:8004'
-                                         }, ''))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                302, 'Found',
+                {'location': 'http://prohibited.example.com:8004'},
+                ''))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -177,9 +182,10 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(404, 'OK',
-                                         {'content-type': 'application/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                404, 'OK', {'content-type': 'application/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -201,9 +207,10 @@ class HttpClientTest(unittest.TestCase):
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
                                    'User-Agent': 'python-heatclient'})
-        mock_conn.getresponse().AndReturn(fakes.FakeHTTPResponse(300, 'OK',
-                                         {'content-type': 'application/json'},
-                                         '{}'))
+        mock_conn.getresponse().AndReturn(
+            fakes.FakeHTTPResponse(
+                300, 'OK', {'content-type': 'application/json'},
+                '{}'))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
@@ -230,14 +237,15 @@ class HttpClientTest(unittest.TestCase):
     #                                     '{}'))
     #    # Replay, create client, assert
     #    self.m.ReplayAll()
-    #    client = http.HTTPClient('https://example.com:8004', ca_file='dummy',
-    #                                                         cert_file='dummy',
-    #                                                         key_file='dummy')
+    #    client = http.HTTPClient('https://example.com:8004',
+    #                             ca_file='dummy',
+    #                             cert_file='dummy',
+    #                             key_file='dummy')
     #    resp, body = client.json_request('GET', '')
     #    self.assertEqual(resp.status, 200)
     #    self.assertEqual(body, {})
     #    self.m.VerifyAll()
 
     def test_fake_json_request(self):
-        self.assertRaises(exc.InvalidEndpoint, http.HTTPClient, 'fake://example.com:8004')
-
+        self.assertRaises(exc.InvalidEndpoint, http.HTTPClient,
+                          'fake://example.com:8004')

@@ -13,10 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 from heatclient.common import base
 from heatclient.v1 import stacks
-import heatclient.exc as exc
 
 DEFAULT_PAGE_SIZE = 20
 

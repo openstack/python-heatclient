@@ -1,7 +1,4 @@
-
-import httplib
 import json
-import mox
 
 from keystoneclient.v2_0 import client as ksclient
 from heatclient.v1 import client as v1client

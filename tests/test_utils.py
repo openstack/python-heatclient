@@ -19,9 +19,10 @@ from heatclient.common import utils
 class shellTest(unittest.TestCase):
 
     def test_format_parameters(self):
-        p = utils.format_parameters('InstanceType=m1.large;DBUsername=wp;'
-                                'DBPassword=verybadpassword;KeyName=heat_key;'
-                                'LinuxDistribution=F17')
+        p = utils.format_parameters(
+            'InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17')
         self.assertEqual({'InstanceType': 'm1.large',
                           'DBUsername': 'wp',
                           'DBPassword': 'verybadpassword',

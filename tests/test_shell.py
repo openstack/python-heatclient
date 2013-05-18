@@ -29,8 +29,8 @@ class TestCase(unittest.TestCase):
             expected_regexp = re.compile(expected_regexp)
         if not expected_regexp.search(text):
             msg = msg or "Regexp didn't match"
-            msg = '%s: %r not found in %r' % (msg, expected_regexp.pattern,
-                text)
+            msg = '%s: %r not found in %r' % (
+                msg, expected_regexp.pattern, text)
             raise self.failureException(msg)
 
 
@@ -78,8 +78,8 @@ class ShellValidationTest(TestCase):
         m.StubOutWithMock(ksclient, 'Client')
         m.StubOutWithMock(v1client.Client, 'json_request')
         fakes.script_keystone_client()
-        v1client.Client.json_request('GET',
-            '/stacks?limit=20').AndRaise(exc.Unauthorized)
+        v1client.Client.json_request(
+            'GET', '/stacks?limit=20').AndRaise(exc.Unauthorized)
 
         m.ReplayAll()
         _old_env, os.environ = os.environ, {
@@ -108,7 +108,8 @@ class ShellValidationTest(TestCase):
             'OS_TENANT_NAME': 'tenant_name',
             'OS_AUTH_URL': 'http://no.where',
         }
-        self.shell_error('create teststack '
+        self.shell_error(
+            'create teststack '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"',
@@ -231,18 +232,18 @@ class ShellTest(TestCase):
     def test_describe(self):
         fakes.script_keystone_client()
         resp_dict = {"stack": {
-                "id": "1",
-                "stack_name": "teststack",
-                "stack_status": 'CREATE_COMPLETE',
-                "creation_time": "2012-10-25T01:58:47Z"
-            }
-        }
-        resp = fakes.FakeHTTPResponse(200,
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        resp = fakes.FakeHTTPResponse(
+            200,
             'OK',
             {'content-type': 'application/json'},
             json.dumps(resp_dict))
-        v1client.Client.json_request('GET',
-            '/stacks/teststack/1').AndReturn((resp, resp_dict))
+        v1client.Client.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
 
@@ -264,18 +265,20 @@ class ShellTest(TestCase):
 
     def test_create(self):
         fakes.script_keystone_client()
-        resp = fakes.FakeHTTPResponse(201,
+        resp = fakes.FakeHTTPResponse(
+            201,
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        v1client.Client.json_request(
+            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        create_text = self.shell('create teststack '
+        create_text = self.shell(
+            'create teststack '
             '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -296,17 +299,19 @@ class ShellTest(TestCase):
     def test_create_url(self):
 
         fakes.script_keystone_client()
-        resp = fakes.FakeHTTPResponse(201,
+        resp = fakes.FakeHTTPResponse(
+            201,
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        v1client.Client.json_request(
+            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
 
-        create_text = self.shell('create teststack '
+        create_text = self.shell(
+            'create teststack '
             '--template-url=http://no.where/minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -328,22 +333,25 @@ class ShellTest(TestCase):
         fakes.script_keystone_client()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
-        v1client.Client.raw_request('GET',
-                          'http://no.where/container/minimal.template',
-                          ).AndReturn(template_data)
+        v1client.Client.raw_request(
+            'GET',
+            'http://no.where/container/minimal.template',
+        ).AndReturn(template_data)
 
-        resp = fakes.FakeHTTPResponse(201,
+        resp = fakes.FakeHTTPResponse(
+            201,
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request('POST', '/stacks',
-                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        v1client.Client.json_request(
+            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
 
         fakes.script_heat_list()
 
         self.m.ReplayAll()
 
-        create_text = self.shell('create teststack2 '
+        create_text = self.shell(
+            'create teststack2 '
             '--template-object=http://no.where/container/minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -362,18 +370,21 @@ class ShellTest(TestCase):
 
     def test_update(self):
         fakes.script_keystone_client()
-        resp = fakes.FakeHTTPResponse(202,
+        resp = fakes.FakeHTTPResponse(
+            202,
             'Accepted',
             {},
             'The request is accepted for processing.')
-        v1client.Client.json_request('PUT', '/stacks/teststack2/2',
-                          body=mox.IgnoreArg()).AndReturn((resp, None))
+        v1client.Client.json_request(
+            'PUT', '/stacks/teststack2/2',
+            body=mox.IgnoreArg()).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        create_text = self.shell('update teststack2/2 '
+        create_text = self.shell(
+            'update teststack2/2 '
             '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -392,12 +403,14 @@ class ShellTest(TestCase):
 
     def test_delete(self):
         fakes.script_keystone_client()
-        resp = fakes.FakeHTTPResponse(204,
+        resp = fakes.FakeHTTPResponse(
+            204,
             'No Content',
             {},
             None)
-        v1client.Client.raw_request('DELETE', '/stacks/teststack2/2',
-                          ).AndReturn((resp, None))
+        v1client.Client.raw_request(
+            'DELETE', '/stacks/teststack2/2',
+        ).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()

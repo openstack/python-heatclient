@@ -18,7 +18,6 @@ import httplib
 import logging
 import os
 import socket
-import StringIO
 import urlparse
 
 try:
@@ -164,7 +163,7 @@ class HTTPClient(object):
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             location = resp.getheader('location', None)
-            if location == None:
+            if location is None:
                 message = "Location not returned with 302"
                 raise exc.InvalidEndpoint(message=message)
             elif location.startswith(self.endpoint):
