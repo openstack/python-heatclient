@@ -12,5 +12,4 @@ nose-exclude
 nosexcover
 openstack.nose_plugin
 nosehtmloutput
-setuptools-git>=0.4
 sphinx>=1.1.2
