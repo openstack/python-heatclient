@@ -121,7 +121,7 @@ class HTTPClient(object):
         LOG.debug('\n'.join(dump))
 
     def _http_request(self, url, method, **kwargs):
-        """ Send an http request with the specified characteristics.
+        """Send an http request with the specified characteristics.
 
         Wrapper around httplib.HTTP(S)Connection.request to handle tasks such
         as setting headers and error handling.
@@ -256,7 +256,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
 
     @staticmethod
     def get_system_ca_file():
-        """"Return path to system default CA file"""
+        """Return path to system default CA file."""
         # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,
         # Suse, FreeBSD/OpenBSD
         ca_path = ['/etc/ssl/certs/ca-certificates.crt',

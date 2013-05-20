@@ -81,12 +81,12 @@ class StackManager(base.Manager):
         return paginate(params)
 
     def create(self, **kwargs):
-        """Create a stack"""
+        """Create a stack."""
         resp, body = self.api.json_request(
                 'POST', '/stacks', body=kwargs)
 
     def update(self, **kwargs):
-        """Update a stack"""
+        """Update a stack."""
         stack_id = kwargs.pop('stack_id')
         resp, body = self.api.json_request(
                 'PUT', '/stacks/%s' % stack_id, body=kwargs)
@@ -114,7 +114,7 @@ class StackManager(base.Manager):
         return body
 
     def validate(self, **kwargs):
-        """Validate a stack template"""
+        """Validate a stack template."""
         resp, body = self.api.json_request(
                 'POST', '/validate', body=kwargs)
         return body

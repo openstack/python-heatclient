@@ -1,9 +1,9 @@
 import mox
 import unittest
 
-from heatclient import exc
-from heatclient.common import http
 import fakes
+from heatclient.common import http
+from heatclient import exc
 
 
 class HttpClientTest(unittest.TestCase):
@@ -195,8 +195,6 @@ class HttpClientTest(unittest.TestCase):
         except exc.HTTPNotFound as e:
             # Assert that the raised exception can be converted to string
             self.assertNotEqual(e.message, None)
-        except:
-            raise
         self.m.VerifyAll()
 
     def test_http_300_json_request(self):
@@ -220,8 +218,6 @@ class HttpClientTest(unittest.TestCase):
         except exc.HTTPMultipleChoices as e:
             # Assert that the raised exception can be converted to string
             self.assertNotEqual(e.message, None)
-        except:
-            raise
         self.m.VerifyAll()
 
     #def test_https_json_request(self):

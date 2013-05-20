@@ -23,7 +23,7 @@ class BaseException(Exception):
 
 
 class CommandError(BaseException):
-    """Invalid usage of CLI"""
+    """Invalid usage of CLI."""
 
 
 class InvalidEndpoint(BaseException):
@@ -35,7 +35,7 @@ class CommunicationError(BaseException):
 
 
 class HTTPException(BaseException):
-    """Base exception for all HTTP-derived exceptions"""
+    """Base exception for all HTTP-derived exceptions."""
     code = 'N/A'
 
 
@@ -50,7 +50,7 @@ class HTTPMultipleChoices(HTTPException):
 
 
 class BadRequest(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 400
 
 
@@ -59,7 +59,7 @@ class HTTPBadRequest(BadRequest):
 
 
 class Unauthorized(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 401
 
 
@@ -68,7 +68,7 @@ class HTTPUnauthorized(Unauthorized):
 
 
 class Forbidden(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 403
 
 
@@ -77,7 +77,7 @@ class HTTPForbidden(Forbidden):
 
 
 class NotFound(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 404
 
 
@@ -90,7 +90,7 @@ class HTTPMethodNotAllowed(HTTPException):
 
 
 class Conflict(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 409
 
 
@@ -99,7 +99,7 @@ class HTTPConflict(Conflict):
 
 
 class OverLimit(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 413
 
 
@@ -120,7 +120,7 @@ class HTTPBadGateway(HTTPException):
 
 
 class ServiceUnavailable(HTTPException):
-    """DEPRECATED"""
+    """DEPRECATED."""
     code = 503
 
 
@@ -145,10 +145,10 @@ def from_response(response, body_iter):
 
 
 class NoTokenLookupException(Exception):
-    """DEPRECATED"""
+    """DEPRECATED."""
     pass
 
 
 class EndpointNotFound(Exception):
-    """DEPRECATED"""
+    """DEPRECATED."""
     pass

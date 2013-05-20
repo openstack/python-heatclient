@@ -1,6 +1,6 @@
 import cStringIO
-import os
 import httplib2
+import os
 import re
 import sys
 
@@ -12,10 +12,10 @@ except ImportError:
     import simplejson as json
 from keystoneclient.v2_0 import client as ksclient
 
-from heatclient import exc
-from heatclient.v1 import client as v1client
-import heatclient.shell
 import fakes
+from heatclient import exc
+import heatclient.shell
+from heatclient.v1 import client as v1client
 
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))

@@ -58,7 +58,7 @@ def _set_template_fields(hc, args, fields):
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
 def do_create(hc, args):
-    '''DEPRECATED! Use stack-create instead'''
+    '''DEPRECATED! Use stack-create instead.'''
     do_stack_create(hc, args)
 
 
@@ -78,7 +78,7 @@ def do_create(hc, args):
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
-    '''Create the stack'''
+    '''Create the stack.'''
     fields = {'stack_name': args.name,
               'timeout_mins': args.create_timeout,
               'disable_rollback': not(args.enable_rollback),
@@ -91,13 +91,13 @@ def do_stack_create(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to delete.')
 def do_delete(hc, args):
-    '''DEPRECATED! Use stack-delete instead'''
+    '''DEPRECATED! Use stack-delete instead.'''
     do_stack_delete(hc, args)
 
 
 @utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to delete.')
 def do_stack_delete(hc, args):
-    '''Delete the stack'''
+    '''Delete the stack.'''
     fields = {'stack_id': args.id}
     try:
         hc.stacks.delete(**fields)
@@ -110,14 +110,14 @@ def do_stack_delete(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
     help='Name or ID of stack to describe.')
 def do_describe(hc, args):
-    '''DEPRECATED! Use stack-show instead'''
+    '''DEPRECATED! Use stack-show instead.'''
     do_stack_show(hc, args)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
     help='Name or ID of stack to describe.')
 def do_stack_show(hc, args):
-    '''Describe the stack'''
+    '''Describe the stack.'''
     fields = {'stack_id': args.id}
     try:
         stack = hc.stacks.get(**fields)
@@ -149,7 +149,7 @@ def do_stack_show(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_update(hc, args):
-    '''DEPRECATED! Use stack-update instead'''
+    '''DEPRECATED! Use stack-update instead.'''
     do_stack_update(hc, args)
 
 
@@ -164,7 +164,7 @@ def do_update(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
-    '''Update the stack'''
+    '''Update the stack.'''
     fields = {'stack_id': args.id,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
@@ -174,12 +174,12 @@ def do_stack_update(hc, args):
 
 
 def do_list(hc, args={}):
-    '''DEPRECATED! Use stack-list instead'''
+    '''DEPRECATED! Use stack-list instead.'''
     do_stack_list(hc, args)
 
 
 def do_stack_list(hc, args={}):
-    '''List the user's stacks'''
+    '''List the user's stacks.'''
     kwargs = {}
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
@@ -189,14 +189,14 @@ def do_stack_list(hc, args={}):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to get the template for.')
 def do_gettemplate(hc, args):
-    '''DEPRECATED! Use template-show instead'''
+    '''DEPRECATED! Use template-show instead.'''
     do_template_show(hc, args)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to get the template for.')
 def do_template_show(hc, args):
-    '''Get the template for the specified stack'''
+    '''Get the template for the specified stack.'''
     fields = {'stack_id': args.id}
     try:
         template = hc.stacks.template(**fields)
@@ -215,7 +215,7 @@ def do_template_show(hc, args):
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values to validate.')
 def do_validate(hc, args):
-    '''DEPRECATED! Use template-validate instead'''
+    '''DEPRECATED! Use template-validate instead.'''
     do_template_validate(hc, args)
 
 
@@ -228,7 +228,7 @@ def do_validate(hc, args):
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values to validate.')
 def do_template_validate(hc, args):
-    '''Validate a template with parameters'''
+    '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
 
@@ -239,7 +239,7 @@ def do_template_validate(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the resources for.')
 def do_resource_list(hc, args):
-    '''Show list of resources belonging to a stack'''
+    '''Show list of resources belonging to a stack.'''
     fields = {'stack_id': args.id}
     try:
         resources = hc.resources.list(**fields)
@@ -256,7 +256,7 @@ def do_resource_list(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource to show the details for.')
 def do_resource(hc, args):
-    '''DEPRECATED! Use resource-show instead'''
+    '''DEPRECATED! Use resource-show instead.'''
     do_resource_show(hc, args)
 
 
@@ -265,7 +265,7 @@ def do_resource(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource to show the details for.')
 def do_resource_show(hc, args):
-    '''Describe the resource'''
+    '''Describe the resource.'''
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     try:
@@ -287,7 +287,7 @@ def do_resource_show(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource to show the metadata for.')
 def do_resource_metadata(hc, args):
-    '''List resource metadata'''
+    '''List resource metadata.'''
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     try:
@@ -304,7 +304,7 @@ def do_resource_metadata(hc, args):
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
            help='Name of the resource to filter events by')
 def do_event_list(hc, args):
-    '''List events for a stack'''
+    '''List events for a stack.'''
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     try:
@@ -324,7 +324,7 @@ def do_event_list(hc, args):
 @utils.arg('event', metavar='<EVENT>',
            help='ID of event to display details for')
 def do_event(hc, args):
-    '''DEPRECATED! Use event-show instead'''
+    '''DEPRECATED! Use event-show instead.'''
     do_event_show(hc, args)
 
 
@@ -335,7 +335,7 @@ def do_event(hc, args):
 @utils.arg('event', metavar='<EVENT>',
            help='ID of event to display details for')
 def do_event_show(hc, args):
-    '''Describe the event'''
+    '''Describe the event.'''
     fields = {'stack_id': args.id,
               'resource_name': args.resource,
               'event_id': args.event}

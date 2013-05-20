@@ -21,9 +21,9 @@ import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
-from heatclient import exc
 from heatclient import client as heatclient
 from heatclient.common import utils
+from heatclient import exc
 
 logger = logging.getLogger(__name__)
 
