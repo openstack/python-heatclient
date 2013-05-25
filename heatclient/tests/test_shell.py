@@ -4,8 +4,9 @@ import os
 import re
 import sys
 
+import fixtures
 import mox
-import unittest
+import testtools
 try:
     import json
 except ImportError:
@@ -21,7 +22,12 @@ TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
 
 
-class TestCase(unittest.TestCase):
+class TestCase(testtools.TestCase):
+
+    def set_fake_env(self, fake_env):
+        for key, value in fake_env.items():
+            self.useFixture(fixtures.EnvironmentVariable(key, value))
+
     # required for testing with Python 2.6
     def assertRegexpMatches(self, text, expected_regexp, msg=None):
         """Fail the test unless the text matches the regular expression."""
@@ -32,93 +38,6 @@ class TestCase(unittest.TestCase):
             msg = '%s: %r not found in %r' % (
                 msg, expected_regexp.pattern, text)
             raise self.failureException(msg)
-
-
-class ShellValidationTest(TestCase):
-
-    def test_missing_auth(self):
-        _old_env, os.environ = os.environ, {
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.shell_error('list', 'You must provide a username')
-
-        os.environ = _old_env
-
-        _old_env, os.environ = os.environ, {
-            'OS_USERNAME': 'username',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.shell_error('list', 'You must provide a password')
-
-        os.environ = _old_env
-
-        _old_env, os.environ = os.environ, {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.shell_error('list', 'You must provide a tenant_id')
-
-        os.environ = _old_env
-
-        _old_env, os.environ = os.environ, {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-        }
-        self.shell_error('list', 'You must provide an auth url')
-
-        os.environ = _old_env
-
-    def test_failed_auth(self):
-        m = mox.Mox()
-        m.StubOutWithMock(ksclient, 'Client')
-        m.StubOutWithMock(v1client.Client, 'json_request')
-        fakes.script_keystone_client()
-        v1client.Client.json_request(
-            'GET', '/stacks?limit=20').AndRaise(exc.Unauthorized)
-
-        m.ReplayAll()
-        _old_env, os.environ = os.environ, {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.shell_error('list', 'Invalid OpenStack Identity credentials.')
-
-        m.VerifyAll()
-
-        os.environ = _old_env
-        m.UnsetStubs()
-
-    def test_create_validation(self):
-        m = mox.Mox()
-        m.StubOutWithMock(ksclient, 'Client')
-        m.StubOutWithMock(v1client.Client, 'json_request')
-        fakes.script_keystone_client()
-
-        m.ReplayAll()
-        _old_env, os.environ = os.environ, {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.shell_error(
-            'create teststack '
-            '--parameters="InstanceType=m1.large;DBUsername=wp;'
-            'DBPassword=verybadpassword;KeyName=heat_key;'
-            'LinuxDistribution=F17"',
-            'Need to specify exactly one of')
-
-        m.VerifyAll()
-
-        os.environ = _old_env
-        m.UnsetStubs()
 
     def shell_error(self, argstr, error_match):
         orig = sys.stderr
@@ -137,28 +56,110 @@ class ShellValidationTest(TestCase):
         return err
 
 
-class ShellTest(TestCase):
+class EnvVarTest(TestCase):
 
-    # Patch os.environ to avoid required auth info.
+    def test_missing_auth(self):
+        fake_env = {
+            'OS_USERNAME': None,
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error('list', 'You must provide a username')
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': None,
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error('list', 'You must provide a password')
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': None,
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error('list', 'You must provide a tenant_id')
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': None,
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error('list', 'You must provide an auth url')
+
+
+class ShellValidationTest(TestCase):
+
     def setUp(self):
+        super(ShellValidationTest, self).setUp()
         self.m = mox.Mox()
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_failed_auth(self):
         self.m.StubOutWithMock(ksclient, 'Client')
         self.m.StubOutWithMock(v1client.Client, 'json_request')
-        self.m.StubOutWithMock(v1client.Client, 'raw_request')
+        fakes.script_keystone_client()
+        v1client.Client.json_request(
+            'GET', '/stacks?limit=20').AndRaise(exc.Unauthorized)
 
-        global _old_env
+        self.m.ReplayAll()
         fake_env = {
             'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
             'OS_TENANT_NAME': 'tenant_name',
             'OS_AUTH_URL': 'http://no.where',
         }
-        _old_env, os.environ = os.environ, fake_env.copy()
+        self.set_fake_env(fake_env)
+        self.shell_error('list', 'Invalid OpenStack Identity credentials.')
 
-    def tearDown(self):
-        self.m.UnsetStubs()
-        global _old_env
-        os.environ = _old_env
+    def test_create_validation(self):
+        self.m.StubOutWithMock(ksclient, 'Client')
+        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        fakes.script_keystone_client()
+
+        self.m.ReplayAll()
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error(
+            'create teststack '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"',
+            'Need to specify exactly one of')
+
+
+class ShellTest(TestCase):
+
+    # Patch os.environ to avoid required auth info.
+    def setUp(self):
+        super(ShellTest, self).setUp()
+        self.m = mox.Mox()
+        self.m.StubOutWithMock(ksclient, 'Client')
+        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        self.m.StubOutWithMock(v1client.Client, 'raw_request')
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
 
     def shell(self, argstr):
         orig = sys.stdout
@@ -227,8 +228,6 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-        self.m.VerifyAll()
-
     def test_describe(self):
         fakes.script_keystone_client()
         resp_dict = {"stack": {
@@ -261,8 +260,6 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-        self.m.VerifyAll()
-
     def test_create(self):
         fakes.script_keystone_client()
         resp = fakes.FakeHTTPResponse(
@@ -294,8 +291,6 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-        self.m.VerifyAll()
-
     def test_create_url(self):
 
         fakes.script_keystone_client()
@@ -325,8 +320,6 @@ class ShellTest(TestCase):
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
-
-        self.m.VerifyAll()
 
     def test_create_object(self):
 
@@ -366,8 +359,6 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-        self.m.VerifyAll()
-
     def test_update(self):
         fakes.script_keystone_client()
         resp = fakes.FakeHTTPResponse(
@@ -399,8 +390,6 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-        self.m.VerifyAll()
-
     def test_delete(self):
         fakes.script_keystone_client()
         resp = fakes.FakeHTTPResponse(
@@ -425,5 +414,3 @@ class ShellTest(TestCase):
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
-
-        self.m.VerifyAll()

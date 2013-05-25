@@ -1,22 +1,21 @@
 import mox
-import unittest
+import testtools
 
 import fakes
 from heatclient.common import http
 from heatclient import exc
 
 
-class HttpClientTest(unittest.TestCase):
+class HttpClientTest(testtools.TestCase):
 
     # Patch os.environ to avoid required auth info.
     def setUp(self):
+        super(HttpClientTest, self).setUp()
         self.m = mox.Mox()
         self.m.StubOutClassWithMocks(http.httplib, 'HTTPConnection')
         self.m.StubOutClassWithMocks(http.httplib, 'HTTPSConnection')
-
-    def tearDown(self):
-        self.m.UnsetStubs()
-        self.m.ResetAll()
+        self.addCleanup(self.m.UnsetStubs)
+        self.addCleanup(self.m.ResetAll)
 
     def test_http_raw_request(self):
         # Record a 200

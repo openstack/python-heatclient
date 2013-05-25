@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from heatclient.common import utils
-import unittest
+import testtools
 
 
-class shellTest(unittest.TestCase):
+class shellTest(testtools.TestCase):
 
     def test_format_parameters(self):
         p = utils.format_parameters(
