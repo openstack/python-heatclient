@@ -39,6 +39,11 @@ class HTTPException(BaseException):
     code = 'N/A'
 
 
+class MalformedRequestBody(BaseException):
+    """Malformed parameter in request."""
+    pass
+
+
 class HTTPMultipleChoices(HTTPException):
     code = 300
 

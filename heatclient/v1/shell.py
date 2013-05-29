@@ -79,10 +79,16 @@ def do_create(hc, args):
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
     '''Create the stack.'''
+    try:
+        parameters = utils.format_parameters(args.parameters)
+    except exc.MalformedRequestBody:
+        msg = "Malformed parameters. Parameters should have key=value format"
+        raise exc.CommandError(msg=msg)
+
     fields = {'stack_name': args.name,
               'timeout_mins': args.create_timeout,
               'disable_rollback': not(args.enable_rollback),
-              'parameters': utils.format_parameters(args.parameters)}
+              'parameters': parameters}
     _set_template_fields(hc, args, fields)
 
     hc.stacks.create(**fields)

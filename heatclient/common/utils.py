@@ -130,6 +130,10 @@ def format_parameters(params):
     parameters = {}
     if params:
         for count, p in enumerate(params.split(';'), 1):
-            (n, v) = p.split('=')
+            try:
+                (n, v) = p.split(('='), 1)
+            except ValueError:
+                raise exc.MalformedRequestBody()
+
             parameters[n] = v
     return parameters
