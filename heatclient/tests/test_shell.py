@@ -6,6 +6,7 @@ import sys
 
 import fixtures
 import mox
+import testscenarios
 import testtools
 try:
     import json
@@ -18,6 +19,7 @@ from heatclient import exc
 import heatclient.shell
 from heatclient.v1 import client as v1client
 
+load_tests = testscenarios.load_tests_apply_scenarios
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
 
@@ -58,42 +60,32 @@ class TestCase(testtools.TestCase):
 
 class EnvVarTest(TestCase):
 
+    scenarios = [
+        ('username', dict(
+             remove='OS_USERNAME',
+             err='You must provide a username')),
+        ('password', dict(
+             remove='OS_PASSWORD',
+             err='You must provide a password')),
+        ('tenant_name', dict(
+             remove='OS_TENANT_NAME',
+             err='You must provide a tenant_id')),
+        ('auth_url', dict(
+             remove='OS_AUTH_URL',
+             err='You must provide an auth url')),
+    ]
+
     def test_missing_auth(self):
-        fake_env = {
-            'OS_USERNAME': None,
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-        self.shell_error('list', 'You must provide a username')
 
         fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': None,
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
+           'OS_USERNAME': 'username',
+           'OS_PASSWORD': 'password',
+           'OS_TENANT_NAME': 'tenant_name',
+           'OS_AUTH_URL': 'http://no.where',
         }
+        fake_env[self.remove] = None
         self.set_fake_env(fake_env)
-        self.shell_error('list', 'You must provide a password')
-
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': None,
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-        self.shell_error('list', 'You must provide a tenant_id')
-
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': None,
-        }
-        self.set_fake_env(fake_env)
-        self.shell_error('list', 'You must provide an auth url')
+        self.shell_error('list', self.err)
 
 
 class ShellValidationTest(TestCase):
