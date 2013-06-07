@@ -44,6 +44,8 @@ def _set_template_fields(hc, args, fields):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -64,6 +66,8 @@ def do_create(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -90,6 +94,9 @@ def do_stack_create(hc, args):
               'disable_rollback': not(args.enable_rollback),
               'parameters': parameters}
     _set_template_fields(hc, args, fields)
+
+    if args.environment_file:
+        fields['environment'] = open(args.environment_file).read()
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -146,6 +153,8 @@ def do_stack_show(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -161,6 +170,8 @@ def do_update(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -174,6 +185,9 @@ def do_stack_update(hc, args):
     fields = {'stack_id': args.id,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
+
+    if args.environment_file:
+        fields['environment'] = open(args.environment_file).read()
 
     hc.stacks.update(**fields)
     do_list(hc)
@@ -229,6 +243,8 @@ def do_validate(hc, args):
            help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
@@ -237,6 +253,9 @@ def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
+
+    if args.environment_file:
+        fields['environment'] = open(args.environment_file).read()
 
     validation = hc.stacks.validate(**fields)
     print json.dumps(validation, indent=2)
