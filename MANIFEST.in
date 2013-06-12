@@ -3,6 +3,7 @@ include LICENSE
 include README.md
 include ChangeLog
 include tox.ini
+include .testr.conf
 recursive-include doc *
 recursive-include tests *
 recursive-include tools *
