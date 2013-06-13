@@ -14,6 +14,7 @@
 #    under the License.
 
 from heatclient.common import http
+from heatclient.v1 import actions
 from heatclient.v1 import events
 from heatclient.v1 import resources
 from heatclient.v1 import stacks
@@ -35,3 +36,4 @@ class Client(http.HTTPClient):
         self.stacks = stacks.StackManager(self)
         self.resources = resources.ResourceManager(self)
         self.events = events.EventManager(self)
+        self.actions = actions.ActionManager(self)

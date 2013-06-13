@@ -167,6 +167,31 @@ def do_stack_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to suspend.')
+def do_action_suspend(hc, args):
+    '''Suspend the stack.'''
+    fields = {'stack_id': args.id}
+    try:
+        hc.actions.suspend(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        do_stack_list(hc)
+
+
+@utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to resume.')
+def do_action_resume(hc, args):
+    '''Resume the stack.'''
+    fields = {'stack_id': args.id}
+    try:
+        hc.actions.resume(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        do_stack_list(hc)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to describe.')
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''
