@@ -20,7 +20,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_raw_request(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/octet-stream',
                                    'User-Agent': 'python-heatclient'})
@@ -40,7 +40,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -61,7 +61,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request_w_req_body(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/', body='"test-body"',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -82,7 +82,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request_non_json_resp_cont_type(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/', body='"test-body"',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -103,7 +103,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request_invalid_json(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -124,7 +124,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request_redirect(self):
         # Record the 302
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -136,7 +136,7 @@ class HttpClientTest(testtools.TestCase):
                 ''))
         # Record the following 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -157,7 +157,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_json_request_prohibited_redirect(self):
         # Record the 302
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -176,7 +176,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_404_json_request(self):
         # Record a 404
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
@@ -199,7 +199,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_300_json_request(self):
         # Record a 300
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
-                                                '', timeout=600.0)
+                                                timeout=600.0)
         mock_conn.request('GET', '/',
                           headers={'Content-Type': 'application/json',
                                    'Accept': 'application/json',
