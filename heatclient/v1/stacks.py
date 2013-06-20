@@ -82,14 +82,13 @@ class StackManager(base.Manager):
 
     def create(self, **kwargs):
         """Create a stack."""
-        resp, body = self.api.json_request(
-                'POST', '/stacks', body=kwargs)
+        resp, body = self.api.json_request('POST', '/stacks', body=kwargs)
 
     def update(self, **kwargs):
         """Update a stack."""
         stack_id = kwargs.pop('stack_id')
-        resp, body = self.api.json_request(
-                'PUT', '/stacks/%s' % stack_id, body=kwargs)
+        resp, body = self.api.json_request('PUT', '/stacks/%s' % stack_id,
+                                           body=kwargs)
 
     def delete(self, stack_id):
         """Delete a stack."""
@@ -115,8 +114,7 @@ class StackManager(base.Manager):
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        resp, body = self.api.json_request(
-                'POST', '/validate', body=kwargs)
+        resp, body = self.api.json_request('POST', '/validate', body=kwargs)
         return body
 
 

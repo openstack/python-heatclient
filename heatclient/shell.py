@@ -43,8 +43,7 @@ class HeatShell(object):
         # Global arguments
         parser.add_argument('-h', '--help',
             action='store_true',
-            help=argparse.SUPPRESS,
-        )
+            help=argparse.SUPPRESS)
 
         parser.add_argument('-d', '--debug',
             default=bool(utils.env('HEATCLIENT_DEBUG')),
@@ -123,8 +122,8 @@ class HeatShell(object):
             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-auth-token',
-            default=utils.env('OS_AUTH_TOKEN'),
-            help='Defaults to env[OS_AUTH_TOKEN]')
+                            default=utils.env('OS_AUTH_TOKEN'),
+                            help='Defaults to env[OS_AUTH_TOKEN]')
 
         parser.add_argument('--os_auth_token',
             help=argparse.SUPPRESS)
@@ -195,12 +194,10 @@ class HeatShell(object):
                 help=help,
                 description=desc,
                 add_help=False,
-                formatter_class=HelpFormatter
-            )
+                formatter_class=HelpFormatter)
             subparser.add_argument('-h', '--help',
                 action='help',
-                help=argparse.SUPPRESS,
-            )
+                help=argparse.SUPPRESS)
             self.subcommands[command] = subparser
             for (args, kwargs) in arguments:
                 subparser.add_argument(*args, **kwargs)
@@ -225,8 +222,8 @@ class HeatShell(object):
     def _get_endpoint(self, client, **kwargs):
         """Get an endpoint using the provided keystone client."""
         return client.service_catalog.url_for(
-                service_type=kwargs.get('service_type') or 'orchestration',
-                endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
+            service_type=kwargs.get('service_type') or 'orchestration',
+            endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
 
     def _setup_debugging(self, debug):
         if debug:

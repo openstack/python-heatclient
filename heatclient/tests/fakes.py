@@ -10,17 +10,15 @@ def script_keystone_client():
                 password='password',
                 tenant_id='',
                 tenant_name='tenant_name',
-                username='username').AndReturn(
-                FakeKeystone('abcd1234'))
+                username='username').AndReturn(FakeKeystone('abcd1234'))
 
 
 def script_heat_list():
     resp_dict = {"stacks": [{
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        },
+        "id": "1",
+        "stack_name": "teststack",
+        "stack_status": 'CREATE_COMPLETE',
+        "creation_time": "2012-10-25T01:58:47Z"},
         {
             "id": "2",
             "stack_name": "teststack2",
