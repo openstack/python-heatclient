@@ -124,9 +124,7 @@ def exit(msg=''):
 
 
 def format_parameters(params):
-    '''
-    Reformat parameters into dict of format expected by the API
-    '''
+    '''Reformat parameters into dict of format expected by the API.'''
     parameters = {}
     if params:
         for count, p in enumerate(params.split(';'), 1):

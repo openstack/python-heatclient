@@ -1,9 +1,9 @@
 import mox
 import testtools
 
-import fakes
 from heatclient.common import http
 from heatclient import exc
+from heatclient.tests import fakes
 
 
 class HttpClientTest(testtools.TestCase):

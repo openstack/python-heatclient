@@ -29,7 +29,8 @@ except NameError:
 
 
 def getid(obj):
-    """
+    """Get by object or ID.
+
     Abstracts the common pattern of allowing both an object or an object's ID
     (UUID) as a parameter when dealing with relationships.
     """
@@ -40,9 +41,10 @@ def getid(obj):
 
 
 class Manager(object):
-    """
-    Managers interact with a particular type of API (servers, flavors, images,
-    etc.) and provide CRUD operations for them.
+    """Managers interact with a particular type of API.
+
+    For example servers, flavors and images.
+    It provides CRUD operations for these objects.
     """
     resource_class = None
 
@@ -69,9 +71,9 @@ class Manager(object):
 
 
 class Resource(object):
-    """
-    A resource represents a particular instance of an object (tenant, user,
-    etc). This is pretty much just a bag for attributes.
+    """A resource represents a particular instance of an object.
+
+    For example tenant or user. This is pretty much just a bag for attributes.
 
     :param manager: Manager object
     :param info: dictionary representing resource attributes

@@ -227,8 +227,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         self.insecure = insecure
 
     def connect(self):
-        """
-        Connect to a host on a given (SSL) port.
+        """Connect to a host on a given (SSL) port.
         If ca_file is pointing somewhere, use it to check Server Certificate.
 
         Redefined/copied and extended from httplib.py:1105 (Python 2.6.x).

@@ -14,9 +14,9 @@ except ImportError:
     import simplejson as json
 from keystoneclient.v2_0 import client as ksclient
 
-import fakes
 from heatclient import exc
 import heatclient.shell
+from heatclient.tests import fakes
 from heatclient.v1 import client as v1client
 
 load_tests = testscenarios.load_tests_apply_scenarios
