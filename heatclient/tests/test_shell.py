@@ -62,26 +62,26 @@ class EnvVarTest(TestCase):
 
     scenarios = [
         ('username', dict(
-             remove='OS_USERNAME',
-             err='You must provide a username')),
+            remove='OS_USERNAME',
+            err='You must provide a username')),
         ('password', dict(
-             remove='OS_PASSWORD',
-             err='You must provide a password')),
+            remove='OS_PASSWORD',
+            err='You must provide a password')),
         ('tenant_name', dict(
-             remove='OS_TENANT_NAME',
-             err='You must provide a tenant_id')),
+            remove='OS_TENANT_NAME',
+            err='You must provide a tenant_id')),
         ('auth_url', dict(
-             remove='OS_AUTH_URL',
-             err='You must provide an auth url')),
+            remove='OS_AUTH_URL',
+            err='You must provide an auth url')),
     ]
 
     def test_missing_auth(self):
 
         fake_env = {
-           'OS_USERNAME': 'username',
-           'OS_PASSWORD': 'password',
-           'OS_TENANT_NAME': 'tenant_name',
-           'OS_AUTH_URL': 'http://no.where',
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
         }
         fake_env[self.remove] = None
         self.set_fake_env(fake_env)

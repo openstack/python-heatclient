@@ -6,11 +6,11 @@ from keystoneclient.v2_0 import client as ksclient
 
 def script_keystone_client():
     ksclient.Client(auth_url='http://no.where',
-                insecure=False,
-                password='password',
-                tenant_id='',
-                tenant_name='tenant_name',
-                username='username').AndReturn(FakeKeystone('abcd1234'))
+                    insecure=False,
+                    password='password',
+                    tenant_id='',
+                    tenant_name='tenant_name',
+                    username='username').AndReturn(FakeKeystone('abcd1234'))
 
 
 def script_heat_list():
@@ -27,11 +27,12 @@ def script_heat_list():
         }]
     }
     resp = FakeHTTPResponse(200,
-        'success, yo',
-        {'content-type': 'application/json'},
-        json.dumps(resp_dict))
+                            'success, you',
+                            {'content-type': 'application/json'},
+                            json.dumps(resp_dict))
     v1client.Client.json_request('GET',
-        '/stacks?limit=20').AndReturn((resp, resp_dict))
+                                 '/stacks?limit=20').AndReturn((resp,
+                                                                resp_dict))
 
 
 def fake_headers():

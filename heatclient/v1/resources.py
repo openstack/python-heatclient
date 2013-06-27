@@ -51,8 +51,8 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         resp, body = self.api.json_request('GET',
-            '/stacks/%s/resources/%s' %
-            (stack_id, resource_name))
+                                           '/stacks/%s/resources/%s' %
+                                           (stack_id, resource_name))
 
         return Resource(self, body['resource'])
 
@@ -64,6 +64,6 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         resp, body = self.api.json_request('GET',
-            '/stacks/%s/resources/%s/metadata' %
-            (stack_id, resource_name))
+                                           '/stacks/%s/resources/%s/metadata' %
+                                           (stack_id, resource_name))
         return body['metadata']

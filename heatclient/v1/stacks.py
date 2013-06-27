@@ -126,6 +126,6 @@ class StackChildManager(base.Manager):
         if stack_id.find('/') > 0:
             return stack_id
         resp, body = self.api.json_request('GET',
-                '/stacks/%s' % stack_id)
+                                           '/stacks/%s' % stack_id)
         stack = body['stack']
         return '%s/%s' % (stack['stack_name'], stack['id'])

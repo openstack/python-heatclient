@@ -121,14 +121,14 @@ def do_stack_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-    help='Name or ID of stack to describe.')
+           help='Name or ID of stack to describe.')
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''
     do_stack_show(hc, args)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-    help='Name or ID of stack to describe.')
+           help='Name or ID of stack to describe.')
 def do_stack_show(hc, args):
     '''Describe the stack.'''
     fields = {'stack_id': args.id}
@@ -297,10 +297,9 @@ def do_resource_show(hc, args):
         resource = hc.resources.get(**fields)
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack or resource not found: %s %s' %
-            (args.id, args.resource))
+                               (args.id, args.resource))
     else:
         link_format = lambda links: '\n'.join([l['href'] for l in links])
-        json_format = lambda js: json.dumps(js, indent=2)
         formatters = {
             'links': link_format
         }
@@ -319,7 +318,7 @@ def do_resource_metadata(hc, args):
         metadata = hc.resources.metadata(**fields)
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack or resource not found: %s %s' %
-            (args.id, args.resource))
+                               (args.id, args.resource))
     else:
         print json.dumps(metadata, indent=2)
 
