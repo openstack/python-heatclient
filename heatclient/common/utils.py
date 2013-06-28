@@ -47,6 +47,10 @@ def text_wrap_formatter(d):
     return '\n'.join(textwrap.wrap(d or '', 55))
 
 
+def newline_list_formatter(r):
+    return '\n'.join(r or [])
+
+
 def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
     field_labels = field_labels or fields
     pt = prettytable.PrettyTable([f for f in field_labels],
