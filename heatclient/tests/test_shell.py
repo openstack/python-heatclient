@@ -3,11 +3,14 @@ import httplib2
 import os
 import re
 import sys
+import urllib2
+import yaml
 
 import fixtures
 import mox
 import testscenarios
 import testtools
+
 try:
     import json
 except ImportError:
@@ -18,6 +21,8 @@ from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
 from heatclient.v1 import client as v1client
+from heatclient.v1 import shell as v1shell
+
 
 load_tests = testscenarios.load_tests_apply_scenarios
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -406,3 +411,77 @@ class ShellTest(TestCase):
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
+
+
+class ShellEnvironmentTest(TestCase):
+
+    def setUp(self):
+        super(ShellEnvironmentTest, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def collect_links(self, env, content, url, map_name):
+        jenv = yaml.safe_load(env)
+        fields = {'files': {}}
+        self.m.StubOutWithMock(urllib2, 'urlopen')
+        urllib2.urlopen(url).AndReturn(cStringIO.StringIO(content))
+        self.m.ReplayAll()
+
+        v1shell._get_file_contents(jenv['resource_registry'],
+                                   fields)
+        self.assertEqual(fields['files'][map_name], content)
+
+    def test_global_files(self):
+        a = "A's contents."
+        url = 'file:///home/b/a.yaml'
+        env = '''
+        resource_registry:
+          "OS::Thingy": "%s"
+        ''' % url
+        self.collect_links(env, a, url, url)
+
+    def test_nested_files(self):
+        a = "A's contents."
+        url = 'file:///home/b/a.yaml'
+        env = '''
+        resource_registry:
+          resources:
+            freddy:
+              "OS::Thingy": "%s"
+        ''' % url
+        self.collect_links(env, a, url, url)
+
+    def test_http_url(self):
+        a = "A's contents."
+        url = 'http://no.where/container/a.yaml'
+        env = '''
+        resource_registry:
+          "OS::Thingy": "%s"
+        ''' % url
+        self.collect_links(env, a, url, url)
+
+    def test_with_base_url(self):
+        a = "A's contents."
+        url = 'ftp://no.where/container/a.yaml'
+        env = '''
+        resource_registry:
+          base_url: "ftp://no.where/container/"
+          resources:
+            server_for_me:
+              "OS::Thingy": a.yaml
+        '''
+        self.collect_links(env, a, url, 'a.yaml')
+
+    def test_unsupported_protocol(self):
+        env = '''
+        resource_registry:
+          "OS::Thingy": "sftp://no.where/dev/null/a.yaml"
+        '''
+        jenv = yaml.safe_load(env)
+        fields = {'files': {}}
+        self.assertRaises(exc.CommandError,
+                          v1shell._get_file_contents,
+                          jenv['resource_registry'],
+                          fields)

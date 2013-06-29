@@ -15,6 +15,8 @@
 
 import json
 import textwrap
+import urllib2
+import yaml
 
 from heatclient.common import utils
 import heatclient.exc as exc
@@ -40,6 +42,52 @@ def _set_template_fields(hc, args, fields):
         raise exc.CommandError('Need to specify exactly one of '
                                '--template-file, --template-url '
                                'or --template-object')
+
+
+def _get_file_contents(resource_registry, fields, base_url=''):
+    base_url = resource_registry.get('base_url', base_url)
+    for key, value in iter(resource_registry.items()):
+        if key == 'base_url':
+            continue
+
+        if isinstance(value, dict):
+            _get_file_contents(value, fields, base_url)
+            continue
+
+        facade = key
+        provider = value
+        if '::' in provider:
+            # Built in providers like: "X::Compute::Server"
+            # don't need downloading.
+            continue
+
+        str_url = base_url + provider
+        name = str_url[len(base_url):]
+        try:
+            fields['files'][name] = urllib2.urlopen(str_url).read()
+        except urllib2.URLError:
+            raise exc.CommandError('Could not fetch %s from the environment'
+                                   % str_url)
+        resource_registry[facade] = name
+
+
+def _process_environment_and_files(hc, args, fields):
+    """go through the env/resource_registry
+    look for base_url, urls and file
+    get them all and put them in the files section
+    modify the environment to just include the relative path as a name
+    """
+    if not args.environment_file:
+        return
+
+    raw_env = open(args.environment_file).read()
+    env = yaml.safe_load(raw_env)
+    fields['environment'] = env
+    fields['files'] = {}
+
+    rr = env.get('resource_registry')
+    if rr:
+        _get_file_contents(rr, fields)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -94,9 +142,7 @@ def do_stack_create(hc, args):
               'disable_rollback': not(args.enable_rollback),
               'parameters': parameters}
     _set_template_fields(hc, args, fields)
-
-    if args.environment_file:
-        fields['environment'] = open(args.environment_file).read()
+    _process_environment_and_files(hc, args, fields)
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -185,9 +231,7 @@ def do_stack_update(hc, args):
     fields = {'stack_id': args.id,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
-
-    if args.environment_file:
-        fields['environment'] = open(args.environment_file).read()
+    _process_environment_and_files(hc, args, fields)
 
     hc.stacks.update(**fields)
     do_list(hc)
@@ -253,9 +297,7 @@ def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
-
-    if args.environment_file:
-        fields['environment'] = open(args.environment_file).read()
+    _process_environment_and_files(hc, args, fields)
 
     validation = hc.stacks.validate(**fields)
     print json.dumps(validation, indent=2)
