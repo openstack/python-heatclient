@@ -364,6 +364,7 @@ def do_resource_show(hc, args):
     else:
         formatters = {
             'links': utils.link_formatter,
+            'required_by': utils.newline_list_formatter
         }
         utils.print_dict(resource.to_dict(), formatters=formatters)
 

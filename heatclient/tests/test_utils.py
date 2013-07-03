@@ -80,3 +80,9 @@ class shellTest(testtools.TestCase):
             utils.text_wrap_formatter(
                 ('one two three four five six seven '
                  'eight nine ten eleven twelve')))
+
+    def test_newline_list_formatter(self):
+        self.assertEqual('', utils.newline_list_formatter(None))
+        self.assertEqual('', utils.newline_list_formatter([]))
+        self.assertEqual('one\ntwo',
+                         utils.newline_list_formatter(['one', 'two']))
