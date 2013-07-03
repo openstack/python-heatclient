@@ -14,7 +14,6 @@
 #    under the License.
 
 import json
-import textwrap
 import urllib2
 import yaml
 
@@ -208,16 +207,13 @@ def do_stack_show(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        text_wrap = lambda d: '\n'.join(textwrap.wrap(d, 55))
-        link_format = lambda links: '\n'.join([l['href'] for l in links])
-        json_format = lambda js: json.dumps(js, indent=2)
         formatters = {
-            'description': text_wrap,
-            'template_description': text_wrap,
-            'stack_status_reason': text_wrap,
-            'parameters': json_format,
-            'outputs': json_format,
-            'links': link_format
+            'description': utils.text_wrap_formatter,
+            'template_description': utils.text_wrap_formatter,
+            'stack_status_reason': utils.text_wrap_formatter,
+            'parameters': utils.json_formatter,
+            'outputs': utils.json_formatter,
+            'links': utils.link_formatter
         }
         utils.print_dict(stack.to_dict(), formatters=formatters)
 
@@ -366,9 +362,8 @@ def do_resource_show(hc, args):
         raise exc.CommandError('Stack or resource not found: %s %s' %
                                (args.id, args.resource))
     else:
-        link_format = lambda links: '\n'.join([l['href'] for l in links])
         formatters = {
-            'links': link_format
+            'links': utils.link_formatter,
         }
         utils.print_dict(resource.to_dict(), formatters=formatters)
 
@@ -435,10 +430,8 @@ def do_event_show(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        link_format = lambda links: '\n'.join([l['href'] for l in links])
-        json_format = lambda js: json.dumps(js, indent=2)
         formatters = {
-            'links': link_format,
-            'resource_properties': json_format
+            'links': utils.link_formatter,
+            'resource_properties': utils.json_formatter
         }
         utils.print_dict(event.to_dict(), formatters=formatters)

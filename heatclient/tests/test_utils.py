@@ -49,3 +49,34 @@ class shellTest(testtools.TestCase):
         params = 'KeyName=heat_key;UpstreamDNS8.8.8.8'
         self.assertRaises(exc.MalformedRequestBody,
                           utils.format_parameters, params)
+
+    def test_link_formatter(self):
+        self.assertEqual('', utils.link_formatter(None))
+        self.assertEqual('', utils.link_formatter([]))
+        self.assertEqual(
+            'http://foo.example.com\nhttp://bar.example.com',
+            utils.link_formatter([
+                {'href': 'http://foo.example.com'},
+                {'href': 'http://bar.example.com'}]))
+        self.assertEqual(
+            '\n',
+            utils.link_formatter([
+                {'hrf': 'http://foo.example.com'},
+                {}]))
+
+    def test_json_formatter(self):
+        self.assertEqual('null', utils.json_formatter(None))
+        self.assertEqual('{}', utils.json_formatter({}))
+        self.assertEqual('{\n  "foo": "bar"\n}',
+                         utils.json_formatter({"foo": "bar"}))
+
+    def test_text_wrap_formatter(self):
+        self.assertEqual('', utils.text_wrap_formatter(None))
+        self.assertEqual('', utils.text_wrap_formatter(''))
+        self.assertEqual('one two three',
+                         utils.text_wrap_formatter('one two three'))
+        self.assertEqual(
+            'one two three four five six seven eight nine ten eleven\ntwelve',
+            utils.text_wrap_formatter(
+                ('one two three four five six seven '
+                 'eight nine ten eleven twelve')))

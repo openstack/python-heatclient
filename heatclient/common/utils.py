@@ -13,11 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import os
+import prettytable
 import sys
+import textwrap
 import uuid
 
-import prettytable
 
 from heatclient import exc
 from heatclient.openstack.common import importutils
@@ -33,8 +35,16 @@ def arg(*args, **kwargs):
     return _decorator
 
 
-def pretty_choice_list(l):
-    return ', '.join("'%s'" % i for i in l)
+def link_formatter(links):
+    return '\n'.join([l.get('href', '') for l in links or []])
+
+
+def json_formatter(js):
+    return json.dumps(js, indent=2)
+
+
+def text_wrap_formatter(d):
+    return '\n'.join(textwrap.wrap(d or '', 55))
 
 
 def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
