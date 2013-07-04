@@ -169,8 +169,7 @@ class HeatShell(object):
         parser.add_argument('-t', '--token-only',
                             default=bool(False),
                             action='store_true',
-                            help='Only send a token for auth, do not send'
-                            ' username and password as well.')
+                            help='DEPRECATED! Has no effect')
 
         return parser
 
@@ -303,14 +302,12 @@ class HeatShell(object):
                 'ca_file': args.ca_file,
                 'cert_file': args.cert_file,
                 'key_file': args.key_file,
-                'username': args.os_username
+                'username': args.os_username,
+                'password': args.os_password
             }
 
             if not endpoint:
                 endpoint = self._get_endpoint(_ksclient, **kwargs)
-
-        if not args.token_only:
-            kwargs['password'] = args.os_password
 
         client = heatclient.Client(api_version, endpoint, **kwargs)
 

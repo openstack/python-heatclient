@@ -133,10 +133,6 @@ class HTTPClient(object):
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
         if self.auth_url:
             kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
-        if self.username:
-            kwargs['headers'].setdefault('X-Auth-User', self.username)
-        if self.password:
-            kwargs['headers'].setdefault('X-Auth-Key', self.password)
 
         self.log_curl_request(method, url, kwargs)
         conn = self.get_connection()
@@ -177,6 +173,12 @@ class HTTPClient(object):
             raise exc.from_response(resp, body_str)
 
         return resp, body_str
+
+    def credentials_headers(self):
+        return {
+            'X-Auth-User': self.username,
+            'X-Auth-Key': self.password
+        }
 
     def json_request(self, method, url, **kwargs):
         kwargs.setdefault('headers', {})
