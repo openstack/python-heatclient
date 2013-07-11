@@ -295,6 +295,8 @@ def do_template_show(hc, args):
            help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE>',
+           help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
