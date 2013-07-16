@@ -93,6 +93,53 @@ class EnvVarTest(TestCase):
         self.shell_error('list', self.err)
 
 
+class ShellParamValidationTest(TestCase):
+
+    scenarios = [
+        ('create', dict(
+            command='create ts -P "a!b"',
+            err='Malformed parameter')),
+        ('stack-create', dict(
+            command='stack-create ts -P "ab"',
+            err='Malformed parameter')),
+        ('update', dict(
+            command='update ts -P "a~b"',
+            err='Malformed parameter')),
+        ('stack-update', dict(
+            command='stack-update ts -P "a-b"',
+            err='Malformed parameter')),
+        ('validate', dict(
+            command='validate -P "a=b;c"',
+            err='Malformed parameter')),
+        ('template-validate', dict(
+            command='template-validate -P "a$b"',
+            err='Malformed parameter')),
+    ]
+
+    def setUp(self):
+        super(ShellParamValidationTest, self).setUp()
+        self.m = mox.Mox()
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_bad_parameters(self):
+        self.m.StubOutWithMock(ksclient, 'Client')
+        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        fakes.script_keystone_client()
+
+        self.m.ReplayAll()
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        cmd = '%s --template-file=%s ' % (self.command, template_file)
+        self.shell_error(cmd, self.err)
+
+
 class ShellValidationTest(TestCase):
 
     def setUp(self):

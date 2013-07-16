@@ -145,7 +145,9 @@ def format_parameters(params):
             try:
                 (n, v) = p.split(('='), 1)
             except ValueError:
-                raise exc.MalformedRequestBody()
+                msg = '%s(%s). %s.' % ('Malformed parameter', p,
+                                       'Use the key=value format')
+                raise exc.CommandError(msg)
 
             parameters[n] = v
     return parameters

@@ -47,7 +47,7 @@ class shellTest(testtools.TestCase):
 
     def test_format_parameter_bad_parameter(self):
         params = 'KeyName=heat_key;UpstreamDNS8.8.8.8'
-        self.assertRaises(exc.MalformedRequestBody,
+        self.assertRaises(exc.CommandError,
                           utils.format_parameters, params)
 
     def test_link_formatter(self):
