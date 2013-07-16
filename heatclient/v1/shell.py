@@ -282,7 +282,10 @@ def do_template_show(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        print json.dumps(template, indent=2)
+        if 'heat_template_version' in template:
+            print yaml.safe_dump(template, indent=2)
+        else:
+            print json.dumps(template, indent=2)
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',

@@ -304,6 +304,59 @@ class ShellTest(TestCase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    def test_template_show_cfn(self):
+        fakes.script_keystone_client()
+        template_data = open(os.path.join(TEST_VAR_DIR,
+                                          'minimal.template')).read()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            template_data)
+        resp_dict = json.loads(template_data)
+        v1client.Client.json_request(
+            'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        show_text = self.shell('template-show teststack')
+        required = [
+            '{',
+            '  "AWSTemplateFormatVersion": "2010-09-09",',
+            '  "Outputs": {},',
+            '  "Resources": {},',
+            '  "Parameters": {}',
+            '}'
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
+    def test_template_show_hot(self):
+        fakes.script_keystone_client()
+        resp_dict = {"heat_template_version": "2013-05-23",
+                     "parameters": {},
+                     "resources": {},
+                     "outputs": {}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            json.dumps(resp_dict))
+        v1client.Client.json_request(
+            'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        show_text = self.shell('template-show teststack')
+        required = [
+            "heat_template_version: '2013-05-23'",
+            "outputs: {}",
+            "parameters: {}",
+            "resources: {}"
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
     def test_create(self):
         fakes.script_keystone_client()
         resp = fakes.FakeHTTPResponse(
