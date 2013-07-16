@@ -312,7 +312,9 @@ class ShellTest(TestCase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
@@ -344,7 +346,9 @@ class ShellTest(TestCase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
@@ -381,7 +385,9 @@ class ShellTest(TestCase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()).AndReturn((resp, None))
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
 
         fakes.script_heat_list()
 
@@ -412,7 +418,9 @@ class ShellTest(TestCase):
             'The request is accepted for processing.')
         v1client.Client.json_request(
             'PUT', '/stacks/teststack2/2',
-            body=mox.IgnoreArg()).AndReturn((resp, None))
+            body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
         fakes.script_heat_list()
 
         self.m.ReplayAll()
