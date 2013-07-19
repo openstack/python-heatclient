@@ -131,6 +131,8 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
+        else:
+            kwargs['headers'].update(self.credentials_headers())
         if self.auth_url:
             kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
 
@@ -175,10 +177,12 @@ class HTTPClient(object):
         return resp, body_str
 
     def credentials_headers(self):
-        return {
-            'X-Auth-User': self.username,
-            'X-Auth-Key': self.password
-        }
+        creds = {}
+        if self.username:
+            creds['X-Auth-User'] = self.username
+        if self.password:
+            creds['X-Auth-Key'] = self.password
+        return creds
 
     def json_request(self, method, url, **kwargs):
         kwargs.setdefault('headers', {})
