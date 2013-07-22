@@ -236,11 +236,16 @@ class HeatShell(object):
 
             httplib2.debuglevel = 1
 
+    def _setup_verbose(self, verbose):
+        if verbose:
+            exc.verbose = 1
+
     def main(self, argv):
         # Parse args once to find version
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
         self._setup_debugging(options.debug)
+        self._setup_verbose(options.verbose)
 
         # build available subcommands based on version
         api_version = options.heat_api_version

@@ -1,5 +1,6 @@
 import json
 
+from heatclient import exc
 from heatclient.v1 import client as v1client
 from keystoneclient.v2_0 import client as ksclient
 
@@ -33,6 +34,34 @@ def script_heat_list():
     v1client.Client.json_request('GET',
                                  '/stacks?limit=20').AndReturn((resp,
                                                                 resp_dict))
+
+
+def script_heat_normal_error():
+    resp_dict = {
+        "explanation": "The resource could not be found.",
+        "code": 404,
+        "error": {
+            "message": "The Stack (bad) could not be found.",
+            "type": "StackNotFound",
+            "traceback": "",
+        },
+        "title": "Not Found"
+    }
+    resp = FakeHTTPResponse(400,
+                            'The resource could not be found',
+                            {'content-type': 'application/json'},
+                            json.dumps(resp_dict))
+    v1client.Client.json_request('GET', '/stacks/bad').AndRaise(
+        exc.from_response(resp, json.dumps(resp_dict)))
+
+
+def script_heat_error(resp_string):
+    resp = FakeHTTPResponse(400,
+                            'The resource could not be found',
+                            {'content-type': 'application/json'},
+                            resp_string)
+    v1client.Client.json_request('GET', '/stacks/bad').AndRaise(
+        exc.from_response(resp, resp_string))
 
 
 def fake_headers():
