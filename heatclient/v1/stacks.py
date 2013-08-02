@@ -33,6 +33,18 @@ class Stack(base.Resource):
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
 
+    @property
+    def action(self):
+        s = self.stack_status
+        # Return everything before the first underscore
+        return s[:s.index('_')]
+
+    @property
+    def status(self):
+        s = self.stack_status
+        # Return everything after the first underscore
+        return s[s.index('_') + 1:]
+
 
 class StackManager(base.Manager):
     resource_class = Stack
