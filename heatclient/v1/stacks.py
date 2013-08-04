@@ -28,7 +28,7 @@ class Stack(base.Resource):
         self.manager.update(self, **fields)
 
     def delete(self):
-        return self.manager.delete(self)
+        return self.manager.delete(self.id)
 
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)

@@ -15,6 +15,7 @@
 
 from heatclient.v1.stacks import Stack
 
+from mock import MagicMock
 import testscenarios
 from testscenarios.scenarios import multiply_scenarios
 import testtools
@@ -43,3 +44,12 @@ class StackStatusActionTest(testtools.TestCase):
         stack = Stack(None, {'stack_status': stack_status})
         self.assertEqual(self.action, stack.action)
         self.assertEqual(self.status, stack.status)
+
+
+class StackOperationsTest(testtools.TestCase):
+
+    def test_delete_stack(self):
+        manager = MagicMock()
+        stack = Stack(manager, {'id': 'abcd1234'})
+        stack.delete()
+        manager.delete.assert_called_once_with('abcd1234')
