@@ -33,6 +33,16 @@ class Stack(base.Resource):
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
 
+    def get(self):
+        # set_loaded() first ... so if we have to bail, we know we tried.
+        self.set_loaded(True)
+        if not hasattr(self.manager, 'get'):
+            return
+
+        new = self.manager.get('%s/%s' % (self.stack_name, self.id))
+        if new:
+            self._add_details(new._info)
+
     @property
     def action(self):
         s = self.stack_status

@@ -53,3 +53,9 @@ class StackOperationsTest(testtools.TestCase):
         stack = Stack(manager, {'id': 'abcd1234'})
         stack.delete()
         manager.delete.assert_called_once_with('abcd1234')
+
+    def test_get_stack(self):
+        manager = MagicMock()
+        stack = Stack(manager, {'id': 'abcd1234', 'stack_name': 'the_stack'})
+        stack.get()
+        manager.get.assert_called_once_with('the_stack/abcd1234')
