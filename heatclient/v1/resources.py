@@ -67,3 +67,9 @@ class ResourceManager(stacks.StackChildManager):
                                            '/stacks/%s/resources/%s/metadata' %
                                            (stack_id, resource_name))
         return body['metadata']
+
+    def generate_template(self, resource_name):
+        resp, body = self.api.json_request('GET',
+                                           '/resource_types/%s/template' %
+                                           resource_name)
+        return body

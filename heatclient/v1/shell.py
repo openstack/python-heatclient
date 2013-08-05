@@ -368,6 +368,24 @@ def do_resource_show(hc, args):
         utils.print_dict(resource.to_dict(), formatters=formatters)
 
 
+@utils.arg('resource', metavar='<RESOURCE>',
+           help='Name of the resource to generate a template for.')
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help="The template output format. %s" % utils.supported_formats)
+def do_resource_template(hc, args):
+    '''Generate a template based on a resource.'''
+    fields = {'resource_name': args.resource}
+    try:
+        template = hc.resources.generate_template(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Resource %s not found.' % args.resource)
+    else:
+        if args.format:
+            print utils.format_output(template, format=args.format)
+        else:
+            print utils.format_output(template)
+
+
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the resource metadata for.')
 @utils.arg('resource', metavar='<RESOURCE>',
