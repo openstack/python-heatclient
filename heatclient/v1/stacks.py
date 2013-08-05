@@ -17,8 +17,6 @@ import urllib
 
 from heatclient.common import base
 
-DEFAULT_PAGE_SIZE = 20
-
 
 class Stack(base.Resource):
     def __repr__(self):
@@ -86,10 +84,12 @@ class StackManager(base.Manager):
             if (page_size and len(stacks) == page_size and
                     (absolute_limit is None or 0 < seen < absolute_limit)):
                 qp['marker'] = stack.id
-                for image in paginate(qp, seen):
-                    yield image
+                for stack in paginate(qp, seen):
+                    yield stack
 
-        params = {'limit': kwargs.get('page_size', DEFAULT_PAGE_SIZE)}
+        params = {}
+        if 'page_size' in kwargs:
+            params['limit'] = kwargs['page_size']
 
         if 'marker' in kwargs:
             params['marker'] = kwargs['marker']

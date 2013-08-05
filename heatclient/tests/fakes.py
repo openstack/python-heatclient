@@ -45,8 +45,7 @@ def script_heat_list():
                             {'content-type': 'application/json'},
                             json.dumps(resp_dict))
     v1client.Client.json_request('GET',
-                                 '/stacks?limit=20').AndReturn((resp,
-                                                                resp_dict))
+                                 '/stacks?').AndReturn((resp, resp_dict))
 
 
 def script_heat_normal_error():

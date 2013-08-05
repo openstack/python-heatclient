@@ -166,7 +166,7 @@ class ShellValidationTest(TestCase):
         self.m.StubOutWithMock(v1client.Client, 'json_request')
         fakes.script_keystone_client()
         v1client.Client.json_request(
-            'GET', '/stacks?limit=20').AndRaise(exc.Unauthorized)
+            'GET', '/stacks?').AndRaise(exc.Unauthorized)
 
         self.m.ReplayAll()
         fake_env = {
