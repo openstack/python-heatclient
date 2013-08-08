@@ -51,7 +51,7 @@ def newline_list_formatter(r):
     return '\n'.join(r or [])
 
 
-def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
+def print_list(objs, fields, field_labels=None, formatters={}, sortby=None):
     field_labels = field_labels or fields
     pt = prettytable.PrettyTable([f for f in field_labels],
                                  caching=False, print_empty=False)
@@ -66,7 +66,10 @@ def print_list(objs, fields, field_labels=None, formatters={}, sortby=0):
                 data = getattr(o, field, None) or ''
                 row.append(data)
         pt.add_row(row)
-    print pt.get_string(sortby=field_labels[sortby])
+    if sortby is None:
+        print pt.get_string()
+    else:
+        print pt.get_string(sortby=field_labels[sortby])
 
 
 def print_dict(d, formatters={}):

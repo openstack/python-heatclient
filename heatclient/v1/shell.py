@@ -400,7 +400,7 @@ def do_event_list(hc, args):
     else:
         fields = ['logical_resource_id', 'id', 'resource_status_reason',
                   'resource_status', 'event_time']
-        utils.print_list(events, fields, sortby=4)
+        utils.print_list(events, fields)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
