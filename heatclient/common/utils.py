@@ -19,10 +19,15 @@ import prettytable
 import sys
 import textwrap
 import uuid
-
+import yaml
 
 from heatclient import exc
 from heatclient.openstack.common import importutils
+
+supported_formats = {
+    "json": lambda x: json.dumps(x, indent=2),
+    "yaml": yaml.safe_dump
+}
 
 
 # Decorator for cli-args
@@ -154,3 +159,13 @@ def format_parameters(params):
 
             parameters[n] = v
     return parameters
+
+
+def format_output(output, format='yaml'):
+    """Format the supplied dict as specified."""
+    output_format = format.lower()
+    try:
+        return supported_formats[output_format](output)
+    except KeyError:
+        raise exc.HTTPUnsupported("The format(%s) is unsupported."
+                                  % output_format)

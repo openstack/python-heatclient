@@ -138,6 +138,10 @@ class HTTPOverLimit(OverLimit):
     pass
 
 
+class HTTPUnsupported(HTTPException):
+    code = 415
+
+
 class HTTPInternalServerError(HTTPException):
     code = 500
 
