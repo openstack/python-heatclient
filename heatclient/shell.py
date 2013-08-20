@@ -321,10 +321,7 @@ class HeatShell(object):
 
         client = heatclient.Client(api_version, endpoint, **kwargs)
 
-        try:
-            args.func(client, args)
-        except exc.Unauthorized:
-            raise exc.CommandError("Invalid OpenStack Identity credentials.")
+        args.func(client, args)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
