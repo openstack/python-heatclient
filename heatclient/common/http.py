@@ -53,6 +53,7 @@ class HTTPClient(object):
         self.auth_token = kwargs.get('token')
         self.username = kwargs.get('username')
         self.password = kwargs.get('password')
+        self.region_name = kwargs.get('region_name')
         self.connection_params = self.get_connection_params(endpoint, **kwargs)
 
     @staticmethod
@@ -135,6 +136,8 @@ class HTTPClient(object):
             kwargs['headers'].update(self.credentials_headers())
         if self.auth_url:
             kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
+        if self.region_name:
+            kwargs['headers'].setdefault('X-Region-Name', self.region_name)
 
         self.log_curl_request(method, url, kwargs)
         conn = self.get_connection()

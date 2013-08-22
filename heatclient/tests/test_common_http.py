@@ -100,6 +100,30 @@ class HttpClientTest(testtools.TestCase):
         self.assertEqual(resp.status, 200)
         self.m.VerifyAll()
 
+    def test_region_name(self):
+        # Record a 200
+        fake200 = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/octet-stream'},
+            '')
+
+        # Specify region name
+        mock_conn = http.httplib.HTTPConnection('example.com', 8004,
+                                                timeout=600.0)
+        mock_conn.request('GET', '/',
+                          headers={'Content-Type': 'application/octet-stream',
+                                   'X-Region-Name': 'RegionOne',
+                                   'User-Agent': 'python-heatclient'})
+        mock_conn.getresponse().AndReturn(fake200)
+
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004')
+        client.region_name = 'RegionOne'
+        resp, body = client.raw_request('GET', '')
+        self.assertEqual(resp.status, 200)
+        self.m.VerifyAll()
+
     def test_http_json_request(self):
         # Record a 200
         mock_conn = http.httplib.HTTPConnection('example.com', 8004,
