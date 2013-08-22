@@ -224,6 +224,12 @@ class HeatShell(object):
 
     def _get_endpoint(self, client, **kwargs):
         """Get an endpoint using the provided keystone client."""
+        if kwargs.get('region_name'):
+            return client.service_catalog.url_for(
+                service_type=kwargs.get('service_type') or 'orchestration',
+                attr='region',
+                filter_value=kwargs.get('region_name'),
+                endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
         return client.service_catalog.url_for(
             service_type=kwargs.get('service_type') or 'orchestration',
             endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
@@ -315,6 +321,9 @@ class HeatShell(object):
                 'username': args.os_username,
                 'password': args.os_password
             }
+
+            if args.os_region_name:
+                kwargs['region_name'] = args.os_region_name
 
             if not endpoint:
                 endpoint = self._get_endpoint(_ksclient, **kwargs)
