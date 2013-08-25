@@ -65,7 +65,7 @@ class TestCase(testtools.TestCase):
             sys.stderr = cStringIO.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
-        except exc.CommandError as e:
+        except Exception as e:
             self.assertRegexpMatches(e.__str__(), error_match)
         else:
             self.fail('Expected error matching: %s' % error_match)
@@ -165,8 +165,9 @@ class ShellValidationTest(TestCase):
         self.m.StubOutWithMock(ksclient, 'Client')
         self.m.StubOutWithMock(v1client.Client, 'json_request')
         fakes.script_keystone_client()
+        failed_msg = 'Unable to authenticate user with credentials provided'
         v1client.Client.json_request(
-            'GET', '/stacks?').AndRaise(exc.Unauthorized)
+            'GET', '/stacks?').AndRaise(exc.Unauthorized(failed_msg))
 
         self.m.ReplayAll()
         fake_env = {
@@ -176,7 +177,7 @@ class ShellValidationTest(TestCase):
             'OS_AUTH_URL': 'http://no.where',
         }
         self.set_fake_env(fake_env)
-        self.shell_error('list', 'Invalid OpenStack Identity credentials.')
+        self.shell_error('list', failed_msg)
 
     def test_create_validation(self):
         self.m.StubOutWithMock(ksclient, 'Client')
