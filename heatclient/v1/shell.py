@@ -333,8 +333,13 @@ def do_resource_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        fields = ['resource_name', 'resource_type',
-                  'resource_status', 'updated_time']
+        fields = ['resource_type', 'resource_status', 'updated_time']
+        if len(resources) >= 1:
+            if hasattr(resources[0], 'resource_name'):
+                fields.insert(0, 'resource_name')
+            else:
+                fields.insert(0, 'logical_resource_id')
+
         utils.print_list(resources, fields, sortby=3)
 
 
@@ -416,8 +421,13 @@ def do_event_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        fields = ['resource_name', 'id', 'resource_status_reason',
+        fields = ['id', 'resource_status_reason',
                   'resource_status', 'event_time']
+        if len(events) >= 1:
+            if hasattr(events[0], 'resource_name'):
+                fields.insert(0, 'resource_name')
+            else:
+                fields.insert(0, 'logical_resource_id')
         utils.print_list(events, fields)
 
 
