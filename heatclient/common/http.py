@@ -148,11 +148,13 @@ class HTTPClient(object):
             conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
-            message = "Error finding address for %(url)s: %(e)s" % locals()
+            message = ("Error finding address for %(url)s: %(e)s" %
+                       {'url': url, 'e': e})
             raise exc.InvalidEndpoint(message=message)
         except (socket.error, socket.timeout) as e:
             endpoint = self.endpoint
-            message = "Error communicating with %(endpoint)s %(e)s" % locals()
+            message = ("Error communicating with %(endpoint)s %(e)s" %
+                       {'endpoint': endpoint, 'e': e})
             raise exc.CommunicationError(message=message)
 
         body_iter = ResponseBodyIterator(resp)
