@@ -63,19 +63,32 @@ class StackStatusActionTest(testtools.TestCase):
         self.assertEqual(self.status, stack.status)
 
 
+class StackIdentifierTest(testtools.TestCase):
+
+    def test_stack_identifier(self):
+        stack = mock_stack(None, 'the_stack', 'abcd1234')
+        self.assertEqual('the_stack/abcd1234', stack.identifier)
+
+
 class StackOperationsTest(testtools.TestCase):
 
     def test_delete_stack(self):
         manager = MagicMock()
-        stack = mock_stack(manager, None, 'abcd1234')
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.delete()
-        manager.delete.assert_called_once_with('abcd1234')
+        manager.delete.assert_called_once_with('the_stack/abcd1234')
 
     def test_get_stack(self):
         manager = MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.get()
         manager.get.assert_called_once_with('the_stack/abcd1234')
+
+    def test_update_stack(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.update()
+        manager.update.assert_called_once_with('the_stack/abcd1234')
 
 
 class StackManagerNoPaginationTest(testtools.TestCase):
