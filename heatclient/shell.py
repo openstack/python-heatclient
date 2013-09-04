@@ -21,7 +21,8 @@ import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
-from heatclient import client as heatclient
+import heatclient
+from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
 
@@ -44,6 +45,11 @@ class HeatShell(object):
         parser.add_argument('-h', '--help',
                             action='store_true',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--version',
+                            action='version',
+                            version=heatclient.__version__,
+                            help="Shows the client version and exits")
 
         parser.add_argument('-d', '--debug',
                             default=bool(utils.env('HEATCLIENT_DEBUG')),
@@ -328,7 +334,7 @@ class HeatShell(object):
             if not endpoint:
                 endpoint = self._get_endpoint(_ksclient, **kwargs)
 
-        client = heatclient.Client(api_version, endpoint, **kwargs)
+        client = heat_client.Client(api_version, endpoint, **kwargs)
 
         args.func(client, args)
 
