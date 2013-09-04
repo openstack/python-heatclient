@@ -438,9 +438,9 @@ class ShellTest(TestCase):
         show_text = self.shell('template-show teststack')
         required = [
             '{',
-            '  "AWSTemplateFormatVersion": "2010-09-09",',
-            '  "Outputs": {},',
-            '  "Resources": {},',
+            '  "AWSTemplateFormatVersion": "2010-09-09"',
+            '  "Outputs": {}',
+            '  "Resources": {}',
             '  "Parameters": {}',
             '}'
         ]
