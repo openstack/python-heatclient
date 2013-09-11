@@ -23,10 +23,10 @@ class Stack(base.Resource):
         return "<Stack %s>" % self._info
 
     def update(self, **fields):
-        self.manager.update(self, **fields)
+        self.manager.update(self.identifier, **fields)
 
     def delete(self):
-        return self.manager.delete(self.id)
+        return self.manager.delete(self.identifier)
 
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
@@ -34,7 +34,7 @@ class Stack(base.Resource):
         if not hasattr(self.manager, 'get'):
             return
 
-        new = self.manager.get('%s/%s' % (self.stack_name, self.id))
+        new = self.manager.get(self.identifier)
         if new:
             self._add_details(new._info)
 
@@ -49,6 +49,10 @@ class Stack(base.Resource):
         s = self.stack_status
         # Return everything after the first underscore
         return s[s.index('_') + 1:]
+
+    @property
+    def identifier(self):
+        return '%s/%s' % (self.stack_name, self.id)
 
 
 class StackManager(base.Manager):
@@ -105,9 +109,8 @@ class StackManager(base.Manager):
         resp, body = self.api.json_request('POST', '/stacks',
                                            body=kwargs, headers=headers)
 
-    def update(self, **kwargs):
+    def update(self, stack_id, **kwargs):
         """Update a stack."""
-        stack_id = kwargs.pop('stack_id')
         headers = self.api.credentials_headers()
         resp, body = self.api.json_request('PUT', '/stacks/%s' % stack_id,
                                            body=kwargs, headers=headers)
