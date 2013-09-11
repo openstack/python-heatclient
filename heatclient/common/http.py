@@ -41,6 +41,8 @@ from heatclient import exc
 
 
 LOG = logging.getLogger(__name__)
+if not LOG.handlers:
+    LOG.addHandler(logging.StreamHandler())
 USER_AGENT = 'python-heatclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
