@@ -103,7 +103,10 @@ def _process_environment_and_files(hc, args, fields):
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help='Enable rollback on create/update failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack.')
+           help='Parameter values used to create the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
 def do_create(hc, args):
@@ -125,7 +128,10 @@ def do_create(hc, args):
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help='Enable rollback on create/update failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack.')
+           help='Parameter values used to create the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
@@ -221,7 +227,10 @@ def do_stack_show(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack.')
+           help='Parameter values used to create the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_update(hc, args):
@@ -238,7 +247,10 @@ def do_update(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack.')
+           help='Parameter values used to create the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
@@ -297,7 +309,10 @@ def do_template_show(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values to validate.')
+           help='Parameter values to validate. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
     do_template_validate(hc, args)
@@ -312,7 +327,10 @@ def do_validate(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values to validate.')
+           help='Parameter values to validate. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}

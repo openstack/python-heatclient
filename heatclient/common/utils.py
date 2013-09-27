@@ -147,17 +147,25 @@ def exit(msg=''):
 
 def format_parameters(params):
     '''Reformat parameters into dict of format expected by the API.'''
-    parameters = {}
-    if params:
-        for count, p in enumerate(params.split(';'), 1):
-            try:
-                (n, v) = p.split(('='), 1)
-            except ValueError:
-                msg = '%s(%s). %s.' % ('Malformed parameter', p,
-                                       'Use the key=value format')
-                raise exc.CommandError(msg)
 
-            parameters[n] = v
+    if not params:
+        return {}
+
+    # expect multiple invocations of --parameters but fall back
+    # to ; delimited if only one --parameters is specified
+    if len(params) == 1:
+        params = params[0].split(';')
+
+    parameters = {}
+    for p in params:
+        try:
+            (n, v) = p.split(('='), 1)
+        except ValueError:
+            msg = '%s(%s). %s.' % ('Malformed parameter', p,
+                                   'Use the key=value format')
+            raise exc.CommandError(msg)
+
+        parameters[n] = v
     return parameters
 
 

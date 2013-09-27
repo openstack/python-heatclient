@@ -23,10 +23,10 @@ class shellTest(testtools.TestCase):
         self.assertEqual({}, utils.format_parameters(None))
 
     def test_format_parameters(self):
-        p = utils.format_parameters(
+        p = utils.format_parameters([
             'InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
-            'LinuxDistribution=F17')
+            'LinuxDistribution=F17'])
         self.assertEqual({'InstanceType': 'm1.large',
                           'DBUsername': 'wp',
                           'DBPassword': 'verybadpassword',
@@ -35,20 +35,50 @@ class shellTest(testtools.TestCase):
                           }, p)
 
     def test_format_parameters_split(self):
-        p = utils.format_parameters(
+        p = utils.format_parameters([
             'KeyName=heat_key;'
             'DnsSecKey=hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/wwC7a4oAONQ/fDV5ct'
             'qrYBoLlKHhTfkyQEw9iVScKYZbbMtMNg==;'
-            'UpstreamDNS=8.8.8.8')
+            'UpstreamDNS=8.8.8.8'])
         self.assertEqual({'KeyName': 'heat_key',
                           'DnsSecKey': 'hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/ww'
                           'C7a4oAONQ/fDV5ctqrYBoLlKHhTfkyQEw9iVScKYZbbMtMNg==',
                           'UpstreamDNS': '8.8.8.8'}, p)
 
+    def test_format_parameters_multiple(self):
+        p = utils.format_parameters([
+            'KeyName=heat_key',
+            'DnsSecKey=hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/wwC7a4oAONQ/fDV5ct'
+            'qrYBoLlKHhTfkyQEw9iVScKYZbbMtMNg==',
+            'UpstreamDNS=8.8.8.8'])
+        self.assertEqual({'KeyName': 'heat_key',
+                          'DnsSecKey': 'hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/ww'
+                          'C7a4oAONQ/fDV5ctqrYBoLlKHhTfkyQEw9iVScKYZbbMtMNg==',
+                          'UpstreamDNS': '8.8.8.8'}, p)
+
+    def test_format_parameters_multiple_semicolon_values(self):
+        p = utils.format_parameters([
+            'KeyName=heat_key',
+            'DnsSecKey=hsgx1m31;PbaNF4WEcHlwj;IlCGgfOdoB;58/ww7a4oAO;NQ/fD==',
+            'UpstreamDNS=8.8.8.8'])
+        self.assertEqual({'KeyName': 'heat_key',
+                          'DnsSecKey': 'hsgx1m31;PbaNF4WEcHlwj;IlCGgfOdoB;58/'
+                                       'ww7a4oAO;NQ/fD==',
+                          'UpstreamDNS': '8.8.8.8'}, p)
+
     def test_format_parameter_bad_parameter(self):
-        params = 'KeyName=heat_key;UpstreamDNS8.8.8.8'
-        self.assertRaises(exc.CommandError,
-                          utils.format_parameters, params)
+        params = ['KeyName=heat_key;UpstreamDNS8.8.8.8']
+        ex = self.assertRaises(exc.CommandError,
+                               utils.format_parameters, params)
+        self.assertEqual('Malformed parameter(UpstreamDNS8.8.8.8). '
+                         'Use the key=value format.', str(ex))
+
+    def test_format_multiple_bad_parameter(self):
+        params = ['KeyName=heat_key', 'UpstreamDNS8.8.8.8']
+        ex = self.assertRaises(exc.CommandError,
+                               utils.format_parameters, params)
+        self.assertEqual('Malformed parameter(UpstreamDNS8.8.8.8). '
+                         'Use the key=value format.', str(ex))
 
     def test_link_formatter(self):
         self.assertEqual('', utils.link_formatter(None))
