@@ -21,6 +21,7 @@ import yaml
 
 import fixtures
 import mox
+import tempfile
 import testscenarios
 import testtools
 
@@ -646,16 +647,34 @@ class ShellEnvironmentTest(TestCase):
         self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
 
-    def collect_links(self, env, content, url, map_name):
+    def collect_links(self, env, content, url, env_base_url=''):
+
         jenv = yaml.safe_load(env)
         fields = {'files': {}}
-        self.m.StubOutWithMock(urllib2, 'urlopen')
-        urllib2.urlopen(url).AndReturn(cStringIO.StringIO(content))
-        self.m.ReplayAll()
+        if url:
+            self.m.StubOutWithMock(urllib2, 'urlopen')
+            urllib2.urlopen(url).AndReturn(cStringIO.StringIO(content))
+            self.m.ReplayAll()
 
-        v1shell._get_file_contents(jenv['resource_registry'],
-                                   fields)
-        self.assertEqual(fields['files'][map_name], content)
+        v1shell._resolve_environment_urls(fields, env_base_url, jenv)
+        if url:
+            self.assertEqual(fields['files'][url], content)
+
+    def test_prepare_environment_file(self):
+        with tempfile.NamedTemporaryFile() as env_file:
+            env = '''
+            resource_registry:
+              "OS::Thingy": "file:///home/b/a.yaml"
+            '''
+            env_file.write(env)
+            env_file.flush()
+            env_url, env_dict = v1shell._prepare_environment_file(
+                env_file.name)
+            self.assertEqual(
+                {'resource_registry': {'OS::Thingy': 'file:///home/b/a.yaml'}},
+                env_dict)
+            env_dir = os.path.dirname(env_file.name)
+            self.assertEqual(env_url, 'file://%s' % env_dir)
 
     def test_global_files(self):
         a = "A's contents."
@@ -664,7 +683,7 @@ class ShellEnvironmentTest(TestCase):
         resource_registry:
           "OS::Thingy": "%s"
         ''' % url
-        self.collect_links(env, a, url, url)
+        self.collect_links(env, a, url)
 
     def test_nested_files(self):
         a = "A's contents."
@@ -675,7 +694,7 @@ class ShellEnvironmentTest(TestCase):
             freddy:
               "OS::Thingy": "%s"
         ''' % url
-        self.collect_links(env, a, url, url)
+        self.collect_links(env, a, url)
 
     def test_http_url(self):
         a = "A's contents."
@@ -684,7 +703,7 @@ class ShellEnvironmentTest(TestCase):
         resource_registry:
           "OS::Thingy": "%s"
         ''' % url
-        self.collect_links(env, a, url, url)
+        self.collect_links(env, a, url)
 
     def test_with_base_url(self):
         a = "A's contents."
@@ -696,7 +715,29 @@ class ShellEnvironmentTest(TestCase):
             server_for_me:
               "OS::Thingy": a.yaml
         '''
-        self.collect_links(env, a, url, 'a.yaml')
+        self.collect_links(env, a, url)
+
+    def test_with_built_in_provider(self):
+        a = "A's contents."
+        env = '''
+        resource_registry:
+          resources:
+            server_for_me:
+              "OS::Thingy": OS::Compute::Server
+        '''
+        self.collect_links(env, a, None)
+
+    def test_with_env_file_base_url(self):
+        a = "A's contents."
+        url = 'file:///tmp/foo/a.yaml'
+        env = '''
+        resource_registry:
+          resources:
+            server_for_me:
+              "OS::Thingy": a.yaml
+        '''
+        env_base_url = 'file:///tmp/foo'
+        self.collect_links(env, a, url, env_base_url)
 
     def test_unsupported_protocol(self):
         env = '''

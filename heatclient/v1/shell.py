@@ -14,7 +14,10 @@
 #    under the License.
 
 import json
+import os
+import urllib
 import urllib2
+import urlparse
 import yaml
 
 from heatclient.common import utils
@@ -43,50 +46,63 @@ def _set_template_fields(hc, args, fields):
                                'or --template-object')
 
 
-def _get_file_contents(resource_registry, fields, base_url=''):
-    base_url = resource_registry.get('base_url', base_url)
+def _get_file_contents(resource_registry, fields, base_url='',
+                       ignore_if=None):
     for key, value in iter(resource_registry.items()):
-        if key == 'base_url':
+        if ignore_if and ignore_if(key, value):
             continue
 
-        if isinstance(value, dict):
-            _get_file_contents(value, fields, base_url)
-            continue
-
-        facade = key
-        provider = value
-        if '::' in provider:
-            # Built in providers like: "X::Compute::Server"
-            # don't need downloading.
-            continue
-
-        str_url = base_url + provider
-        name = str_url[len(base_url):]
+        if base_url != '' and not base_url.endswith('/'):
+            base_url = base_url + '/'
+        str_url = base_url + value
         try:
-            fields['files'][name] = urllib2.urlopen(str_url).read()
+            fields['files'][str_url] = urllib2.urlopen(str_url).read()
         except urllib2.URLError:
             raise exc.CommandError('Could not fetch %s from the environment'
                                    % str_url)
-        resource_registry[facade] = name
+        resource_registry[key] = str_url
 
 
-def _process_environment_and_files(hc, args, fields):
-    """go through the env/resource_registry
-    look for base_url, urls and file
-    get them all and put them in the files section
-    modify the environment to just include the relative path as a name
-    """
+def _prepare_environment_file(environment_file):
+    environment_dir = os.path.dirname(os.path.abspath(environment_file))
+    environment_url = urlparse.urljoin(
+        'file:', urllib.pathname2url(environment_dir))
+
+    raw_env = open(environment_file).read()
+    env = yaml.safe_load(raw_env)
+    return environment_url, env
+
+
+def _process_environment_and_files(args, fields):
     if not args.environment_file:
         return
 
-    raw_env = open(args.environment_file).read()
-    env = yaml.safe_load(raw_env)
+    environment_url, env = _prepare_environment_file(args.environment_file)
+    _resolve_environment_urls(fields, environment_url, env)
+
+
+def _resolve_environment_urls(fields, environment_url, env):
     fields['environment'] = env
     fields['files'] = {}
 
-    rr = env.get('resource_registry')
-    if rr:
-        _get_file_contents(rr, fields)
+    rr = env.get('resource_registry', {})
+    base_url = rr.get('base_url', environment_url)
+
+    def ignore_if(key, value):
+        if key == 'base_url':
+            return True
+        if isinstance(value, dict):
+            return True
+        if '::' in value:
+            # Built in providers like: "X::Compute::Server"
+            # don't need downloading.
+            return True
+
+    _get_file_contents(rr, fields, base_url, ignore_if)
+
+    for res_name, res_dict in iter(rr.get('resources', {}).items()):
+        res_base_url = res_dict.get('base_url', base_url)
+        _get_file_contents(res_dict, fields, res_base_url, ignore_if)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -141,7 +157,7 @@ def do_stack_create(hc, args):
               'disable_rollback': not(args.enable_rollback),
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
-    _process_environment_and_files(hc, args, fields)
+    _process_environment_and_files(args, fields)
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -258,7 +274,7 @@ def do_stack_update(hc, args):
     fields = {'stack_id': args.id,
               'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
-    _process_environment_and_files(hc, args, fields)
+    _process_environment_and_files(args, fields)
 
     hc.stacks.update(**fields)
     do_list(hc)
@@ -335,7 +351,7 @@ def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}
     _set_template_fields(hc, args, fields)
-    _process_environment_and_files(hc, args, fields)
+    _process_environment_and_files(args, fields)
 
     validation = hc.stacks.validate(**fields)
     print json.dumps(validation, indent=2)
