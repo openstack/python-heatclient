@@ -14,11 +14,12 @@
 #    under the License.
 
 import copy
-import httplib
 import logging
 import os
 import socket
 import urlparse
+
+from six.moves import http_client as httplib
 
 try:
     import ssl
