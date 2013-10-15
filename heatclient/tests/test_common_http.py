@@ -11,12 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mox
 import testtools
 
 from heatclient.common import http
 from heatclient import exc
 from heatclient.tests import fakes
+from mox3 import mox
 
 
 class HttpClientTest(testtools.TestCase):

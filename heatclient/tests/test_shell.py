@@ -20,10 +20,11 @@ import urllib2
 import yaml
 
 import fixtures
-import mox
 import tempfile
 import testscenarios
 import testtools
+
+from mox3 import mox
 
 try:
     import json
