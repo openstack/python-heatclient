@@ -17,8 +17,8 @@ import copy
 import logging
 import os
 import socket
-import urlparse
 
+from heatclient.openstack.common.py3kcompat import urlutils
 from six.moves import http_client as httplib
 
 try:
@@ -33,9 +33,9 @@ except ImportError:
     import simplejson as json
 
 # Python 2.5 compat fix
-if not hasattr(urlparse, 'parse_qsl'):
+if not hasattr(urlutils, 'parse_qsl'):
     import cgi
-    urlparse.parse_qsl = cgi.parse_qsl
+    urlutils.parse_qsl = cgi.parse_qsl
 
 
 from heatclient import exc
@@ -61,7 +61,7 @@ class HTTPClient(object):
 
     @staticmethod
     def get_connection_params(endpoint, **kwargs):
-        parts = urlparse.urlparse(endpoint)
+        parts = urlutils.urlparse(endpoint)
 
         _args = (parts.hostname, parts.port, parts.path)
         _kwargs = {'timeout': float(kwargs.get('timeout', 600))}
