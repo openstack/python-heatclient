@@ -16,11 +16,11 @@
 import json
 import os
 import urllib
-import urllib2
-import urlparse
 import yaml
 
 from heatclient.common import utils
+from heatclient.openstack.common.py3kcompat import urlutils
+
 import heatclient.exc as exc
 
 
@@ -56,8 +56,8 @@ def _get_file_contents(resource_registry, fields, base_url='',
             base_url = base_url + '/'
         str_url = base_url + value
         try:
-            fields['files'][str_url] = urllib2.urlopen(str_url).read()
-        except urllib2.URLError:
+            fields['files'][str_url] = urlutils.urlopen(str_url).read()
+        except urlutils.URLError:
             raise exc.CommandError('Could not fetch %s from the environment'
                                    % str_url)
         resource_registry[key] = str_url
@@ -65,7 +65,7 @@ def _get_file_contents(resource_registry, fields, base_url='',
 
 def _prepare_environment_file(environment_file):
     environment_dir = os.path.dirname(os.path.abspath(environment_file))
-    environment_url = urlparse.urljoin(
+    environment_url = urlutils.urljoin(
         'file:', urllib.pathname2url(environment_dir))
 
     raw_env = open(environment_file).read()

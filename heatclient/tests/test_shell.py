@@ -16,7 +16,6 @@ import os
 import re
 import six
 import sys
-import urllib2
 import yaml
 
 import fixtures
@@ -24,6 +23,7 @@ import tempfile
 import testscenarios
 import testtools
 
+from heatclient.openstack.common.py3kcompat import urlutils
 from mox3 import mox
 
 try:
@@ -653,8 +653,8 @@ class ShellEnvironmentTest(TestCase):
         jenv = yaml.safe_load(env)
         fields = {'files': {}}
         if url:
-            self.m.StubOutWithMock(urllib2, 'urlopen')
-            urllib2.urlopen(url).AndReturn(six.StringIO(content))
+            self.m.StubOutWithMock(urlutils, 'urlopen')
+            urlutils.urlopen(url).AndReturn(six.StringIO(content))
             self.m.ReplayAll()
 
         v1shell._resolve_environment_urls(fields, env_base_url, jenv)
