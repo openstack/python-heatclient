@@ -72,7 +72,8 @@ class StackManager(base.Manager):
         absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
-            url = '/stacks?%s' % urlutils.urlencode(qp)
+            sort_qp = sorted(qp.items(), key=lambda x: x[0])
+            url = '/stacks?%s' % urlutils.urlencode(sort_qp)
 
             stacks = self._list(url, "stacks")
             for stack in stacks:
