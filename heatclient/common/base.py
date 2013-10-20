@@ -18,6 +18,7 @@ Base utilities to build API operation managers and objects on top of.
 """
 
 import copy
+import six
 
 
 # Python 2.4 compat
@@ -86,7 +87,7 @@ class Resource(object):
         self._loaded = loaded
 
     def _add_details(self, info):
-        for (k, v) in info.iteritems():
+        for (k, v) in six.iteritems(info):
             setattr(self, k, v)
 
     def __getattr__(self, k):

@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import urllib
+from heatclient.openstack.common.py3kcompat import urlutils
 
 from heatclient.common import base
 
@@ -72,7 +72,7 @@ class StackManager(base.Manager):
         absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
-            url = '/stacks?%s' % urllib.urlencode(qp)
+            url = '/stacks?%s' % urlutils.urlencode(qp)
 
             stacks = self._list(url, "stacks")
             for stack in stacks:

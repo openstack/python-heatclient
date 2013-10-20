@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO
 import httplib2
 import os
 import re
+import six
 import sys
 import urllib2
 import yaml
@@ -64,7 +64,7 @@ class TestCase(testtools.TestCase):
     def shell_error(self, argstr, error_match):
         orig = sys.stderr
         try:
-            sys.stderr = cStringIO.StringIO()
+            sys.stderr = six.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
         except Exception as e:
@@ -224,7 +224,7 @@ class ShellTest(TestCase):
     def shell(self, argstr):
         orig = sys.stdout
         try:
-            sys.stdout = cStringIO.StringIO()
+            sys.stdout = six.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
         except SystemExit:
@@ -654,7 +654,7 @@ class ShellEnvironmentTest(TestCase):
         fields = {'files': {}}
         if url:
             self.m.StubOutWithMock(urllib2, 'urlopen')
-            urllib2.urlopen(url).AndReturn(cStringIO.StringIO(content))
+            urllib2.urlopen(url).AndReturn(six.StringIO(content))
             self.m.ReplayAll()
 
         v1shell._resolve_environment_urls(fields, env_base_url, jenv)
