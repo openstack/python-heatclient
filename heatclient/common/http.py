@@ -32,11 +32,6 @@ try:
 except ImportError:
     import simplejson as json
 
-# Python 2.5 compat fix
-if not hasattr(urlutils, 'parse_qsl'):
-    import cgi
-    urlutils.parse_qsl = cgi.parse_qsl
-
 
 from heatclient import exc
 
