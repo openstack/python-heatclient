@@ -251,9 +251,9 @@ class StackManagerPaginationTest(testtools.TestCase):
 
             offset = result[0]
             url = '/stacks?'
-            if offset > 0:
-                url += 'marker=abcd1234-%s&' % offset
             url += 'limit=%s' % self.page_size
+            if offset > 0:
+                url += '&marker=abcd1234-%s' % offset
             self.assertEqual(url, arg_url)
 
             def results():
