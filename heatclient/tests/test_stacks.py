@@ -97,7 +97,7 @@ class StackManagerNoPaginationTest(testtools.TestCase):
         ('total_0', dict(total=0)),
         ('total_1', dict(total=1)),
         ('total_9', dict(total=9)),
-        ('total_1', dict(total=10)),
+        ('total_10', dict(total=10)),
         ('total_11', dict(total=11)),
         ('total_19', dict(total=19)),
         ('total_20', dict(total=20)),
