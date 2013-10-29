@@ -1,11 +1,16 @@
+Python bindings to the OpenStack Heat API
+=========================================
+
+This is a client for OpenStack Heat API. There's a Python API
+(the :mod:`heatclient` module), and a command-line script
+(installed as :program:`heat`).
+
 Python API
 ==========
 In order to use the python api directly, you must first obtain an auth token and identify which endpoint you wish to speak to. Once you have done so, you can use the API like so::
 
     >>> from heatclient import Client
     >>> heat = Client('1', endpoint=OS_IMAGE_ENDPOINT, token=OS_AUTH_TOKEN)
-...
-
 
 Command-line Tool
 =================
