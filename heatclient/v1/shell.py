@@ -489,8 +489,10 @@ def do_event_show(hc, args):
               'event_id': args.event}
     try:
         event = hc.events.get(**fields)
-    except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+    except exc.HTTPNotFound as ex:
+        # it could be the stack/resource/or event that is not found
+        # just use the message that the server sent us.
+        raise exc.CommandError(str(ex))
     else:
         formatters = {
             'links': utils.link_formatter,
