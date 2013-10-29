@@ -22,11 +22,3 @@ The command line tool will attempt to reauthenticate using your provided credent
     export OS_AUTH_TOKEN=3bcc3d3a03f44e3d8377f9247b0ad155
 
 Once you've configured your authentication parameters, you can run ``heat help`` to see a complete listing of available commands.
-
-
-Release Notes
-=============
-
-0.1.0
------
-* Initial release
