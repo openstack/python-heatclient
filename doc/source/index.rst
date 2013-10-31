@@ -22,3 +22,13 @@ The command line tool will attempt to reauthenticate using your provided credent
     export OS_AUTH_TOKEN=3bcc3d3a03f44e3d8377f9247b0ad155
 
 Once you've configured your authentication parameters, you can run ``heat help`` to see a complete listing of available commands.
+
+Contributing
+============
+Code is hosted `on GitHub`_. Submit bugs to the Heat project on
+`Launchpad`_. Submit code to the openstack/python-heatclient project using
+`Gerrit`_.
+
+.. _on GitHub: https://github.com/openstack/python-heatclient
+.. _Launchpad: https://launchpad.net/python-heatclient
+.. _Gerrit: http://wiki.openstack.org/GerritWorkflow
