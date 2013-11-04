@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from heatclient.v1.stacks import Stack
 from heatclient.v1.stacks import StackManager
 
@@ -89,6 +88,12 @@ class StackOperationsTest(testtools.TestCase):
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.update()
         manager.update.assert_called_once_with('the_stack/abcd1234')
+
+    def test_create_stack(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack = stack.create()
+        manager.create.assert_called_once_with('the_stack/abcd1234')
 
 
 class StackManagerNoPaginationTest(testtools.TestCase):

@@ -22,6 +22,9 @@ class Stack(base.Resource):
     def __repr__(self):
         return "<Stack %s>" % self._info
 
+    def create(self, **fields):
+        return self.manager.create(self.identifier, **fields)
+
     def update(self, **fields):
         self.manager.update(self.identifier, **fields)
 
@@ -109,6 +112,7 @@ class StackManager(base.Manager):
         headers = self.api.credentials_headers()
         resp, body = self.api.json_request('POST', '/stacks',
                                            body=kwargs, headers=headers)
+        return body
 
     def update(self, stack_id, **kwargs):
         """Update a stack."""
