@@ -154,6 +154,22 @@ class ShellParamValidationTest(TestCase):
         cmd = '%s --template-file=%s ' % (self.command, template_file)
         self.shell_error(cmd, self.err)
 
+    def test_no_token_no_password(self):
+        self.m.StubOutWithMock(ksclient, 'Client')
+        self.m.StubOutWithMock(v1client.Client, 'json_request')
+
+        self.m.ReplayAll()
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        cmd = '%s --template-file=%s ' % (self.command, template_file)
+        err = 'You must provide a password or auth token.'
+        self.shell_error(cmd, err)
+
 
 class ShellValidationTest(TestCase):
 
