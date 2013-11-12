@@ -28,6 +28,14 @@ The command line tool will attempt to reauthenticate using your provided credent
 
 Once you've configured your authentication parameters, you can run ``heat help`` to see a complete listing of available commands.
 
+Man Pages
+=========
+
+.. toctree::
+    :maxdepth: 1
+
+    man/heat
+
 Contributing
 ============
 Code is hosted `on GitHub`_. Submit bugs to the Heat project on
