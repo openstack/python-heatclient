@@ -14,9 +14,12 @@
 Command-line interface to the Heat API.
 """
 
+from __future__ import print_function
+
 import argparse
 import httplib2
 import logging
+import six
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
@@ -25,6 +28,7 @@ import heatclient
 from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
+from heatclient.openstack.common import strutils
 
 logger = logging.getLogger(__name__)
 
@@ -367,7 +371,7 @@ def main():
         HeatShell().main(sys.argv[1:])
 
     except Exception as e:
-        print >> sys.stderr, e
+        print(strutils.safe_encode(six.text_type(e)), file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
