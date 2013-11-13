@@ -100,6 +100,81 @@ class HttpClientTest(testtools.TestCase):
         self.assertEqual(resp.status, 200)
         self.m.VerifyAll()
 
+    def test_include_pass(self):
+        # Record a 200
+        fake200 = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/octet-stream'},
+            '')
+
+        # no token or credentials
+        mock_conn = http.httplib.HTTPConnection('example.com', 8004,
+                                                timeout=600.0)
+        mock_conn.request('GET', '/',
+                          headers={'Content-Type': 'application/octet-stream',
+                                   'User-Agent': 'python-heatclient'})
+        mock_conn.getresponse().AndReturn(fake200)
+
+        # credentials
+        mock_conn = http.httplib.HTTPConnection('example.com', 8004,
+                                                timeout=600.0)
+        mock_conn.request('GET', '/',
+                          headers={'Content-Type': 'application/octet-stream',
+                                   'User-Agent': 'python-heatclient',
+                                   'X-Auth-Key': 'pass',
+                                   'X-Auth-User': 'user'})
+        mock_conn.getresponse().AndReturn(fake200)
+
+        # token suppresses credentials
+        mock_conn = http.httplib.HTTPConnection('example.com', 8004,
+                                                timeout=600.0)
+        mock_conn.request('GET', '/',
+                          headers={'Content-Type': 'application/octet-stream',
+                                   'User-Agent': 'python-heatclient',
+                                   'X-Auth-Token': 'abcd1234',
+                                   'X-Auth-Key': 'pass',
+                                   'X-Auth-User': 'user'})
+        mock_conn.getresponse().AndReturn(fake200)
+
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004')
+        resp, body = client.raw_request('GET', '')
+        self.assertEqual(200, resp.status)
+
+        client.username = 'user'
+        client.password = 'pass'
+        client.include_pass = True
+        resp, body = client.raw_request('GET', '')
+        self.assertEqual(200, resp.status)
+
+        client.auth_token = 'abcd1234'
+        resp, body = client.raw_request('GET', '')
+        self.assertEqual(200, resp.status)
+        self.m.VerifyAll()
+
+    def test_not_include_pass(self):
+        # Record a 200
+        fake500 = fakes.FakeHTTPResponse(
+            500, 'ERROR',
+            {'content-type': 'application/octet-stream'},
+            '(HTTP 401)')
+
+        # no token or credentials
+        mock_conn = http.httplib.HTTPConnection('example.com', 8004,
+                                                timeout=600.0)
+        mock_conn.request('GET', '/',
+                          headers={'Content-Type': 'application/octet-stream',
+                                   'User-Agent': 'python-heatclient'})
+        mock_conn.getresponse().AndReturn(fake500)
+
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004')
+        e = self.assertRaises(exc.HTTPUnauthorized,
+                              client.raw_request, 'GET', '')
+        self.assertIn('include-password', str(e))
+
     def test_region_name(self):
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(

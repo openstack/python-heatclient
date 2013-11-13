@@ -53,6 +53,7 @@ class HTTPClient(object):
         self.username = kwargs.get('username')
         self.password = kwargs.get('password')
         self.region_name = kwargs.get('region_name')
+        self.include_pass = kwargs.get('include_pass')
         self.connection_params = self.get_connection_params(endpoint, **kwargs)
 
     @staticmethod
@@ -137,6 +138,8 @@ class HTTPClient(object):
             kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
         if self.region_name:
             kwargs['headers'].setdefault('X-Region-Name', self.region_name)
+        if self.include_pass and not 'X-Auth-Key' in kwargs['headers']:
+            kwargs['headers'].update(self.credentials_headers())
 
         self.log_curl_request(method, url, kwargs)
         conn = self.get_connection()
@@ -160,7 +163,15 @@ class HTTPClient(object):
         body_str = ''.join([chunk for chunk in body_iter])
         self.log_http_response(resp, body_str)
 
-        if 400 <= resp.status < 600:
+        if not 'X-Auth-Key' in kwargs['headers'] and \
+                (resp.status == 401 or
+                (resp.status == 500 and "(HTTP 401)" in body_str)):
+            raise exc.HTTPUnauthorized("Authentication failed. Please try"
+                                       " again with option "
+                                       "--include-password or export "
+                                       "HEAT_INCLUDE_PASSWORD=1\n%s"
+                                       % body_str)
+        elif 400 <= resp.status < 600:
             raise exc.from_response(resp, body_str)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.

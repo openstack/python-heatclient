@@ -176,6 +176,11 @@ class HeatShell(object):
         parser.add_argument('--os_endpoint_type',
                             help=argparse.SUPPRESS)
 
+        parser.add_argument('--include-password',
+                            default=bool(utils.env('HEAT_INCLUDE_PASSWORD')),
+                            action='store_true',
+                            help='Send os-username and os-password to heat')
+
         return parser
 
     def get_subcommand_parser(self, version):
@@ -328,7 +333,8 @@ class HeatShell(object):
             'auth_url': args.os_auth_url,
             'service_type': args.os_service_type,
             'endpoint_type': args.os_endpoint_type,
-            'insecure': args.insecure
+            'insecure': args.insecure,
+            'include_pass': args.include_password
         }
 
         endpoint = args.heat_url
@@ -346,7 +352,8 @@ class HeatShell(object):
                 'key_file': args.key_file,
                 'username': args.os_username,
                 'password': args.os_password,
-                'endpoint_type': args.os_endpoint_type
+                'endpoint_type': args.os_endpoint_type,
+                'include_pass': args.include_password
             }
 
             if args.os_region_name:
