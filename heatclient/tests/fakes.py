@@ -22,7 +22,6 @@ def script_keystone_client():
     ksclient.Client(auth_url='http://no.where',
                     insecure=False,
                     password='password',
-                    tenant_id='',
                     tenant_name='tenant_name',
                     username='username').AndReturn(FakeKeystone('abcd1234'))
 

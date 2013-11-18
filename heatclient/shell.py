@@ -220,12 +220,15 @@ class HeatShell(object):
         :param tenant_name: name of tenant
         :param auth_url: endpoint to authenticate against
         """
-        return ksclient.Client(username=kwargs.get('username'),
-                               password=kwargs.get('password'),
-                               tenant_id=kwargs.get('tenant_id'),
-                               tenant_name=kwargs.get('tenant_name'),
-                               auth_url=kwargs.get('auth_url'),
-                               insecure=kwargs.get('insecure'))
+        kc_args = {'auth_url': kwargs.get('auth_url'),
+                   'insecure': kwargs.get('insecure'),
+                   'username': kwargs.get('username'),
+                   'password': kwargs.get('password')}
+        if kwargs.get('tenant_id'):
+            kc_args['tenant_id'] = kwargs.get('tenant_id')
+        else:
+            kc_args['tenant_name'] = kwargs.get('tenant_name')
+        return ksclient.Client(**kc_args)
 
     def _get_endpoint(self, client, **kwargs):
         """Get an endpoint using the provided keystone client."""
