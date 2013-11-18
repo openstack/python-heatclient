@@ -176,11 +176,6 @@ class HeatShell(object):
         parser.add_argument('--os_endpoint_type',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('-t', '--token-only',
-                            default=bool(False),
-                            action='store_true',
-                            help=argparse.SUPPRESS)
-
         return parser
 
     def get_subcommand_parser(self, version):
