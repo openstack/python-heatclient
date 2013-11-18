@@ -282,12 +282,9 @@ class HeatShell(object):
             raise exc.CommandError("You must provide a username via"
                                    " either --os-username or env[OS_USERNAME]")
 
-        if not args.os_password and not args.os_auth_token:
-            raise exc.CommandError("You must provide a password or auth token."
-                                   " To provide password use --os-password or "
-                                   "env[OS_PASSWORD]. To provide auth token "
-                                   "use --os-auth-token or "
-                                   "env[OS_AUTH_TOKEN]")
+        if not args.os_password:
+            raise exc.CommandError("You must provide a password via"
+                                   " either --os-password or env[OS_PASSWORD]")
 
         if not (args.os_tenant_id or args.os_tenant_name):
             raise exc.CommandError("You must provide a tenant_id via"
