@@ -328,7 +328,8 @@ class HeatShell(object):
                 'cert_file': args.cert_file,
                 'key_file': args.key_file,
                 'username': args.os_username,
-                'password': args.os_password
+                'password': args.os_password,
+                'endpoint_type': args.os_endpoint_type
             }
 
             if args.os_region_name:
