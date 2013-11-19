@@ -47,8 +47,14 @@ TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
 class TestCase(testtools.TestCase):
 
     def set_fake_env(self, fake_env):
-        for key, value in fake_env.items():
-            self.useFixture(fixtures.EnvironmentVariable(key, value))
+        client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
+                      'OS_TENANT_NAME', 'OS_AUTH_URL', 'OS_REGION_NAME',
+                      'OS_AUTH_TOKEN', 'OS_NO_CLIENT_AUTH', 'OS_SERVICE_TYPE',
+                      'OS_ENDPOINT_TYPE')
+
+        for key in client_env:
+            self.useFixture(
+                fixtures.EnvironmentVariable(key, fake_env.get(key)))
 
     # required for testing with Python 2.6
     def assertRegexpMatches(self, text, expected_regexp, msg=None):
