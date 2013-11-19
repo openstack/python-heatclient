@@ -109,16 +109,14 @@ class StackManager(base.Manager):
 
     def create(self, **kwargs):
         """Create a stack."""
-        headers = self.api.credentials_headers()
         resp, body = self.api.json_request('POST', '/stacks',
-                                           body=kwargs, headers=headers)
+                                           body=kwargs)
         return body
 
     def update(self, stack_id, **kwargs):
         """Update a stack."""
-        headers = self.api.credentials_headers()
         resp, body = self.api.json_request('PUT', '/stacks/%s' % stack_id,
-                                           body=kwargs, headers=headers)
+                                           body=kwargs)
 
     def delete(self, stack_id):
         """Delete a stack."""
