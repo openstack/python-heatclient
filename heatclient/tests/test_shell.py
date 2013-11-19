@@ -221,6 +221,12 @@ class ShellTest(TestCase):
         }
         self.set_fake_env(fake_env)
 
+        # Some tests set exc.verbose = 1, so reset on cleanup
+        def unset_exc_verbose():
+            exc.verbose = 0
+
+        self.addCleanup(unset_exc_verbose)
+
     def shell(self, argstr):
         orig = sys.stdout
         try:
@@ -329,8 +335,9 @@ class ShellTest(TestCase):
 
         self.m.ReplayAll()
 
+        exc.verbose = 1
+
         try:
-            exc.verbose = 1
             self.shell("stack-show bad")
         except exc.HTTPException as e:
             expect = 'ERROR: The Stack (bad) could not be found.\n<TRACEBACK>'
@@ -383,8 +390,9 @@ class ShellTest(TestCase):
         fakes.script_heat_error(json.dumps(resp_dict))
         self.m.ReplayAll()
 
+        exc.verbose = 1
+
         try:
-            exc.verbose = 1
             self.shell("stack-show bad")
         except exc.HTTPException as e:
             self.assertEqual(str(e),
