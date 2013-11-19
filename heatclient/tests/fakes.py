@@ -18,12 +18,19 @@ from heatclient.v1 import client as v1client
 from keystoneclient.v2_0 import client as ksclient
 
 
-def script_keystone_client():
-    ksclient.Client(auth_url='http://no.where',
-                    insecure=False,
-                    password='password',
-                    tenant_name='tenant_name',
-                    username='username').AndReturn(FakeKeystone('abcd1234'))
+def script_keystone_client(token=None):
+    if token:
+        ksclient.Client(auth_url='http://no.where',
+                        insecure=False,
+                        tenant_id='tenant_id',
+                        token=token).AndReturn(FakeKeystone(token))
+    else:
+        ksclient.Client(auth_url='http://no.where',
+                        insecure=False,
+                        password='password',
+                        tenant_name='tenant_name',
+                        username='username').AndReturn(FakeKeystone(
+                                                       'abcd1234'))
 
 
 def script_heat_list():

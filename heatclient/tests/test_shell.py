@@ -114,6 +114,29 @@ class EnvVarTest(TestCase):
         self.shell_error('list', self.err)
 
 
+class EnvVarTestToken(TestCase):
+
+    scenarios = [
+        ('tenant_id', dict(
+            remove='OS_TENANT_ID',
+            err='You must provide a tenant_id')),
+        ('auth_url', dict(
+            remove='OS_AUTH_URL',
+            err='You must provide an auth url')),
+    ]
+
+    def test_missing_auth(self):
+
+        fake_env = {
+            'OS_AUTH_TOKEN': 'atoken',
+            'OS_TENANT_ID': 'tenant_id',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        fake_env[self.remove] = None
+        self.set_fake_env(fake_env)
+        self.shell_error('list', self.err)
+
+
 class ShellParamValidationTest(TestCase):
 
     scenarios = [
@@ -208,24 +231,16 @@ class ShellValidationTest(TestCase):
             'Need to specify exactly one of')
 
 
-class ShellTest(TestCase):
+class ShellBase(TestCase):
 
-    # Patch os.environ to avoid required auth info.
     def setUp(self):
-        super(ShellTest, self).setUp()
+        super(ShellBase, self).setUp()
         self.m = mox.Mox()
         self.m.StubOutWithMock(ksclient, 'Client')
         self.m.StubOutWithMock(v1client.Client, 'json_request')
         self.m.StubOutWithMock(v1client.Client, 'raw_request')
         self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
 
         # Some tests set exc.verbose = 1, so reset on cleanup
         def unset_exc_verbose():
@@ -248,6 +263,12 @@ class ShellTest(TestCase):
             sys.stdout = orig
 
         return out
+
+
+class ShellTestCommon(ShellBase):
+
+    def setUp(self):
+        super(ShellTestCommon, self).setUp()
 
     def test_help_unknown_command(self):
         self.assertRaises(exc.CommandError, self.shell, 'help foofoo')
@@ -280,8 +301,28 @@ class ShellTest(TestCase):
             for r in required:
                 self.assertRegexpMatches(help_text, r)
 
-    def test_list(self):
+
+class ShellTestUserPass(ShellBase):
+
+    def setUp(self):
+        super(ShellTestUserPass, self).setUp()
+        self._set_fake_env()
+
+    # Patch os.environ to avoid required auth info.
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
         fakes.script_keystone_client()
+
+    def test_list(self):
+        self._script_keystone_client()
         fakes.script_heat_list()
 
         self.m.ReplayAll()
@@ -313,7 +354,7 @@ class ShellTest(TestCase):
             "title": "Not Found"
         }
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         fakes.script_heat_error(json.dumps(resp_dict))
 
         self.m.ReplayAll()
@@ -336,7 +377,7 @@ class ShellTest(TestCase):
             "title": "Not Found"
         }
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         fakes.script_heat_error(json.dumps(resp_dict))
 
         self.m.ReplayAll()
@@ -351,7 +392,7 @@ class ShellTest(TestCase):
 
     def test_parsable_malformed_error(self):
         invalid_json = "ERROR: {Invalid JSON Error."
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         fakes.script_heat_error(invalid_json)
         self.m.ReplayAll()
 
@@ -371,7 +412,7 @@ class ShellTest(TestCase):
             "title": "Not Found"
         }
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         fakes.script_heat_error(json.dumps(missing_message))
         self.m.ReplayAll()
 
@@ -392,7 +433,7 @@ class ShellTest(TestCase):
             "title": "Not Found"
         }
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         fakes.script_heat_error(json.dumps(resp_dict))
         self.m.ReplayAll()
 
@@ -405,7 +446,7 @@ class ShellTest(TestCase):
                              "ERROR: The Stack (bad) could not be found.\n")
 
     def test_describe(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp_dict = {"stack": {
             "id": "1",
             "stack_name": "teststack",
@@ -437,7 +478,7 @@ class ShellTest(TestCase):
             self.assertRegexpMatches(list_text, r)
 
     def test_template_show_cfn(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         template_data = open(os.path.join(TEST_VAR_DIR,
                                           'minimal.template')).read()
         resp = fakes.FakeHTTPResponse(
@@ -464,7 +505,7 @@ class ShellTest(TestCase):
             self.assertRegexpMatches(show_text, r)
 
     def test_template_show_hot(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
                      "resources": {},
@@ -490,7 +531,7 @@ class ShellTest(TestCase):
             self.assertRegexpMatches(show_text, r)
 
     def test_create(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             201,
             'Created',
@@ -523,7 +564,7 @@ class ShellTest(TestCase):
 
     def test_create_url(self):
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             201,
             'Created',
@@ -554,7 +595,7 @@ class ShellTest(TestCase):
 
     def test_create_object(self):
 
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
         v1client.Client.raw_request(
@@ -592,7 +633,7 @@ class ShellTest(TestCase):
             self.assertRegexpMatches(create_text, r)
 
     def test_update(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             202,
             'Accepted',
@@ -624,7 +665,7 @@ class ShellTest(TestCase):
             self.assertRegexpMatches(create_text, r)
 
     def test_delete(self):
-        fakes.script_keystone_client()
+        self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
@@ -647,6 +688,25 @@ class ShellTest(TestCase):
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
+
+
+class ShellTestToken(ShellTestUserPass):
+
+    # Rerun all ShellTestUserPass test with token auth
+    def setUp(self):
+        self.token = 'a_token'
+        super(ShellTestToken, self).setUp()
+
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_AUTH_TOKEN': self.token,
+            'OS_TENANT_ID': 'tenant_id',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
+        fakes.script_keystone_client(token=self.token)
 
 
 class ShellEnvironmentTest(TestCase):
