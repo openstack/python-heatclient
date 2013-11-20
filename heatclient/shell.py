@@ -299,20 +299,26 @@ class HeatShell(object):
                                    " or a token via --os-auth-token or"
                                    " env[OS_AUTH_TOKEN]")
 
-        if not (args.os_tenant_id or args.os_tenant_name):
-            raise exc.CommandError("You must provide a tenant_id via"
-                                   " either --os-tenant-id or via"
-                                   " env[OS_TENANT_ID]")
+        if args.os_no_client_auth:
+            if not args.heat_url:
+                raise exc.CommandError("If you specify --os-no-client-auth"
+                                       " you must also specify a Heat API URL"
+                                       " via either --heat-url or"
+                                       " env[HEAT_URL]")
+        else:
+            # Tenant name or ID is needed to make keystoneclient retrieve a
+            # service catalog, it's not required if os_no_client_auth is
+            # specified, neither is the auth URL
+            if not (args.os_tenant_id or args.os_tenant_name):
+                raise exc.CommandError("You must provide a tenant_id via"
+                                       " either --os-tenant-id or via"
+                                       " env[OS_TENANT_ID]")
 
-        if not args.os_auth_url:
-            raise exc.CommandError("You must provide an auth url via"
-                                   " either --os-auth-url or via "
-                                   "env[OS_AUTH_URL]")
-        if args.os_no_client_auth and not args.heat_url:
-            raise exc.CommandError("If you specify --os-no-client-auth"
-                                   " you must also specify a Heat API URL "
-                                   "via either --heat-url or "
-                                   "env[HEAT_URL]")
+            if not args.os_auth_url:
+                raise exc.CommandError("You must provide an auth url via"
+                                       " either --os-auth-url or via"
+                                       " env[OS_AUTH_URL]")
+
         kwargs = {
             'username': args.os_username,
             'password': args.os_password,
