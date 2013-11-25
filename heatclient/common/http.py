@@ -16,6 +16,7 @@
 import copy
 import logging
 import os
+import posixpath
 import socket
 
 from heatclient.openstack.common.py3kcompat import urlutils
@@ -142,7 +143,7 @@ class HTTPClient(object):
 
         try:
             conn_params = self.connection_params[1][2]
-            conn_url = os.path.normpath('%s/%s' % (conn_params, url))
+            conn_url = posixpath.normpath('%s/%s' % (conn_params, url))
             conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
