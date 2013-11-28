@@ -50,7 +50,7 @@ class TestCase(testtools.TestCase):
         client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
                       'OS_TENANT_NAME', 'OS_AUTH_URL', 'OS_REGION_NAME',
                       'OS_AUTH_TOKEN', 'OS_NO_CLIENT_AUTH', 'OS_SERVICE_TYPE',
-                      'OS_ENDPOINT_TYPE')
+                      'OS_ENDPOINT_TYPE', 'HEAT_URL')
 
         for key in client_env:
             self.useFixture(
@@ -707,6 +707,27 @@ class ShellTestToken(ShellTestUserPass):
 
     def _script_keystone_client(self):
         fakes.script_keystone_client(token=self.token)
+
+
+class ShellTestStandaloneToken(ShellTestUserPass):
+
+    # Rerun all ShellTestUserPass test in standalone mode, where we
+    # specify --os-no-client-auth, a token and Heat endpoint
+    def setUp(self):
+        self.token = 'a_token'
+        super(ShellTestStandaloneToken, self).setUp()
+
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_AUTH_TOKEN': self.token,
+            'OS_NO_CLIENT_AUTH': 'True',
+            'HEAT_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
+        # The StanaloneMode shouldn't need any keystoneclient stubbing
+        pass
 
 
 class ShellEnvironmentTest(TestCase):
