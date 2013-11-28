@@ -219,15 +219,22 @@ class HeatShell(object):
         :param tenant_id: unique identifier of tenant
         :param tenant_name: name of tenant
         :param auth_url: endpoint to authenticate against
+        :param token: token to use instead of username/password
         """
         kc_args = {'auth_url': kwargs.get('auth_url'),
-                   'insecure': kwargs.get('insecure'),
-                   'username': kwargs.get('username'),
-                   'password': kwargs.get('password')}
+                   'insecure': kwargs.get('insecure')}
+
         if kwargs.get('tenant_id'):
             kc_args['tenant_id'] = kwargs.get('tenant_id')
         else:
             kc_args['tenant_name'] = kwargs.get('tenant_name')
+
+        if kwargs.get('token'):
+            kc_args['token'] = kwargs.get('token')
+        else:
+            kc_args['username'] = kwargs.get('username')
+            kc_args['password'] = kwargs.get('password')
+
         return ksclient.Client(**kc_args)
 
     def _get_endpoint(self, client, **kwargs):
@@ -280,18 +287,22 @@ class HeatShell(object):
             self.do_help(args)
             return 0
 
-        if not args.os_username:
+        if not args.os_username and not args.os_auth_token:
             raise exc.CommandError("You must provide a username via"
-                                   " either --os-username or env[OS_USERNAME]")
+                                   " either --os-username or env[OS_USERNAME]"
+                                   " or a token via --os-auth-token or"
+                                   " env[OS_AUTH_TOKEN]")
 
-        if not args.os_password:
+        if not args.os_password and not args.os_auth_token:
             raise exc.CommandError("You must provide a password via"
-                                   " either --os-password or env[OS_PASSWORD]")
+                                   " either --os-password or env[OS_PASSWORD]"
+                                   " or a token via --os-auth-token or"
+                                   " env[OS_AUTH_TOKEN]")
 
         if not (args.os_tenant_id or args.os_tenant_name):
             raise exc.CommandError("You must provide a tenant_id via"
-                                   " either --os-tenant-id or via "
-                                   "env[OS_TENANT_ID]")
+                                   " either --os-tenant-id or via"
+                                   " env[OS_TENANT_ID]")
 
         if not args.os_auth_url:
             raise exc.CommandError("You must provide an auth url via"
@@ -305,6 +316,7 @@ class HeatShell(object):
         kwargs = {
             'username': args.os_username,
             'password': args.os_password,
+            'token': args.os_auth_token,
             'tenant_id': args.os_tenant_id,
             'tenant_name': args.os_tenant_name,
             'auth_url': args.os_auth_url,
