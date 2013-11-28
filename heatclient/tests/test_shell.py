@@ -111,7 +111,7 @@ class EnvVarTest(TestCase):
         }
         fake_env[self.remove] = None
         self.set_fake_env(fake_env)
-        self.shell_error('list', self.err)
+        self.shell_error('stack-list', self.err)
 
 
 class EnvVarTestToken(TestCase):
@@ -134,7 +134,7 @@ class EnvVarTestToken(TestCase):
         }
         fake_env[self.remove] = None
         self.set_fake_env(fake_env)
-        self.shell_error('list', self.err)
+        self.shell_error('stack-list', self.err)
 
 
 class ShellParamValidationTest(TestCase):
@@ -208,9 +208,9 @@ class ShellValidationTest(TestCase):
             'OS_AUTH_URL': 'http://no.where',
         }
         self.set_fake_env(fake_env)
-        self.shell_error('list', failed_msg)
+        self.shell_error('stack-list', failed_msg)
 
-    def test_create_validation(self):
+    def test_stack_create_validation(self):
         self.m.StubOutWithMock(ksclient, 'Client')
         self.m.StubOutWithMock(v1client.Client, 'json_request')
         fakes.script_keystone_client()
@@ -224,7 +224,7 @@ class ShellValidationTest(TestCase):
         }
         self.set_fake_env(fake_env)
         self.shell_error(
-            'create teststack '
+            'stack-create teststack '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"',
@@ -321,13 +321,13 @@ class ShellTestUserPass(ShellBase):
     def _script_keystone_client(self):
         fakes.script_keystone_client()
 
-    def test_list(self):
+    def test_stack_list(self):
         self._script_keystone_client()
         fakes.script_heat_list()
 
         self.m.ReplayAll()
 
-        list_text = self.shell('list')
+        list_text = self.shell('stack-list')
 
         required = [
             'id',
@@ -445,7 +445,7 @@ class ShellTestUserPass(ShellBase):
             self.assertEqual(str(e),
                              "ERROR: The Stack (bad) could not be found.\n")
 
-    def test_describe(self):
+    def test_stack_show(self):
         self._script_keystone_client()
         resp_dict = {"stack": {
             "id": "1",
@@ -463,7 +463,7 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
-        list_text = self.shell('describe teststack/1')
+        list_text = self.shell('stack-show teststack/1')
 
         required = [
             'id',
@@ -530,7 +530,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
-    def test_create(self):
+    def test_stack_create(self):
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             201,
@@ -546,7 +546,7 @@ class ShellTestUserPass(ShellBase):
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
-            'create teststack '
+            'stack-create teststack '
             '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -562,7 +562,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-    def test_create_url(self):
+    def test_stack_create_url(self):
 
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
@@ -578,7 +578,7 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
 
         create_text = self.shell(
-            'create teststack '
+            'stack-create teststack '
             '--template-url=http://no.where/minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -593,7 +593,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-    def test_create_object(self):
+    def test_stack_create_object(self):
 
         self._script_keystone_client()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -617,7 +617,7 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
 
         create_text = self.shell(
-            'create teststack2 '
+            'stack-create teststack2 '
             '--template-object=http://no.where/container/minimal.template '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -632,7 +632,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-    def test_update(self):
+    def test_stack_update(self):
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             202,
@@ -649,7 +649,7 @@ class ShellTestUserPass(ShellBase):
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
-            'update teststack2/2 '
+            'stack-update teststack2/2 '
             '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -664,7 +664,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
-    def test_delete(self):
+    def test_stack_delete(self):
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
             204,
@@ -678,7 +678,7 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
-        create_text = self.shell('delete teststack2/2')
+        create_text = self.shell('stack-delete teststack2/2')
 
         required = [
             'stack_name',
