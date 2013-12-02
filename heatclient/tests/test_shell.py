@@ -538,7 +538,8 @@ class ShellTestUserPass(ShellBase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
 
@@ -571,7 +572,8 @@ class ShellTestUserPass(ShellBase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
 
@@ -609,7 +611,8 @@ class ShellTestUserPass(ShellBase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         v1client.Client.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg()
+            'POST', '/stacks', body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
 
         fakes.script_heat_list()
@@ -641,7 +644,8 @@ class ShellTestUserPass(ShellBase):
             'The request is accepted for processing.')
         v1client.Client.json_request(
             'PUT', '/stacks/teststack2/2',
-            body=mox.IgnoreArg()
+            body=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
 
@@ -702,6 +706,12 @@ class ShellTestToken(ShellTestUserPass):
             'OS_AUTH_TOKEN': self.token,
             'OS_TENANT_ID': 'tenant_id',
             'OS_AUTH_URL': 'http://no.where',
+            # Note we also set username/password, because create/update
+            # pass them even if we have a token to support storing credentials
+            # Hopefully at some point we can remove this and move to only
+            # storing trust id's in heat-engine instead..
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password'
         }
         self.set_fake_env(fake_env)
 
@@ -722,6 +732,12 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             'OS_AUTH_TOKEN': self.token,
             'OS_NO_CLIENT_AUTH': 'True',
             'HEAT_URL': 'http://no.where',
+            # Note we also set username/password, because create/update
+            # pass them even if we have a token to support storing credentials
+            # Hopefully at some point we can remove this and move to only
+            # storing trust id's in heat-engine instead..
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password'
         }
         self.set_fake_env(fake_env)
 
