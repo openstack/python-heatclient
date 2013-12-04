@@ -14,6 +14,8 @@
 #    under the License.
 
 from heatclient.common import base
+from heatclient.openstack.common.py3kcompat import urlutils
+from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
 
 DEFAULT_PAGE_SIZE = 20
@@ -50,10 +52,11 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to get the details for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        resp, body = self.api.json_request('GET',
-                                           '/stacks/%s/resources/%s' %
-                                           (stack_id, resource_name))
-
+        # Use urlutils for python2/python3 compatibility
+        url_str = '/stacks/%s/resources/%s' % (
+                  urlutils.quote(stack_id, ''),
+                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+        resp, body = self.api.json_request('GET', url_str)
         return Resource(self, body['resource'])
 
     def metadata(self, stack_id, resource_name):
@@ -63,13 +66,16 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to get metadata for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        resp, body = self.api.json_request('GET',
-                                           '/stacks/%s/resources/%s/metadata' %
-                                           (stack_id, resource_name))
+        # Use urlutils for python2/python3 compatibility
+        url_str = '/stacks/%s/resources/%s/metadata' % (
+                  urlutils.quote(stack_id, ''),
+                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+        resp, body = self.api.json_request('GET', url_str)
         return body['metadata']
 
     def generate_template(self, resource_name):
-        resp, body = self.api.json_request('GET',
-                                           '/resource_types/%s/template' %
-                                           resource_name)
+        # Use urlutils for python2/python3 compatibility
+        url_str = '/resource_types/%s/template' % (
+                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+        resp, body = self.api.json_request('GET', url_str)
         return body

@@ -14,6 +14,8 @@
 #    under the License.
 
 from heatclient.common import base
+from heatclient.openstack.common.py3kcompat import urlutils
+from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
 
 DEFAULT_PAGE_SIZE = 20
@@ -46,7 +48,10 @@ class EventManager(stacks.StackChildManager):
             url = '/stacks/%s/events' % stack_id
         else:
             stack_id = self._resolve_stack_id(stack_id)
-            url = '/stacks/%s/resources/%s/events' % (stack_id, resource_name)
+            # Use urlutils for python2/python3 compatibility
+            url = '/stacks/%s/resources/%s/events' % (
+                  urlutils.quote(stack_id, ''),
+                  urlutils.quote(strutils.safe_encode(resource_name), ''))
         return self._list(url, "events")
 
     def get(self, stack_id, resource_name, event_id):
@@ -57,8 +62,10 @@ class EventManager(stacks.StackChildManager):
         :param event_id: ID of event to get the details for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s/events/%s' % (stack_id,
-                                                         resource_name,
-                                                         event_id)
+        # Use urlutils for python2/python3 compatibility
+        url_str = '/stacks/%s/resources/%s/events/%s' % (
+                  urlutils.quote(stack_id, ''),
+                  urlutils.quote(strutils.safe_encode(resource_name), ''),
+                  urlutils.quote(event_id, ''))
         resp, body = self.api.json_request('GET', url_str)
         return Event(self, body['event'])
