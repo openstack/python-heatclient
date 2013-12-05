@@ -24,6 +24,7 @@ import testscenarios
 import testtools
 
 from heatclient.openstack.common.py3kcompat import urlutils
+from heatclient.openstack.common import strutils
 from mox3 import mox
 
 try:
@@ -692,6 +693,167 @@ class ShellTestUserPass(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(create_text, r)
+
+
+class ShellTestEvents(ShellBase):
+    def setUp(self):
+        super(ShellTestEvents, self).setUp()
+        self._set_fake_env()
+
+    # Patch os.environ to avoid required auth info.
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
+        fakes.script_keystone_client()
+
+    scenarios = [
+        ('integer_id', dict(
+            event_id_one='24',
+            event_id_two='42')),
+        ('uuid_id', dict(
+            event_id_one='3d68809e-c4aa-4dc9-a008-933823d2e44f',
+            event_id_two='43b68bae-ed5d-4aed-a99f-0b3d39c2418a'))]
+
+    def test_event_list(self):
+        self._script_keystone_client()
+        resp_dict = {"events": [
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_one,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id": None,
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_IN_PROGRESS",
+                      "resource_status_reason": "state changed"},
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_two,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id":
+                      "bce15ec4-8919-4a02-8a90-680960fb3731",
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_COMPLETE",
+                      "resource_status_reason": "state changed"}]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            json.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        resource_name = 'testresource/1'
+        v1client.Client.json_request(
+            'GET', '/stacks/%s/resources/%s/events' % (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), ''))).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        event_list_text = self.shell('event-list {0} --resource {1}'.format(
+                                     stack_id, resource_name))
+
+        required = [
+            'resource_name',
+            'id',
+            'resource_status_reason',
+            'resource_status',
+            'event_time',
+            'aResource',
+            self.event_id_one,
+            self.event_id_two,
+            'state changed',
+            'CREATE_IN_PROGRESS',
+            'CREATE_COMPLETE',
+            '2013-12-05T14:14:30Z',
+            '2013-12-05T14:14:30Z',
+        ]
+        for r in required:
+            self.assertRegexpMatches(event_list_text, r)
+
+    def test_event_show(self):
+        self._script_keystone_client()
+        resp_dict = {"event":
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_one,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id": None,
+                      "resource_name": "aResource",
+                      "resource_properties": {"admin_user": "im_powerful",
+                                              "availability_zone": "nova"},
+                      "resource_status": "CREATE_IN_PROGRESS",
+                      "resource_status_reason": "state changed",
+                      "resource_type": "OS::Nova::Server"
+                      }}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            json.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        resource_name = 'testresource/1'
+        v1client.Client.json_request(
+            'GET', '/stacks/%s/resources/%s/events/%s' %
+            (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), ''),
+                urlutils.quote(self.event_id_one, '')
+            )).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        event_list_text = self.shell('event-show {0} {1} {2}'.format(
+                                     stack_id, resource_name,
+                                     self.event_id_one))
+
+        required = [
+            'Property',
+            'Value',
+            'event_time',
+            '2013-12-05T14:14:30Z',
+            'id',
+            self.event_id_one,
+            'links',
+            'http://heat.example.com:8004/foo[0-9]',
+            'logical_resource_id',
+            'physical_resource_id',
+            'resource_name',
+            'aResource',
+            'resource_properties',
+            'admin_user',
+            'availability_zone',
+            'resource_status',
+            'CREATE_IN_PROGRESS',
+            'resource_status_reason',
+            'state changed',
+            'resource_type',
+            'OS::Nova::Server',
+        ]
+        for r in required:
+            self.assertRegexpMatches(event_list_text, r)
 
 
 class ShellTestToken(ShellTestUserPass):

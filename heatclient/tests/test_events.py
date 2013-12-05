@@ -14,10 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.v1.events import Event
 from heatclient.v1.events import EventManager
 
 from mock import MagicMock
+from mock import patch
 import mox
 import testtools
 
@@ -83,12 +83,12 @@ class EventManagerTest(testtools.TestCase):
                 return {}, {'event': []}
 
         manager = EventManager(FakeAPI())
-        Event.__init__ = MagicMock()
-        Event.__init__.return_value = None
-        self.m.StubOutWithMock(manager, '_resolve_stack_id')
-        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
-        self.m.ReplayAll()
-        manager.get(**fields)
+        with patch('heatclient.v1.events.Event'):
+            self.m.StubOutWithMock(manager, '_resolve_stack_id')
+            manager._resolve_stack_id('teststack').AndReturn(
+                'teststack/abcd1234')
+            self.m.ReplayAll()
+            manager.get(**fields)
 
     def test_get_event_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
@@ -106,9 +106,9 @@ class EventManagerTest(testtools.TestCase):
                 return {}, {'event': []}
 
         manager = EventManager(FakeAPI())
-        Event.__init__ = MagicMock()
-        Event.__init__.return_value = None
-        self.m.StubOutWithMock(manager, '_resolve_stack_id')
-        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
-        self.m.ReplayAll()
-        manager.get(**fields)
+        with patch('heatclient.v1.events.Event'):
+            self.m.StubOutWithMock(manager, '_resolve_stack_id')
+            manager._resolve_stack_id('teststack').AndReturn(
+                'teststack/abcd1234')
+            self.m.ReplayAll()
+            manager.get(**fields)
