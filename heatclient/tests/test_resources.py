@@ -18,7 +18,7 @@ from heatclient.v1.resources import Resource
 from heatclient.v1.resources import ResourceManager
 
 from mock import MagicMock
-import mox
+from mox3 import mox
 import testtools
 
 
