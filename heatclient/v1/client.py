@@ -20,7 +20,7 @@ from heatclient.v1 import resources
 from heatclient.v1 import stacks
 
 
-class Client(http.HTTPClient):
+class Client(object):
     """Client for the Heat v1 API.
 
     :param string endpoint: A user-supplied endpoint URL for the heat
@@ -32,8 +32,8 @@ class Client(http.HTTPClient):
 
     def __init__(self, *args, **kwargs):
         """Initialize a new client for the Heat v1 API."""
-        super(Client, self).__init__(*args, **kwargs)
-        self.stacks = stacks.StackManager(self)
-        self.resources = resources.ResourceManager(self)
-        self.events = events.EventManager(self)
-        self.actions = actions.ActionManager(self)
+        self.http_client = http.HTTPClient(*args, **kwargs)
+        self.stacks = stacks.StackManager(self.http_client)
+        self.resources = resources.ResourceManager(self.http_client)
+        self.events = events.EventManager(self.http_client)
+        self.actions = actions.ActionManager(self.http_client)

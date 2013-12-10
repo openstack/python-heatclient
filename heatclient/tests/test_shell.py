@@ -33,10 +33,10 @@ except ImportError:
     import simplejson as json
 from keystoneclient.v2_0 import client as ksclient
 
+from heatclient.common import http
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
-from heatclient.v1 import client as v1client
 from heatclient.v1 import shell as v1shell
 
 
@@ -169,7 +169,7 @@ class ShellParamValidationTest(TestCase):
 
     def test_bad_parameters(self):
         self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
         fakes.script_keystone_client()
 
         self.m.ReplayAll()
@@ -195,10 +195,10 @@ class ShellValidationTest(TestCase):
 
     def test_failed_auth(self):
         self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
         fakes.script_keystone_client()
         failed_msg = 'Unable to authenticate user with credentials provided'
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks?').AndRaise(exc.Unauthorized(failed_msg))
 
         self.m.ReplayAll()
@@ -213,7 +213,7 @@ class ShellValidationTest(TestCase):
 
     def test_stack_create_validation(self):
         self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(v1client.Client, 'json_request')
+        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
         fakes.script_keystone_client()
 
         self.m.ReplayAll()
@@ -238,8 +238,8 @@ class ShellBase(TestCase):
         super(ShellBase, self).setUp()
         self.m = mox.Mox()
         self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(v1client.Client, 'json_request')
-        self.m.StubOutWithMock(v1client.Client, 'raw_request')
+        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
+        self.m.StubOutWithMock(http.HTTPClient, 'raw_request')
         self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
 
@@ -459,7 +459,7 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             json.dumps(resp_dict))
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -488,7 +488,7 @@ class ShellTestUserPass(ShellBase):
             {'content-type': 'application/json'},
             template_data)
         resp_dict = json.loads(template_data)
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -516,7 +516,7 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             json.dumps(resp_dict))
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -538,7 +538,7 @@ class ShellTestUserPass(ShellBase):
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'POST', '/stacks', body=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
@@ -572,7 +572,7 @@ class ShellTestUserPass(ShellBase):
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'POST', '/stacks', body=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
@@ -601,7 +601,7 @@ class ShellTestUserPass(ShellBase):
         self._script_keystone_client()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
-        v1client.Client.raw_request(
+        http.HTTPClient.raw_request(
             'GET',
             'http://no.where/container/minimal.template',
         ).AndReturn(template_data)
@@ -611,7 +611,7 @@ class ShellTestUserPass(ShellBase):
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'POST', '/stacks', body=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
@@ -643,7 +643,7 @@ class ShellTestUserPass(ShellBase):
             'Accepted',
             {},
             'The request is accepted for processing.')
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'PUT', '/stacks/teststack2/2',
             body=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
@@ -676,7 +676,7 @@ class ShellTestUserPass(ShellBase):
             'No Content',
             {},
             None)
-        v1client.Client.raw_request(
+        http.HTTPClient.raw_request(
             'DELETE', '/stacks/teststack2/2',
         ).AndReturn((resp, None))
         fakes.script_heat_list()
@@ -758,7 +758,7 @@ class ShellTestEvents(ShellBase):
             json.dumps(resp_dict))
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s/events' % (
                 urlutils.quote(stack_id, ''),
                 urlutils.quote(strutils.safe_encode(
@@ -814,7 +814,7 @@ class ShellTestEvents(ShellBase):
             json.dumps(resp_dict))
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
-        v1client.Client.json_request(
+        http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s/events/%s' %
             (
                 urlutils.quote(stack_id, ''),

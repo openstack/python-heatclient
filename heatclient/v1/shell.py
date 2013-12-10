@@ -34,7 +34,7 @@ def _set_template_fields(hc, args, fields):
     elif args.template_url:
         fields['template_url'] = args.template_url
     elif args.template_object:
-        template_body = hc.raw_request('GET', args.template_object)
+        template_body = hc.http_client.raw_request('GET', args.template_object)
         if template_body:
             fields['template'] = json.loads(template_body)
         else:

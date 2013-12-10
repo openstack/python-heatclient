@@ -13,8 +13,8 @@
 
 import json
 
+from heatclient.common import http
 from heatclient import exc
-from heatclient.v1 import client as v1client
 from keystoneclient.v2_0 import client as ksclient
 
 
@@ -50,8 +50,8 @@ def script_heat_list():
                             'success, you',
                             {'content-type': 'application/json'},
                             json.dumps(resp_dict))
-    v1client.Client.json_request('GET',
-                                 '/stacks?').AndReturn((resp, resp_dict))
+    http.HTTPClient.json_request('GET', '/stacks?').AndReturn(
+        (resp, resp_dict))
 
 
 def script_heat_normal_error():
@@ -69,7 +69,7 @@ def script_heat_normal_error():
                             'The resource could not be found',
                             {'content-type': 'application/json'},
                             json.dumps(resp_dict))
-    v1client.Client.json_request('GET', '/stacks/bad').AndRaise(
+    http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
         exc.from_response(resp, json.dumps(resp_dict)))
 
 
@@ -78,7 +78,7 @@ def script_heat_error(resp_string):
                             'The resource could not be found',
                             {'content-type': 'application/json'},
                             resp_string)
-    v1client.Client.json_request('GET', '/stacks/bad').AndRaise(
+    http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
         exc.from_response(resp, resp_string))
 
 
