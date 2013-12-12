@@ -16,6 +16,7 @@
 from heatclient.common import http
 from heatclient.v1 import actions
 from heatclient.v1 import events
+from heatclient.v1 import resource_types
 from heatclient.v1 import resources
 from heatclient.v1 import stacks
 
@@ -35,5 +36,7 @@ class Client(object):
         self.http_client = http.HTTPClient(*args, **kwargs)
         self.stacks = stacks.StackManager(self.http_client)
         self.resources = resources.ResourceManager(self.http_client)
+        self.resource_types = resource_types.ResourceTypeManager(
+            self.http_client)
         self.events = events.EventManager(self.http_client)
         self.actions = actions.ActionManager(self.http_client)

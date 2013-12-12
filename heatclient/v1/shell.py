@@ -293,6 +293,26 @@ def do_stack_list(hc, args={}):
     utils.print_list(stacks, fields, sortby=3)
 
 
+def do_resource_type_list(hc, args={}):
+    '''List the available resource types.'''
+    kwargs = {}
+    types = hc.resource_types.list(**kwargs)
+    utils.print_list(types, ['resource_type'])
+
+
+@utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
+           help='Resource Type to get the details for.')
+def do_resource_type_show(hc, args={}):
+    '''Show the resource type.'''
+    try:
+        resource_type = hc.resource_types.get(args.resource_type)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(
+            'Resource Type not found: %s' % args.resource_type)
+    else:
+        print(json.dumps(resource_type, indent=2))
+
+
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to get the template for.')
 def do_gettemplate(hc, args):
