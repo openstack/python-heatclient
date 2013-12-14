@@ -199,8 +199,18 @@ class HeatShell(object):
         submodule = utils.import_versioned_module(version, 'shell')
         self._find_actions(subparsers, submodule)
         self._find_actions(subparsers, self)
+        self._add_bash_completion_subparser(subparsers)
 
         return parser
+
+    def _add_bash_completion_subparser(self, subparsers):
+        subparser = subparsers.add_parser(
+            'bash_completion',
+            add_help=False,
+            formatter_class=HelpFormatter
+        )
+        self.subcommands['bash_completion'] = subparser
+        subparser.set_defaults(func=self.do_bash_completion)
 
     def _find_actions(self, subparsers, actions_module):
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
@@ -299,6 +309,9 @@ class HeatShell(object):
         if args.func == self.do_help:
             self.do_help(args)
             return 0
+        elif args.func == self.do_bash_completion:
+            self.do_bash_completion(args)
+            return 0
 
         if not args.os_username and not args.os_auth_token:
             raise exc.CommandError("You must provide a username via"
@@ -373,6 +386,22 @@ class HeatShell(object):
         client = heat_client.Client(api_version, endpoint, **kwargs)
 
         args.func(client, args)
+
+    def do_bash_completion(self, args):
+        """Prints all of the commands and options to stdout.
+
+        The heat.bash_completion script doesn't have to hard code them.
+        """
+        commands = set()
+        options = set()
+        for sc_str, sc in self.subcommands.items():
+            commands.add(sc_str)
+            for option in list(sc._optionals._option_string_actions):
+                options.add(option)
+
+        commands.remove('bash-completion')
+        commands.remove('bash_completion')
+        print(' '.join(commands | options))
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
