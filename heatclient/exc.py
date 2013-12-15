@@ -12,12 +12,9 @@
 
 import sys
 
-verbose = 0
+from heatclient.openstack.common import jsonutils
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+verbose = 0
 
 
 class BaseException(Exception):
@@ -48,7 +45,7 @@ class HTTPException(BaseException):
     def __init__(self, message=None):
         super(HTTPException, self).__init__(message)
         try:
-            self.error = json.loads(message)
+            self.error = jsonutils.loads(message)
             if 'error' not in self.error:
                 raise KeyError('Key "error" not exists')
         except KeyError:

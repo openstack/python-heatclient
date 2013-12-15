@@ -14,7 +14,6 @@
 #    under the License.
 from __future__ import print_function
 
-import json
 import os
 import prettytable
 import sys
@@ -24,9 +23,10 @@ import yaml
 
 from heatclient import exc
 from heatclient.openstack.common import importutils
+from heatclient.openstack.common import jsonutils
 
 supported_formats = {
-    "json": lambda x: json.dumps(x, indent=2),
+    "json": lambda x: jsonutils.dumps(x, indent=2),
     "yaml": yaml.safe_dump
 }
 
@@ -46,7 +46,7 @@ def link_formatter(links):
 
 
 def json_formatter(js):
-    return json.dumps(js, indent=2)
+    return jsonutils.dumps(js, indent=2)
 
 
 def text_wrap_formatter(d):
