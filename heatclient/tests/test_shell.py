@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib2
 import os
 import re
 import six
@@ -19,6 +18,7 @@ import sys
 import yaml
 
 import fixtures
+import httplib2
 import tempfile
 import testscenarios
 import testtools
@@ -903,6 +903,21 @@ class ShellTestStandaloneToken(ShellTestUserPass):
     def _script_keystone_client(self):
         # The StanaloneMode shouldn't need any keystoneclient stubbing
         pass
+
+    def test_bad_template_file(self):
+        failed_msg = 'Cannot parse template file:'
+
+        with tempfile.NamedTemporaryFile() as bad_json_file:
+            bad_json_file.write("{foo:}")
+            bad_json_file.flush()
+            self.shell_error("stack-create ts -f %s" % bad_json_file.name,
+                             failed_msg)
+
+        with tempfile.NamedTemporaryFile() as bad_json_file:
+            bad_json_file.write('{"foo": None}')
+            bad_json_file.flush()
+            self.shell_error("stack-create ts -f %s" % bad_json_file.name,
+                             failed_msg)
 
 
 class ShellEnvironmentTest(TestCase):
