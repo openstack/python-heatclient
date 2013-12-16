@@ -12,8 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 
-from heatclient.common import base
+from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
@@ -33,6 +34,9 @@ class Event(base.Resource):
 
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
+
+    def to_dict(self):
+        return copy.deepcopy(self._info)
 
 
 class EventManager(stacks.StackChildManager):
@@ -67,5 +71,5 @@ class EventManager(stacks.StackChildManager):
                   urlutils.quote(stack_id, ''),
                   urlutils.quote(strutils.safe_encode(resource_name), ''),
                   urlutils.quote(event_id, ''))
-        resp, body = self.api.json_request('GET', url_str)
+        resp, body = self.client.json_request('GET', url_str)
         return Event(self, body['event'])
