@@ -18,7 +18,7 @@ from heatclient.v1.events import EventManager
 
 from mock import MagicMock
 from mock import patch
-import mox
+from mox3 import mox
 import testtools
 
 
