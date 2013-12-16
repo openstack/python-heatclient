@@ -11,10 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 from heatclient.common import http
 from heatclient import exc
+from heatclient.openstack.common import jsonutils
 from keystoneclient.v2_0 import client as ksclient
 
 
@@ -49,7 +48,7 @@ def script_heat_list():
     resp = FakeHTTPResponse(200,
                             'success, you',
                             {'content-type': 'application/json'},
-                            json.dumps(resp_dict))
+                            jsonutils.dumps(resp_dict))
     http.HTTPClient.json_request('GET', '/stacks?').AndReturn(
         (resp, resp_dict))
 
@@ -68,9 +67,9 @@ def script_heat_normal_error():
     resp = FakeHTTPResponse(400,
                             'The resource could not be found',
                             {'content-type': 'application/json'},
-                            json.dumps(resp_dict))
+                            jsonutils.dumps(resp_dict))
     http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
-        exc.from_response(resp, json.dumps(resp_dict)))
+        exc.from_response(resp, jsonutils.dumps(resp_dict)))
 
 
 def script_heat_error(resp_string):

@@ -13,12 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import os
 import urllib
 import yaml
 
 from heatclient.common import utils
+from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common.py3kcompat import urlutils
 
 import heatclient.exc as exc
@@ -28,7 +28,7 @@ def _set_template_fields(hc, args, fields):
     if args.template_file:
         tpl = open(args.template_file).read()
         if tpl.startswith('{'):
-            fields['template'] = json.loads(tpl)
+            fields['template'] = jsonutils.loads(tpl)
         else:
             fields['template'] = tpl
     elif args.template_url:
@@ -36,7 +36,7 @@ def _set_template_fields(hc, args, fields):
     elif args.template_object:
         template_body = hc.http_client.raw_request('GET', args.template_object)
         if template_body:
-            fields['template'] = json.loads(template_body)
+            fields['template'] = jsonutils.loads(template_body)
         else:
             raise exc.CommandError('Could not fetch template from %s'
                                    % args.template_object)
@@ -310,7 +310,7 @@ def do_resource_type_show(hc, args={}):
         raise exc.CommandError(
             'Resource Type not found: %s' % args.resource_type)
     else:
-        print(json.dumps(resource_type, indent=2))
+        print(jsonutils.dumps(resource_type, indent=2))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -333,7 +333,7 @@ def do_template_show(hc, args):
         if 'heat_template_version' in template:
             print yaml.safe_dump(template, indent=2)
         else:
-            print json.dumps(template, indent=2)
+            print jsonutils.dumps(template, indent=2)
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
@@ -374,7 +374,7 @@ def do_template_validate(hc, args):
     _process_environment_and_files(args, fields)
 
     validation = hc.stacks.validate(**fields)
-    print json.dumps(validation, indent=2)
+    print jsonutils.dumps(validation, indent=2)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -459,7 +459,7 @@ def do_resource_metadata(hc, args):
         raise exc.CommandError('Stack or resource not found: %s %s' %
                                (args.id, args.resource))
     else:
-        print json.dumps(metadata, indent=2)
+        print jsonutils.dumps(metadata, indent=2)
 
 
 @utils.arg('id', metavar='<NAME or ID>',

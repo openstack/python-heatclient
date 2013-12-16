@@ -19,6 +19,7 @@ import os
 import posixpath
 import socket
 
+from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common.py3kcompat import urlutils
 from six.moves import http_client as httplib
 
@@ -27,11 +28,6 @@ try:
 except ImportError:
     #TODO(bcwaldon): Handle this failure more gracefully
     pass
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 from heatclient import exc
@@ -205,14 +201,14 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('Accept', 'application/json')
 
         if 'body' in kwargs:
-            kwargs['body'] = json.dumps(kwargs['body'])
+            kwargs['body'] = jsonutils.dumps(kwargs['body'])
 
         resp, body_str = self._http_request(url, method, **kwargs)
 
         if 'application/json' in resp.getheader('content-type', None):
             body = body_str
             try:
-                body = json.loads(body)
+                body = jsonutils.loads(body)
             except ValueError:
                 LOG.error('Could not decode response body as JSON')
         else:

@@ -23,14 +23,11 @@ import tempfile
 import testscenarios
 import testtools
 
+from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 from mox3 import mox
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 from keystoneclient.v2_0 import client as ksclient
 
 from heatclient.common import http
@@ -356,7 +353,7 @@ class ShellTestUserPass(ShellBase):
         }
 
         self._script_keystone_client()
-        fakes.script_heat_error(json.dumps(resp_dict))
+        fakes.script_heat_error(jsonutils.dumps(resp_dict))
 
         self.m.ReplayAll()
 
@@ -379,7 +376,7 @@ class ShellTestUserPass(ShellBase):
         }
 
         self._script_keystone_client()
-        fakes.script_heat_error(json.dumps(resp_dict))
+        fakes.script_heat_error(jsonutils.dumps(resp_dict))
 
         self.m.ReplayAll()
 
@@ -414,7 +411,7 @@ class ShellTestUserPass(ShellBase):
         }
 
         self._script_keystone_client()
-        fakes.script_heat_error(json.dumps(missing_message))
+        fakes.script_heat_error(jsonutils.dumps(missing_message))
         self.m.ReplayAll()
 
         try:
@@ -435,7 +432,7 @@ class ShellTestUserPass(ShellBase):
         }
 
         self._script_keystone_client()
-        fakes.script_heat_error(json.dumps(resp_dict))
+        fakes.script_heat_error(jsonutils.dumps(resp_dict))
         self.m.ReplayAll()
 
         exc.verbose = 1
@@ -458,7 +455,7 @@ class ShellTestUserPass(ShellBase):
             200,
             'OK',
             {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            jsonutils.dumps(resp_dict))
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
 
@@ -487,7 +484,7 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             template_data)
-        resp_dict = json.loads(template_data)
+        resp_dict = jsonutils.loads(template_data)
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
 
@@ -515,7 +512,7 @@ class ShellTestUserPass(ShellBase):
             200,
             'OK',
             {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            jsonutils.dumps(resp_dict))
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
 
@@ -755,7 +752,7 @@ class ShellTestEvents(ShellBase):
             200,
             'OK',
             {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            jsonutils.dumps(resp_dict))
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
         http.HTTPClient.json_request(
@@ -811,7 +808,7 @@ class ShellTestEvents(ShellBase):
             200,
             'OK',
             {'content-type': 'application/json'},
-            json.dumps(resp_dict))
+            jsonutils.dumps(resp_dict))
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
         http.HTTPClient.json_request(
