@@ -118,6 +118,19 @@ def do_stack_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to abandon.')
+def do_stack_abandon(hc, args):
+    '''Abandon the stack.'''
+    fields = {'stack_id': args.id}
+    try:
+        stack = hc.stacks.abandon(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        print(jsonutils.dumps(stack, indent=2))
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to suspend.')
 def do_action_suspend(hc, args):
     '''Suspend the stack.'''

@@ -69,6 +69,9 @@ Delete a stack::
 
     heat stack-delete mystack
 
+Abandon a stack::
+
+    heat stack-abandon mystack
 
 BUGS
 ====

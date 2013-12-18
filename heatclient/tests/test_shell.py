@@ -535,6 +535,48 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    def test_stack_abandon(self):
+        self._script_keystone_client()
+
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        abandoned_stack = {
+            "action": "CREATE",
+            "status": "COMPLETE",
+            "name": "teststack",
+            "id": "1",
+            "resources": {
+                "foo": {
+                    "name": "foo",
+                    "resource_id": "test-res-id",
+                    "action": "CREATE",
+                    "status": "COMPLETE",
+                    "resource_data": {},
+                    "metadata": {},
+                }
+            }
+        }
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+        http.HTTPClient.json_request(
+            'DELETE',
+            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+
+        self.m.ReplayAll()
+        abandon_resp = self.shell('stack-abandon teststack/1')
+        self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
+
     def test_template_show_cfn(self):
         self._script_keystone_client()
         template_data = open(os.path.join(TEST_VAR_DIR,

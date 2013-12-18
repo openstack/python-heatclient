@@ -31,6 +31,9 @@ class Stack(base.Resource):
     def delete(self):
         return self.manager.delete(self.identifier)
 
+    def abandon(self):
+        return self.manager.abandon(self.identifier)
+
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
         self.set_loaded(True)
@@ -117,6 +120,14 @@ class StackManager(base.BaseManager):
     def delete(self, stack_id):
         """Delete a stack."""
         self._delete("/stacks/%s" % stack_id)
+
+    def abandon(self, stack_id):
+        """Abandon a stack."""
+        stack = self.get(stack_id)
+        resp, body = self.client.json_request(
+            'DELETE',
+            '/stacks/%s/abandon' % stack.identifier)
+        return body
 
     def get(self, stack_id):
         """Get the metadata for a specific stack.

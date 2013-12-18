@@ -74,6 +74,12 @@ class StackOperationsTest(testtools.TestCase):
         stack.delete()
         manager.delete.assert_called_once_with('the_stack/abcd1234')
 
+    def test_abandon_stack(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.abandon()
+        manager.abandon.assert_called_once_with('the_stack/abcd1234')
+
     def test_get_stack(self):
         manager = MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
