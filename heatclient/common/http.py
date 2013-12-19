@@ -17,6 +17,7 @@ import copy
 import logging
 import os
 import posixpath
+import requests
 import socket
 
 from heatclient.openstack.common import jsonutils
@@ -221,6 +222,30 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
         return self._http_request(url, method, **kwargs)
+
+    def client_request(self, method, url, **kwargs):
+        resp, body = self.json_request(method, url, **kwargs)
+        r = requests.Response()
+        r._content = jsonutils.dumps(body)
+        return r
+
+    def head(self, url, **kwargs):
+        return self.client_request("HEAD", url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.client_request("GET", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client_request("POST", url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client_request("PUT", url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.raw_request("DELETE", url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.client_request("PATCH", url, **kwargs)
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):

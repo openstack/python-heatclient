@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common import base
+from heatclient.openstack.common.apiclient import base
 from heatclient.v1 import stacks
 
 DEFAULT_PAGE_SIZE = 20
@@ -38,13 +38,13 @@ class ActionManager(stacks.StackChildManager):
     def suspend(self, stack_id):
         """Suspend a stack."""
         body = {'suspend': None}
-        resp, body = self.api.json_request('POST',
-                                           '/stacks/%s/actions' % stack_id,
-                                           body=body)
+        resp, body = self.client.json_request('POST',
+                                              '/stacks/%s/actions' % stack_id,
+                                              body=body)
 
     def resume(self, stack_id):
         """Resume a stack."""
         body = {'resume': None}
-        resp, body = self.api.json_request('POST',
-                                           '/stacks/%s/actions' % stack_id,
-                                           body=body)
+        resp, body = self.client.json_request('POST',
+                                              '/stacks/%s/actions' % stack_id,
+                                              body=body)

@@ -12,10 +12,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 
+from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
-
-from heatclient.common import base
 
 
 class Stack(base.Resource):
@@ -57,8 +57,11 @@ class Stack(base.Resource):
     def identifier(self):
         return '%s/%s' % (self.stack_name, self.id)
 
+    def to_dict(self):
+        return copy.deepcopy(self._info)
 
-class StackManager(base.Manager):
+
+class StackManager(base.BaseManager):
     resource_class = Stack
 
     def list(self, **kwargs):
@@ -109,16 +112,16 @@ class StackManager(base.Manager):
 
     def create(self, **kwargs):
         """Create a stack."""
-        headers = self.api.credentials_headers()
-        resp, body = self.api.json_request('POST', '/stacks',
-                                           body=kwargs, headers=headers)
+        headers = self.client.credentials_headers()
+        resp, body = self.client.json_request('POST', '/stacks',
+                                              body=kwargs, headers=headers)
         return body
 
     def update(self, stack_id, **kwargs):
         """Update a stack."""
-        headers = self.api.credentials_headers()
-        resp, body = self.api.json_request('PUT', '/stacks/%s' % stack_id,
-                                           body=kwargs, headers=headers)
+        headers = self.client.credentials_headers()
+        resp, body = self.client.json_request('PUT', '/stacks/%s' % stack_id,
+                                              body=kwargs, headers=headers)
 
     def delete(self, stack_id):
         """Delete a stack."""
@@ -129,7 +132,7 @@ class StackManager(base.Manager):
 
         :param stack_id: Stack ID to lookup
         """
-        resp, body = self.api.json_request('GET', '/stacks/%s' % stack_id)
+        resp, body = self.client.json_request('GET', '/stacks/%s' % stack_id)
         return Stack(self, body['stack'])
 
     def template(self, stack_id):
@@ -138,24 +141,27 @@ class StackManager(base.Manager):
 
         :param stack_id: Stack ID to get the template for
         """
-        resp, body = self.api.json_request(
+        resp, body = self.client.json_request(
             'GET', '/stacks/%s/template' % stack_id)
         return body
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        resp, body = self.api.json_request('POST', '/validate', body=kwargs)
+        resp, body = self.client.json_request('POST', '/validate', body=kwargs)
         return body
 
 
-class StackChildManager(base.Manager):
+class StackChildManager(base.BaseManager):
+    @property
+    def api(self):
+        return self.client
 
     def _resolve_stack_id(self, stack_id):
         # if the id already has a slash in it,
         # then it is already {stack_name}/{stack_id}
         if stack_id.find('/') > 0:
             return stack_id
-        resp, body = self.api.json_request('GET',
-                                           '/stacks/%s' % stack_id)
+        resp, body = self.client.json_request('GET',
+                                              '/stacks/%s' % stack_id)
         stack = body['stack']
         return '%s/%s' % (stack['stack_name'], stack['id'])

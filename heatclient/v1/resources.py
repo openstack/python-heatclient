@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common import base
+from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
@@ -56,7 +56,7 @@ class ResourceManager(stacks.StackChildManager):
         url_str = '/stacks/%s/resources/%s' % (
                   urlutils.quote(stack_id, ''),
                   urlutils.quote(strutils.safe_encode(resource_name), ''))
-        resp, body = self.api.json_request('GET', url_str)
+        resp, body = self.client.json_request('GET', url_str)
         return Resource(self, body['resource'])
 
     def metadata(self, stack_id, resource_name):
@@ -70,12 +70,12 @@ class ResourceManager(stacks.StackChildManager):
         url_str = '/stacks/%s/resources/%s/metadata' % (
                   urlutils.quote(stack_id, ''),
                   urlutils.quote(strutils.safe_encode(resource_name), ''))
-        resp, body = self.api.json_request('GET', url_str)
+        resp, body = self.client.json_request('GET', url_str)
         return body['metadata']
 
     def generate_template(self, resource_name):
         # Use urlutils for python2/python3 compatibility
         url_str = '/resource_types/%s/template' % (
                   urlutils.quote(strutils.safe_encode(resource_name), ''))
-        resp, body = self.api.json_request('GET', url_str)
+        resp, body = self.client.json_request('GET', url_str)
         return body

@@ -11,7 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common import base
+from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 
@@ -27,7 +27,7 @@ class ResourceType(base.Resource):
         self.resource_type = info
 
 
-class ResourceTypeManager(base.Manager):
+class ResourceTypeManager(base.BaseManager):
     resource_class = ResourceType
 
     def list(self):
@@ -43,5 +43,5 @@ class ResourceTypeManager(base.Manager):
         """
         url_str = '/resource_types/%s' % (
                   urlutils.quote(strutils.safe_encode(resource_type), ''))
-        resp, body = self.api.json_request('GET', url_str)
+        resp, body = self.client.json_request('GET', url_str)
         return body
