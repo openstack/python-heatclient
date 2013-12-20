@@ -54,7 +54,7 @@ def _get_file_contents(resource_registry, fields, base_url='',
 
         if base_url != '' and not base_url.endswith('/'):
             base_url = base_url + '/'
-        str_url = base_url + value
+        str_url = urlutils.urljoin(base_url, value)
         try:
             fields['files'][str_url] = urlutils.urlopen(str_url).read()
         except urlutils.URLError:
@@ -73,11 +73,25 @@ def _prepare_environment_file(environment_file):
     return environment_url, env
 
 
+def _prepare_environment_url(environment_url):
+    raw_env = urlutils.urlopen(environment_url).read()
+    env = yaml.safe_load(raw_env)
+    remote = urlutils.urlparse(environment_url)
+    remote_dir = os.path.dirname(remote.path)
+    environment_base_url = urlutils.urljoin(environment_url, remote_dir)
+    return environment_base_url, env
+
+
 def _process_environment_and_files(args, fields):
     if not args.environment_file:
         return
 
-    environment_url, env = _prepare_environment_file(args.environment_file)
+    if (urlutils.urlparse(args.environment_file).scheme
+            in ('http', 'https', 'ftp', 'ftps')):
+        environment_url, env = _prepare_environment_url(args.environment_url)
+    else:
+        environment_url, env = _prepare_environment_file(args.environment_file)
+
     _resolve_environment_urls(fields, environment_url, env)
 
 

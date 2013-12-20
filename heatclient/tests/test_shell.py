@@ -943,6 +943,20 @@ class ShellEnvironmentTest(TestCase):
             env_dir = os.path.dirname(env_file.name)
             self.assertEqual(env_url, 'file://%s' % env_dir)
 
+    def test_prepare_environment_url(self):
+        env = '''
+        resource_registry:
+            "OS::Thingy": "a.yaml"
+        '''
+        url = 'http://no.where/some/path/to/file.yaml'
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        urlutils.urlopen(url).AndReturn(six.StringIO(env))
+        self.m.ReplayAll()
+        env_url, env_dict = v1shell._prepare_environment_url(url)
+        self.assertEqual({'resource_registry': {'OS::Thingy': 'a.yaml'}},
+                         env_dict)
+        self.assertEqual('http://no.where/some/path/to', env_url)
+
     def test_global_files(self):
         a = "A's contents."
         url = 'file:///home/b/a.yaml'
@@ -994,7 +1008,7 @@ class ShellEnvironmentTest(TestCase):
         '''
         self.collect_links(env, a, None)
 
-    def test_with_env_file_base_url(self):
+    def test_with_env_file_base_url_file(self):
         a = "A's contents."
         url = 'file:///tmp/foo/a.yaml'
         env = '''
@@ -1004,6 +1018,18 @@ class ShellEnvironmentTest(TestCase):
               "OS::Thingy": a.yaml
         '''
         env_base_url = 'file:///tmp/foo'
+        self.collect_links(env, a, url, env_base_url)
+
+    def test_with_env_file_base_url_http(self):
+        a = "A's contents."
+        url = 'http://no.where/path/to/a.yaml'
+        env = '''
+        resource_registry:
+          resources:
+            server_for_me:
+              "OS::Thingy": to/a.yaml
+        '''
+        env_base_url = 'http://no.where/path'
         self.collect_links(env, a, url, env_base_url)
 
     def test_unsupported_protocol(self):
