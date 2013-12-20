@@ -28,7 +28,11 @@ def _set_template_fields(hc, args, fields):
     if args.template_file:
         tpl = open(args.template_file).read()
         if tpl.startswith('{'):
-            fields['template'] = jsonutils.loads(tpl)
+            try:
+                fields['template'] = jsonutils.loads(tpl)
+            except ValueError as e:
+                raise exc.CommandError(
+                    "Cannot parse template file: %s" % e)
         else:
             fields['template'] = tpl
     elif args.template_url:
@@ -36,7 +40,11 @@ def _set_template_fields(hc, args, fields):
     elif args.template_object:
         template_body = hc.http_client.raw_request('GET', args.template_object)
         if template_body:
-            fields['template'] = jsonutils.loads(template_body)
+            try:
+                fields['template'] = jsonutils.loads(template_body)
+            except ValueError as e:
+                raise exc.CommandError(
+                    "Cannot parse template file: %s" % e)
         else:
             raise exc.CommandError('Could not fetch template from %s'
                                    % args.template_object)
