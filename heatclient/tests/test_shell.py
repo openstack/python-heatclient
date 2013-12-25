@@ -246,7 +246,7 @@ class ShellBase(TestCase):
             _shell.main(argstr.split())
         except SystemExit:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.assertEqual(exc_value.code, 0)
+            self.assertEqual(0, exc_value.code)
         finally:
             out = sys.stdout.getvalue()
             sys.stdout.close()
@@ -398,7 +398,7 @@ class ShellTestUserPass(ShellBase):
         try:
             self.shell("stack-show bad")
         except exc.HTTPException as e:
-            self.assertEqual(str(e), "ERROR: " + message)
+            self.assertEqual("ERROR: " + message, str(e))
 
     def test_parsable_verbose(self):
         message = "The Stack (bad) could not be found."
@@ -424,7 +424,7 @@ class ShellTestUserPass(ShellBase):
             self.shell("stack-show bad")
         except exc.HTTPException as e:
             expect = 'ERROR: The Stack (bad) could not be found.\n<TRACEBACK>'
-            self.assertEqual(str(e), expect)
+            self.assertEqual(expect, str(e))
 
     def test_parsable_malformed_error(self):
         invalid_json = "ERROR: {Invalid JSON Error."
@@ -435,7 +435,7 @@ class ShellTestUserPass(ShellBase):
         try:
             self.shell("stack-show bad")
         except exc.HTTPException as e:
-            self.assertEqual(str(e), "ERROR: " + invalid_json)
+            self.assertEqual("ERROR: " + invalid_json, str(e))
 
     def test_parsable_malformed_error_missing_message(self):
         missing_message = {
@@ -455,7 +455,7 @@ class ShellTestUserPass(ShellBase):
         try:
             self.shell("stack-show bad")
         except exc.HTTPException as e:
-            self.assertEqual(str(e), "ERROR: Internal Error")
+            self.assertEqual("ERROR: Internal Error", str(e))
 
     def test_parsable_malformed_error_missing_traceback(self):
         message = "The Stack (bad) could not be found."
@@ -478,8 +478,8 @@ class ShellTestUserPass(ShellBase):
         try:
             self.shell("stack-show bad")
         except exc.HTTPException as e:
-            self.assertEqual(str(e),
-                             "ERROR: The Stack (bad) could not be found.\n")
+            self.assertEqual("ERROR: The Stack (bad) could not be found.\n",
+                             str(e))
 
     def test_stack_show(self):
         self._script_keystone_client()

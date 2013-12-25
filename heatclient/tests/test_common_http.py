@@ -46,8 +46,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.raw_request('GET', '')
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(''.join([x for x in body]), '')
+        self.assertEqual(200, resp.status)
+        self.assertEqual('', ''.join([x for x in body]))
         self.m.VerifyAll()
 
     def test_token_or_credentials(self):
@@ -88,16 +88,16 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.raw_request('GET', '')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
         client.username = 'user'
         client.password = 'pass'
         resp, body = client.raw_request('GET', '')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
         client.auth_token = 'abcd1234'
         resp, body = client.raw_request('GET', '')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         self.m.VerifyAll()
 
     def test_include_pass(self):
@@ -196,7 +196,7 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004')
         client.region_name = 'RegionOne'
         resp, body = client.raw_request('GET', '')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         self.m.VerifyAll()
 
     def test_http_json_request(self):
@@ -216,8 +216,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(body, {})
+        self.assertEqual(200, resp.status)
+        self.assertEqual({}, body)
         self.m.VerifyAll()
 
     def test_http_json_request_w_req_body(self):
@@ -237,8 +237,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '', body='test-body')
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(body, {})
+        self.assertEqual(200, resp.status)
+        self.assertEqual({}, body)
         self.m.VerifyAll()
 
     def test_http_json_request_non_json_resp_cont_type(self):
@@ -258,7 +258,7 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '', body='test-body')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         self.assertIsNone(body)
         self.m.VerifyAll()
 
@@ -279,8 +279,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(body, 'invalid-json')
+        self.assertEqual(200, resp.status)
+        self.assertEqual('invalid-json', body)
         self.m.VerifyAll()
 
     def test_http_json_request_redirect(self):
@@ -312,8 +312,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(body, {})
+        self.assertEqual(200, resp.status)
+        self.assertEqual({}, body)
         self.m.VerifyAll()
 
     def test_http_json_request_prohibited_redirect(self):
@@ -399,8 +399,8 @@ class HttpClientTest(testtools.TestCase):
     #                             cert_file='dummy',
     #                             key_file='dummy')
     #    resp, body = client.json_request('GET', '')
-    #    self.assertEqual(resp.status, 200)
-    #    self.assertEqual(body, {})
+    #    self.assertEqual(200, resp.status)
+    #    self.assertEqual({}, body)
     #    self.m.VerifyAll()
 
     def test_fake_json_request(self):

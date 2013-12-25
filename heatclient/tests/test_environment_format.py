@@ -34,7 +34,7 @@ resource_registry: {}
         tpl1 = environment_format.parse(yaml1)
         environment_format.default_for_missing(tpl1)
         tpl2 = environment_format.parse(yaml2)
-        self.assertEqual(tpl1, tpl2)
+        self.assertEqual(tpl2, tpl1)
 
     def test_wrong_sections(self):
         env = '''
