@@ -259,7 +259,7 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '', body='test-body')
         self.assertEqual(resp.status, 200)
-        self.assertEqual(body, None)
+        self.assertIsNone(body)
         self.m.VerifyAll()
 
     def test_http_json_request_invalid_json(self):
@@ -355,7 +355,7 @@ class HttpClientTest(testtools.TestCase):
             self.fail('No exception raised')
         except exc.HTTPNotFound as e:
             # Assert that the raised exception can be converted to string
-            self.assertNotEqual(e.message, None)
+            self.assertIsNotNone(e.message)
         self.m.VerifyAll()
 
     def test_http_300_json_request(self):
@@ -378,7 +378,7 @@ class HttpClientTest(testtools.TestCase):
             self.fail('No exception raised')
         except exc.HTTPMultipleChoices as e:
             # Assert that the raised exception can be converted to string
-            self.assertNotEqual(e.message, None)
+            self.assertIsNotNone(e.message)
         self.m.VerifyAll()
 
     #def test_https_json_request(self):
