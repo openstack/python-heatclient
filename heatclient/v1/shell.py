@@ -494,8 +494,10 @@ def do_event_list(hc, args):
               'resource_name': args.resource}
     try:
         events = hc.events.list(**fields)
-    except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+    except exc.HTTPNotFound as ex:
+        # it could be the stack or resource that is not found
+        # just use the message that the server sent us.
+        raise exc.CommandError(str(ex))
     else:
         fields = ['id', 'resource_status_reason',
                   'resource_status', 'event_time']
