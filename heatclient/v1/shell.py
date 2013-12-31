@@ -319,7 +319,7 @@ def do_resource_type_list(hc, args={}):
     '''List the available resource types.'''
     kwargs = {}
     types = hc.resource_types.list(**kwargs)
-    utils.print_list(types, ['resource_type'])
+    utils.print_list(types, ['resource_type'], sortby=0)
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
