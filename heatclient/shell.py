@@ -17,7 +17,6 @@ Command-line interface to the Heat API.
 from __future__ import print_function
 
 import argparse
-import httplib2
 import logging
 import six
 import sys
@@ -277,8 +276,6 @@ class HeatShell(object):
             logging.basicConfig(
                 format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
                 level=logging.DEBUG)
-
-            httplib2.debuglevel = 1
 
     def _setup_verbose(self, verbose):
         if verbose:
