@@ -452,7 +452,8 @@ def do_resource_show(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource to generate a template for.')
 @utils.arg('-F', '--format', metavar='<FORMAT>',
-           help="The template output format. %s" % utils.supported_formats)
+           help="The template output format, one of: %s"
+                % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
     '''Generate a template based on a resource.'''
     fields = {'resource_name': args.resource}
