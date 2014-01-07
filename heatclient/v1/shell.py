@@ -100,14 +100,14 @@ def _process_environment_and_files(args, fields):
     else:
         environment_url, env = _prepare_environment_file(args.environment_file)
 
-    _resolve_environment_urls(fields, environment_url, env)
-
-
-def _resolve_environment_urls(fields, environment_url, env):
     fields['environment'] = env
     fields['files'] = {}
 
-    rr = env.get('resource_registry', {})
+    _resolve_environment_urls(fields, environment_url)
+
+
+def _resolve_environment_urls(fields, environment_url):
+    rr = fields['environment'].get('resource_registry', {})
     base_url = rr.get('base_url', environment_url)
 
     def ignore_if(key, value):
