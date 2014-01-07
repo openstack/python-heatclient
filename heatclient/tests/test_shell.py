@@ -853,6 +853,127 @@ class ShellTestEvents(ShellBase):
             self.assertRegexpMatches(event_list_text, r)
 
 
+class ShellTestResources(ShellBase):
+    def setUp(self):
+        super(ShellTestResources, self).setUp()
+        self._set_fake_env()
+
+    # Patch os.environ to avoid required auth info.
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
+        fakes.script_keystone_client()
+
+    def test_resource_list(self):
+        self._script_keystone_client()
+        resp_dict = {"resources": [
+                     {"links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id":
+                      "43b68bae-ed5d-4aed-a99f-0b3d39c2418a",
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_COMPLETE",
+                      "resource_status_reason": "state changed",
+                      "resource_type": "OS::Nova::Server",
+                      "updated_time": "2014-01-06T16:14:26Z"}]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/resources' % (
+                stack_id)).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        resource_list_text = self.shell('resource-list {0}'.format(stack_id))
+
+        required = [
+            'resource_name',
+            'resource_type',
+            'resource_status',
+            'updated_time',
+            'aResource',
+            'OS::Nova::Server',
+            'CREATE_COMPLETE',
+            '2014-01-06T16:14:26Z'
+        ]
+        for r in required:
+            self.assertRegexpMatches(resource_list_text, r)
+
+    def test_resource_show(self):
+        self._script_keystone_client()
+        resp_dict = {"resource":
+                     {"description": "",
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id":
+                      "43b68bae-ed5d-4aed-a99f-0b3d39c2418a",
+                      "required_by": [],
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_COMPLETE",
+                      "resource_status_reason": "state changed",
+                      "resource_type": "OS::Nova::Server",
+                      "updated_time": "2014-01-06T16:14:26Z"}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/resources/%s' %
+            (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), '')
+            )).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        resource_show_text = self.shell('resource-show {0} {1}'.format(
+                                        stack_id, resource_name))
+
+        required = [
+            'description',
+            'links',
+            'http://heat.example.com:8004/foo[0-9]',
+            'logical_resource_id',
+            'aResource',
+            'physical_resource_id',
+            '43b68bae-ed5d-4aed-a99f-0b3d39c2418a',
+            'required_by',
+            'resource_name',
+            'aResource',
+            'resource_status',
+            'CREATE_COMPLETE',
+            'resource_status_reason',
+            'state changed',
+            'resource_type',
+            'OS::Nova::Server',
+            'updated_time',
+            '2014-01-06T16:14:26Z',
+        ]
+        for r in required:
+            self.assertRegexpMatches(resource_show_text, r)
+
+
 class ShellTestToken(ShellTestUserPass):
 
     # Rerun all ShellTestUserPass test with token auth

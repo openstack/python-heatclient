@@ -14,10 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.v1.resources import Resource
 from heatclient.v1.resources import ResourceManager
 
-from mock import MagicMock
 from mox3 import mox
 import testtools
 
@@ -44,8 +42,6 @@ class ResourceManagerTest(testtools.TestCase):
                 return {}, {key: ret}
 
         manager = ResourceManager(FakeAPI())
-        Resource.__init__ = MagicMock()
-        Resource.__init__.return_value = None
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
         manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
         self.m.ReplayAll()
@@ -89,8 +85,6 @@ class ResourceManagerTest(testtools.TestCase):
                 return FakeResponse()
 
         manager = ResourceManager(FakeClient())
-        Resource.__init__ = MagicMock()
-        Resource.__init__.return_value = None
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
         manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
         self.m.ReplayAll()
