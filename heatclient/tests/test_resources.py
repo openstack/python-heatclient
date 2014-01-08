@@ -30,19 +30,18 @@ class ResourceManagerTest(testtools.TestCase):
         self.addCleanup(self.m.UnsetStubs)
         self.addCleanup(self.m.ResetAll)
 
-    def test_get_event(self):
-        fields = {'stack_id': 'teststack',
-                  'resource_name': 'testresource'}
+    def _base_test(self, expect, key):
 
         class FakeAPI(object):
             """Fake API and ensure request url is correct."""
 
+            def get(self, *args, **kwargs):
+                assert ('GET', args[0]) == expect
+
             def json_request(self, *args, **kwargs):
-                expect = ('GET',
-                          '/stacks/teststack%2Fabcd1234/resources'
-                          '/testresource')
                 assert args == expect
-                return {}, {'resource': []}
+                ret = key and {key: []} or {}
+                return {}, {key: ret}
 
         manager = ResourceManager(FakeAPI())
         Resource.__init__ = MagicMock()
@@ -50,26 +49,69 @@ class ResourceManagerTest(testtools.TestCase):
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
         manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
         self.m.ReplayAll()
+
+        return manager
+
+    def test_get_event(self):
+        fields = {'stack_id': 'teststack',
+                  'resource_name': 'testresource'}
+        expect = ('GET',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/testresource')
+        key = 'resource'
+
+        manager = self._base_test(expect, key)
         manager.get(**fields)
 
     def test_get_event_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': u'\u5de5\u4f5c'}
+        expect = ('GET',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/%E5%B7%A5%E4%BD%9C')
+        key = 'resource'
 
-        class FakeAPI(object):
-            """Fake API and ensure request url is correct."""
+        manager = self._base_test(expect, key)
+        manager.get(**fields)
 
-            def json_request(self, *args, **kwargs):
-                expect = ('GET',
-                          '/stacks/teststack%2Fabcd1234/resources'
-                          '/%E5%B7%A5%E4%BD%9C')
-                assert args == expect
-                return {}, {'resource': []}
+    def test_list(self):
+        fields = {'stack_id': 'teststack'}
+        expect = ('/stacks/teststack/resources')
+        key = 'resources'
 
-        manager = ResourceManager(FakeAPI())
+        class FakeResponse(object):
+            def json(self):
+                return {key: {}}
+
+        class FakeClient(object):
+            def get(self, *args, **kwargs):
+                assert args[0] == expect
+                return FakeResponse()
+
+        manager = ResourceManager(FakeClient())
         Resource.__init__ = MagicMock()
         Resource.__init__.return_value = None
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
         manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
         self.m.ReplayAll()
-        manager.get(**fields)
+
+        manager.list(**fields)
+
+    def test_metadata(self):
+        fields = {'stack_id': 'teststack',
+                  'resource_name': 'testresource'}
+        expect = ('GET',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/testresource/metadata')
+        key = 'metadata'
+
+        manager = self._base_test(expect, key)
+        manager.metadata(**fields)
+
+    def test_generate_template(self):
+        fields = {'resource_name': 'testresource'}
+        expect = ('GET', '/resource_types/testresource/template')
+        key = None
+
+        manager = self._base_test(expect, key)
+        manager.generate_template(**fields)
