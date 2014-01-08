@@ -3,9 +3,6 @@
 *,cover
 cover
 *.pyc
-.idea
-*.swp
-*~
 AUTHORS
 build
 dist
@@ -15,6 +12,6 @@ run_tests.err.log
 doc/source/api
 *.egg
 heatclient/versioninfo
-python_heatclient.egg-info
+*.egg-info
 *.log
 .testrepository
