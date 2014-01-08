@@ -15,6 +15,7 @@
 
 from heatclient.common import http
 from heatclient.v1 import actions
+from heatclient.v1 import build_info
 from heatclient.v1 import events
 from heatclient.v1 import resource_types
 from heatclient.v1 import resources
@@ -40,3 +41,4 @@ class Client(object):
             self.http_client)
         self.events = events.EventManager(self.http_client)
         self.actions = actions.ActionManager(self.http_client)
+        self.build_info = build_info.BuildInfoManager(self.http_client)
