@@ -280,6 +280,57 @@ class ShellTestCommon(ShellBase):
             for r in required:
                 self.assertRegexpMatches(help_text, r)
 
+    def test_debug_switch_raises_error(self):
+        fakes.script_keystone_client()
+        http.HTTPClient.json_request(
+            'GET', '/stacks?').AndRaise(exc.Unauthorized("FAIL"))
+
+        self.m.ReplayAll()
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        args = ['--debug', 'stack-list']
+        self.assertRaises(exc.Unauthorized, heatclient.shell.main, args)
+
+    def test_dash_d_switch_raises_error(self):
+        fakes.script_keystone_client()
+        http.HTTPClient.json_request(
+            'GET', '/stacks?').AndRaise(exc.CommandError("FAIL"))
+
+        self.m.ReplayAll()
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        args = ['-d', 'stack-list']
+        self.assertRaises(exc.CommandError, heatclient.shell.main, args)
+
+    def test_no_debug_switch_no_raises_errors(self):
+        fakes.script_keystone_client()
+        http.HTTPClient.json_request(
+            'GET', '/stacks?').AndRaise(exc.Unauthorized("FAIL"))
+
+        self.m.ReplayAll()
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+        args = ['stack-list']
+        self.assertRaises(SystemExit, heatclient.shell.main, args)
+
     def test_help_on_subcommand(self):
         required = [
             '^usage: heat stack-list',
