@@ -596,7 +596,7 @@ class ShellTestUserPass(ShellBase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         http.HTTPClient.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg(),
+            'POST', '/stacks', data=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
@@ -634,7 +634,7 @@ class ShellTestUserPass(ShellBase):
             six.StringIO('{}'))
 
         http.HTTPClient.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg(),
+            'POST', '/stacks', data=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
@@ -673,7 +673,7 @@ class ShellTestUserPass(ShellBase):
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
         http.HTTPClient.json_request(
-            'POST', '/stacks', body=mox.IgnoreArg(),
+            'POST', '/stacks', data=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
 
@@ -706,7 +706,7 @@ class ShellTestUserPass(ShellBase):
             'The request is accepted for processing.')
         http.HTTPClient.json_request(
             'PUT', '/stacks/teststack2/2',
-            body=mox.IgnoreArg(),
+            data=mox.IgnoreArg(),
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()

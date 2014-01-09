@@ -169,11 +169,10 @@ for obj_name in dir(sys.modules[__name__]):
         _code_map[obj.code] = obj
 
 
-def from_response(response, body_iter):
-    """Return an instance of an HTTPException based on httplib response."""
-    cls = _code_map.get(response.status, HTTPException)
-    body_str = ''.join([chunk for chunk in body_iter])
-    return cls(body_str)
+def from_response(response):
+    """Return an instance of an HTTPException based on requests response."""
+    cls = _code_map.get(response.status_code, HTTPException)
+    return cls(response.content)
 
 
 class NoTokenLookupException(Exception):

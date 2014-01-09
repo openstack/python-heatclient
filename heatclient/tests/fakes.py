@@ -73,7 +73,7 @@ def script_heat_normal_error():
                             {'content-type': 'application/json'},
                             jsonutils.dumps(resp_dict))
     http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
-        exc.from_response(resp, jsonutils.dumps(resp_dict)))
+        exc.from_response(resp))
 
 
 def script_heat_error(resp_string):
@@ -82,7 +82,7 @@ def script_heat_error(resp_string):
                             {'content-type': 'application/json'},
                             resp_string)
     http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
-        exc.from_response(resp, resp_string))
+        exc.from_response(resp))
 
 
 def fake_headers():
@@ -104,15 +104,20 @@ class FakeKeystone():
         self.auth_token = auth_token
 
 
+class FakeRaw():
+    version = 110
+
+
 class FakeHTTPResponse():
 
     version = 1.1
 
-    def __init__(self, status, reason, headers, body):
+    def __init__(self, status_code, reason, headers, content):
         self.headers = headers
-        self.body = body
-        self.status = status
+        self.content = content
+        self.status_code = status_code
         self.reason = reason
+        self.raw = FakeRaw()
 
     def getheader(self, name, default=None):
         return self.headers.get(name, default)
@@ -121,6 +126,12 @@ class FakeHTTPResponse():
         return self.headers.items()
 
     def read(self, amt=None):
-        b = self.body
-        self.body = None
+        b = self.content
+        self.content = None
         return b
+
+    def iter_content(self, chunksize):
+        return self.content
+
+    def json(self):
+        return jsonutils.loads(self.content)

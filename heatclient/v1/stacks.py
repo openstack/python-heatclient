@@ -105,14 +105,14 @@ class StackManager(base.BaseManager):
         """Create a stack."""
         headers = self.client.credentials_headers()
         resp, body = self.client.json_request('POST', '/stacks',
-                                              body=kwargs, headers=headers)
+                                              data=kwargs, headers=headers)
         return body
 
     def update(self, stack_id, **kwargs):
         """Update a stack."""
         headers = self.client.credentials_headers()
         resp, body = self.client.json_request('PUT', '/stacks/%s' % stack_id,
-                                              body=kwargs, headers=headers)
+                                              data=kwargs, headers=headers)
 
     def delete(self, stack_id):
         """Delete a stack."""
@@ -138,7 +138,7 @@ class StackManager(base.BaseManager):
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        resp, body = self.client.json_request('POST', '/validate', body=kwargs)
+        resp, body = self.client.json_request('POST', '/validate', data=kwargs)
         return body
 
 

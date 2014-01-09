@@ -38,11 +38,11 @@ class ActionManager(stacks.StackChildManager):
         body = {'suspend': None}
         resp, body = self.client.json_request('POST',
                                               '/stacks/%s/actions' % stack_id,
-                                              body=body)
+                                              data=body)
 
     def resume(self, stack_id):
         """Resume a stack."""
         body = {'resume': None}
         resp, body = self.client.json_request('POST',
                                               '/stacks/%s/actions' % stack_id,
-                                              body=body)
+                                              data=body)
