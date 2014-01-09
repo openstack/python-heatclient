@@ -162,7 +162,13 @@ def format_parameters(params):
                                    'Use the key=value format')
             raise exc.CommandError(msg)
 
-        parameters[n] = v
+        if n not in parameters:
+            parameters[n] = v
+        else:
+            if not isinstance(parameters[n], list):
+                parameters[n] = [parameters[n]]
+            parameters[n].append(v)
+
     return parameters
 
 
