@@ -185,22 +185,30 @@ def do_stack_create(hc, args):
     do_stack_list(hc)
 
 
-@utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to delete.')
+@utils.arg('id', metavar='<NAME or ID>', nargs='+',
+           help='Name or ID of stack(s) to delete.')
 def do_delete(hc, args):
     '''DEPRECATED! Use stack-delete instead.'''
     do_stack_delete(hc, args)
 
 
-@utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to delete.')
+@utils.arg('id', metavar='<NAME or ID>', nargs='+',
+           help='Name or ID of stack(s) to delete.')
 def do_stack_delete(hc, args):
-    '''Delete the stack.'''
-    fields = {'stack_id': args.id}
-    try:
-        hc.stacks.delete(**fields)
-    except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
-    else:
-        do_stack_list(hc)
+    '''Delete the stack(s).'''
+    failure_count = 0
+
+    for sid in args.id:
+        fields = {'stack_id': sid}
+        try:
+            hc.stacks.delete(**fields)
+        except exc.HTTPNotFound as e:
+            failure_count += 1
+            print(e)
+    if failure_count == len(args.id):
+        raise exc.CommandError("Unable to delete any of the specified "
+                               "stacks.")
+    do_stack_list(hc)
 
 
 @utils.arg('id', metavar='<NAME or ID>',

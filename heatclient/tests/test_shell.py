@@ -691,6 +691,34 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    def test_stack_delete_multiple(self):
+        self._script_keystone_client()
+        resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {},
+            None)
+        http.HTTPClient.raw_request(
+            'DELETE', '/stacks/teststack1/1',
+        ).AndReturn((resp, None))
+        http.HTTPClient.raw_request(
+            'DELETE', '/stacks/teststack2/2',
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        delete_text = self.shell('stack-delete teststack1/1 teststack2/2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(delete_text, r)
+
 
 class ShellTestEvents(ShellBase):
     def setUp(self):
