@@ -67,7 +67,6 @@ class StackManager(base.BaseManager):
     def list(self, **kwargs):
         """Get a list of stacks.
 
-        :param page_size: number of items to request in each paginated request
         :param limit: maximum number of stacks to return
         :param marker: begin returning stacks that appear later in the stack
                        list than that represented by this stack id
@@ -75,32 +74,26 @@ class StackManager(base.BaseManager):
                         structure of a stack object
         :rtype: list of :class:`Stack`
         """
-        absolute_limit = kwargs.get('limit')
-
-        def paginate(qp, seen=0):
-            sort_qp = sorted(qp.items(), key=lambda x: x[0])
-            url = '/stacks?%s' % urlutils.urlencode(sort_qp)
-
-            stacks = self._list(url, "stacks")
+        def paginate(params):
+            '''Paginate stacks, even if more than API limit.'''
+            current_limit = int(params.get('limit') or 0)
+            url = '/stacks?%s' % urlutils.urlencode(params)
+            stacks = self._list(url, 'stacks')
             for stack in stacks:
-                seen += 1
-                if absolute_limit is not None and seen > absolute_limit:
-                    return
                 yield stack
 
-            page_size = qp.get('limit')
-            if (page_size and len(stacks) == page_size and
-                    (absolute_limit is None or 0 < seen < absolute_limit)):
-                qp['marker'] = stack.id
-                for stack in paginate(qp, seen):
+            num_stacks = len(stacks)
+            remaining_limit = current_limit - num_stacks
+            if remaining_limit > 0 and num_stacks > 0:
+                params['limit'] = remaining_limit
+                params['marker'] = stack.id
+                for stack in paginate(params):
                     yield stack
 
         params = {}
-        if 'page_size' in kwargs:
-            params['limit'] = kwargs['page_size']
-
-        if 'marker' in kwargs:
-            params['marker'] = kwargs['marker']
+        for key, value in kwargs.iteritems():
+            if value:
+                params[key] = value
 
         filters = kwargs.get('filters', {})
         properties = filters.pop('properties', {})

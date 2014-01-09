@@ -131,21 +131,6 @@ class StackManagerNoPaginationTest(testtools.TestCase):
 
     def test_stack_list_no_pagination(self):
         manager = self.mock_manager()
-        results = list(manager.list(limit=self.limit))
-        manager._list.assert_called_once_with(
-            '/stacks?', 'stacks')
-
-        last_result = min(self.limit, self.total)
-        # paginate is not specified, so the total
-        # results (up to the limit) is always returned
-        self.assertEqual(last_result, len(results))
-
-        if last_result > 0:
-            self.assertEqual('stack_1', results[0].stack_name)
-            self.assertEqual('stack_%s' % last_result, results[-1].stack_name)
-
-    def test_stack_list_no_pagination_no_limit(self):
-        manager = self.mock_manager()
 
         results = list(manager.list())
         manager._list.assert_called_once_with(
@@ -164,73 +149,61 @@ class StackManagerPaginationTest(testtools.TestCase):
 
     scenarios = [
         ('0_offset_0', dict(
-            page_size=10,
             offset=0,
             total=0,
             results=((0, 0),)
         )),
         ('1_offset_0', dict(
-            page_size=10,
             offset=0,
             total=1,
             results=((0, 1),)
         )),
         ('9_offset_0', dict(
-            page_size=10,
             offset=0,
             total=9,
             results=((0, 9),)
         )),
         ('10_offset_0', dict(
-            page_size=10,
             offset=0,
             total=10,
             results=((0, 10), (10, 10))
         )),
         ('11_offset_0', dict(
-            page_size=10,
             offset=0,
             total=11,
             results=((0, 10), (10, 11))
         )),
         ('11_offset_10', dict(
-            page_size=10,
             offset=10,
             total=11,
             results=((10, 11),)
         )),
         ('19_offset_10', dict(
-            page_size=10,
             offset=10,
             total=19,
             results=((10, 19),)
         )),
         ('20_offset_10', dict(
-            page_size=10,
             offset=10,
             total=20,
             results=((10, 20), (20, 20))
         )),
         ('21_offset_10', dict(
-            page_size=10,
             offset=10,
             total=21,
             results=((10, 20), (20, 21))
         )),
         ('21_offset_0', dict(
-            page_size=10,
             offset=0,
             total=21,
             results=((0, 10), (10, 20), (20, 21))
         )),
         ('21_offset_20', dict(
-            page_size=10,
             offset=20,
             total=21,
             results=((20, 21),)
         )),
         ('95_offset_90', dict(
-            page_size=10,
             offset=90,
             total=95,
             results=((90, 95),)
@@ -248,19 +221,21 @@ class StackManagerPaginationTest(testtools.TestCase):
             try:
                 result = self.results[self.result_index]
             except IndexError:
-                return
+                return []
             self.result_index = self.result_index + 1
 
+            limit_string = 'limit=%s' % self.limit
+            self.assertIn(limit_string, arg_url)
+
             offset = result[0]
-            url = '/stacks?'
-            url += 'limit=%s' % self.page_size
             if offset > 0:
-                url += '&marker=abcd1234-%s' % offset
-            self.assertEqual(url, arg_url)
+                offset_string = 'marker=abcd1234-%s' % offset
+                self.assertIn(offset_string, arg_url)
 
             def results():
 
                 for i in range(*result):
+                    self.limit -= 1
                     stack_name = 'stack_%s' % (i + 1)
                     stack_id = 'abcd1234-%s' % (i + 1)
                     yield mock_stack(manager, stack_name, stack_id)
@@ -273,10 +248,7 @@ class StackManagerPaginationTest(testtools.TestCase):
     def test_stack_list_pagination(self):
         manager = self.mock_manager()
 
-        list_params = {
-            'page_size': self.page_size,
-            'limit': self.limit
-        }
+        list_params = {'limit': self.limit}
 
         if self.offset > 0:
             marker = 'abcd1234-%s' % self.offset

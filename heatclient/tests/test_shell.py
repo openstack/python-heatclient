@@ -377,6 +377,22 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    def test_stack_list_with_args(self):
+        self._script_keystone_client()
+        expected_url = '/stacks?marker=fake_id&limit=2'
+        fakes.script_heat_list(expected_url)
+
+        self.m.ReplayAll()
+
+        list_text = self.shell('stack-list --limit 2 --marker fake_id')
+
+        required = [
+            'teststack',
+            'teststack2',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
     def test_parsable_error(self):
         message = "The Stack (bad) could not be found."
         resp_dict = {
