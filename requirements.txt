@@ -1,6 +1,5 @@
 pbr>=0.5.21,<1.0
 argparse
-httplib2
 iso8601>=0.1.8
 PrettyTable>=0.7,<0.8
 python-keystoneclient>=0.4.1
