@@ -20,6 +20,15 @@ Once you have done so, you can use the API like so::
   >>> from heatclient.client import Client
   >>> heat = Client('1', endpoint=heat_url, token=auth_token)
 
+Reference
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    ref/index
+    ref/v1/index
+
 Command-line Tool
 =================
 
