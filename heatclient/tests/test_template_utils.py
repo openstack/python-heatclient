@@ -16,6 +16,7 @@ import os
 import six
 import tempfile
 import testtools
+from testtools.matchers import MatchesRegex
 import yaml
 
 from heatclient.common import template_utils
@@ -201,3 +202,89 @@ class ShellEnvironmentTest(testtools.TestCase):
                           template_utils.get_file_contents,
                           jenv['resource_registry'],
                           fields)
+
+
+class TestGetTemplateContents(testtools.TestCase):
+
+    def setUp(self):
+        super(TestGetTemplateContents, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_get_template_contents_file(self):
+        with tempfile.NamedTemporaryFile() as tmpl_file:
+            tmpl = '{"foo": "bar"}'
+            tmpl_file.write(tmpl)
+            tmpl_file.flush()
+
+            tmpl_parsed = template_utils.get_template_contents(
+                tmpl_file.name)
+            self.assertEqual({"foo": "bar"}, tmpl_parsed)
+
+    def test_get_template_contents_file_empty(self):
+        with tempfile.NamedTemporaryFile() as tmpl_file:
+
+            ex = self.assertRaises(
+                exc.CommandError,
+                template_utils.get_template_contents,
+                tmpl_file.name)
+            self.assertEqual(
+                str(ex),
+                'Could not fetch template from file://%s' % tmpl_file.name)
+
+    def test_get_template_contents_file_none(self):
+            ex = self.assertRaises(
+                exc.CommandError,
+                template_utils.get_template_contents)
+            self.assertEqual(
+                str(ex),
+                ('Need to specify exactly one of --template-file, '
+                 '--template-url or --template-object'))
+
+    def test_get_template_contents_parse_error(self):
+        with tempfile.NamedTemporaryFile() as tmpl_file:
+
+            tmpl = '{"foo": "bar"'
+            tmpl_file.write(tmpl)
+            tmpl_file.flush()
+
+            ex = self.assertRaises(
+                exc.CommandError,
+                template_utils.get_template_contents,
+                tmpl_file.name)
+            self.assertThat(
+                str(ex),
+                MatchesRegex(
+                    'Error parsing template file://%s ' % tmpl_file.name))
+
+    def test_get_template_contents_url(self):
+        tmpl = '{"foo": "bar"}'
+        url = 'http://no.where/path/to/a.yaml'
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        urlutils.urlopen(url).AndReturn(six.StringIO(tmpl))
+        self.m.ReplayAll()
+
+        tmpl_parsed = template_utils.get_template_contents(template_url=url)
+        self.assertEqual({"foo": "bar"}, tmpl_parsed)
+
+    def test_get_template_contents_object(self):
+        tmpl = '{"foo": "bar"}'
+        url = 'http://no.where/path/to/a.yaml'
+        self.m.ReplayAll()
+
+        self.object_requested = False
+
+        def object_request(method, object_url):
+            self.object_requested = True
+            self.assertEqual('GET', method)
+            self.assertEqual('http://no.where/path/to/a.yaml', object_url)
+            return tmpl
+
+        tmpl_parsed = template_utils.get_template_contents(
+            template_object=url,
+            object_request=object_request)
+
+        self.assertEqual({"foo": "bar"}, tmpl_parsed)
+        self.assertTrue(self.object_requested)
