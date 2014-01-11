@@ -36,85 +36,135 @@ class ShellEnvironmentTest(testtools.TestCase):
     def collect_links(self, env, content, url, env_base_url=''):
 
         jenv = yaml.safe_load(env)
-        fields = {
-            'files': {},
-            'environment': jenv
-        }
+        files = {}
         if url:
             self.m.StubOutWithMock(urlutils, 'urlopen')
             urlutils.urlopen(url).AndReturn(six.StringIO(content))
             self.m.ReplayAll()
 
-        template_utils.resolve_environment_urls(fields, env_base_url)
+        template_utils.resolve_environment_urls(
+            jenv.get('resource_registry'), files, env_base_url)
         if url:
-            self.assertEqual(fields['files'][url], content)
+            self.assertEqual(files[url], content)
 
-    def test_prepare_environment_file(self):
-        with tempfile.NamedTemporaryFile() as env_file:
-            env = '''
-            resource_registry:
-              "OS::Thingy": "file:///home/b/a.yaml"
-            '''
-            env_file.write(env)
-            env_file.flush()
-            env_url, env_dict = template_utils.prepare_environment(
-                env_file.name)
-            self.assertEqual(
-                {'resource_registry': {'OS::Thingy': 'file:///home/b/a.yaml'}},
-                env_dict)
-            env_dir = os.path.dirname(env_file.name)
-            self.assertEqual(env_url, 'file://%s' % env_dir)
+    def test_process_environment_file(self):
 
-    def test_prepare_environment_relative_file(self):
-        with tempfile.NamedTemporaryFile() as env_file:
-            env = '''
-            resource_registry:
-              "OS::Thingy": a.yaml
-            '''
-            env_file.write(env)
-            env_file.flush()
-            env_url, env_dict = template_utils.prepare_environment(
-                env_file.name)
-            self.assertEqual(
-                {'resource_registry': {'OS::Thingy': 'a.yaml'}},
-                env_dict)
-            env_dir = os.path.dirname(env_file.name)
-            self.assertEqual(env_url, 'file://%s' % env_dir)
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        env_file = '/home/my/dir/env.yaml'
+        env = '''
+        resource_registry:
+          "OS::Thingy": "file:///home/b/a.yaml"
+        '''
+        tmpl = '{"foo": "bar"}'
 
-    def test_prepare_environment_url(self):
+        urlutils.urlopen('file://%s' % env_file).AndReturn(
+            six.StringIO(env))
+        urlutils.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.StringIO(tmpl))
+        self.m.ReplayAll()
+
+        files, env_dict = template_utils.process_environment_and_files(
+            env_file)
+        self.assertEqual(
+            {'resource_registry': {
+                'OS::Thingy': 'file:///home/b/a.yaml'}},
+            env_dict)
+        self.assertEqual('{"foo": "bar"}', files['file:///home/b/a.yaml'])
+
+    def test_process_environment_relative_file(self):
+
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        env_file = '/home/my/dir/env.yaml'
+        env_url = 'file:///home/my/dir/env.yaml'
+        env = '''
+        resource_registry:
+          "OS::Thingy": a.yaml
+        '''
+        tmpl = '{"foo": "bar"}'
+
+        urlutils.urlopen(env_url).AndReturn(
+            six.StringIO(env))
+        urlutils.urlopen('file:///home/my/dir/a.yaml').AndReturn(
+            six.StringIO(tmpl))
+        self.m.ReplayAll()
+
+        self.assertEqual(
+            env_url,
+            template_utils.normalise_file_path_to_url(env_file))
+        self.assertEqual(
+            'file:///home/my/dir',
+            template_utils.base_url_for_url(env_url))
+
+        files, env_dict = template_utils.process_environment_and_files(
+            env_file)
+
+        self.assertEqual(
+            {'resource_registry': {
+                'OS::Thingy': 'file:///home/my/dir/a.yaml'}},
+            env_dict)
+        self.assertEqual(
+            '{"foo": "bar"}', files['file:///home/my/dir/a.yaml'])
+
+    def test_process_environment_relative_file_up(self):
+
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        env_file = '/home/my/dir/env.yaml'
+        env_url = 'file:///home/my/dir/env.yaml'
+        env = '''
+        resource_registry:
+          "OS::Thingy": ../bar/a.yaml
+        '''
+        tmpl = '{"foo": "bar"}'
+
+        urlutils.urlopen(env_url).AndReturn(
+            six.StringIO(env))
+        urlutils.urlopen('file:///home/my/bar/a.yaml').AndReturn(
+            six.StringIO(tmpl))
+        self.m.ReplayAll()
+
+        env_url = 'file://%s' % env_file
+        self.assertEqual(
+            env_url,
+            template_utils.normalise_file_path_to_url(env_file))
+        self.assertEqual(
+            'file:///home/my/dir',
+            template_utils.base_url_for_url(env_url))
+
+        files, env_dict = template_utils.process_environment_and_files(
+            env_file)
+
+        self.assertEqual(
+            {'resource_registry': {
+                'OS::Thingy': 'file:///home/my/bar/a.yaml'}},
+            env_dict)
+        self.assertEqual(
+            '{"foo": "bar"}', files['file:///home/my/bar/a.yaml'])
+
+    def test_process_environment_url(self):
         env = '''
         resource_registry:
             "OS::Thingy": "a.yaml"
         '''
         url = 'http://no.where/some/path/to/file.yaml'
+        tmpl_url = 'http://no.where/some/path/to/a.yaml'
+        tmpl = '{"foo": "bar"}'
+
         self.m.StubOutWithMock(urlutils, 'urlopen')
         urlutils.urlopen(url).AndReturn(six.StringIO(env))
+        urlutils.urlopen(tmpl_url).AndReturn(six.StringIO(tmpl))
         self.m.ReplayAll()
-        env_url, env_dict = template_utils.prepare_environment(url)
-        self.assertEqual({'resource_registry': {'OS::Thingy': 'a.yaml'}},
+
+        files, env_dict = template_utils.process_environment_and_files(
+            url)
+
+        self.assertEqual({'resource_registry': {'OS::Thingy': tmpl_url}},
                          env_dict)
-        self.assertEqual('http://no.where/some/path/to', env_url)
-
-    def test_process_environment_and_files(self):
-        env = '''
-        resource_registry:
-            "OS::Thingy": "a.yaml"
-        '''
-        url = 'http://no.where/some/path/to/file.yaml'
-        a_url = 'http://no.where/some/path/to/a.yaml'
-        self.m.StubOutWithMock(urlutils, 'urlopen')
-        urlutils.urlopen(url).AndReturn(six.StringIO(env))
-        urlutils.urlopen(a_url).AndReturn(six.StringIO("A's contents."))
-
-        self.m.ReplayAll()
-        fields = {}
-        template_utils.process_environment_and_files(fields, url)
-        self.assertEqual("A's contents.", fields['files'][a_url])
+        self.assertEqual(tmpl, files[tmpl_url])
 
     def test_no_process_environment_and_files(self):
-        fields = {}
-        template_utils.process_environment_and_files(fields, None)
-        self.assertEqual({}, fields)
+        files, env = template_utils.process_environment_and_files()
+        self.assertIsNone(env)
+        self.assertEqual({}, files)
 
     def test_global_files(self):
         a = "A's contents."
@@ -288,3 +338,68 @@ class TestGetTemplateContents(testtools.TestCase):
 
         self.assertEqual({"foo": "bar"}, tmpl_parsed)
         self.assertTrue(self.object_requested)
+
+
+class TestURLFunctions(testtools.TestCase):
+
+    def setUp(self):
+        super(TestURLFunctions, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_normalise_file_path_to_url_relative(self):
+        self.assertEqual(
+            'file://%s/foo' % os.getcwd(),
+            template_utils.normalise_file_path_to_url(
+                'foo'))
+
+    def test_normalise_file_path_to_url_absolute(self):
+        self.assertEqual(
+            'file:///tmp/foo',
+            template_utils.normalise_file_path_to_url(
+                '/tmp/foo'))
+
+    def test_normalise_file_path_to_url_file(self):
+        self.assertEqual(
+            'file:///tmp/foo',
+            template_utils.normalise_file_path_to_url(
+                'file:///tmp/foo'))
+
+    def test_normalise_file_path_to_url_http(self):
+        self.assertEqual(
+            'http://localhost/foo',
+            template_utils.normalise_file_path_to_url(
+                'http://localhost/foo'))
+
+    def test_base_url_for_url(self):
+        self.assertEqual(
+            'file:///foo/bar',
+            template_utils.base_url_for_url(
+                'file:///foo/bar/baz'))
+        self.assertEqual(
+            'file:///foo/bar',
+            template_utils.base_url_for_url(
+                'file:///foo/bar/baz.txt'))
+        self.assertEqual(
+            'file:///foo/bar',
+            template_utils.base_url_for_url(
+                'file:///foo/bar/'))
+        self.assertEqual(
+            'file:///',
+            template_utils.base_url_for_url(
+                'file:///'))
+        self.assertEqual(
+            'file:///',
+            template_utils.base_url_for_url(
+                'file:///foo'))
+
+        self.assertEqual(
+            'http://foo/bar',
+            template_utils.base_url_for_url(
+                'http://foo/bar/'))
+        self.assertEqual(
+            'http://foo/bar',
+            template_utils.base_url_for_url(
+                'http://foo/bar/baz.template'))

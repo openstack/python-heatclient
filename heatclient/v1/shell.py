@@ -69,6 +69,9 @@ def do_create(hc, args):
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
     '''Create the stack.'''
+    files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
+
     fields = {
         'stack_name': args.name,
         'timeout_mins': args.create_timeout,
@@ -78,11 +81,10 @@ def do_stack_create(hc, args):
             args.template_file,
             args.template_url,
             args.template_object,
-            hc.http_client.raw_request)
+            hc.http_client.raw_request),
+        'files': files,
+        'environment': env
     }
-
-    template_utils.process_environment_and_files(fields,
-                                                 args.environment_file)
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -204,6 +206,9 @@ def do_update(hc, args):
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
     '''Update the stack.'''
+    files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
+
     fields = {
         'stack_id': args.id,
         'parameters': utils.format_parameters(args.parameters),
@@ -211,10 +216,10 @@ def do_stack_update(hc, args):
             args.template_file,
             args.template_url,
             args.template_object,
-            hc.http_client.raw_request)
+            hc.http_client.raw_request),
+        'files': files,
+        'environment': env
     }
-    template_utils.process_environment_and_files(fields,
-                                                 args.environment_file)
 
     hc.stacks.update(**fields)
     do_list(hc)
@@ -309,16 +314,18 @@ def do_validate(hc, args):
            action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
+    files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
     fields = {
         'parameters': utils.format_parameters(args.parameters),
         'template': template_utils.get_template_contents(
             args.template_file,
             args.template_url,
             args.template_object,
-            hc.http_client.raw_request)
+            hc.http_client.raw_request),
+        'files': files,
+        'environment': env
     }
-    template_utils.process_environment_and_files(fields,
-                                                 args.environment_file)
 
     validation = hc.stacks.validate(**fields)
     print(jsonutils.dumps(validation, indent=2))
