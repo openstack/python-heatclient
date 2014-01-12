@@ -644,7 +644,7 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        create_text = self.shell(
+        update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
@@ -658,7 +658,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegexpMatches(update_text, r)
 
     def test_stack_delete(self):
         self._script_keystone_client()
@@ -674,7 +674,7 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
-        create_text = self.shell('stack-delete teststack2/2')
+        delete_text = self.shell('stack-delete teststack2/2')
 
         required = [
             'stack_name',
@@ -683,7 +683,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegexpMatches(delete_text, r)
 
     def test_stack_delete_multiple(self):
         self._script_keystone_client()
