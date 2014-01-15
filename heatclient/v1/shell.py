@@ -361,9 +361,9 @@ def do_template_show(hc, args):
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
         if 'heat_template_version' in template:
-            print yaml.safe_dump(template, indent=2)
+            print(yaml.safe_dump(template, indent=2))
         else:
-            print jsonutils.dumps(template, indent=2)
+            print(jsonutils.dumps(template, indent=2))
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
@@ -404,7 +404,7 @@ def do_template_validate(hc, args):
     _process_environment_and_files(args, fields)
 
     validation = hc.stacks.validate(**fields)
-    print jsonutils.dumps(validation, indent=2)
+    print(jsonutils.dumps(validation, indent=2))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -471,9 +471,9 @@ def do_resource_template(hc, args):
         raise exc.CommandError('Resource %s not found.' % args.resource)
     else:
         if args.format:
-            print utils.format_output(template, format=args.format)
+            print(utils.format_output(template, format=args.format))
         else:
-            print utils.format_output(template)
+            print(utils.format_output(template))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -490,7 +490,7 @@ def do_resource_metadata(hc, args):
         raise exc.CommandError('Stack or resource not found: %s %s' %
                                (args.id, args.resource))
     else:
-        print jsonutils.dumps(metadata, indent=2)
+        print(jsonutils.dumps(metadata, indent=2))
 
 
 @utils.arg('id', metavar='<NAME or ID>',

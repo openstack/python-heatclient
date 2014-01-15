@@ -30,7 +30,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
 
-execfile(os.path.join("ext", "gen_ref.py"))
+exec(open(os.path.join("ext", "gen_ref.py")).read())
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
