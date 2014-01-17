@@ -66,18 +66,13 @@ class TestCase(testtools.TestCase):
 
     def shell_error(self, argstr, error_match):
         orig = sys.stderr
-        try:
-            sys.stderr = six.StringIO()
-            _shell = heatclient.shell.HeatShell()
-            _shell.main(argstr.split())
-        except Exception as e:
-            self.assertRegexpMatches(e.__str__(), error_match)
-        else:
-            self.fail('Expected error matching: %s' % error_match)
-        finally:
-            err = sys.stderr.getvalue()
-            sys.stderr.close()
-            sys.stderr = orig
+        sys.stderr = six.StringIO()
+        _shell = heatclient.shell.HeatShell()
+        e = self.assertRaises(Exception, _shell.main, argstr.split())
+        self.assertRegexpMatches(e.__str__(), error_match)
+        err = sys.stderr.getvalue()
+        sys.stderr.close()
+        sys.stderr = orig
         return err
 
 
