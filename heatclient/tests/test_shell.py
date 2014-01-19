@@ -1070,13 +1070,16 @@ class ShellEnvironmentTest(TestCase):
     def collect_links(self, env, content, url, env_base_url=''):
 
         jenv = yaml.safe_load(env)
-        fields = {'files': {}}
+        fields = {
+            'files': {},
+            'environment': jenv
+        }
         if url:
             self.m.StubOutWithMock(urlutils, 'urlopen')
             urlutils.urlopen(url).AndReturn(six.StringIO(content))
             self.m.ReplayAll()
 
-        v1shell._resolve_environment_urls(fields, env_base_url, jenv)
+        v1shell._resolve_environment_urls(fields, env_base_url)
         if url:
             self.assertEqual(fields['files'][url], content)
 
