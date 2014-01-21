@@ -1091,10 +1091,26 @@ class ShellEnvironmentTest(TestCase):
             '''
             env_file.write(env)
             env_file.flush()
-            env_url, env_dict = v1shell._prepare_environment_file(
+            env_url, env_dict = v1shell._prepare_environment(
                 env_file.name)
             self.assertEqual(
                 {'resource_registry': {'OS::Thingy': 'file:///home/b/a.yaml'}},
+                env_dict)
+            env_dir = os.path.dirname(env_file.name)
+            self.assertEqual(env_url, 'file://%s' % env_dir)
+
+    def test_prepare_environment_relative_file(self):
+        with tempfile.NamedTemporaryFile() as env_file:
+            env = '''
+            resource_registry:
+              "OS::Thingy": a.yaml
+            '''
+            env_file.write(env)
+            env_file.flush()
+            env_url, env_dict = v1shell._prepare_environment(
+                env_file.name)
+            self.assertEqual(
+                {'resource_registry': {'OS::Thingy': 'a.yaml'}},
                 env_dict)
             env_dir = os.path.dirname(env_file.name)
             self.assertEqual(env_url, 'file://%s' % env_dir)
@@ -1108,10 +1124,26 @@ class ShellEnvironmentTest(TestCase):
         self.m.StubOutWithMock(urlutils, 'urlopen')
         urlutils.urlopen(url).AndReturn(six.StringIO(env))
         self.m.ReplayAll()
-        env_url, env_dict = v1shell._prepare_environment_url(url)
+        env_url, env_dict = v1shell._prepare_environment(url)
         self.assertEqual({'resource_registry': {'OS::Thingy': 'a.yaml'}},
                          env_dict)
         self.assertEqual('http://no.where/some/path/to', env_url)
+
+    def test_process_environment_and_files(self):
+        env = '''
+        resource_registry:
+            "OS::Thingy": "a.yaml"
+        '''
+        url = 'http://no.where/some/path/to/file.yaml'
+        a_url = 'http://no.where/some/path/to/a.yaml'
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        urlutils.urlopen(url).AndReturn(six.StringIO(env))
+        urlutils.urlopen(a_url).AndReturn(six.StringIO("A's contents."))
+
+        self.m.ReplayAll()
+        fields = {}
+        v1shell._process_environment_and_files(fields, url)
+        self.assertEqual("A's contents.", fields['files'][a_url])
 
     def test_global_files(self):
         a = "A's contents."
