@@ -110,6 +110,11 @@ class ShellEnvironmentTest(testtools.TestCase):
         template_utils.process_environment_and_files(fields, url)
         self.assertEqual("A's contents.", fields['files'][a_url])
 
+    def test_no_process_environment_and_files(self):
+        fields = {}
+        template_utils.process_environment_and_files(fields, None)
+        self.assertEqual({}, fields)
+
     def test_global_files(self):
         a = "A's contents."
         url = 'file:///home/b/a.yaml'
