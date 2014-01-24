@@ -13,110 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
-import urllib
 import yaml
 
-from heatclient.common import template_format
+from heatclient.common import template_utils
 from heatclient.common import utils
 from heatclient.openstack.common import jsonutils
-from heatclient.openstack.common.py3kcompat import urlutils
 
 import heatclient.exc as exc
-
-
-def _set_template_fields(hc, args, fields):
-    if args.template_file:
-        tpl = open(args.template_file).read()
-        try:
-            fields['template'] = template_format.parse(tpl)
-        except ValueError as e:
-            raise exc.CommandError(
-                "Cannot parse template file: %s" % e)
-        return args.template_file
-
-    if args.template_url:
-        fields['template_url'] = args.template_url
-        return args.template_url
-
-    if args.template_object:
-        template_body = hc.http_client.raw_request('GET', args.template_object)
-        if template_body:
-            try:
-                fields['template'] = template_format.parse(template_body)
-            except ValueError as e:
-                raise exc.CommandError(
-                    "Cannot parse template file: %s" % e)
-        else:
-            raise exc.CommandError('Could not fetch template from %s'
-                                   % args.template_object)
-        return args.template_object
-
-    raise exc.CommandError('Need to specify exactly one of '
-                           '--template-file, --template-url '
-                           'or --template-object')
-
-
-def _get_file_contents(resource_registry, fields, base_url='',
-                       ignore_if=None):
-    for key, value in iter(resource_registry.items()):
-        if ignore_if and ignore_if(key, value):
-            continue
-
-        if base_url != '' and not base_url.endswith('/'):
-            base_url = base_url + '/'
-        str_url = urlutils.urljoin(base_url, value)
-        try:
-            fields['files'][str_url] = urlutils.urlopen(str_url).read()
-        except urlutils.URLError:
-            raise exc.CommandError('Could not fetch %s from the environment'
-                                   % str_url)
-        resource_registry[key] = str_url
-
-
-def _prepare_environment(env_path):
-    if (not urlutils.urlparse(env_path).scheme):
-        env_path = urlutils.urljoin(
-            'file:', urllib.pathname2url(env_path))
-    raw_env = urlutils.urlopen(env_path).read()
-    env = yaml.safe_load(raw_env)
-    remote = urlutils.urlparse(env_path)
-    remote_dir = os.path.dirname(remote.path)
-    environment_base_url = urlutils.urljoin(env_path, remote_dir)
-    return environment_base_url, env
-
-
-def _process_environment_and_files(fields, env_path):
-    if not env_path:
-        return
-
-    environment_url, env = _prepare_environment(env_path)
-
-    fields['environment'] = env
-    fields['files'] = {}
-
-    _resolve_environment_urls(fields, environment_url)
-
-
-def _resolve_environment_urls(fields, environment_url):
-    rr = fields['environment'].get('resource_registry', {})
-    base_url = rr.get('base_url', environment_url)
-
-    def ignore_if(key, value):
-        if key == 'base_url':
-            return True
-        if isinstance(value, dict):
-            return True
-        if '::' in value:
-            # Built in providers like: "X::Compute::Server"
-            # don't need downloading.
-            return True
-
-    _get_file_contents(rr, fields, base_url, ignore_if)
-
-    for res_name, res_dict in iter(rr.get('resources', {}).items()):
-        res_base_url = res_dict.get('base_url', base_url)
-        _get_file_contents(res_dict, fields, res_base_url, ignore_if)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -170,8 +73,9 @@ def do_stack_create(hc, args):
               'timeout_mins': args.create_timeout,
               'disable_rollback': not(args.enable_rollback),
               'parameters': utils.format_parameters(args.parameters)}
-    _set_template_fields(hc, args, fields)
-    _process_environment_and_files(fields, args.environment_file)
+    template_utils.set_template_fields(hc, args, fields)
+    template_utils.process_environment_and_files(fields,
+                                                 args.environment_file)
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -295,8 +199,9 @@ def do_stack_update(hc, args):
     '''Update the stack.'''
     fields = {'stack_id': args.id,
               'parameters': utils.format_parameters(args.parameters)}
-    _set_template_fields(hc, args, fields)
-    _process_environment_and_files(fields, args.environment_file)
+    template_utils.set_template_fields(hc, args, fields)
+    template_utils.process_environment_and_files(fields,
+                                                 args.environment_file)
 
     hc.stacks.update(**fields)
     do_list(hc)
@@ -392,8 +297,9 @@ def do_validate(hc, args):
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
     fields = {'parameters': utils.format_parameters(args.parameters)}
-    _set_template_fields(hc, args, fields)
-    _process_environment_and_files(fields, args.environment_file)
+    template_utils.set_template_fields(hc, args, fields)
+    template_utils.process_environment_and_files(fields,
+                                                 args.environment_file)
 
     validation = hc.stacks.validate(**fields)
     print(jsonutils.dumps(validation, indent=2))
