@@ -69,11 +69,18 @@ def do_create(hc, args):
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
     '''Create the stack.'''
-    fields = {'stack_name': args.name,
-              'timeout_mins': args.create_timeout,
-              'disable_rollback': not(args.enable_rollback),
-              'parameters': utils.format_parameters(args.parameters)}
-    template_utils.set_template_fields(hc, args, fields)
+    fields = {
+        'stack_name': args.name,
+        'timeout_mins': args.create_timeout,
+        'disable_rollback': not(args.enable_rollback),
+        'parameters': utils.format_parameters(args.parameters),
+        'template': template_utils.get_template_contents(
+            args.template_file,
+            args.template_url,
+            args.template_object,
+            hc.http_client.raw_request)
+    }
+
     template_utils.process_environment_and_files(fields,
                                                  args.environment_file)
 
@@ -197,9 +204,15 @@ def do_update(hc, args):
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
     '''Update the stack.'''
-    fields = {'stack_id': args.id,
-              'parameters': utils.format_parameters(args.parameters)}
-    template_utils.set_template_fields(hc, args, fields)
+    fields = {
+        'stack_id': args.id,
+        'parameters': utils.format_parameters(args.parameters),
+        'template': template_utils.get_template_contents(
+            args.template_file,
+            args.template_url,
+            args.template_object,
+            hc.http_client.raw_request)
+    }
     template_utils.process_environment_and_files(fields,
                                                  args.environment_file)
 
@@ -296,8 +309,14 @@ def do_validate(hc, args):
            action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
-    fields = {'parameters': utils.format_parameters(args.parameters)}
-    template_utils.set_template_fields(hc, args, fields)
+    fields = {
+        'parameters': utils.format_parameters(args.parameters),
+        'template': template_utils.get_template_contents(
+            args.template_file,
+            args.template_url,
+            args.template_object,
+            hc.http_client.raw_request)
+    }
     template_utils.process_environment_and_files(fields,
                                                  args.environment_file)
 

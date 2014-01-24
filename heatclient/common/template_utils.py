@@ -22,36 +22,35 @@ from heatclient import exc
 from heatclient.openstack.common.py3kcompat import urlutils
 
 
-def set_template_fields(hc, args, fields):
-    if args.template_file:
-        tpl = open(args.template_file).read()
-        try:
-            fields['template'] = template_format.parse(tpl)
-        except ValueError as e:
-            raise exc.CommandError(
-                "Cannot parse template file: %s" % e)
-        return args.template_file
+def get_template_contents(template_file=None, template_url=None,
+                          template_object=None, object_request=None):
 
-    if args.template_url:
-        fields['template_url'] = args.template_url
-        return args.template_url
+    # Transform a bare file path to a file:// URL.
+    if template_file:
+        template_url = urlutils.urljoin(
+            'file:', urllib.pathname2url(template_file))
 
-    if args.template_object:
-        template_body = hc.http_client.raw_request('GET', args.template_object)
-        if template_body:
-            try:
-                fields['template'] = template_format.parse(template_body)
-            except ValueError as e:
-                raise exc.CommandError(
-                    "Cannot parse template file: %s" % e)
-        else:
-            raise exc.CommandError('Could not fetch template from %s'
-                                   % args.template_object)
-        return args.template_object
+    if template_url:
+        tpl = urlutils.urlopen(template_url).read()
 
-    raise exc.CommandError('Need to specify exactly one of '
-                           '--template-file, --template-url '
-                           'or --template-object')
+    elif template_object:
+        template_url = template_object
+        tpl = object_request and object_request('GET',
+                                                template_object)
+    else:
+        raise exc.CommandError('Need to specify exactly one of '
+                               '--template-file, --template-url '
+                               'or --template-object')
+
+    if not tpl:
+        raise exc.CommandError('Could not fetch template from %s'
+                               % template_url)
+
+    try:
+        return template_format.parse(tpl)
+    except ValueError as e:
+        raise exc.CommandError(
+            'Error parsing template %s %s' % (template_url, e))
 
 
 def get_file_contents(resource_registry, fields, base_url='',
