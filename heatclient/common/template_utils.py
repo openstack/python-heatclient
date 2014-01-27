@@ -15,8 +15,8 @@
 
 import os
 import urllib
-import yaml
 
+from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient import exc
 from heatclient.openstack.common.py3kcompat import urlutils
@@ -27,8 +27,7 @@ def get_template_contents(template_file=None, template_url=None,
 
     # Transform a bare file path to a file:// URL.
     if template_file:
-        template_url = urlutils.urljoin(
-            'file:', urllib.pathname2url(template_file))
+        template_url = normalise_file_path_to_url(template_file)
 
     if template_url:
         tpl = urlutils.urlopen(template_url).read()
@@ -53,50 +52,60 @@ def get_template_contents(template_file=None, template_url=None,
             'Error parsing template %s %s' % (template_url, e))
 
 
-def get_file_contents(resource_registry, fields, base_url='',
+def get_file_contents(from_dict, files, base_url=None,
                       ignore_if=None):
-    for key, value in iter(resource_registry.items()):
+    for key, value in iter(from_dict.items()):
         if ignore_if and ignore_if(key, value):
             continue
 
-        if base_url != '' and not base_url.endswith('/'):
+        if base_url and not base_url.endswith('/'):
             base_url = base_url + '/'
+
         str_url = urlutils.urljoin(base_url, value)
         try:
-            fields['files'][str_url] = urlutils.urlopen(str_url).read()
+            files[str_url] = urlutils.urlopen(str_url).read()
         except urlutils.URLError:
             raise exc.CommandError('Could not fetch %s from the environment'
                                    % str_url)
-        resource_registry[key] = str_url
+        from_dict[key] = str_url
 
 
-def prepare_environment(env_path):
-    if (not urlutils.urlparse(env_path).scheme):
-        env_path = urlutils.urljoin(
-            'file:', urllib.pathname2url(env_path))
-    raw_env = urlutils.urlopen(env_path).read()
-    env = yaml.safe_load(raw_env)
-    remote = urlutils.urlparse(env_path)
-    remote_dir = os.path.dirname(remote.path)
-    environment_base_url = urlutils.urljoin(env_path, remote_dir)
-    return environment_base_url, env
+def base_url_for_url(url):
+    parsed = urlutils.urlparse(url)
+    parsed_dir = os.path.dirname(parsed.path)
+    return urlutils.urljoin(url, parsed_dir)
 
 
-def process_environment_and_files(fields, env_path):
+def normalise_file_path_to_url(path):
+    if urlutils.urlparse(path).scheme:
+        return path
+    path = os.path.abspath(path)
+    return urlutils.urljoin('file:', urllib.pathname2url(path))
+
+
+def process_environment_and_files(env_path=None, template_path=None):
+    files = {}
+    env = {}
+
     if not env_path:
-        return
+        return files, None
 
-    environment_url, env = prepare_environment(env_path)
+    env_url = normalise_file_path_to_url(env_path)
+    env_base_url = base_url_for_url(env_url)
+    raw_env = urlutils.urlopen(env_url).read()
+    env = environment_format.parse(raw_env)
 
-    fields['environment'] = env
-    fields['files'] = {}
+    resolve_environment_urls(
+        env.get('resource_registry'),
+        files,
+        env_base_url)
 
-    resolve_environment_urls(fields, environment_url)
+    return files, env
 
 
-def resolve_environment_urls(fields, environment_url):
-    rr = fields['environment'].get('resource_registry', {})
-    base_url = rr.get('base_url', environment_url)
+def resolve_environment_urls(resource_registry, files, env_base_url):
+    rr = resource_registry
+    base_url = rr.get('base_url', env_base_url)
 
     def ignore_if(key, value):
         if key == 'base_url':
@@ -108,8 +117,8 @@ def resolve_environment_urls(fields, environment_url):
             # don't need downloading.
             return True
 
-    get_file_contents(rr, fields, base_url, ignore_if)
+    get_file_contents(rr, files, base_url, ignore_if)
 
     for res_name, res_dict in iter(rr.get('resources', {}).items()):
         res_base_url = res_dict.get('base_url', base_url)
-        get_file_contents(res_dict, fields, res_base_url, ignore_if)
+        get_file_contents(res_dict, files, res_base_url, ignore_if)
