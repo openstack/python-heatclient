@@ -761,6 +761,34 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(delete_text, r)
 
+    def test_build_info(self):
+        self._script_keystone_client()
+        resp_dict = {
+            'build_info': {
+                'api': {'revision': 'api_revision'},
+                'engine': {'revision': 'engine_revision'}
+            }
+        }
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request('GET', '/build_info').AndReturn(response)
+
+        self.m.ReplayAll()
+
+        build_info_text = self.shell('build-info')
+
+        required = [
+            'api',
+            'engine',
+            'revision',
+            'api_revision',
+            'engine_revision',
+        ]
+        for r in required:
+            self.assertRegexpMatches(build_info_text, r)
+
 
 class ShellTestEvents(ShellBase):
     def setUp(self):
@@ -1042,6 +1070,51 @@ class ShellTestResources(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(resource_show_text, r)
+
+
+class ShellTestBuildInfo(ShellBase):
+    def setUp(self):
+        super(ShellTestBuildInfo, self).setUp()
+        self._set_fake_env()
+
+    def _set_fake_env(self):
+        '''Patch os.environ to avoid required auth info.'''
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def test_build_info(self):
+        fakes.script_keystone_client()
+        resp_dict = {
+            'build_info': {
+                'api': {'revision': 'api_revision'},
+                'engine': {'revision': 'engine_revision'}
+            }
+        }
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request('GET', '/build_info').AndReturn(response)
+
+        self.m.ReplayAll()
+
+        build_info_text = self.shell('build-info')
+
+        required = [
+            'api',
+            'engine',
+            'revision',
+            'api_revision',
+            'engine_revision',
+        ]
+        for r in required:
+            self.assertRegexpMatches(build_info_text, r)
 
 
 class ShellTestToken(ShellTestUserPass):

@@ -476,3 +476,13 @@ def do_event_show(hc, args):
             'resource_properties': utils.json_formatter
         }
         utils.print_dict(event.to_dict(), formatters=formatters)
+
+
+def do_build_info(hc, args):
+    '''Retrieve build information.'''
+    result = hc.build_info.build_info()
+    formatters = {
+        'api': utils.json_formatter,
+        'engine': utils.json_formatter,
+    }
+    utils.print_dict(result, formatters=formatters)
