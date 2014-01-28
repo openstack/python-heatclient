@@ -271,11 +271,11 @@ class HeatShell(object):
             service_type=kwargs.get('service_type') or 'orchestration',
             endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
 
-    def _setup_debugging(self, debug):
-        if debug:
-            logging.basicConfig(
-                format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
-                level=logging.DEBUG)
+    def _setup_logging(self, debug):
+        log_lvl = logging.DEBUG if debug else logging.ERROR
+        logging.basicConfig(
+            format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
+            level=log_lvl)
 
     def _setup_verbose(self, verbose):
         if verbose:
@@ -285,7 +285,7 @@ class HeatShell(object):
         # Parse args once to find version
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
-        self._setup_debugging(options.debug)
+        self._setup_logging(options.debug)
         self._setup_verbose(options.verbose)
 
         # build available subcommands based on version
