@@ -26,7 +26,7 @@ def parse(env_str):
     '''Takes a string and returns a dict containing the parsed structure.
 
     This includes determination of whether the string is using the
-    JSON or YAML format.
+    YAML format.
     '''
     try:
         env = yaml.load(env_str, Loader=yaml_loader)
@@ -35,6 +35,9 @@ def parse(env_str):
     else:
         if env is None:
             env = {}
+        elif not isinstance(env, dict):
+            raise ValueError('The environment is not a valid '
+                             'YAML mapping data type.')
 
     for param in env:
         if param not in SECTIONS:
