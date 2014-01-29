@@ -163,7 +163,7 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     def test_no_process_environment_and_files(self):
         files, env = template_utils.process_environment_and_files()
-        self.assertIsNone(env)
+        self.assertEqual({}, env)
         self.assertEqual({}, files)
 
     def test_global_files(self):

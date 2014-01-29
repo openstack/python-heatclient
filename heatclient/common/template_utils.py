@@ -88,7 +88,7 @@ def process_environment_and_files(env_path=None, template_path=None):
     env = {}
 
     if not env_path:
-        return files, None
+        return files, env
 
     env_url = normalise_file_path_to_url(env_path)
     env_base_url = base_url_for_url(env_url)
