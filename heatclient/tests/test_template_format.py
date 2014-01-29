@@ -40,3 +40,13 @@ class YamlParseExceptions(testtools.TestCase):
 
             self.assertRaises(ValueError,
                               template_format.parse, text)
+
+    def test_parse_no_version_format(self):
+        yaml = ''
+        self.assertRaises(ValueError, template_format.parse, yaml)
+        yaml2 = '''Parameters: {}
+Mappings: {}
+Resources: {}
+Outputs: {}
+'''
+        self.assertRaises(ValueError, template_format.parse, yaml2)

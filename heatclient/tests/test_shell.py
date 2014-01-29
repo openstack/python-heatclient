@@ -718,7 +718,7 @@ class ShellTestUserPass(ShellBase):
             None)
         self.m.StubOutWithMock(urlutils, 'urlopen')
         urlutils.urlopen('http://no.where/minimal.template').AndReturn(
-            six.StringIO('{}'))
+            six.StringIO('{"AWSTemplateFormatVersion" : "2010-09-09"}'))
 
         http.HTTPClient.json_request(
             'POST', '/stacks', data=mox.IgnoreArg(),
