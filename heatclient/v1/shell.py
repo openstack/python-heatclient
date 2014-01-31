@@ -18,6 +18,7 @@ import yaml
 from heatclient.common import template_utils
 from heatclient.common import utils
 from heatclient.openstack.common import jsonutils
+from heatclient.openstack.common.py3kcompat import urlutils
 
 import heatclient.exc as exc
 
@@ -81,6 +82,59 @@ def do_stack_create(hc, args):
         'stack_name': args.name,
         'timeout_mins': args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
+        'parameters': utils.format_parameters(args.parameters),
+        'template': template,
+        'files': dict(tpl_files.items() + env_files.items()),
+        'environment': env
+    }
+
+    hc.stacks.create(**fields)
+    do_stack_list(hc)
+
+
+@utils.arg('-f', '--template-file', metavar='<FILE>',
+           help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
+           help='Path to the environment.')
+@utils.arg('-u', '--template-url', metavar='<URL>',
+           help='URL of template.')
+@utils.arg('-o', '--template-object', metavar='<URL>',
+           help='URL to retrieve template object (e.g from swift)')
+@utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
+           default=60, type=int,
+           help='Stack creation timeout in minutes. Default: 60')
+@utils.arg('-a', '--adopt-file', metavar='<FILE or URL>',
+           help='Path to adopt stack data file.')
+@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
+           help='Enable rollback on create/update failure')
+@utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
+           help='Parameter values used to create the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
+@utils.arg('name', metavar='<STACK_NAME>',
+           help='Name of the stack to adopt.')
+def do_stack_adopt(hc, args):
+    '''Adopt a stack.'''
+    tpl_files, template = template_utils.get_template_contents(
+        args.template_file,
+        args.template_url,
+        args.template_object,
+        hc.http_client.raw_request)
+    env_files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
+
+    if not args.adopt_file:
+        raise exc.CommandError('Need to specify --adopt-file')
+
+    adopt_url = template_utils.normalise_file_path_to_url(args.adopt_file)
+    adopt_data = urlutils.urlopen(adopt_url).read()
+
+    fields = {
+        'stack_name': args.name,
+        'timeout_mins': args.create_timeout,
+        'disable_rollback': not(args.enable_rollback),
+        'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(tpl_files.items() + env_files.items()),

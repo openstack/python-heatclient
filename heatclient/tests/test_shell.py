@@ -739,6 +739,50 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    def test_stack_adopt(self):
+        self._script_keystone_client()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack/1'},
+            None)
+        http.HTTPClient.json_request(
+            'POST', '/stacks', data=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        adopt_data_file = os.path.join(TEST_VAR_DIR, 'adopt_stack_data.json')
+        adopt_text = self.shell(
+            'stack-adopt teststack '
+            '--template-file=%s '
+            '--adopt-file=%s '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % (template_file, adopt_data_file))
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(adopt_text, r)
+
+    def test_stack_adopt_without_data(self):
+        failed_msg = 'Need to specify --adopt-file'
+        self._script_keystone_client()
+        self.m.ReplayAll()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        self.shell_error(
+            'stack-adopt teststack '
+            '--template-file=%s ' % template_file, failed_msg)
+
     def test_stack_update(self):
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
