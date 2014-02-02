@@ -19,6 +19,8 @@ from heatclient.v1 import build_info
 from heatclient.v1 import events
 from heatclient.v1 import resource_types
 from heatclient.v1 import resources
+from heatclient.v1 import software_configs
+from heatclient.v1 import software_deployments
 from heatclient.v1 import stacks
 
 
@@ -42,3 +44,8 @@ class Client(object):
         self.events = events.EventManager(self.http_client)
         self.actions = actions.ActionManager(self.http_client)
         self.build_info = build_info.BuildInfoManager(self.http_client)
+        self.software_deployments = \
+            software_deployments.SoftwareDeploymentManager(
+                self.http_client)
+        self.software_configs = software_configs.SoftwareConfigManager(
+            self.http_client)

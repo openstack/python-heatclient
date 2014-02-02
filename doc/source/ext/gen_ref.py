@@ -55,4 +55,5 @@ def gen_ref(ver, title, names):
 
 gen_ref("", "Client Reference", ["client", "exc"])
 gen_ref("v1", "Version 1 API Reference",
-        ["stacks", "resources", "events", "actions"])
+        ["stacks", "resources", "events", "actions",
+         "software_configs", "software_deployments"])
