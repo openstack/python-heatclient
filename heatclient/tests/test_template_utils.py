@@ -269,9 +269,10 @@ class TestGetTemplateContents(testtools.TestCase):
             tmpl_file.write(tmpl)
             tmpl_file.flush()
 
-            tmpl_parsed = template_utils.get_template_contents(
+            files, tmpl_parsed = template_utils.get_template_contents(
                 tmpl_file.name)
             self.assertEqual({"foo": "bar"}, tmpl_parsed)
+            self.assertEqual({}, files)
 
     def test_get_template_contents_file_empty(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
@@ -316,8 +317,10 @@ class TestGetTemplateContents(testtools.TestCase):
         urlutils.urlopen(url).AndReturn(six.StringIO(tmpl))
         self.m.ReplayAll()
 
-        tmpl_parsed = template_utils.get_template_contents(template_url=url)
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_url=url)
         self.assertEqual({"foo": "bar"}, tmpl_parsed)
+        self.assertEqual({}, files)
 
     def test_get_template_contents_object(self):
         tmpl = '{"foo": "bar"}'
@@ -332,12 +335,107 @@ class TestGetTemplateContents(testtools.TestCase):
             self.assertEqual('http://no.where/path/to/a.yaml', object_url)
             return tmpl
 
-        tmpl_parsed = template_utils.get_template_contents(
+        files, tmpl_parsed = template_utils.get_template_contents(
             template_object=url,
             object_request=object_request)
 
         self.assertEqual({"foo": "bar"}, tmpl_parsed)
+        self.assertEqual({}, files)
         self.assertTrue(self.object_requested)
+
+
+class TestTemplateGetFileFunctions(testtools.TestCase):
+
+    hot_template = '''heat_template_version: 2013-05-23
+resources:
+  resource1:
+    type: type1
+    properties:
+      foo: {get_file: foo.yaml}
+      bar:
+        get_file:
+          'http://localhost/bar.yaml'
+  resource2:
+    type: type1
+    properties:
+      baz:
+      - {get_file: baz/baz1.yaml}
+      - {get_file: baz/baz2.yaml}
+      - {get_file: baz/baz3.yaml}
+      ignored_list: {get_file: [ignore, me]}
+      ignored_dict: {get_file: {ignore: me}}
+      ignored_none: {get_file: }
+    '''
+
+    def setUp(self):
+        super(TestTemplateGetFileFunctions, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_hot_template(self):
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+
+        tmpl_file = '/home/my/dir/template.yaml'
+        url = 'file:///home/my/dir/template.yaml'
+        urlutils.urlopen(url).AndReturn(
+            six.StringIO(self.hot_template))
+        urlutils.urlopen(
+            'http://localhost/bar.yaml').InAnyOrder().AndReturn(
+                six.StringIO('bar contents'))
+        urlutils.urlopen(
+            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
+                six.StringIO('foo contents'))
+        urlutils.urlopen(
+            'file:///home/my/dir/baz/baz1.yaml').InAnyOrder().AndReturn(
+                six.StringIO('baz1 contents'))
+        urlutils.urlopen(
+            'file:///home/my/dir/baz/baz2.yaml').InAnyOrder().AndReturn(
+                six.StringIO('baz2 contents'))
+        urlutils.urlopen(
+            'file:///home/my/dir/baz/baz3.yaml').InAnyOrder().AndReturn(
+                six.StringIO('baz3 contents'))
+
+        self.m.ReplayAll()
+
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_file=tmpl_file)
+
+        self.assertEqual({
+            'http://localhost/bar.yaml': 'bar contents',
+            'file:///home/my/dir/foo.yaml': 'foo contents',
+            'file:///home/my/dir/baz/baz1.yaml': 'baz1 contents',
+            'file:///home/my/dir/baz/baz2.yaml': 'baz2 contents',
+            'file:///home/my/dir/baz/baz3.yaml': 'baz3 contents',
+        }, files)
+        self.assertEqual({
+            'heat_template_version': '2013-05-23',
+            'resources': {
+                'resource1': {
+                    'type': 'type1',
+                    'properties': {
+                        'bar': {'get_file': 'http://localhost/bar.yaml'},
+                        'foo': {'get_file': 'file:///home/my/dir/foo.yaml'},
+                    },
+                },
+                'resource2': {
+                    'type': 'type1',
+                    'properties': {
+                        'baz': [
+                            {'get_file': 'file:///home/my/dir/baz/baz1.yaml'},
+                            {'get_file': 'file:///home/my/dir/baz/baz2.yaml'},
+                            {'get_file': 'file:///home/my/dir/baz/baz3.yaml'},
+                        ],
+                        'ignored_list': {'get_file': ['ignore', 'me']},
+                        'ignored_dict': {'get_file': {'ignore': 'me'}},
+                        'ignored_none': {'get_file': None},
+                    },
+                }
+            }
+        }, tmpl_parsed)
+
+        self.m.VerifyAll()
 
 
 class TestURLFunctions(testtools.TestCase):

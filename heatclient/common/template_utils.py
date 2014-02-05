@@ -14,6 +14,7 @@
 #    under the License.
 
 import os
+import six
 import urllib
 
 from heatclient.common import environment_format
@@ -46,28 +47,60 @@ def get_template_contents(template_file=None, template_url=None,
                                % template_url)
 
     try:
-        return template_format.parse(tpl)
+        template = template_format.parse(tpl)
     except ValueError as e:
         raise exc.CommandError(
             'Error parsing template %s %s' % (template_url, e))
 
+    files = {}
+    tmpl_base_url = base_url_for_url(template_url)
+    resolve_template_get_files(template, files, tmpl_base_url)
+    return files, template
 
-def get_file_contents(from_dict, files, base_url=None,
-                      ignore_if=None):
-    for key, value in iter(from_dict.items()):
-        if ignore_if and ignore_if(key, value):
-            continue
 
-        if base_url and not base_url.endswith('/'):
-            base_url = base_url + '/'
+def resolve_template_get_files(template, files, template_base_url):
 
-        str_url = urlutils.urljoin(base_url, value)
-        try:
-            files[str_url] = urlutils.urlopen(str_url).read()
-        except urlutils.URLError:
-            raise exc.CommandError('Could not fetch %s from the environment'
-                                   % str_url)
-        from_dict[key] = str_url
+    def ignore_if(key, value):
+        if key != 'get_file':
+            return True
+        if not isinstance(value, six.string_types):
+            return True
+
+    def recurse_if(value):
+        return isinstance(value, (dict, list))
+
+    get_file_contents(template.get('resources'), files, template_base_url,
+                      ignore_if, recurse_if)
+
+
+def get_file_contents(from_data, files, base_url=None,
+                      ignore_if=None, recurse_if=None):
+
+    if recurse_if and recurse_if(from_data):
+        if isinstance(from_data, dict):
+            recurse_data = from_data.itervalues()
+        else:
+            recurse_data = from_data
+        for value in recurse_data:
+            get_file_contents(value, files, base_url, ignore_if, recurse_if)
+
+    if isinstance(from_data, dict):
+        for key, value in iter(from_data.items()):
+            if ignore_if and ignore_if(key, value):
+                continue
+
+            if base_url and not base_url.endswith('/'):
+                base_url = base_url + '/'
+
+            str_url = urlutils.urljoin(base_url, value)
+            try:
+                files[str_url] = urlutils.urlopen(str_url).read()
+            except urlutils.URLError:
+                raise exc.CommandError('Could not fetch contents for %s'
+                                       % str_url)
+
+            # replace the data value with the normalised absolute URL
+            from_data[key] = str_url
 
 
 def base_url_for_url(url):
@@ -83,22 +116,21 @@ def normalise_file_path_to_url(path):
     return urlutils.urljoin('file:', urllib.pathname2url(path))
 
 
-def process_environment_and_files(env_path=None, template_path=None):
+def process_environment_and_files(env_path=None, template=None,
+                                  template_url=None):
     files = {}
     env = {}
 
-    if not env_path:
-        return files, env
+    if env_path:
+        env_url = normalise_file_path_to_url(env_path)
+        env_base_url = base_url_for_url(env_url)
+        raw_env = urlutils.urlopen(env_url).read()
+        env = environment_format.parse(raw_env)
 
-    env_url = normalise_file_path_to_url(env_path)
-    env_base_url = base_url_for_url(env_url)
-    raw_env = urlutils.urlopen(env_url).read()
-    env = environment_format.parse(raw_env)
-
-    resolve_environment_urls(
-        env.get('resource_registry'),
-        files,
-        env_base_url)
+        resolve_environment_urls(
+            env.get('resource_registry'),
+            files,
+            env_base_url)
 
     return files, env
 

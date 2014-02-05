@@ -24,7 +24,7 @@ import heatclient.exc as exc
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
@@ -49,7 +49,7 @@ def do_create(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
@@ -69,7 +69,12 @@ def do_create(hc, args):
            help='Name of the stack to create.')
 def do_stack_create(hc, args):
     '''Create the stack.'''
-    files, env = template_utils.process_environment_and_files(
+    tpl_files, template = template_utils.get_template_contents(
+        args.template_file,
+        args.template_url,
+        args.template_object,
+        hc.http_client.raw_request)
+    env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
 
     fields = {
@@ -77,12 +82,8 @@ def do_stack_create(hc, args):
         'timeout_mins': args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
-        'template': template_utils.get_template_contents(
-            args.template_file,
-            args.template_url,
-            args.template_object,
-            hc.http_client.raw_request),
-        'files': files,
+        'template': template,
+        'files': dict(tpl_files.items() + env_files.items()),
         'environment': env
     }
 
@@ -171,7 +172,7 @@ def do_stack_show(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
@@ -191,7 +192,7 @@ def do_update(hc, args):
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
@@ -206,18 +207,21 @@ def do_update(hc, args):
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
     '''Update the stack.'''
-    files, env = template_utils.process_environment_and_files(
+
+    tpl_files, template = template_utils.get_template_contents(
+        args.template_file,
+        args.template_url,
+        args.template_object,
+        hc.http_client.raw_request)
+
+    env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
 
     fields = {
         'stack_id': args.id,
         'parameters': utils.format_parameters(args.parameters),
-        'template': template_utils.get_template_contents(
-            args.template_file,
-            args.template_url,
-            args.template_object,
-            hc.http_client.raw_request),
-        'files': files,
+        'template': template,
+        'files': dict(tpl_files.items() + env_files.items()),
         'environment': env
     }
 
@@ -285,7 +289,7 @@ def do_template_show(hc, args):
            help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
@@ -303,7 +307,7 @@ def do_validate(hc, args):
            help='URL of template.')
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
-@utils.arg('-e', '--environment-file', metavar='<FILE>',
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
@@ -314,16 +318,19 @@ def do_validate(hc, args):
            action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
-    files, env = template_utils.process_environment_and_files(
+
+    tpl_files, template = template_utils.get_template_contents(
+        args.template_file,
+        args.template_url,
+        args.template_object,
+        hc.http_client.raw_request)
+
+    env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
     fields = {
         'parameters': utils.format_parameters(args.parameters),
-        'template': template_utils.get_template_contents(
-            args.template_file,
-            args.template_url,
-            args.template_object,
-            hc.http_client.raw_request),
-        'files': files,
+        'template': template,
+        'files': dict(tpl_files.items() + env_files.items()),
         'environment': env
     }
 
