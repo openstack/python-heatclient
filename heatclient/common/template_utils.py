@@ -136,6 +136,9 @@ def process_environment_and_files(env_path=None, template=None,
 
 
 def resolve_environment_urls(resource_registry, files, env_base_url):
+    if resource_registry is None:
+        return
+
     rr = resource_registry
     base_url = rr.get('base_url', env_base_url)
 

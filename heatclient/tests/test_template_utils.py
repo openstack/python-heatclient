@@ -161,6 +161,21 @@ class ShellEnvironmentTest(testtools.TestCase):
                          env_dict)
         self.assertEqual(tmpl, files[tmpl_url])
 
+    def test_process_environment_empty_file(self):
+
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        env_file = '/home/my/dir/env.yaml'
+        env = ''
+
+        urlutils.urlopen('file://%s' % env_file).AndReturn(six.StringIO(env))
+        self.m.ReplayAll()
+
+        files, env_dict = template_utils.process_environment_and_files(
+            env_file)
+
+        self.assertEqual({}, env_dict)
+        self.assertEqual({}, files)
+
     def test_no_process_environment_and_files(self):
         files, env = template_utils.process_environment_and_files()
         self.assertEqual({}, env)
