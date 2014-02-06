@@ -226,17 +226,24 @@ def do_stack_update(hc, args):
     }
 
     hc.stacks.update(**fields)
-    do_list(hc)
+    do_stack_list(hc)
 
 
-def do_list(hc, args={}):
+def do_list(hc):
     '''DEPRECATED! Use stack-list instead.'''
-    do_stack_list(hc, args)
+    do_stack_list(hc)
 
 
-def do_stack_list(hc, args={}):
+@utils.arg('-l', '--limit', metavar='<LIMIT>',
+           help='Limit the number of stacks returned')
+@utils.arg('-m', '--marker', metavar='<ID>',
+           help='Only return stacks that appear after the given stack ID')
+def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
+    if args:
+        kwargs = {'limit': args.limit,
+                  'marker': args.marker}
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
     utils.print_list(stacks, fields, sortby=3)

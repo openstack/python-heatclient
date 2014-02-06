@@ -32,12 +32,17 @@ def script_keystone_client(token=None):
                                                        'abcd1234'))
 
 
-def script_heat_list():
-    resp_dict = {"stacks": [{
-        "id": "1",
-        "stack_name": "teststack",
-        "stack_status": 'CREATE_COMPLETE',
-        "creation_time": "2012-10-25T01:58:47Z"},
+def script_heat_list(url=None):
+    if url is None:
+        url = '/stacks?'
+
+    resp_dict = {"stacks": [
+        {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        },
         {
             "id": "2",
             "stack_name": "teststack2",
@@ -49,8 +54,7 @@ def script_heat_list():
                             'success, you',
                             {'content-type': 'application/json'},
                             jsonutils.dumps(resp_dict))
-    http.HTTPClient.json_request('GET', '/stacks?').AndReturn(
-        (resp, resp_dict))
+    http.HTTPClient.json_request('GET', url).AndReturn((resp, resp_dict))
 
 
 def script_heat_normal_error():
