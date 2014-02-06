@@ -234,6 +234,11 @@ def do_list(hc):
     do_stack_list(hc)
 
 
+@utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
+           help='Filter parameters to apply on returned stacks. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
            help='Limit the number of stacks returned')
 @utils.arg('-m', '--marker', metavar='<ID>',
@@ -243,7 +248,9 @@ def do_stack_list(hc, args=None):
     kwargs = {}
     if args:
         kwargs = {'limit': args.limit,
-                  'marker': args.marker}
+                  'marker': args.marker,
+                  'filters': utils.format_parameters(args.filters)}
+
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
     utils.print_list(stacks, fields, sortby=3)

@@ -379,12 +379,18 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_list_with_args(self):
         self._script_keystone_client()
-        expected_url = '/stacks?marker=fake_id&limit=2'
+        expected_url = ('/stacks?'
+                        'status=COMPLETE&status=FAILED'
+                        '&marker=fake_id&limit=2')
         fakes.script_heat_list(expected_url)
 
         self.m.ReplayAll()
 
-        list_text = self.shell('stack-list --limit 2 --marker fake_id')
+        list_text = self.shell('stack-list'
+                               ' --limit 2'
+                               ' --marker fake_id'
+                               ' --filters=status=COMPLETE'
+                               ' --filters=status=FAILED')
 
         required = [
             'teststack',

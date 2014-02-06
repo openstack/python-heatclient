@@ -66,6 +66,14 @@ class shellTest(testtools.TestCase):
                                        'ww7a4oAO;NQ/fD==',
                           'UpstreamDNS': '8.8.8.8'}, p)
 
+    def test_format_parameters_multiple_values_per_pamaters(self):
+        p = utils.format_parameters([
+            'status=COMPLETE',
+            'status=FAILED'])
+        self.assertIn('status', p)
+        self.assertIn('COMPLETE', p['status'])
+        self.assertIn('FAILED', p['status'])
+
     def test_format_parameter_bad_parameter(self):
         params = ['KeyName=heat_key;UpstreamDNS8.8.8.8']
         ex = self.assertRaises(exc.CommandError,

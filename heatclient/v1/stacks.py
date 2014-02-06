@@ -77,7 +77,7 @@ class StackManager(base.BaseManager):
         def paginate(params):
             '''Paginate stacks, even if more than API limit.'''
             current_limit = int(params.get('limit') or 0)
-            url = '/stacks?%s' % urlutils.urlencode(params)
+            url = '/stacks?%s' % urlutils.urlencode(params, True)
             stacks = self._list(url, 'stacks')
             for stack in stacks:
                 yield stack
@@ -91,15 +91,13 @@ class StackManager(base.BaseManager):
                     yield stack
 
         params = {}
+        if 'filters' in kwargs:
+            filters = kwargs.pop('filters')
+            params.update(filters)
+
         for key, value in kwargs.iteritems():
             if value:
                 params[key] = value
-
-        filters = kwargs.get('filters', {})
-        properties = filters.pop('properties', {})
-        for key, value in properties.items():
-            params['property-%s' % key] = value
-        params.update(filters)
 
         return paginate(params)
 
