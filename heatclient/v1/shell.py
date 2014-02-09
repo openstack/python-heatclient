@@ -229,7 +229,7 @@ def do_stack_update(hc, args):
     do_stack_list(hc)
 
 
-def do_list(hc):
+def do_list(hc, args=None):
     '''DEPRECATED! Use stack-list instead.'''
     do_stack_list(hc)
 
