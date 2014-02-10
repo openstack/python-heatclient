@@ -29,12 +29,12 @@ import heatclient.exc as exc
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60')
+           help='Stack creation timeout in minutes. Default: 60.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure')
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -54,12 +54,12 @@ def do_create(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60')
+           help='Stack creation timeout in minutes. Default: 60.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure')
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -177,11 +177,11 @@ def do_stack_show(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
@@ -197,11 +197,11 @@ def do_update(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
@@ -237,12 +237,12 @@ def do_list(hc):
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Filter parameters to apply on returned stacks. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
-           help='Limit the number of stacks returned')
+           help='Limit the number of stacks returned.')
 @utils.arg('-m', '--marker', metavar='<ID>',
-           help='Only return stacks that appear after the given stack ID')
+           help='Only return stacks that appear after the given stack ID.')
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
@@ -306,11 +306,11 @@ def do_template_show(hc, args):
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values to validate. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
@@ -324,11 +324,11 @@ def do_validate(hc, args):
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values to validate. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
@@ -405,7 +405,7 @@ def do_resource_show(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource to generate a template for.')
 @utils.arg('-F', '--format', metavar='<FORMAT>',
-           help="The template output format, one of: %s"
+           help="The template output format, one of: %s."
                 % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
     '''Generate a template based on a resource.'''
@@ -441,7 +441,7 @@ def do_resource_metadata(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the events for.')
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
-           help='Name of the resource to filter events by')
+           help='Name of the resource to filter events by.')
 def do_event_list(hc, args):
     '''List events for a stack.'''
     fields = {'stack_id': args.id,
@@ -468,7 +468,7 @@ def do_event_list(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource the event belongs to.')
 @utils.arg('event', metavar='<EVENT>',
-           help='ID of event to display details for')
+           help='ID of event to display details for.')
 def do_event(hc, args):
     '''DEPRECATED! Use event-show instead.'''
     do_event_show(hc, args)
@@ -479,7 +479,7 @@ def do_event(hc, args):
 @utils.arg('resource', metavar='<RESOURCE>',
            help='Name of the resource the event belongs to.')
 @utils.arg('event', metavar='<EVENT>',
-           help='ID of event to display details for')
+           help='ID of event to display details for.')
 def do_event_show(hc, args):
     '''Describe the event.'''
     fields = {'stack_id': args.id,
