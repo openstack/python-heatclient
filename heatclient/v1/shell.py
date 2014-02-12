@@ -83,7 +83,7 @@ def do_stack_create(hc, args):
         'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
-        'files': dict(tpl_files.items() + env_files.items()),
+        'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
 
@@ -234,7 +234,7 @@ def do_stack_update(hc, args):
         'stack_id': args.id,
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
-        'files': dict(tpl_files.items() + env_files.items()),
+        'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
 
@@ -357,7 +357,7 @@ def do_template_validate(hc, args):
     fields = {
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
-        'files': dict(tpl_files.items() + env_files.items()),
+        'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
 
