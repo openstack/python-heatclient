@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import copy
+
 import six
 
 from heatclient.openstack.common.apiclient import base
@@ -37,7 +37,7 @@ class Stack(base.Resource):
 
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
-        self.set_loaded(True)
+        self._loaded = True
         if not hasattr(self.manager, 'get'):
             return
 
@@ -60,9 +60,6 @@ class Stack(base.Resource):
     @property
     def identifier(self):
         return '%s/%s' % (self.stack_name, self.id)
-
-    def to_dict(self):
-        return copy.deepcopy(self._info)
 
 
 class StackManager(base.BaseManager):

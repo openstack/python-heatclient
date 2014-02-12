@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import copy
 
 from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
@@ -34,9 +33,6 @@ class Event(base.Resource):
 
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
-
-    def to_dict(self):
-        return copy.deepcopy(self._info)
 
 
 class EventManager(stacks.StackChildManager):
