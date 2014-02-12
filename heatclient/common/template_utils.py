@@ -15,7 +15,6 @@
 
 import os
 import six
-import urllib
 
 from heatclient.common import environment_format
 from heatclient.common import template_format
@@ -113,7 +112,7 @@ def normalise_file_path_to_url(path):
     if urlutils.urlparse(path).scheme:
         return path
     path = os.path.abspath(path)
-    return urlutils.urljoin('file:', urllib.pathname2url(path))
+    return urlutils.urljoin('file:', urlutils.pathname2url(path))
 
 
 def process_environment_and_files(env_path=None, template=None,
