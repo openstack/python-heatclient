@@ -323,6 +323,46 @@ def do_stack_list(hc, args=None):
     utils.print_list(stacks, fields, sortby=3)
 
 
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to query.')
+def do_output_list(hc, args):
+    '''Show available outputs.'''
+    try:
+        stack = hc.stacks.get(stack_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        outputs = stack.to_dict()['outputs']
+        fields = ['output_key', 'description']
+        formatters = {
+            'output_key': lambda x: x['output_key'],
+            'description': lambda x: x['description'],
+        }
+
+        utils.print_list(outputs, fields, formatters=formatters)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to query.')
+@utils.arg('output', metavar='<OUTPUT NAME>',
+           help='Name of an output to display.')
+def do_output_show(hc, args):
+    '''Show a specific stack output.'''
+    try:
+        stack = hc.stacks.get(stack_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        for output in stack.to_dict().get('outputs', []):
+            if output['output_key'] == args.output:
+                value = output['output_value']
+                break
+        else:
+            return
+
+        print (jsonutils.dumps(value, indent=2))
+
+
 def do_resource_type_list(hc, args={}):
     '''List the available resource types.'''
     kwargs = {}

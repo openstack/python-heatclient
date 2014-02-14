@@ -61,6 +61,14 @@ View stack information::
 
     heat stack-show mystack
 
+List stack outputs::
+
+    heat output-list <stack name>
+
+Show the value of a single output::
+
+    heat output-show <stack name> <output key>
+
 List events::
 
     heat event-list mystack
