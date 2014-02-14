@@ -320,6 +320,70 @@ class HttpClientTest(testtools.TestCase):
         self.assertEqual(200, resp.status_code)
         self.m.VerifyAll()
 
+    def test_http_manual_redirect_post(self):
+        mock_conn = http.requests.request(
+            'POST', 'http://example.com:8004/foo',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                302, 'Found',
+                {'location': 'http://example.com:8004/foo/bar'},
+                ''))
+        mock_conn = http.requests.request(
+            'POST', 'http://example.com:8004/foo/bar',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
+
+        self.m.ReplayAll()
+
+        client = http.HTTPClient('http://example.com:8004/foo')
+        resp, body = client.json_request('POST', '')
+
+        self.assertEqual(200, resp.status_code)
+        self.m.VerifyAll()
+
+    def test_http_manual_redirect_put(self):
+        mock_conn = http.requests.request(
+            'PUT', 'http://example.com:8004/foo',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                302, 'Found',
+                {'location': 'http://example.com:8004/foo/bar'},
+                ''))
+        mock_conn = http.requests.request(
+            'PUT', 'http://example.com:8004/foo/bar',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
+
+        self.m.ReplayAll()
+
+        client = http.HTTPClient('http://example.com:8004/foo')
+        resp, body = client.json_request('PUT', '')
+
+        self.assertEqual(200, resp.status_code)
+        self.m.VerifyAll()
+
     def test_http_manual_redirect_prohibited(self):
         mock_conn = http.requests.request(
             'DELETE', 'http://example.com:8004/foo',
