@@ -1236,13 +1236,13 @@ class ShellTestStandaloneToken(ShellTestUserPass):
         failed_msg = 'Error parsing template '
 
         with tempfile.NamedTemporaryFile() as bad_json_file:
-            bad_json_file.write("{foo:}")
+            bad_json_file.write(b"{foo:}")
             bad_json_file.flush()
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
                              failed_msg)
 
         with tempfile.NamedTemporaryFile() as bad_json_file:
-            bad_json_file.write('{"foo": None}')
+            bad_json_file.write(b'{"foo": None}')
             bad_json_file.flush()
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
                              failed_msg)
