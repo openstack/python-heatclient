@@ -1179,6 +1179,122 @@ class ShellTestResources(ShellBase):
         for r in required:
             self.assertRegexpMatches(resource_show_text, r)
 
+    def test_resource_signal(self):
+        self._script_keystone_client()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.HTTPClient.json_request(
+            'POST', '/stacks/%s/resources/%s/signal' %
+            (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), '')
+            ),
+            data={'message': 'Content'}).AndReturn((resp, ''))
+
+        self.m.ReplayAll()
+
+        text = self.shell(
+            'resource-signal {0} {1} -D {{"message":"Content"}}'.format(
+                stack_id, resource_name))
+        self.assertEqual("", text)
+
+    def test_resource_signal_no_data(self):
+        self._script_keystone_client()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.HTTPClient.json_request(
+            'POST', '/stacks/%s/resources/%s/signal' %
+            (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), '')
+            ), data=None).AndReturn((resp, ''))
+
+        self.m.ReplayAll()
+
+        text = self.shell(
+            'resource-signal {0} {1}'.format(stack_id, resource_name))
+        self.assertEqual("", text)
+
+    def test_resource_signal_no_json(self):
+        self._script_keystone_client()
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+
+        self.m.ReplayAll()
+
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'resource-signal {0} {1} -D [2'.format(
+                stack_id, resource_name))
+        self.assertIn('Data should be in JSON format', str(error))
+
+    def test_resource_signal_no_dict(self):
+        self._script_keystone_client()
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+
+        self.m.ReplayAll()
+
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'resource-signal {0} {1} -D "message"'.format(
+                stack_id, resource_name))
+        self.assertEqual('Data should be a JSON dict', str(error))
+
+    def test_resource_signal_both_data(self):
+        self._script_keystone_client()
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+
+        self.m.ReplayAll()
+
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'resource-signal {0} {1} -D "message" -f foo'.format(
+                stack_id, resource_name))
+        self.assertEqual('Can only specify one of data and data-file',
+                         str(error))
+
+    def test_resource_signal_data_file(self):
+        self._script_keystone_client()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.HTTPClient.json_request(
+            'POST', '/stacks/%s/resources/%s/signal' %
+            (
+                urlutils.quote(stack_id, ''),
+                urlutils.quote(strutils.safe_encode(
+                    resource_name), '')
+            ),
+            data={'message': 'Content'}).AndReturn((resp, ''))
+
+        self.m.ReplayAll()
+
+        with tempfile.NamedTemporaryFile() as data_file:
+            data_file.write('{"message":"Content"}')
+            data_file.flush()
+            text = self.shell(
+                'resource-signal {0} {1} -f {2}'.format(
+                    stack_id, resource_name, data_file.name))
+            self.assertEqual("", text)
+
 
 class ShellTestBuildInfo(ShellBase):
     def setUp(self):

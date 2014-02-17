@@ -78,6 +78,19 @@ class ResourceManager(stacks.StackChildManager):
         resp, body = self.client.json_request('GET', url_str)
         return body['metadata']
 
+    def signal(self, stack_id, resource_name, data=None):
+        """Signal a specific resource.
+
+        :param stack_id: ID of stack containing the resource
+        :param resource_name: ID of resource to send signal to
+        """
+        stack_id = self._resolve_stack_id(stack_id)
+        url_str = '/stacks/%s/resources/%s/signal' % (
+                  urlutils.quote(stack_id, ''),
+                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+        resp, body = self.client.json_request('POST', url_str, data=data)
+        return body
+
     def generate_template(self, resource_name):
         # Use urlutils for python2/python3 compatibility
         url_str = '/resource_types/%s/template' % (
