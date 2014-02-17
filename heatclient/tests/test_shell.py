@@ -417,10 +417,8 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
-        try:
-            self.shell("stack-show bad")
-        except exc.HTTPException as e:
-            self.assertEqual("ERROR: " + message, str(e))
+        e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
+        self.assertEqual("ERROR: " + message, str(e))
 
     def test_parsable_verbose(self):
         message = "The Stack (bad) could not be found."
@@ -442,22 +440,16 @@ class ShellTestUserPass(ShellBase):
 
         exc.verbose = 1
 
-        try:
-            self.shell("stack-show bad")
-        except exc.HTTPException as e:
-            expect = 'ERROR: The Stack (bad) could not be found.\n<TRACEBACK>'
-            self.assertEqual(expect, str(e))
+        e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
+        self.assertIn(message, str(e))
 
     def test_parsable_malformed_error(self):
         invalid_json = "ERROR: {Invalid JSON Error."
         self._script_keystone_client()
         fakes.script_heat_error(invalid_json)
         self.m.ReplayAll()
-
-        try:
-            self.shell("stack-show bad")
-        except exc.HTTPException as e:
-            self.assertEqual("ERROR: " + invalid_json, str(e))
+        e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
+        self.assertEqual("ERROR: " + invalid_json, str(e))
 
     def test_parsable_malformed_error_missing_message(self):
         missing_message = {
@@ -474,10 +466,8 @@ class ShellTestUserPass(ShellBase):
         fakes.script_heat_error(jsonutils.dumps(missing_message))
         self.m.ReplayAll()
 
-        try:
-            self.shell("stack-show bad")
-        except exc.HTTPException as e:
-            self.assertEqual("ERROR: Internal Error", str(e))
+        e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
+        self.assertEqual("ERROR: Internal Error", str(e))
 
     def test_parsable_malformed_error_missing_traceback(self):
         message = "The Stack (bad) could not be found."
@@ -497,11 +487,9 @@ class ShellTestUserPass(ShellBase):
 
         exc.verbose = 1
 
-        try:
-            self.shell("stack-show bad")
-        except exc.HTTPException as e:
-            self.assertEqual("ERROR: The Stack (bad) could not be found.\n",
-                             str(e))
+        e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
+        self.assertEqual("ERROR: The Stack (bad) could not be found.\n",
+                         str(e))
 
     def test_stack_show(self):
         self._script_keystone_client()

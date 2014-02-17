@@ -386,12 +386,9 @@ class HttpClientTest(testtools.TestCase):
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
-        try:
-            client.json_request('GET', '')
-            self.fail('No exception raised')
-        except exc.HTTPNotFound as e:
-            # Assert that the raised exception can be converted to string
-            self.assertIsNotNone(e.message)
+        e = self.assertRaises(exc.HTTPNotFound, client.json_request, 'GET', '')
+        # Assert that the raised exception can be converted to string
+        self.assertIsNotNone(str(e))
         self.m.VerifyAll()
 
     def test_http_300_json_request(self):
@@ -409,12 +406,10 @@ class HttpClientTest(testtools.TestCase):
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
-        try:
-            client.json_request('GET', '')
-            self.fail('No exception raised')
-        except exc.HTTPMultipleChoices as e:
-            # Assert that the raised exception can be converted to string
-            self.assertIsNotNone(e.message)
+        e = self.assertRaises(
+            exc.HTTPMultipleChoices, client.json_request, 'GET', '')
+        # Assert that the raised exception can be converted to string
+        self.assertIsNotNone(str(e))
         self.m.VerifyAll()
 
     def test_fake_json_request(self):
