@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -568,3 +569,19 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('https://foo')
         self.assertEqual(client.verify_cert, "SOMEWHERE")
+
+    def test_curl_log_i18n_headers(self):
+        self.m.StubOutWithMock(logging.Logger, 'debug')
+        kwargs = {'headers': {'Key': 'foo\xe3\x8a\x8e'}}
+
+        mock_logging_debug = logging.Logger.debug(
+            u"curl -i -X GET -H 'Key: foo㊎' http://somewhere"
+        )
+        mock_logging_debug.AndReturn(None)
+
+        self.m.ReplayAll()
+
+        client = http.HTTPClient('http://somewhere')
+        client.log_curl_request("GET", '', kwargs=kwargs)
+
+        self.m.VerifyAll()

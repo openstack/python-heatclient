@@ -23,6 +23,7 @@ import requests
 from heatclient import exc
 from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common.py3kcompat import urlutils
+from heatclient.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
 if not LOG.handlers:
@@ -82,7 +83,8 @@ class HTTPClient(object):
         curl = ['curl -i -X %s' % method]
 
         for (key, value) in kwargs['headers'].items():
-            header = '-H \'%s: %s\'' % (key, value)
+            header = '-H \'%s: %s\'' % (strutils.safe_decode(key),
+                                        strutils.safe_decode(value))
             curl.append(header)
 
         conn_params_fmt = [
