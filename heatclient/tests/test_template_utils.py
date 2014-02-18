@@ -301,13 +301,13 @@ class TestGetTemplateContents(testtools.TestCase):
                 'Could not fetch template from file://%s' % tmpl_file.name)
 
     def test_get_template_contents_file_none(self):
-            ex = self.assertRaises(
-                exc.CommandError,
-                template_utils.get_template_contents)
-            self.assertEqual(
-                str(ex),
-                ('Need to specify exactly one of --template-file, '
-                 '--template-url or --template-object'))
+        ex = self.assertRaises(
+            exc.CommandError,
+            template_utils.get_template_contents)
+        self.assertEqual(
+            str(ex),
+            ('Need to specify exactly one of --template-file, '
+             '--template-url or --template-object'))
 
     def test_get_template_contents_parse_error(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
