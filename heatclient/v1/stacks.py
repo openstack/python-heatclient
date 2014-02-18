@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import copy
+import six
 
 from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
@@ -98,7 +99,7 @@ class StackManager(base.BaseManager):
             filters = kwargs.pop('filters')
             params.update(filters)
 
-        for key, value in kwargs.iteritems():
+        for key, value in six.iteritems(kwargs):
             if value:
                 params[key] = value
 
