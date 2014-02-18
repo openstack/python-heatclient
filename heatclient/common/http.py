@@ -142,16 +142,16 @@ class HTTPClient(object):
         if self.verify_cert is not None:
             kwargs['verify'] = self.verify_cert
 
-        # We are not using requests builtin redirection on DELETE since it does
-        # not follow the RFC having to resend the same method on a
-        # redirect. For example if we do a DELETE on a URL and we get
-        # a 302 RFC says that we should follow that URL with the same
+        # We are not using requests builtin redirection on DELETE/POST/PUT
+        # since it does not follow the RFC having to resend the same method on
+        # a redirect. For example if we do a DELETE/POST/PUT on a URL and we
+        # get a 302 RFC says that we should follow that URL with the same
         # method as before, requests doesn't follow that and send a
         # GET instead for the method.  See issue:
         # https://github.com/kennethreitz/requests/issues/1704
         # hopefully this could be fixed as they say in a comment in a
         # future point version i.e: 3.x
-        if method == 'DELETE':
+        if method != 'GET':
             allow_redirects = False
         else:
             allow_redirects = True
