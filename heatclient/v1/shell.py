@@ -169,6 +169,59 @@ def do_stack_adopt(hc, args):
     do_stack_list(hc)
 
 
+@utils.arg('-f', '--template-file', metavar='<FILE>',
+           help='Path to the template.')
+@utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
+           help='Path to the environment.')
+@utils.arg('-u', '--template-url', metavar='<URL>',
+           help='URL of template.')
+@utils.arg('-o', '--template-object', metavar='<URL>',
+           help='URL to retrieve template object (e.g from swift)')
+@utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
+           default=60, type=int,
+           help='Stack timeout in minutes. Default: 60')
+@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
+           help='Enable rollback on failure')
+@utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
+           help='Parameter values used to preview the stack. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by semicolon.',
+           action='append')
+@utils.arg('name', metavar='<STACK_NAME>',
+           help='Name of the stack to preview.')
+def do_stack_preview(hc, args):
+    '''Preview the stack.'''
+    tpl_files, template = template_utils.get_template_contents(
+        args.template_file,
+        args.template_url,
+        args.template_object,
+        hc.http_client.raw_request)
+    env_files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
+
+    fields = {
+        'stack_name': args.name,
+        'timeout_mins': args.create_timeout,
+        'disable_rollback': not(args.enable_rollback),
+        'parameters': utils.format_parameters(args.parameters),
+        'template': template,
+        'files': dict(tpl_files.items() + env_files.items()),
+        'environment': env
+    }
+
+    stack = hc.stacks.preview(**fields)
+    formatters = {
+        'description': utils.text_wrap_formatter,
+        'template_description': utils.text_wrap_formatter,
+        'stack_status_reason': utils.text_wrap_formatter,
+        'parameters': utils.json_formatter,
+        'outputs': utils.json_formatter,
+        'resources': utils.json_formatter,
+        'links': utils.link_formatter,
+    }
+    utils.print_dict(stack.to_dict(), formatters=formatters)
+
+
 @utils.arg('id', metavar='<NAME or ID>', nargs='+',
            help='Name or ID of stack(s) to delete.')
 def do_delete(hc, args):

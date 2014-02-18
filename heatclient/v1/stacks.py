@@ -23,6 +23,9 @@ class Stack(base.Resource):
     def __repr__(self):
         return "<Stack %s>" % self._info
 
+    def preview(self, **fields):
+        return self.manager.preview(**fields)
+
     def create(self, **fields):
         return self.manager.create(self.identifier, **fields)
 
@@ -101,6 +104,13 @@ class StackManager(base.BaseManager):
                 params[key] = value
 
         return paginate(params)
+
+    def preview(self, **kwargs):
+        """Preview a stack."""
+        headers = self.client.credentials_headers()
+        resp, body = self.client.json_request('POST', '/stacks/preview',
+                                              data=kwargs, headers=headers)
+        return Stack(self, body['stack'])
 
     def create(self, **kwargs):
         """Create a stack."""
