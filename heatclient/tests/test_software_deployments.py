@@ -62,6 +62,22 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
             ('/software_deployments?server_id=%s' % server_id,),
             *call_args)
 
+    def test_metadata(self):
+        server_id = 'fc01f89f-e151-4dc5-9c28-543c0d20ed6a'
+        metadata = {
+            'group1': [{'foo': 'bar'}],
+            'group2': [{'foo': 'bar'}, {'bar': 'baz'}],
+        }
+        self.manager.client.json_request.return_value = (
+            {},
+            {'metadata': metadata})
+        result = self.manager.metadata(server_id=server_id)
+        self.assertEqual(metadata, result)
+        call_args = self.manager.client.json_request.call_args
+        self.assertEqual(
+            '/software_deployments/metadata/%s' % server_id,
+            call_args[0][1])
+
     def test_get(self):
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'

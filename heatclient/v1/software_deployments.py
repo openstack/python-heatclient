@@ -39,6 +39,16 @@ class SoftwareDeploymentManager(base.BaseManager):
         url = '/software_deployments?%s' % urlutils.urlencode(kwargs)
         return self._list(url, "software_deployments")
 
+    def metadata(self, server_id):
+        """Get a grouped collection of software deployment metadata for a
+        given server.
+        :rtype: list of :class:`SoftwareDeployment`
+        """
+        url = '/software_deployments/metadata/%s' % urlutils.quote(
+            server_id, '')
+        resp, body = self.client.json_request('GET', url)
+        return body['metadata']
+
     def get(self, deployment_id):
         """Get the details for a specific software deployment.
 
