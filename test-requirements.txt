@@ -7,5 +7,5 @@ mock>=1.0
 mox3>=0.7.0
 sphinx>=1.1.2,<1.2
 testscenarios>=0.4
-testrepository>=0.0.17
-testtools>=0.9.32
+testrepository>=0.0.18
+testtools>=0.9.34
