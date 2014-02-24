@@ -46,6 +46,8 @@ def get_template_contents(template_file=None, template_url=None,
                                % template_url)
 
     try:
+        if isinstance(tpl, six.binary_type):
+            tpl = tpl.decode('utf-8')
         template = template_format.parse(tpl)
     except ValueError as e:
         raise exc.CommandError(

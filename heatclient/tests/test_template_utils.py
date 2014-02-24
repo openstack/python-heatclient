@@ -280,7 +280,7 @@ class TestGetTemplateContents(testtools.TestCase):
 
     def test_get_template_contents_file(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
-            tmpl = '{"foo": "bar"}'
+            tmpl = b'{"foo": "bar"}'
             tmpl_file.write(tmpl)
             tmpl_file.flush()
 
@@ -312,7 +312,7 @@ class TestGetTemplateContents(testtools.TestCase):
     def test_get_template_contents_parse_error(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
 
-            tmpl = '{"foo": "bar"'
+            tmpl = b'{"foo": "bar"'
             tmpl_file.write(tmpl)
             tmpl_file.flush()
 
