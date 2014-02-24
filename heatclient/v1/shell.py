@@ -402,7 +402,7 @@ def do_stack_list(hc, args=None):
 
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
-    utils.print_list(stacks, fields, sortby=3)
+    utils.print_list(stacks, fields, sortby_index=3)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -449,7 +449,7 @@ def do_resource_type_list(hc, args={}):
     '''List the available resource types.'''
     kwargs = {}
     types = hc.resource_types.list(**kwargs)
-    utils.print_list(types, ['resource_type'], sortby=0)
+    utils.print_list(types, ['resource_type'], sortby_index=0)
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
@@ -558,7 +558,7 @@ def do_resource_list(hc, args):
             else:
                 fields.insert(0, 'logical_resource_id')
 
-        utils.print_list(resources, fields, sortby=3)
+        utils.print_list(resources, fields, sortby_index=3)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
