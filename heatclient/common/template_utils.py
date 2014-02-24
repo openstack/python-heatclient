@@ -15,11 +15,13 @@
 
 import os
 import six
+from six.moves.urllib import error
+from six.moves.urllib import parse
+from six.moves.urllib import request
 
 from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient import exc
-from heatclient.openstack.common.py3kcompat import urlutils
 
 
 def get_template_contents(template_file=None, template_url=None,
@@ -30,7 +32,7 @@ def get_template_contents(template_file=None, template_url=None,
         template_url = normalise_file_path_to_url(template_file)
 
     if template_url:
-        tpl = urlutils.urlopen(template_url).read()
+        tpl = request.urlopen(template_url).read()
 
     elif template_object:
         template_url = template_object
@@ -93,10 +95,10 @@ def get_file_contents(from_data, files, base_url=None,
             if base_url and not base_url.endswith('/'):
                 base_url = base_url + '/'
 
-            str_url = urlutils.urljoin(base_url, value)
+            str_url = parse.urljoin(base_url, value)
             try:
-                files[str_url] = urlutils.urlopen(str_url).read()
-            except urlutils.URLError:
+                files[str_url] = request.urlopen(str_url).read()
+            except error.URLError:
                 raise exc.CommandError('Could not fetch contents for %s'
                                        % str_url)
 
@@ -105,16 +107,16 @@ def get_file_contents(from_data, files, base_url=None,
 
 
 def base_url_for_url(url):
-    parsed = urlutils.urlparse(url)
+    parsed = parse.urlparse(url)
     parsed_dir = os.path.dirname(parsed.path)
-    return urlutils.urljoin(url, parsed_dir)
+    return parse.urljoin(url, parsed_dir)
 
 
 def normalise_file_path_to_url(path):
-    if urlutils.urlparse(path).scheme:
+    if parse.urlparse(path).scheme:
         return path
     path = os.path.abspath(path)
-    return urlutils.urljoin('file:', urlutils.pathname2url(path))
+    return parse.urljoin('file:', request.pathname2url(path))
 
 
 def process_environment_and_files(env_path=None, template=None,
@@ -125,7 +127,7 @@ def process_environment_and_files(env_path=None, template=None,
     if env_path:
         env_url = normalise_file_path_to_url(env_path)
         env_base_url = base_url_for_url(env_url)
-        raw_env = urlutils.urlopen(env_url).read()
+        raw_env = request.urlopen(env_url).read()
         env = environment_format.parse(raw_env)
 
         resolve_environment_urls(

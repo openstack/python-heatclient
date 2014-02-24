@@ -13,8 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from six.moves.urllib import parse
+
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
 
@@ -52,10 +53,9 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to get the details for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        # Use urlutils for python2/python3 compatibility
         url_str = '/stacks/%s/resources/%s' % (
-                  urlutils.quote(stack_id, ''),
-                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id, ''),
+                  parse.quote(strutils.safe_encode(resource_name), ''))
         resp, body = self.client.json_request('GET', url_str)
         return Resource(self, body['resource'])
 
@@ -66,10 +66,9 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to get metadata for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        # Use urlutils for python2/python3 compatibility
         url_str = '/stacks/%s/resources/%s/metadata' % (
-                  urlutils.quote(stack_id, ''),
-                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id, ''),
+                  parse.quote(strutils.safe_encode(resource_name), ''))
         resp, body = self.client.json_request('GET', url_str)
         return body['metadata']
 
@@ -81,14 +80,13 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s/signal' % (
-                  urlutils.quote(stack_id, ''),
-                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id, ''),
+                  parse.quote(strutils.safe_encode(resource_name), ''))
         resp, body = self.client.json_request('POST', url_str, data=data)
         return body
 
     def generate_template(self, resource_name):
-        # Use urlutils for python2/python3 compatibility
         url_str = '/resource_types/%s/template' % (
-                  urlutils.quote(strutils.safe_encode(resource_name), ''))
+                  parse.quote(strutils.safe_encode(resource_name), ''))
         resp, body = self.client.json_request('GET', url_str)
         return body
