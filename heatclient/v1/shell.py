@@ -546,6 +546,40 @@ def do_resource_metadata(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack the resource belongs to.')
+@utils.arg('resource', metavar='<RESOURCE>',
+           help='Name of the resource to signal.')
+@utils.arg('-D', '--data', metavar='<DATA>',
+           help='JSON Data to send to the signal handler.')
+@utils.arg('-f', '--data-file', metavar='<FILE>',
+           help='File containing JSON data to send to the signal handler.')
+def do_resource_signal(hc, args):
+    '''Send a signal to a resource.'''
+    fields = {'stack_id': args.id,
+              'resource_name': args.resource}
+    data = args.data
+    data_file = args.data_file
+    if data and data_file:
+        raise exc.CommandError('Can only specify one of data and data-file')
+    if data_file:
+        data_url = template_utils.normalise_file_path_to_url(data_file)
+        data = urlutils.urlopen(data_url).read()
+    if data:
+        try:
+            data = jsonutils.loads(data)
+        except ValueError as ex:
+            raise exc.CommandError('Data should be in JSON format: %s' % ex)
+        if not isinstance(data, dict):
+            raise exc.CommandError('Data should be a JSON dict')
+        fields['data'] = data
+    try:
+        hc.resources.signal(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or resource not found: %s %s' %
+                               (args.id, args.resource))
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the events for.')
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
            help='Name of the resource to filter events by.')

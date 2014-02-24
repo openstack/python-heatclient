@@ -107,3 +107,15 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager = self._base_test(expect, key)
         manager.generate_template(**fields)
+
+    def test_signal(self):
+        fields = {'stack_id': 'teststack',
+                  'resource_name': 'testresource',
+                  'data': 'Some content'}
+        expect = ('POST',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/testresource/signal')
+        key = 'signal'
+
+        manager = self._base_test(expect, key)
+        manager.signal(**fields)
