@@ -39,7 +39,7 @@ import heatclient.exc as exc
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
@@ -64,7 +64,7 @@ def do_create(hc, args):
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to create.')
@@ -99,18 +99,18 @@ def do_stack_create(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60')
+           help='Stack creation timeout in minutes. Default: 60.')
 @utils.arg('-a', '--adopt-file', metavar='<FILE or URL>',
            help='Path to adopt stack data file.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure')
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by a semicolon.',
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help='Name of the stack to adopt.')
@@ -371,7 +371,7 @@ def do_resource_type_list(hc, args={}):
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
-           help='Resource Type to get the details for.')
+           help='Resource type to get the details for.')
 def do_resource_type_show(hc, args={}):
     '''Show the resource type.'''
     try:
