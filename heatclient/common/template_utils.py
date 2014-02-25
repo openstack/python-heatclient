@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import base64
 import os
 import six
 from six.moves.urllib import error
@@ -97,14 +98,23 @@ def get_file_contents(from_data, files, base_url=None,
 
             str_url = parse.urljoin(base_url, value)
             if str_url not in files:
-                try:
-                    files[str_url] = request.urlopen(str_url).read()
-                except error.URLError:
-                    raise exc.CommandError('Could not fetch contents for %s'
-                                           % str_url)
-
+                files[str_url] = read_url_content(url=str_url)
             # replace the data value with the normalised absolute URL
             from_data[key] = str_url
+
+
+def read_url_content(url):
+    try:
+        content = request.urlopen(url).read()
+    except error.URLError:
+        raise exc.CommandError('Could not fetch contents for %s'
+                               % url)
+    if content:
+        try:
+            content.decode('utf-8')
+        except ValueError:
+            content = base64.encodestring(content)
+    return content
 
 
 def base_url_for_url(url):
