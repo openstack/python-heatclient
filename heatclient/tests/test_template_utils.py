@@ -452,6 +452,23 @@ resources:
 
         self.m.VerifyAll()
 
+    def test_hot_template_outputs(self):
+        self.m.StubOutWithMock(urlutils, 'urlopen')
+        tmpl_file = '/home/my/dir/template.yaml'
+        url = 'file://%s' % tmpl_file
+        contents = str('heat_template_version: 2013-05-23\n'
+                       'outputs:\n'
+                       '  contents:\n'
+                       '    value:\n'
+                       '      get_file: template.yaml\n')
+        urlutils.urlopen(url).AndReturn(six.StringIO(contents))
+        urlutils.urlopen(url).AndReturn(six.StringIO(contents))
+        self.m.ReplayAll()
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_file=tmpl_file)
+        self.assertEqual({url: contents}, files)
+        self.m.VerifyAll()
+
 
 class TestURLFunctions(testtools.TestCase):
 
