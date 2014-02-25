@@ -40,7 +40,7 @@ class HttpClientTest(testtools.TestCase):
 
         # Record a 200
         mock_conn = http.requests.request('GET', 'http://example.com:8004',
-                                          allow_redirects=True,
+                                          allow_redirects=False,
                                           headers=headers)
         mock_conn.AndReturn(
             fakes.FakeHTTPResponse(
@@ -65,7 +65,7 @@ class HttpClientTest(testtools.TestCase):
         # no token or credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient'})
         mock_conn.AndReturn(fake200)
@@ -73,7 +73,7 @@ class HttpClientTest(testtools.TestCase):
         # credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient',
                      'X-Auth-Key': 'pass',
@@ -83,7 +83,7 @@ class HttpClientTest(testtools.TestCase):
         # token suppresses credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient',
                      'X-Auth-Token': 'abcd1234'})
@@ -115,7 +115,7 @@ class HttpClientTest(testtools.TestCase):
         # no token or credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient'})
         mock_conn.AndReturn(fake200)
@@ -123,7 +123,7 @@ class HttpClientTest(testtools.TestCase):
         # credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient',
                      'X-Auth-Key': 'pass',
@@ -133,7 +133,7 @@ class HttpClientTest(testtools.TestCase):
         # token suppresses credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient',
                      'X-Auth-Token': 'abcd1234',
@@ -168,7 +168,7 @@ class HttpClientTest(testtools.TestCase):
         # no token or credentials
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'User-Agent': 'python-heatclient'})
         mock_conn.AndReturn(fake500)
@@ -190,7 +190,7 @@ class HttpClientTest(testtools.TestCase):
         # Specify region name
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'X-Region-Name': 'RegionOne',
                      'User-Agent': 'python-heatclient'})
@@ -208,7 +208,7 @@ class HttpClientTest(testtools.TestCase):
         # Record a 200
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -230,7 +230,7 @@ class HttpClientTest(testtools.TestCase):
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
             body='test-body',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -251,7 +251,7 @@ class HttpClientTest(testtools.TestCase):
         # Record a 200
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004', body='test-body',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -272,7 +272,7 @@ class HttpClientTest(testtools.TestCase):
         # Record a 200
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -407,7 +407,7 @@ class HttpClientTest(testtools.TestCase):
         # Record the 302
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -419,7 +419,7 @@ class HttpClientTest(testtools.TestCase):
         # Record the following 200
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -440,7 +440,7 @@ class HttpClientTest(testtools.TestCase):
         # Record a 404
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -463,7 +463,7 @@ class HttpClientTest(testtools.TestCase):
         # Record a 300
         mock_conn = http.requests.request(
             'GET', 'http://example.com:8004',
-            allow_redirects=True,
+            allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
@@ -485,7 +485,7 @@ class HttpClientTest(testtools.TestCase):
     def test_fake_json_request(self):
         headers = {'User-Agent': 'python-heatclient'}
         mock_conn = http.requests.request('GET', 'fake://example.com:8004/',
-                                          allow_redirects=True,
+                                          allow_redirects=False,
                                           headers=headers)
         mock_conn.AndRaise(socket.gaierror)
         self.m.ReplayAll()
@@ -522,7 +522,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_request_socket_error(self):
         headers = {'User-Agent': 'python-heatclient'}
         mock_conn = http.requests.request('GET', 'http://example.com:8004/',
-                                          allow_redirects=True,
+                                          allow_redirects=False,
                                           headers=headers)
         mock_conn.AndRaise(socket.error)
         self.m.ReplayAll()
@@ -535,7 +535,7 @@ class HttpClientTest(testtools.TestCase):
     def test_http_request_socket_timeout(self):
         headers = {'User-Agent': 'python-heatclient'}
         mock_conn = http.requests.request('GET', 'http://example.com:8004/',
-                                          allow_redirects=True,
+                                          allow_redirects=False,
                                           headers=headers)
         mock_conn.AndRaise(socket.timeout)
         self.m.ReplayAll()
