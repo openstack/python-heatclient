@@ -280,13 +280,15 @@ class TestGetTemplateContents(testtools.TestCase):
 
     def test_get_template_contents_file(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
-            tmpl = b'{"foo": "bar"}'
+            tmpl = b'{"AWSTemplateFormatVersion" : "2010-09-09",' \
+                   b' "foo": "bar"}'
             tmpl_file.write(tmpl)
             tmpl_file.flush()
 
             files, tmpl_parsed = template_utils.get_template_contents(
                 tmpl_file.name)
-            self.assertEqual({"foo": "bar"}, tmpl_parsed)
+            self.assertEqual({"AWSTemplateFormatVersion": "2010-09-09",
+                              "foo": "bar"}, tmpl_parsed)
             self.assertEqual({}, files)
 
     def test_get_template_contents_file_empty(self):
@@ -326,7 +328,7 @@ class TestGetTemplateContents(testtools.TestCase):
                     'Error parsing template file://%s ' % tmpl_file.name))
 
     def test_get_template_contents_url(self):
-        tmpl = '{"foo": "bar"}'
+        tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
         self.m.StubOutWithMock(urlutils, 'urlopen')
         urlutils.urlopen(url).AndReturn(six.StringIO(tmpl))
@@ -334,11 +336,12 @@ class TestGetTemplateContents(testtools.TestCase):
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_url=url)
-        self.assertEqual({"foo": "bar"}, tmpl_parsed)
+        self.assertEqual({"AWSTemplateFormatVersion": "2010-09-09",
+                          "foo": "bar"}, tmpl_parsed)
         self.assertEqual({}, files)
 
     def test_get_template_contents_object(self):
-        tmpl = '{"foo": "bar"}'
+        tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
         self.m.ReplayAll()
 
@@ -354,7 +357,8 @@ class TestGetTemplateContents(testtools.TestCase):
             template_object=url,
             object_request=object_request)
 
-        self.assertEqual({"foo": "bar"}, tmpl_parsed)
+        self.assertEqual({"AWSTemplateFormatVersion": "2010-09-09",
+                          "foo": "bar"}, tmpl_parsed)
         self.assertEqual({}, files)
         self.assertTrue(self.object_requested)
 
