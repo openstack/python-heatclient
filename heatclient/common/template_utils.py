@@ -70,7 +70,7 @@ def resolve_template_get_files(template, files, template_base_url):
     def recurse_if(value):
         return isinstance(value, (dict, list))
 
-    get_file_contents(template.get('resources'), files, template_base_url,
+    get_file_contents(template, files, template_base_url,
                       ignore_if, recurse_if)
 
 
