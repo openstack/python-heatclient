@@ -9,7 +9,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import copy
 
 from heatclient.openstack.common.apiclient import base
 from heatclient.openstack.common.py3kcompat import urlutils
@@ -24,9 +23,6 @@ class SoftwareDeployment(base.Resource):
 
     def delete(self):
         return self.manager.delete(deployment_id=self.id)
-
-    def to_dict(self):
-        return copy.deepcopy(self._info)
 
 
 class SoftwareDeploymentManager(base.BaseManager):
