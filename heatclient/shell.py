@@ -295,7 +295,7 @@ class HeatShell(object):
 
         # Handle top-level --help/-h before attempting to parse
         # a command off the command line
-        if options.help or not argv:
+        if not args and options.help or not argv:
             self.do_help(options)
             return 0
 

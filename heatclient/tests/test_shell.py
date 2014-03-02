@@ -244,6 +244,7 @@ class ShellBase(TestCase):
             sys.stdout = six.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
+            self.subcommands = _shell.subcommands.keys()
         except SystemExit:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.assertEqual(0, exc_value.code)
@@ -272,6 +273,18 @@ class ShellTestCommon(ShellBase):
             help_text = self.shell(argstr)
             for r in required:
                 self.assertRegexpMatches(help_text, r)
+
+    def test_command_help(self):
+        output = self.shell('help help')
+        self.assertIn('usage: heat help [<subcommand>]', output)
+        subcommands = list(self.subcommands)
+        for command in subcommands:
+            if command.replace('_', '-') == 'bash-completion':
+                continue
+            output1 = self.shell('help %s' % command)
+            output2 = self.shell('%s --help' % command)
+            self.assertEqual(output1, output2)
+            self.assertRegexpMatches(output1, '^usage: heat %s' % command)
 
     def test_debug_switch_raises_error(self):
         fakes.script_keystone_client()
