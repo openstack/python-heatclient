@@ -88,9 +88,10 @@ class HeatShell(object):
                             ' option the client looks'
                             ' for the default system CA certificates.')
 
-        parser.add_argument('--timeout',
-                            default=600,
-                            help='Number of seconds to wait for a response.')
+        parser.add_argument('--api-timeout',
+                            help='Number of seconds to wait for an '
+                                 'API response, '
+                                 'defaults to system socket timeout')
 
         parser.add_argument('--os-username',
                             default=utils.env('OS_USERNAME'),
@@ -364,7 +365,6 @@ class HeatShell(object):
             kwargs = {
                 'token': token,
                 'insecure': args.insecure,
-                'timeout': args.timeout,
                 'ca_file': args.ca_file,
                 'cert_file': args.cert_file,
                 'key_file': args.key_file,
@@ -379,6 +379,9 @@ class HeatShell(object):
 
             if not endpoint:
                 endpoint = self._get_endpoint(_ksclient, **kwargs)
+
+        if args.api_timeout:
+            kwargs['timeout'] = args.api_timeout
 
         client = heat_client.Client(api_version, endpoint, **kwargs)
 

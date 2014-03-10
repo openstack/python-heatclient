@@ -65,6 +65,7 @@ class HTTPClient(object):
 
         self.cert_file = kwargs.get('cert_file')
         self.key_file = kwargs.get('key_file')
+        self.timeout = kwargs.get('timeout')
 
         self.ssl_connection_params = {
             'ca_file': kwargs.get('ca_file'),
@@ -147,6 +148,9 @@ class HTTPClient(object):
 
         if self.verify_cert is not None:
             kwargs['verify'] = self.verify_cert
+
+        if self.timeout is not None:
+            kwargs['timeout'] = float(self.timeout)
 
         # Since requests does not follow the RFC when doing redirection to sent
         # back the same method on a redirect we are simply bypassing it.  For

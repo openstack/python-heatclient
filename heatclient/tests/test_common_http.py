@@ -540,6 +540,27 @@ class HttpClientTest(testtools.TestCase):
                           client._http_request, "/", "GET")
         self.m.VerifyAll()
 
+    def test_http_request_specify_timeout(self):
+        mock_conn = http.requests.request(
+            'GET', 'http://example.com:8004',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'},
+            timeout=float(123))
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004', timeout='123')
+        resp, body = client.json_request('GET', '')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
+        self.m.VerifyAll()
+
     def test_get_system_ca_file(self):
         chosen = '/etc/ssl/certs/ca-certificates.crt'
         self.m.StubOutWithMock(os.path, 'exists')
