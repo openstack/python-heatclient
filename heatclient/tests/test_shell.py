@@ -709,6 +709,53 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    def test_stack_create_timeout(self):
+        self._script_keystone_client()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
+        expected_data = {
+            'files': {},
+            'disable_rollback': True,
+            'parameters': {'DBUsername': 'wp',
+                           'KeyName': 'heat_key',
+                           'LinuxDistribution': 'F17"',
+                           '"InstanceType': 'm1.large',
+                           'DBPassword': 'verybadpassword'},
+            'stack_name': 'teststack',
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'timeout_mins': 123}
+        http.HTTPClient.json_request(
+            'POST', '/stacks', data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        create_text = self.shell(
+            'stack-create teststack '
+            '--template-file=%s '
+            '--timeout=123 '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
     def test_stack_create_url(self):
 
         self._script_keystone_client()

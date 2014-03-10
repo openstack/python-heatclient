@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+
 import yaml
 
 from heatclient.common import template_utils
@@ -21,6 +23,8 @@ from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common.py3kcompat import urlutils
 
 import heatclient.exc as exc
+
+logger = logging.getLogger(__name__)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -32,8 +36,12 @@ import heatclient.exc as exc
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
-           default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60.')
+           type=int,
+           help='Stack creation timeout in minutes.'
+                '  DEPRECATED use --timeout instead.')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack creation timeout in minutes.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
@@ -57,8 +65,12 @@ def do_create(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
-           default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60.')
+           type=int,
+           help='Stack creation timeout in minutes.'
+                '  DEPRECATED use --timeout instead.')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack creation timeout in minutes.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
@@ -78,9 +90,13 @@ def do_stack_create(hc, args):
     env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
 
+    if args.create_timeout:
+        logger.warning('-c/--create-timeout is deprecated, '
+                       'please use -t/--timeout instead')
+
     fields = {
         'stack_name': args.name,
-        'timeout_mins': args.create_timeout,
+        'timeout_mins': args.timeout or args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
@@ -101,8 +117,12 @@ def do_stack_create(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
-           default=60, type=int,
-           help='Stack creation timeout in minutes. Default: 60.')
+           type=int,
+           help='Stack creation timeout in minutes.'
+                '  DEPRECATED use --timeout instead.')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack creation timeout in minutes.')
 @utils.arg('-a', '--adopt-file', metavar='<FILE or URL>',
            help='Path to adopt stack data file.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
@@ -130,9 +150,13 @@ def do_stack_adopt(hc, args):
     adopt_url = template_utils.normalise_file_path_to_url(args.adopt_file)
     adopt_data = urlutils.urlopen(adopt_url).read()
 
+    if args.create_timeout:
+        logger.warning('-c/--create-timeout is deprecated, '
+                       'please use -t/--timeout instead')
+
     fields = {
         'stack_name': args.name,
-        'timeout_mins': args.create_timeout,
+        'timeout_mins': args.timeout or args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),

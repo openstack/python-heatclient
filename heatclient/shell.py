@@ -273,7 +273,7 @@ class HeatShell(object):
             endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
 
     def _setup_logging(self, debug):
-        log_lvl = logging.DEBUG if debug else logging.ERROR
+        log_lvl = logging.DEBUG if debug else logging.WARNING
         logging.basicConfig(
             format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
             level=log_lvl)
