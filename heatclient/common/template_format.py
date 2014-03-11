@@ -16,9 +16,6 @@
 import json
 import yaml
 
-HEAT_VERSIONS = (u'2012-12-12',)
-CFN_VERSIONS = (u'2010-09-09',)
-
 if hasattr(yaml, 'CSafeLoader'):
     yaml_loader = yaml.CSafeLoader
 else:
