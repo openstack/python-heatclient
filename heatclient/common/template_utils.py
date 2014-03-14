@@ -58,6 +58,7 @@ def get_template_contents(template_file=None, template_url=None,
     files = {}
     tmpl_base_url = base_url_for_url(template_url)
     resolve_template_get_files(template, files, tmpl_base_url)
+    resolve_template_type(template, files, tmpl_base_url)
     return files, template
 
 
@@ -68,6 +69,24 @@ def resolve_template_get_files(template, files, template_base_url):
             return True
         if not isinstance(value, six.string_types):
             return True
+
+    def recurse_if(value):
+        return isinstance(value, (dict, list))
+
+    get_file_contents(template, files, template_base_url,
+                      ignore_if, recurse_if)
+
+
+def resolve_template_type(template, files, template_base_url):
+
+    def ignore_if(key, value):
+        if key != 'type':
+            return True
+        if not isinstance(value, six.string_types):
+            return True
+        if not value.endswith(('.yaml', '.template')):
+            return True
+        return False
 
     def recurse_if(value):
         return isinstance(value, (dict, list))

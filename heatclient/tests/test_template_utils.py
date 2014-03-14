@@ -368,14 +368,14 @@ class TestTemplateGetFileFunctions(testtools.TestCase):
     hot_template = '''heat_template_version: 2013-05-23
 resources:
   resource1:
-    type: type1
+    type: OS::type1
     properties:
       foo: {get_file: foo.yaml}
       bar:
         get_file:
           'http://localhost/bar.yaml'
   resource2:
-    type: type1
+    type: OS::type1
     properties:
       baz:
       - {get_file: baz/baz1.yaml}
@@ -432,14 +432,14 @@ resources:
             'heat_template_version': '2013-05-23',
             'resources': {
                 'resource1': {
-                    'type': 'type1',
+                    'type': 'OS::type1',
                     'properties': {
                         'bar': {'get_file': 'http://localhost/bar.yaml'},
                         'foo': {'get_file': 'file:///home/my/dir/foo.yaml'},
                     },
                 },
                 'resource2': {
-                    'type': 'type1',
+                    'type': 'OS::type1',
                     'properties': {
                         'baz': [
                             {'get_file': 'file:///home/my/dir/baz/baz1.yaml'},
@@ -471,6 +471,77 @@ resources:
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
         self.assertEqual({url: contents}, files)
+        self.m.VerifyAll()
+
+
+class TestTemplateTypeFunctions(testtools.TestCase):
+
+    hot_template = '''heat_template_version: 2013-05-23
+parameters:
+  param1:
+    type: string
+resources:
+  resource1:
+    type: foo.yaml
+    properties:
+      foo: bar
+  resource2:
+    type: OS::Heat::ResourceGroup
+    properties:
+      resource_def:
+        type: spam/egg.yaml
+    '''
+
+    def setUp(self):
+        super(TestTemplateTypeFunctions, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_hot_template(self):
+        self.m.StubOutWithMock(request, 'urlopen')
+        tmpl_file = '/home/my/dir/template.yaml'
+        url = 'file:///home/my/dir/template.yaml'
+        request.urlopen(url).AndReturn(
+            six.StringIO(self.hot_template))
+        request.urlopen(
+            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
+                six.StringIO('foo contents'))
+        request.urlopen(
+            'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
+                six.StringIO('egg contents'))
+        self.m.ReplayAll()
+
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_file=tmpl_file)
+
+        self.assertEqual({
+            u'file:///home/my/dir/foo.yaml': 'foo contents',
+            u'file:///home/my/dir/spam/egg.yaml': 'egg contents'
+        }, files)
+        self.assertEqual({
+            u'heat_template_version': u'2013-05-23',
+            u'parameters': {
+                u'param1': {
+                    u'type': u'string'
+                }
+            },
+            u'resources': {
+                u'resource1': {
+                    u'type': u'file:///home/my/dir/foo.yaml',
+                    u'properties': {u'foo': u'bar'}
+                },
+                u'resource2': {
+                    u'type': u'OS::Heat::ResourceGroup',
+                    u'properties': {
+                        u'resource_def': {
+                            u'type': u'file:///home/my/dir/spam/egg.yaml'
+                        }
+                    }
+                }
+            }
+        }, tmpl_parsed)
         self.m.VerifyAll()
 
 
