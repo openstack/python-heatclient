@@ -152,6 +152,10 @@ class HTTPClient(object):
         if self.timeout is not None:
             kwargs['timeout'] = float(self.timeout)
 
+        # Allow caller to specify not to follow redirects, in which case we
+        # just return the redirect response.  Useful for using stacks:lookup.
+        follow_redirects = kwargs.pop('follow_redirects', True)
+
         # Since requests does not follow the RFC when doing redirection to sent
         # back the same method on a redirect we are simply bypassing it.  For
         # example if we do a DELETE/POST/PUT on a URL and we get a 302 RFC says
@@ -191,22 +195,26 @@ class HTTPClient(object):
         elif 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
-            # Redirected. Reissue the request to the new location.
-            location = resp.headers.get('location')
-            if location is None:
-                message = "Location not returned with 302"
-                raise exc.InvalidEndpoint(message=message)
-            elif location.startswith(self.endpoint):
-                # shave off the endpoint, it will be prepended when we recurse
-                location = location[len(self.endpoint):]
-            else:
-                message = "Prohibited endpoint redirect %s" % location
-                raise exc.InvalidEndpoint(message=message)
-            return self._http_request(location, method, **kwargs)
+            # Redirected. Reissue the request to the new location,
+            # unless caller specified follow_redirects=False
+            if follow_redirects:
+                location = resp.headers.get('location')
+                path = self.strip_endpoint(location)
+                resp = self._http_request(path, method, **kwargs)
         elif resp.status_code == 300:
             raise exc.from_response(resp)
 
         return resp
+
+    def strip_endpoint(self, location):
+        if location is None:
+            message = "Location not returned with 302"
+            raise exc.InvalidEndpoint(message=message)
+        elif location.startswith(self.endpoint):
+            return location[len(self.endpoint):]
+        else:
+            message = "Prohibited endpoint redirect %s" % location
+            raise exc.InvalidEndpoint(message=message)
 
     def credentials_headers(self):
         creds = {}
