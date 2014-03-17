@@ -96,11 +96,12 @@ def get_file_contents(from_data, files, base_url=None,
                 base_url = base_url + '/'
 
             str_url = parse.urljoin(base_url, value)
-            try:
-                files[str_url] = request.urlopen(str_url).read()
-            except error.URLError:
-                raise exc.CommandError('Could not fetch contents for %s'
-                                       % str_url)
+            if str_url not in files:
+                try:
+                    files[str_url] = request.urlopen(str_url).read()
+                except error.URLError:
+                    raise exc.CommandError('Could not fetch contents for %s'
+                                           % str_url)
 
             # replace the data value with the normalised absolute URL
             from_data[key] = str_url
