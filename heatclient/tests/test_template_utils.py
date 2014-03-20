@@ -14,6 +14,7 @@
 from mox3 import mox
 import os
 import six
+from six.moves.urllib import request
 import tempfile
 import testtools
 from testtools.matchers import MatchesRegex
@@ -21,7 +22,6 @@ import yaml
 
 from heatclient.common import template_utils
 from heatclient import exc
-from heatclient.openstack.common.py3kcompat import urlutils
 
 
 class ShellEnvironmentTest(testtools.TestCase):
@@ -38,8 +38,8 @@ class ShellEnvironmentTest(testtools.TestCase):
         jenv = yaml.safe_load(env)
         files = {}
         if url:
-            self.m.StubOutWithMock(urlutils, 'urlopen')
-            urlutils.urlopen(url).AndReturn(six.StringIO(content))
+            self.m.StubOutWithMock(request, 'urlopen')
+            request.urlopen(url).AndReturn(six.StringIO(content))
             self.m.ReplayAll()
 
         template_utils.resolve_environment_urls(
@@ -49,7 +49,7 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     def test_process_environment_file(self):
 
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env = '''
         resource_registry:
@@ -57,9 +57,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         '''
         tmpl = '{"foo": "bar"}'
 
-        urlutils.urlopen('file://%s' % env_file).AndReturn(
+        request.urlopen('file://%s' % env_file).AndReturn(
             six.StringIO(env))
-        urlutils.urlopen('file:///home/b/a.yaml').AndReturn(
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
             six.StringIO(tmpl))
         self.m.ReplayAll()
 
@@ -73,7 +73,7 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     def test_process_environment_relative_file(self):
 
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = '''
@@ -82,9 +82,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         '''
         tmpl = '{"foo": "bar"}'
 
-        urlutils.urlopen(env_url).AndReturn(
+        request.urlopen(env_url).AndReturn(
             six.StringIO(env))
-        urlutils.urlopen('file:///home/my/dir/a.yaml').AndReturn(
+        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
             six.StringIO(tmpl))
         self.m.ReplayAll()
 
@@ -107,7 +107,7 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     def test_process_environment_relative_file_up(self):
 
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = '''
@@ -116,9 +116,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         '''
         tmpl = '{"foo": "bar"}'
 
-        urlutils.urlopen(env_url).AndReturn(
+        request.urlopen(env_url).AndReturn(
             six.StringIO(env))
-        urlutils.urlopen('file:///home/my/bar/a.yaml').AndReturn(
+        request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
             six.StringIO(tmpl))
         self.m.ReplayAll()
 
@@ -149,9 +149,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         tmpl_url = 'http://no.where/some/path/to/a.yaml'
         tmpl = '{"foo": "bar"}'
 
-        self.m.StubOutWithMock(urlutils, 'urlopen')
-        urlutils.urlopen(url).AndReturn(six.StringIO(env))
-        urlutils.urlopen(tmpl_url).AndReturn(six.StringIO(tmpl))
+        self.m.StubOutWithMock(request, 'urlopen')
+        request.urlopen(url).AndReturn(six.StringIO(env))
+        request.urlopen(tmpl_url).AndReturn(six.StringIO(tmpl))
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
@@ -163,11 +163,11 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     def test_process_environment_empty_file(self):
 
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env = ''
 
-        urlutils.urlopen('file://%s' % env_file).AndReturn(six.StringIO(env))
+        request.urlopen('file://%s' % env_file).AndReturn(six.StringIO(env))
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
@@ -330,8 +330,8 @@ class TestGetTemplateContents(testtools.TestCase):
     def test_get_template_contents_url(self):
         tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
-        self.m.StubOutWithMock(urlutils, 'urlopen')
-        urlutils.urlopen(url).AndReturn(six.StringIO(tmpl))
+        self.m.StubOutWithMock(request, 'urlopen')
+        request.urlopen(url).AndReturn(six.StringIO(tmpl))
         self.m.ReplayAll()
 
         files, tmpl_parsed = template_utils.get_template_contents(
@@ -394,25 +394,25 @@ resources:
         self.addCleanup(self.m.UnsetStubs)
 
     def test_hot_template(self):
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
 
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
-        urlutils.urlopen(url).AndReturn(
+        request.urlopen(url).AndReturn(
             six.StringIO(self.hot_template))
-        urlutils.urlopen(
+        request.urlopen(
             'http://localhost/bar.yaml').InAnyOrder().AndReturn(
                 six.StringIO('bar contents'))
-        urlutils.urlopen(
+        request.urlopen(
             'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
                 six.StringIO('foo contents'))
-        urlutils.urlopen(
+        request.urlopen(
             'file:///home/my/dir/baz/baz1.yaml').InAnyOrder().AndReturn(
                 six.StringIO('baz1 contents'))
-        urlutils.urlopen(
+        request.urlopen(
             'file:///home/my/dir/baz/baz2.yaml').InAnyOrder().AndReturn(
                 six.StringIO('baz2 contents'))
-        urlutils.urlopen(
+        request.urlopen(
             'file:///home/my/dir/baz/baz3.yaml').InAnyOrder().AndReturn(
                 six.StringIO('baz3 contents'))
 
@@ -457,7 +457,7 @@ resources:
         self.m.VerifyAll()
 
     def test_hot_template_outputs(self):
-        self.m.StubOutWithMock(urlutils, 'urlopen')
+        self.m.StubOutWithMock(request, 'urlopen')
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
         contents = str('heat_template_version: 2013-05-23\n'
@@ -465,8 +465,8 @@ resources:
                        '  contents:\n'
                        '    value:\n'
                        '      get_file: template.yaml\n')
-        urlutils.urlopen(url).AndReturn(six.StringIO(contents))
-        urlutils.urlopen(url).AndReturn(six.StringIO(contents))
+        request.urlopen(url).AndReturn(six.StringIO(contents))
+        request.urlopen(url).AndReturn(six.StringIO(contents))
         self.m.ReplayAll()
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)

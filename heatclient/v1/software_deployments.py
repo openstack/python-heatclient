@@ -10,8 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from six.moves.urllib import parse
+
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common.py3kcompat import urlutils
 
 
 class SoftwareDeployment(base.Resource):
@@ -32,7 +33,7 @@ class SoftwareDeploymentManager(base.BaseManager):
         """Get a list of software deployments.
         :rtype: list of :class:`SoftwareDeployment`
         """
-        url = '/software_deployments?%s' % urlutils.urlencode(kwargs)
+        url = '/software_deployments?%s' % parse.urlencode(kwargs)
         return self._list(url, "software_deployments")
 
     def metadata(self, server_id):
@@ -40,7 +41,7 @@ class SoftwareDeploymentManager(base.BaseManager):
         given server.
         :rtype: list of :class:`SoftwareDeployment`
         """
-        url = '/software_deployments/metadata/%s' % urlutils.quote(
+        url = '/software_deployments/metadata/%s' % parse.quote(
             server_id, '')
         resp, body = self.client.json_request('GET', url)
         return body['metadata']

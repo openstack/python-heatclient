@@ -11,8 +11,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from six.moves.urllib import parse
+
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 
 
@@ -42,6 +43,6 @@ class ResourceTypeManager(base.BaseManager):
         :param resource_type: name of the resource type to get the details for
         """
         url_str = '/resource_types/%s' % (
-                  urlutils.quote(strutils.safe_encode(resource_type), ''))
+                  parse.quote(strutils.safe_encode(resource_type), ''))
         resp, body = self.client.json_request('GET', url_str)
         return body

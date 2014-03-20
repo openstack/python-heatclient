@@ -20,10 +20,10 @@ import socket
 
 import requests
 import six
+from six.moves.urllib import parse
 
 from heatclient import exc
 from heatclient.openstack.common import jsonutils
-from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class HTTPClient(object):
         }
 
         self.verify_cert = None
-        if urlutils.urlparse(endpoint).scheme == "https":
+        if parse.urlparse(endpoint).scheme == "https":
             if kwargs.get('insecure'):
                 self.verify_cert = False
             else:

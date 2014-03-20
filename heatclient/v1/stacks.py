@@ -14,9 +14,9 @@
 #    under the License.
 
 import six
+from six.moves.urllib import parse
 
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common.py3kcompat import urlutils
 
 
 class Stack(base.Resource):
@@ -81,7 +81,7 @@ class StackManager(base.BaseManager):
         def paginate(params):
             '''Paginate stacks, even if more than API limit.'''
             current_limit = int(params.get('limit') or 0)
-            url = '/stacks?%s' % urlutils.urlencode(params, True)
+            url = '/stacks?%s' % parse.urlencode(params, True)
             stacks = self._list(url, 'stacks')
             for stack in stacks:
                 yield stack

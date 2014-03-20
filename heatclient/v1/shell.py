@@ -14,13 +14,12 @@
 #    under the License.
 
 import logging
-
+from six.moves.urllib import request
 import yaml
 
 from heatclient.common import template_utils
 from heatclient.common import utils
 from heatclient.openstack.common import jsonutils
-from heatclient.openstack.common.py3kcompat import urlutils
 
 import heatclient.exc as exc
 
@@ -148,7 +147,7 @@ def do_stack_adopt(hc, args):
         raise exc.CommandError('Need to specify --adopt-file')
 
     adopt_url = template_utils.normalise_file_path_to_url(args.adopt_file)
-    adopt_data = urlutils.urlopen(adopt_url).read()
+    adopt_data = request.urlopen(adopt_url).read()
 
     if args.create_timeout:
         logger.warning('-c/--create-timeout is deprecated, '
@@ -646,7 +645,7 @@ def do_resource_signal(hc, args):
         raise exc.CommandError('Can only specify one of data and data-file')
     if data_file:
         data_url = template_utils.normalise_file_path_to_url(data_file)
-        data = urlutils.urlopen(data_url).read()
+        data = request.urlopen(data_url).read()
     if data:
         try:
             data = jsonutils.loads(data)

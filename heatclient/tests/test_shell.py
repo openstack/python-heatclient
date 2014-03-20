@@ -14,6 +14,8 @@
 import os
 import re
 import six
+from six.moves.urllib import parse
+from six.moves.urllib import request
 import sys
 
 import fixtures
@@ -22,7 +24,6 @@ import testscenarios
 import testtools
 
 from heatclient.openstack.common import jsonutils
-from heatclient.openstack.common.py3kcompat import urlutils
 from heatclient.openstack.common import strutils
 from mox3 import mox
 
@@ -392,7 +393,7 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_list_with_args(self):
         self._script_keystone_client()
-        expected_url = '/stacks?%s' % urlutils.urlencode({
+        expected_url = '/stacks?%s' % parse.urlencode({
             'limit': 2,
             'status': ['COMPLETE', 'FAILED'],
             'marker': 'fake_id',
@@ -852,8 +853,8 @@ class ShellTestUserPass(ShellBase):
             'Created',
             {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
             None)
-        self.m.StubOutWithMock(urlutils, 'urlopen')
-        urlutils.urlopen('http://no.where/minimal.template').AndReturn(
+        self.m.StubOutWithMock(request, 'urlopen')
+        request.urlopen('http://no.where/minimal.template').AndReturn(
             six.StringIO('{"AWSTemplateFormatVersion" : "2010-09-09"}'))
 
         http.HTTPClient.json_request(
@@ -1144,8 +1145,8 @@ class ShellTestEvents(ShellBase):
         resource_name = 'testresource/1'
         http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s/events' % (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), ''))).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -1201,10 +1202,10 @@ class ShellTestEvents(ShellBase):
         http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s/events/%s' %
             (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), ''),
-                urlutils.quote(self.event_id_one, '')
+                parse.quote(self.event_id_one, '')
             )).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -1327,8 +1328,8 @@ class ShellTestResources(ShellBase):
         http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s' %
             (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), '')
             )).AndReturn((resp, resp_dict))
 
@@ -1372,8 +1373,8 @@ class ShellTestResources(ShellBase):
         http.HTTPClient.json_request(
             'POST', '/stacks/%s/resources/%s/signal' %
             (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), '')
             ),
             data={'message': 'Content'}).AndReturn((resp, ''))
@@ -1397,8 +1398,8 @@ class ShellTestResources(ShellBase):
         http.HTTPClient.json_request(
             'POST', '/stacks/%s/resources/%s/signal' %
             (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), '')
             ), data=None).AndReturn((resp, ''))
 
@@ -1460,8 +1461,8 @@ class ShellTestResources(ShellBase):
         http.HTTPClient.json_request(
             'POST', '/stacks/%s/resources/%s/signal' %
             (
-                urlutils.quote(stack_id, ''),
-                urlutils.quote(strutils.safe_encode(
+                parse.quote(stack_id, ''),
+                parse.quote(strutils.safe_encode(
                     resource_name), '')
             ),
             data={'message': 'Content'}).AndReturn((resp, ''))
