@@ -98,6 +98,12 @@ class StackOperationsTest(testtools.TestCase):
         stack = stack.create()
         manager.create.assert_called_once_with('the_stack/abcd1234')
 
+    def test_preview_stack(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack = stack.preview()
+        manager.preview.assert_called_once_with()
+
 
 class StackManagerNoPaginationTest(testtools.TestCase):
 

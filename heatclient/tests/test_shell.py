@@ -678,6 +678,46 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    def test_stack_preview(self):
+        self._script_keystone_client()
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "resources": {'1': {'name': 'r1'}},
+            "creation_time": "2012-10-25T01:58:47Z",
+        }}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'POST', '/stacks/preview', data=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        preview_text = self.shell(
+            'stack-preview teststack '
+            '--template-file=%s '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1',
+            'resources'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(preview_text, r)
+
     def test_stack_create(self):
         self._script_keystone_client()
         resp = fakes.FakeHTTPResponse(
