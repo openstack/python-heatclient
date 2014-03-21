@@ -225,6 +225,36 @@ class HttpClientTest(testtools.TestCase):
         self.assertEqual({}, body)
         self.m.VerifyAll()
 
+    def test_http_json_request_argument_passed_to_requests(self):
+        """Check that we have sent the proper arguments to requests."""
+        # Record a 200
+        mock_conn = http.requests.request(
+            'GET', 'http://example.com:8004',
+            allow_redirects=False,
+            cert=('RANDOM_CERT_FILE', 'RANDOM_KEY_FILE'),
+            verify=True,
+            data='"text"',
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'X-Auth-Url': 'http://AUTH_URL',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                '{}'))
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004')
+        client.verify_cert = True
+        client.cert_file = 'RANDOM_CERT_FILE'
+        client.key_file = 'RANDOM_KEY_FILE'
+        client.auth_url = 'http://AUTH_URL'
+        resp, body = client.json_request('GET', '', data='text')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
+        self.m.VerifyAll()
+
     def test_http_json_request_w_req_body(self):
         # Record a 200
         mock_conn = http.requests.request(
@@ -403,6 +433,24 @@ class HttpClientTest(testtools.TestCase):
                           client.json_request, 'DELETE', '')
         self.m.VerifyAll()
 
+    def test_http_manual_redirect_error_without_location(self):
+        mock_conn = http.requests.request(
+            'DELETE', 'http://example.com:8004/foo',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                302, 'Found',
+                {},
+                ''))
+        self.m.ReplayAll()
+        client = http.HTTPClient('http://example.com:8004/foo')
+        self.assertRaises(exc.InvalidEndpoint,
+                          client.json_request, 'DELETE', '')
+        self.m.VerifyAll()
+
     def test_http_json_request_redirect(self):
         # Record the 302
         mock_conn = http.requests.request(
@@ -503,14 +551,15 @@ class HttpClientTest(testtools.TestCase):
         mock_logging_debug = logging.Logger.debug(
             "curl -i -X GET -H 'key: value' --key TEST_KEY "
             "--cert TEST_CERT --cacert TEST_CA "
-            "-k http://foo/bar"
+            "-k -d 'text' http://foo/bar"
         )
         mock_logging_debug.AndReturn(None)
         self.m.ReplayAll()
 
         client = http.HTTPClient('http://foo')
         client.ssl_connection_params = ssl_connection_params
-        client.log_curl_request('GET', '/bar', {'headers': headers})
+        client.log_curl_request('GET', '/bar', {'headers': headers,
+                                                'data': 'text'})
 
         self.m.VerifyAll()
 
