@@ -1470,7 +1470,7 @@ class ShellTestResources(ShellBase):
         self.m.ReplayAll()
 
         with tempfile.NamedTemporaryFile() as data_file:
-            data_file.write('{"message":"Content"}')
+            data_file.write(b'{"message":"Content"}')
             data_file.flush()
             text = self.shell(
                 'resource-signal {0} {1} -f {2}'.format(
