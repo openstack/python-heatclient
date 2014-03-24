@@ -52,6 +52,7 @@ logger = logging.getLogger(__name__)
            help='Name of the stack to create.')
 def do_create(hc, args):
     '''DEPRECATED! Use stack-create instead.'''
+    logger.warning('DEPRECATED! Use stack-create instead.')
     do_stack_create(hc, args)
 
 
@@ -225,6 +226,7 @@ def do_stack_preview(hc, args):
            help='Name or ID of stack(s) to delete.')
 def do_delete(hc, args):
     '''DEPRECATED! Use stack-delete instead.'''
+    logger.warning('DEPRECATED! Use stack-delete instead.')
     do_stack_delete(hc, args)
 
 
@@ -289,6 +291,7 @@ def do_action_resume(hc, args):
            help='Name or ID of stack to describe.')
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''
+    logger.warning('DEPRECATED! Use stack-show instead.')
     do_stack_show(hc, args)
 
 
@@ -330,6 +333,7 @@ def do_stack_show(hc, args):
            help='Name or ID of stack to update.')
 def do_update(hc, args):
     '''DEPRECATED! Use stack-update instead.'''
+    logger.warning('DEPRECATED! Use stack-update instead.')
     do_stack_update(hc, args)
 
 
@@ -380,6 +384,7 @@ def do_stack_update(hc, args):
 
 def do_list(hc, args=None):
     '''DEPRECATED! Use stack-list instead.'''
+    logger.warning('DEPRECATED! Use stack-list instead.')
     do_stack_list(hc)
 
 
@@ -469,6 +474,7 @@ def do_resource_type_show(hc, args={}):
            help='Name or ID of stack to get the template for.')
 def do_gettemplate(hc, args):
     '''DEPRECATED! Use template-show instead.'''
+    logger.warning('DEPRECATED! Use template-show instead.')
     do_template_show(hc, args)
 
 
@@ -503,6 +509,7 @@ def do_template_show(hc, args):
            action='append')
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
+    logger.warning('DEPRECATED! Use template-validate instead.')
     do_template_validate(hc, args)
 
 
@@ -567,6 +574,7 @@ def do_resource_list(hc, args):
            help='Name of the resource to show the details for.')
 def do_resource(hc, args):
     '''DEPRECATED! Use resource-show instead.'''
+    logger.warning('DEPRECATED! Use resource-show instead.')
     do_resource_show(hc, args)
 
 
@@ -694,6 +702,7 @@ def do_event_list(hc, args):
            help='ID of event to display details for.')
 def do_event(hc, args):
     '''DEPRECATED! Use event-show instead.'''
+    logger.warning('DEPRECATED! Use event-show instead.')
     do_event_show(hc, args)
 
 
