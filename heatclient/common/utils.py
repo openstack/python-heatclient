@@ -14,7 +14,6 @@
 #    under the License.
 from __future__ import print_function
 
-import os
 import prettytable
 import sys
 import textwrap
@@ -22,6 +21,7 @@ import uuid
 import yaml
 
 from heatclient import exc
+from heatclient.openstack.common import cliutils
 from heatclient.openstack.common import importutils
 from heatclient.openstack.common import jsonutils
 
@@ -30,15 +30,10 @@ supported_formats = {
     "yaml": yaml.safe_dump
 }
 
-
-# Decorator for cli-args
-def arg(*args, **kwargs):
-    def _decorator(func):
-        # Because of the semantics of decorator composition if we just append
-        # to the options list positional options will appear to be backwards.
-        func.__dict__.setdefault('arguments', []).insert(0, (args, kwargs))
-        return func
-    return _decorator
+# Using common methods from oslo cliutils
+arg = cliutils.arg
+env = cliutils.env
+print_list = cliutils.print_list
 
 
 def link_formatter(links):
@@ -55,27 +50,6 @@ def text_wrap_formatter(d):
 
 def newline_list_formatter(r):
     return '\n'.join(r or [])
-
-
-def print_list(objs, fields, field_labels=None, formatters={}, sortby=None):
-    field_labels = field_labels or fields
-    pt = prettytable.PrettyTable([f for f in field_labels],
-                                 caching=False, print_empty=False)
-    pt.align = 'l'
-
-    for o in objs:
-        row = []
-        for field in fields:
-            if field in formatters:
-                row.append(formatters[field](o))
-            else:
-                data = getattr(o, field, None) or ''
-                row.append(data)
-        pt.add_row(row)
-    if sortby is None:
-        print(pt.get_string())
-    else:
-        print(pt.get_string(sortby=field_labels[sortby]))
 
 
 def print_dict(d, formatters={}):
@@ -114,19 +88,6 @@ def find_resource(manager, name_or_id):
         msg = "No %s with a name or ID of '%s' exists." % \
               (manager.resource_class.__name__.lower(), name_or_id)
         raise exc.CommandError(msg)
-
-
-def env(*vars, **kwargs):
-    """Search for the first defined of possibly many env vars
-
-    Returns the first environment variable defined in vars, or
-    returns the default defined in kwargs.
-    """
-    for v in vars:
-        value = os.environ.get(v)
-        if value:
-            return value
-    return kwargs.get('default', '')
 
 
 def import_versioned_module(version, submodule=None):
