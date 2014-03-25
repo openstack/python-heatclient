@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+import json
 from mox3 import mox
 import os
 import six
@@ -361,6 +363,67 @@ class TestGetTemplateContents(testtools.TestCase):
                           "foo": "bar"}, tmpl_parsed)
         self.assertEqual({}, files)
         self.assertTrue(self.object_requested)
+
+    def check_non_utf8_content(self, filename, content):
+        base_url = 'file:///tmp'
+        url = '%s/%s' % (base_url, filename)
+        template = {'resources':
+                    {'one_init':
+                     {'type': 'OS::Heat::CloudConfig',
+                      'properties':
+                      {'cloud_config':
+                       {'write_files':
+                        [{'path': '/tmp/%s' % filename,
+                          'content': {'get_file': url},
+                          'encoding': 'b64'}]}}}}}
+        self.m.StubOutWithMock(request, 'urlopen')
+        raw_content = base64.decodestring(content)
+        response = six.StringIO(raw_content)
+        request.urlopen(url).AndReturn(response)
+        self.m.ReplayAll()
+        files = {}
+        template_utils.resolve_template_get_files(
+            template, files, base_url)
+        self.assertEqual({url: content}, files)
+        self.m.VerifyAll()
+
+    def test_get_zip_content(self):
+        filename = 'heat.zip'
+        content = str(
+            'UEsDBAoAAAAAAEZZWkRbOAuBBQAAAAUAAAAIABwAaGVhdC50eHRVVAkAAxRbDVNYh'
+            't9SdXgLAAEE\n6AMAAATpAwAAaGVhdApQSwECHgMKAAAAAABGWVpEWzgLgQUAAAAF'
+            'AAAACAAYAAAAAAABAAAApIEA\nAAAAaGVhdC50eHRVVAUAAxRbDVN1eAsAAQToAwA'
+            'ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n')
+        # zip has '\0' in stream
+        self.assertIn('\0', base64.decodestring(content))
+        self.assertRaises(
+            UnicodeDecodeError,
+            json.dumps,
+            {'content': base64.decodestring(content)})
+        self.check_non_utf8_content(
+            filename=filename, content=content)
+
+    def test_get_utf16_content(self):
+        filename = 'heat.utf16'
+        content = '//4tTkhTCgA=\n'
+        # utf6 has '\0' in stream
+        self.assertIn('\0', base64.decodestring(content))
+        self.assertRaises(
+            UnicodeDecodeError,
+            json.dumps,
+            {'content': base64.decodestring(content)})
+        self.check_non_utf8_content(filename=filename, content=content)
+
+    def test_get_gb18030_content(self):
+        filename = 'heat.gb18030'
+        content = '1tDO5wo=\n'
+        # gb18030 has no '\0' in stream
+        self.assertNotIn('\0', base64.decodestring(content))
+        self.assertRaises(
+            UnicodeDecodeError,
+            json.dumps,
+            {'content': base64.decodestring(content)})
+        self.check_non_utf8_content(filename=filename, content=content)
 
 
 class TestTemplateGetFileFunctions(testtools.TestCase):
