@@ -185,8 +185,12 @@ def do_stack_adopt(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
-           default=60, type=int,
-           help='Stack timeout in minutes. Default: 60')
+           type=int,
+           help='Stack preview timeout in minutes.'
+                '  DEPRECATED use --timeout instead.')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack preview timeout in minutes.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help='Enable rollback on failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
@@ -206,6 +210,10 @@ def do_stack_preview(hc, args):
     env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
 
+    if args.create_timeout:
+        logger.warning('-c/--create-timeout is deprecated, '
+                       'please use -t/--timeout instead')
+
     fields = {
         'stack_name': args.name,
         'disable_rollback': not(args.enable_rollback),
@@ -215,8 +223,9 @@ def do_stack_preview(hc, args):
         'environment': env
     }
 
-    if args.create_timeout:
-        fields['timeout_mins'] = args.create_timeout
+    timeout = args.timeout or args.create_timeout
+    if timeout:
+        fields['timeout_mins'] = timeout
 
     stack = hc.stacks.preview(**fields)
     formatters = {
