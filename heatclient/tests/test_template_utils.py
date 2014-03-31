@@ -41,7 +41,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         files = {}
         if url:
             self.m.StubOutWithMock(request, 'urlopen')
-            request.urlopen(url).AndReturn(six.StringIO(content))
+            request.urlopen(url).AndReturn(six.BytesIO(content))
             self.m.ReplayAll()
 
         template_utils.resolve_environment_urls(
@@ -53,16 +53,16 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
-        env = '''
+        env = b'''
         resource_registry:
           "OS::Thingy": "file:///home/b/a.yaml"
         '''
-        tmpl = '{"foo": "bar"}'
+        tmpl = b'{"foo": "bar"}'
 
         request.urlopen('file://%s' % env_file).AndReturn(
-            six.StringIO(env))
+            six.BytesIO(env))
         request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.StringIO(tmpl))
+            six.BytesIO(tmpl))
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
@@ -71,23 +71,23 @@ class ShellEnvironmentTest(testtools.TestCase):
             {'resource_registry': {
                 'OS::Thingy': 'file:///home/b/a.yaml'}},
             env_dict)
-        self.assertEqual('{"foo": "bar"}', files['file:///home/b/a.yaml'])
+        self.assertEqual(tmpl, files['file:///home/b/a.yaml'])
 
     def test_process_environment_relative_file(self):
 
         self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
-        env = '''
+        env = b'''
         resource_registry:
           "OS::Thingy": a.yaml
         '''
-        tmpl = '{"foo": "bar"}'
+        tmpl = b'{"foo": "bar"}'
 
         request.urlopen(env_url).AndReturn(
-            six.StringIO(env))
+            six.BytesIO(env))
         request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
-            six.StringIO(tmpl))
+            six.BytesIO(tmpl))
         self.m.ReplayAll()
 
         self.assertEqual(
@@ -105,23 +105,23 @@ class ShellEnvironmentTest(testtools.TestCase):
                 'OS::Thingy': 'file:///home/my/dir/a.yaml'}},
             env_dict)
         self.assertEqual(
-            '{"foo": "bar"}', files['file:///home/my/dir/a.yaml'])
+            tmpl, files['file:///home/my/dir/a.yaml'])
 
     def test_process_environment_relative_file_up(self):
 
         self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
-        env = '''
+        env = b'''
         resource_registry:
           "OS::Thingy": ../bar/a.yaml
         '''
-        tmpl = '{"foo": "bar"}'
+        tmpl = b'{"foo": "bar"}'
 
         request.urlopen(env_url).AndReturn(
-            six.StringIO(env))
+            six.BytesIO(env))
         request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
-            six.StringIO(tmpl))
+            six.BytesIO(tmpl))
         self.m.ReplayAll()
 
         env_url = 'file://%s' % env_file
@@ -140,20 +140,20 @@ class ShellEnvironmentTest(testtools.TestCase):
                 'OS::Thingy': 'file:///home/my/bar/a.yaml'}},
             env_dict)
         self.assertEqual(
-            '{"foo": "bar"}', files['file:///home/my/bar/a.yaml'])
+            tmpl, files['file:///home/my/bar/a.yaml'])
 
     def test_process_environment_url(self):
-        env = '''
+        env = b'''
         resource_registry:
             "OS::Thingy": "a.yaml"
         '''
         url = 'http://no.where/some/path/to/file.yaml'
         tmpl_url = 'http://no.where/some/path/to/a.yaml'
-        tmpl = '{"foo": "bar"}'
+        tmpl = b'{"foo": "bar"}'
 
         self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen(url).AndReturn(six.StringIO(env))
-        request.urlopen(tmpl_url).AndReturn(six.StringIO(tmpl))
+        request.urlopen(url).AndReturn(six.BytesIO(env))
+        request.urlopen(tmpl_url).AndReturn(six.BytesIO(tmpl))
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
@@ -167,9 +167,9 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
-        env = ''
+        env = b''
 
-        request.urlopen('file://%s' % env_file).AndReturn(six.StringIO(env))
+        request.urlopen('file://%s' % env_file).AndReturn(six.BytesIO(env))
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
@@ -184,7 +184,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual({}, files)
 
     def test_global_files(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'file:///home/b/a.yaml'
         env = '''
         resource_registry:
@@ -193,7 +193,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, url)
 
     def test_nested_files(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'file:///home/b/a.yaml'
         env = '''
         resource_registry:
@@ -204,7 +204,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, url)
 
     def test_http_url(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'http://no.where/container/a.yaml'
         env = '''
         resource_registry:
@@ -213,7 +213,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, url)
 
     def test_with_base_url(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'ftp://no.where/container/a.yaml'
         env = '''
         resource_registry:
@@ -225,7 +225,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, url)
 
     def test_with_built_in_provider(self):
-        a = "A's contents."
+        a = b"A's contents."
         env = '''
         resource_registry:
           resources:
@@ -235,7 +235,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, None)
 
     def test_with_env_file_base_url_file(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'file:///tmp/foo/a.yaml'
         env = '''
         resource_registry:
@@ -247,7 +247,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, a, url, env_base_url)
 
     def test_with_env_file_base_url_http(self):
-        a = "A's contents."
+        a = b"A's contents."
         url = 'http://no.where/path/to/a.yaml'
         env = '''
         resource_registry:
@@ -330,10 +330,10 @@ class TestGetTemplateContents(testtools.TestCase):
                     'Error parsing template file://%s ' % tmpl_file.name))
 
     def test_get_template_contents_url(self):
-        tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
+        tmpl = b'{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
         self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen(url).AndReturn(six.StringIO(tmpl))
+        request.urlopen(url).AndReturn(six.BytesIO(tmpl))
         self.m.ReplayAll()
 
         files, tmpl_parsed = template_utils.get_template_contents(
@@ -378,7 +378,7 @@ class TestGetTemplateContents(testtools.TestCase):
                           'encoding': 'b64'}]}}}}}
         self.m.StubOutWithMock(request, 'urlopen')
         raw_content = base64.decodestring(content)
-        response = six.StringIO(raw_content)
+        response = six.BytesIO(raw_content)
         request.urlopen(url).AndReturn(response)
         self.m.ReplayAll()
         files = {}
@@ -389,46 +389,58 @@ class TestGetTemplateContents(testtools.TestCase):
 
     def test_get_zip_content(self):
         filename = 'heat.zip'
-        content = str(
-            'UEsDBAoAAAAAAEZZWkRbOAuBBQAAAAUAAAAIABwAaGVhdC50eHRVVAkAAxRbDVNYh'
-            't9SdXgLAAEE\n6AMAAATpAwAAaGVhdApQSwECHgMKAAAAAABGWVpEWzgLgQUAAAAF'
-            'AAAACAAYAAAAAAABAAAApIEA\nAAAAaGVhdC50eHRVVAUAAxRbDVN1eAsAAQToAwA'
-            'ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n')
+        content = b'''\
+UEsDBAoAAAAAAEZZWkRbOAuBBQAAAAUAAAAIABwAaGVhdC50eHRVVAkAAxRbDVNYh\
+t9SdXgLAAEE\n6AMAAATpAwAAaGVhdApQSwECHgMKAAAAAABGWVpEWzgLgQUAAAAF\
+AAAACAAYAAAAAAABAAAApIEA\nAAAAaGVhdC50eHRVVAUAAxRbDVN1eAsAAQToAwA\
+ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         # zip has '\0' in stream
-        self.assertIn('\0', base64.decodestring(content))
-        self.assertRaises(
-            UnicodeDecodeError,
-            json.dumps,
-            {'content': base64.decodestring(content)})
+        self.assertIn(b'\0', base64.decodestring(content))
+        decoded_content = base64.decodestring(content)
+        if six.PY3:
+            self.assertRaises(UnicodeDecodeError, decoded_content.decode)
+        else:
+            self.assertRaises(
+                UnicodeDecodeError,
+                json.dumps,
+                {'content': decoded_content})
         self.check_non_utf8_content(
             filename=filename, content=content)
 
     def test_get_utf16_content(self):
         filename = 'heat.utf16'
-        content = '//4tTkhTCgA=\n'
+        content = b'//4tTkhTCgA=\n'
         # utf6 has '\0' in stream
-        self.assertIn('\0', base64.decodestring(content))
-        self.assertRaises(
-            UnicodeDecodeError,
-            json.dumps,
-            {'content': base64.decodestring(content)})
+        self.assertIn(b'\0', base64.decodestring(content))
+        decoded_content = base64.decodestring(content)
+        if six.PY3:
+            self.assertRaises(UnicodeDecodeError, decoded_content.decode)
+        else:
+            self.assertRaises(
+                UnicodeDecodeError,
+                json.dumps,
+                {'content': decoded_content})
         self.check_non_utf8_content(filename=filename, content=content)
 
     def test_get_gb18030_content(self):
         filename = 'heat.gb18030'
-        content = '1tDO5wo=\n'
+        content = b'1tDO5wo=\n'
         # gb18030 has no '\0' in stream
         self.assertNotIn('\0', base64.decodestring(content))
-        self.assertRaises(
-            UnicodeDecodeError,
-            json.dumps,
-            {'content': base64.decodestring(content)})
+        decoded_content = base64.decodestring(content)
+        if six.PY3:
+            self.assertRaises(UnicodeDecodeError, decoded_content.decode)
+        else:
+            self.assertRaises(
+                UnicodeDecodeError,
+                json.dumps,
+                {'content': decoded_content})
         self.check_non_utf8_content(filename=filename, content=content)
 
 
 class TestTemplateGetFileFunctions(testtools.TestCase):
 
-    hot_template = '''heat_template_version: 2013-05-23
+    hot_template = b'''heat_template_version: 2013-05-23
 resources:
   resource1:
     type: type1
@@ -462,22 +474,22 @@ resources:
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
         request.urlopen(url).AndReturn(
-            six.StringIO(self.hot_template))
+            six.BytesIO(self.hot_template))
         request.urlopen(
             'http://localhost/bar.yaml').InAnyOrder().AndReturn(
-                six.StringIO('bar contents'))
+                six.BytesIO(b'bar contents'))
         request.urlopen(
             'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
-                six.StringIO('foo contents'))
+                six.BytesIO(b'foo contents'))
         request.urlopen(
             'file:///home/my/dir/baz/baz1.yaml').InAnyOrder().AndReturn(
-                six.StringIO('baz1 contents'))
+                six.BytesIO(b'baz1 contents'))
         request.urlopen(
             'file:///home/my/dir/baz/baz2.yaml').InAnyOrder().AndReturn(
-                six.StringIO('baz2 contents'))
+                six.BytesIO(b'baz2 contents'))
         request.urlopen(
             'file:///home/my/dir/baz/baz3.yaml').InAnyOrder().AndReturn(
-                six.StringIO('baz3 contents'))
+                six.BytesIO(b'baz3 contents'))
 
         self.m.ReplayAll()
 
@@ -485,11 +497,11 @@ resources:
             template_file=tmpl_file)
 
         self.assertEqual({
-            'http://localhost/bar.yaml': 'bar contents',
-            'file:///home/my/dir/foo.yaml': 'foo contents',
-            'file:///home/my/dir/baz/baz1.yaml': 'baz1 contents',
-            'file:///home/my/dir/baz/baz2.yaml': 'baz2 contents',
-            'file:///home/my/dir/baz/baz3.yaml': 'baz3 contents',
+            'http://localhost/bar.yaml': b'bar contents',
+            'file:///home/my/dir/foo.yaml': b'foo contents',
+            'file:///home/my/dir/baz/baz1.yaml': b'baz1 contents',
+            'file:///home/my/dir/baz/baz2.yaml': b'baz2 contents',
+            'file:///home/my/dir/baz/baz3.yaml': b'baz3 contents',
         }, files)
         self.assertEqual({
             'heat_template_version': '2013-05-23',
@@ -523,13 +535,19 @@ resources:
         self.m.StubOutWithMock(request, 'urlopen')
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
-        contents = str('heat_template_version: 2013-05-23\n'
-                       'outputs:\n'
-                       '  contents:\n'
-                       '    value:\n'
-                       '      get_file: template.yaml\n')
-        request.urlopen(url).AndReturn(six.StringIO(contents))
-        request.urlopen(url).AndReturn(six.StringIO(contents))
+#        contents = str('heat_template_version: 2013-05-23\n'
+#                       'outputs:\n'
+#                       '  contents:\n'
+#                       '    value:\n'
+#                       '      get_file: template.yaml\n')
+        contents = b'''
+heat_template_version: 2013-05-23\n\
+outputs:\n\
+  contents:\n\
+    value:\n\
+      get_file: template.yaml\n'''
+        request.urlopen(url).AndReturn(six.BytesIO(contents))
+        request.urlopen(url).AndReturn(six.BytesIO(contents))
         self.m.ReplayAll()
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
@@ -540,16 +558,17 @@ resources:
         self.m.StubOutWithMock(request, 'urlopen')
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
-        contents = str('heat_template_version: 2013-05-23\n'
-                       'outputs:\n'
-                       '  contents:\n'
-                       '    value:\n'
-                       '      get_file: template.yaml\n'
-                       '  template:\n'
-                       '    value:\n'
-                       '      get_file: template.yaml\n')
-        request.urlopen(url).AndReturn(six.StringIO(contents))
-        request.urlopen(url).AndReturn(six.StringIO(contents))
+        contents = b'''
+heat_template_version: 2013-05-23\n
+outputs:\n\
+  contents:\n\
+    value:\n\
+      get_file: template.yaml\n\
+  template:\n\
+    value:\n\
+      get_file: template.yaml\n'''
+        request.urlopen(url).AndReturn(six.BytesIO(contents))
+        request.urlopen(url).AndReturn(six.BytesIO(contents))
         self.m.ReplayAll()
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
