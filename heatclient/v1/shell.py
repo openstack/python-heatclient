@@ -393,6 +393,8 @@ def do_list(hc, args=None):
     do_stack_list(hc)
 
 
+@utils.arg('-s', '--show-deleted', default=False, action="store_true",
+           help='Include soft-deleted stacks in the stack listing.')
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Filter parameters to apply on returned stacks. '
            'This can be specified multiple times, or once with parameters '
@@ -414,7 +416,8 @@ def do_stack_list(hc, args=None):
         kwargs = {'limit': args.limit,
                   'marker': args.marker,
                   'filters': utils.format_parameters(args.filters),
-                  'global_tenant': args.global_tenant}
+                  'global_tenant': args.global_tenant,
+                  'show_deleted': args.show_deleted}
 
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
