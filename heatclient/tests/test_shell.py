@@ -857,8 +857,20 @@ class ShellTestUserPass(ShellBase):
         request.urlopen('http://no.where/minimal.template').AndReturn(
             six.StringIO('{"AWSTemplateFormatVersion" : "2010-09-09"}'))
 
+        expected_data = {
+            'files': {},
+            'disable_rollback': True,
+            'stack_name': 'teststack',
+            'environment': {},
+            'template': {"AWSTemplateFormatVersion": "2010-09-09"},
+            'parameters': {'DBUsername': 'wp',
+                           'KeyName': 'heat_key',
+                           'LinuxDistribution': 'F17"',
+                           '"InstanceType': 'm1.large',
+                           'DBPassword': 'verybadpassword'}}
+
         http.HTTPClient.json_request(
-            'POST', '/stacks', data=mox.IgnoreArg(),
+            'POST', '/stacks', data=expected_data,
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()

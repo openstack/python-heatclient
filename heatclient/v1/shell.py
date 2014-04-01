@@ -96,13 +96,16 @@ def do_stack_create(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'timeout_mins': args.timeout or args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    timeout = args.timeout or args.create_timeout
+    if timeout:
+        fields['timeout_mins'] = timeout
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -156,7 +159,6 @@ def do_stack_adopt(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'timeout_mins': args.timeout or args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),
@@ -164,6 +166,10 @@ def do_stack_adopt(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    timeout = args.timeout or args.create_timeout
+    if timeout:
+        fields['timeout_mins'] = timeout
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
@@ -201,13 +207,15 @@ def do_stack_preview(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'timeout_mins': args.create_timeout,
         'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    if args.create_timeout:
+        fields['timeout_mins'] = args.create_timeout
 
     stack = hc.stacks.preview(**fields)
     formatters = {
