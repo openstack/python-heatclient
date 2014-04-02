@@ -14,6 +14,7 @@
 #    under the License.
 
 import logging
+import six
 from six.moves.urllib import request
 import yaml
 
@@ -663,6 +664,8 @@ def do_resource_signal(hc, args):
         data_url = template_utils.normalise_file_path_to_url(data_file)
         data = request.urlopen(data_url).read()
     if data:
+        if isinstance(data, six.binary_type):
+            data = data.decode('utf-8')
         try:
             data = jsonutils.loads(data)
         except ValueError as ex:
