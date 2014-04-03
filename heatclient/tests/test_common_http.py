@@ -637,7 +637,7 @@ class HttpClientTest(testtools.TestCase):
 
     def test_curl_log_i18n_headers(self):
         self.m.StubOutWithMock(logging.Logger, 'debug')
-        kwargs = {'headers': {'Key': 'foo\xe3\x8a\x8e'}}
+        kwargs = {'headers': {'Key': b'foo\xe3\x8a\x8e'}}
 
         mock_logging_debug = logging.Logger.debug(
             u"curl -i -X GET -H 'Key: foo㊎' http://somewhere"
