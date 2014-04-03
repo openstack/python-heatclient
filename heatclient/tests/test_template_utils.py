@@ -578,7 +578,7 @@ outputs:\n\
 
 class TestTemplateTypeFunctions(testtools.TestCase):
 
-    hot_template = '''heat_template_version: 2013-05-23
+    hot_template = b'''heat_template_version: 2013-05-23
 parameters:
   param1:
     type: string
@@ -606,21 +606,21 @@ resources:
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
         request.urlopen(url).AndReturn(
-            six.StringIO(self.hot_template))
+            six.BytesIO(self.hot_template))
         request.urlopen(
             'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
-                six.StringIO('foo contents'))
+                six.BytesIO(b'foo contents'))
         request.urlopen(
             'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
-                six.StringIO('egg contents'))
+                six.BytesIO(b'egg contents'))
         self.m.ReplayAll()
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
 
         self.assertEqual({
-            u'file:///home/my/dir/foo.yaml': 'foo contents',
-            u'file:///home/my/dir/spam/egg.yaml': 'egg contents'
+            u'file:///home/my/dir/foo.yaml': b'foo contents',
+            u'file:///home/my/dir/spam/egg.yaml': b'egg contents'
         }, files)
         self.assertEqual({
             u'heat_template_version': u'2013-05-23',
