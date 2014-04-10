@@ -23,10 +23,12 @@ from six.moves.urllib import request
 from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient import exc
+from heatclient.openstack.common import jsonutils
 
 
 def get_template_contents(template_file=None, template_url=None,
-                          template_object=None, object_request=None):
+                          template_object=None, object_request=None,
+                          files=None):
 
     # Transform a bare file path to a file:// URL.
     if template_file:
@@ -56,8 +58,9 @@ def get_template_contents(template_file=None, template_url=None,
         raise exc.CommandError(
             'Error parsing template %s %s' % (template_url, e))
 
-    files = {}
     tmpl_base_url = base_url_for_url(template_url)
+    if files is None:
+        files = {}
     resolve_template_get_files(template, files, tmpl_base_url)
     resolve_template_type(template, files, tmpl_base_url)
     return files, template
@@ -93,11 +96,11 @@ def resolve_template_type(template, files, template_base_url):
         return isinstance(value, (dict, list))
 
     get_file_contents(template, files, template_base_url,
-                      ignore_if, recurse_if)
+                      ignore_if, recurse_if, file_is_template=True)
 
 
 def get_file_contents(from_data, files, base_url=None,
-                      ignore_if=None, recurse_if=None):
+                      ignore_if=None, recurse_if=None, file_is_template=False):
 
     if recurse_if and recurse_if(from_data):
         if isinstance(from_data, dict):
@@ -105,7 +108,8 @@ def get_file_contents(from_data, files, base_url=None,
         else:
             recurse_data = from_data
         for value in recurse_data:
-            get_file_contents(value, files, base_url, ignore_if, recurse_if)
+            get_file_contents(value, files, base_url, ignore_if, recurse_if,
+                              file_is_template=file_is_template)
 
     if isinstance(from_data, dict):
         for key, value in iter(from_data.items()):
@@ -117,7 +121,13 @@ def get_file_contents(from_data, files, base_url=None,
 
             str_url = parse.urljoin(base_url, value)
             if str_url not in files:
-                files[str_url] = read_url_content(url=str_url)
+                if file_is_template:
+                    template = get_template_contents(
+                        template_url=str_url, files=files)[1]
+                    file_content = jsonutils.dumps(template)
+                else:
+                    file_content = read_url_content(str_url)
+                files[str_url] = file_content
             # replace the data value with the normalised absolute URL
             from_data[key] = str_url
 
@@ -185,8 +195,9 @@ def resolve_environment_urls(resource_registry, files, env_base_url):
             # don't need downloading.
             return True
 
-    get_file_contents(rr, files, base_url, ignore_if)
+    get_file_contents(rr, files, base_url, ignore_if, file_is_template=True)
 
     for res_name, res_dict in iter(rr.get('resources', {}).items()):
         res_base_url = res_dict.get('base_url', base_url)
-        get_file_contents(res_dict, files, res_base_url, ignore_if)
+        get_file_contents(
+            res_dict, files, res_base_url, ignore_if, file_is_template=True)
