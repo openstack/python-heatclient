@@ -261,7 +261,12 @@ def do_stack_delete(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to abandon.')
 def do_stack_abandon(hc, args):
-    '''Abandon the stack.'''
+    '''Abandon the stack.
+
+    This will delete the record of the stack from Heat, but will not delete
+    any of the underlying resources. Prints an adoptable JSON representation
+    of the stack to stdout on success.
+    '''
     fields = {'stack_id': args.id}
     try:
         stack = hc.stacks.abandon(**fields)
