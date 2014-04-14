@@ -184,15 +184,6 @@ def do_stack_adopt(hc, args):
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g from swift)')
-@utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
-           type=int,
-           help='Stack preview timeout in minutes.'
-                '  DEPRECATED use --timeout instead.')
-@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
-           type=int,
-           help='Stack preview timeout in minutes.')
-@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on failure')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to preview the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -210,22 +201,13 @@ def do_stack_preview(hc, args):
     env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
 
-    if args.create_timeout:
-        logger.warning('-c/--create-timeout is deprecated, '
-                       'please use -t/--timeout instead')
-
     fields = {
         'stack_name': args.name,
-        'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
-
-    timeout = args.timeout or args.create_timeout
-    if timeout:
-        fields['timeout_mins'] = timeout
 
     stack = hc.stacks.preview(**fields)
     formatters = {
