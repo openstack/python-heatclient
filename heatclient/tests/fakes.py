@@ -21,11 +21,13 @@ def script_keystone_client(token=None):
     if token:
         ksclient.Client(auth_url='http://no.where',
                         insecure=False,
+                        cacert=None,
                         tenant_id='tenant_id',
                         token=token).AndReturn(FakeKeystone(token))
     else:
         ksclient.Client(auth_url='http://no.where',
                         insecure=False,
+                        cacert=None,
                         password='password',
                         tenant_name='tenant_name',
                         username='username').AndReturn(FakeKeystone(
