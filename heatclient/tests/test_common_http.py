@@ -480,8 +480,8 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(body, {})
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
         self.m.VerifyAll()
 
     def test_http_404_json_request(self):
@@ -617,7 +617,7 @@ class HttpClientTest(testtools.TestCase):
         self.m.ReplayAll()
 
         ca = http.get_system_ca_file()
-        self.assertEqual(ca, chosen)
+        self.assertEqual(chosen, ca)
 
         self.m.VerifyAll()
 
@@ -627,13 +627,13 @@ class HttpClientTest(testtools.TestCase):
 
     def test_passed_cert_to_verify_cert(self):
         client = http.HTTPClient('https://foo', ca_file="NOWHERE")
-        self.assertEqual(client.verify_cert, "NOWHERE")
+        self.assertEqual("NOWHERE", client.verify_cert)
 
         self.m.StubOutWithMock(http, 'get_system_ca_file')
         http.get_system_ca_file().AndReturn("SOMEWHERE")
         self.m.ReplayAll()
         client = http.HTTPClient('https://foo')
-        self.assertEqual(client.verify_cert, "SOMEWHERE")
+        self.assertEqual("SOMEWHERE", client.verify_cert)
 
     def test_curl_log_i18n_headers(self):
         self.m.StubOutWithMock(logging.Logger, 'debug')
