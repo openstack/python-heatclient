@@ -72,6 +72,13 @@ class HeatShell(object):
                             "certificate authorities. "
                             "This option should be used with caution.")
 
+        parser.add_argument('--os-cacert',
+                            metavar='<ca-certificate>',
+                            default=utils.env('OS_CACERT', default=None),
+                            help='Specify a CA bundle file to use in '
+                            'verifying a TLS (https) server certificate. '
+                            'Defaults to env[OS_CACERT]')
+
         parser.add_argument('--cert-file',
                             help='Path of certificate file to use in SSL '
                             'connection. This file can optionally be '
@@ -245,7 +252,8 @@ class HeatShell(object):
         :param token: token to use instead of username/password
         """
         kc_args = {'auth_url': kwargs.get('auth_url'),
-                   'insecure': kwargs.get('insecure')}
+                   'insecure': kwargs.get('insecure'),
+                   'cacert': kwargs.get('cacert')}
 
         if kwargs.get('tenant_id'):
             kc_args['tenant_id'] = kwargs.get('tenant_id')
@@ -353,6 +361,7 @@ class HeatShell(object):
             'service_type': args.os_service_type,
             'endpoint_type': args.os_endpoint_type,
             'insecure': args.insecure,
+            'cacert': args.os_cacert,
             'include_pass': args.include_password
         }
 
