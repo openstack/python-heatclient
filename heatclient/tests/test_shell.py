@@ -19,6 +19,7 @@ from six.moves.urllib import request
 import sys
 
 import fixtures
+import httpretty
 import tempfile
 import testscenarios
 import testtools
@@ -27,17 +28,31 @@ from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common import strutils
 from mox3 import mox
 
-from keystoneclient.v2_0 import client as ksclient
-
 from heatclient.common import http
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
-
+from heatclient.tests import keystone_client_fixtures
 
 load_tests = testscenarios.load_tests_apply_scenarios
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
+
+FAKE_ENV_KEYSTONE_V2 = {
+    'OS_USERNAME': 'username',
+    'OS_PASSWORD': 'password',
+    'OS_TENANT_NAME': 'tenant_name',
+    'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+}
+
+FAKE_ENV_KEYSTONE_V3 = {
+    'OS_USERNAME': 'username',
+    'OS_PASSWORD': 'password',
+    'OS_TENANT_NAME': 'tenant_name',
+    'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+    'OS_USER_DOMAIN_ID': 'default',
+    'OS_PROJECT_DOMAIN_ID': 'default',
+}
 
 
 class TestCase(testtools.TestCase):
@@ -74,6 +89,12 @@ class TestCase(testtools.TestCase):
         sys.stderr = orig
         return err
 
+    def register_keystone_auth_fixture(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            keystone_client_fixtures.BASE_URL,
+            body=keystone_client_fixtures.keystone_request_callback)
+
 
 class EnvVarTest(TestCase):
 
@@ -86,7 +107,7 @@ class EnvVarTest(TestCase):
             err='You must provide a password')),
         ('tenant_name', dict(
             remove='OS_TENANT_NAME',
-            err='You must provide a tenant_id')),
+            err='You must provide a tenant id')),
         ('auth_url', dict(
             remove='OS_AUTH_URL',
             err='You must provide an auth url')),
@@ -110,7 +131,7 @@ class EnvVarTestToken(TestCase):
     scenarios = [
         ('tenant_id', dict(
             remove='OS_TENANT_ID',
-            err='You must provide a tenant_id')),
+            err='You must provide a tenant id')),
         ('auth_url', dict(
             remove='OS_AUTH_URL',
             err='You must provide an auth url')),
@@ -151,17 +172,14 @@ class ShellParamValidationTest(TestCase):
         self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
 
+    @httpretty.activate
     def test_bad_parameters(self):
-        self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
-        fakes.script_keystone_client()
-
-        self.m.ReplayAll()
+        self.register_keystone_auth_fixture()
         fake_env = {
             'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
             'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
+            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
         }
         self.set_fake_env(fake_env)
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -177,35 +195,63 @@ class ShellValidationTest(TestCase):
         self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
 
+    @httpretty.activate
     def test_failed_auth(self):
-        self.m.StubOutWithMock(ksclient, 'Client')
+        self.register_keystone_auth_fixture()
         self.m.StubOutWithMock(http.HTTPClient, 'json_request')
-        fakes.script_keystone_client()
         failed_msg = 'Unable to authenticate user with credentials provided'
         http.HTTPClient.json_request(
             'GET', '/stacks?').AndRaise(exc.Unauthorized(failed_msg))
 
         self.m.ReplayAll()
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
         self.shell_error('stack-list', failed_msg)
 
+    @httpretty.activate
     def test_stack_create_validation(self):
-        self.m.StubOutWithMock(ksclient, 'Client')
-        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
-        fakes.script_keystone_client()
+        # emulate Keystone version discovery
+        httpretty.register_uri(
+            httpretty.GET,
+            keystone_client_fixtures.V2_URL,
+            body=keystone_client_fixtures.V2_VERSION_ENTRY)
+        # emulate Keystone v2 token request
+        httpretty.register_uri(
+            httpretty.POST,
+            '%s/tokens' % (keystone_client_fixtures.V2_URL),
+            body=keystone_client_fixtures.keystone_request_callback)
 
-        self.m.ReplayAll()
         fake_env = {
             'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
             'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
+            'OS_AUTH_URL': keystone_client_fixtures.V2_URL,
+        }
+        self.set_fake_env(fake_env)
+        self.shell_error(
+            'stack-create teststack '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"',
+            'Need to specify exactly one of')
+
+    @httpretty.activate
+    def test_stack_create_validation_keystone_v3(self):
+        # emulate Keystone version discovery
+        httpretty.register_uri(
+            httpretty.GET,
+            keystone_client_fixtures.V3_URL,
+            body=keystone_client_fixtures.V3_VERSION_ENTRY)
+        # emulate Keystone v2 token request
+        httpretty.register_uri(
+            httpretty.POST,
+            '%s/tokens' % (keystone_client_fixtures.V3_URL),
+            body=keystone_client_fixtures.keystone_request_callback)
+
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': keystone_client_fixtures.V3_URL,
         }
         self.set_fake_env(fake_env)
         self.shell_error(
@@ -221,7 +267,6 @@ class ShellBase(TestCase):
     def setUp(self):
         super(ShellBase, self).setUp()
         self.m = mox.Mox()
-        self.m.StubOutWithMock(ksclient, 'Client')
         self.m.StubOutWithMock(http.HTTPClient, 'json_request')
         self.m.StubOutWithMock(http.HTTPClient, 'raw_request')
         self.addCleanup(self.m.VerifyAll)
@@ -255,6 +300,7 @@ class ShellTestCommon(ShellBase):
 
     def setUp(self):
         super(ShellTestCommon, self).setUp()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_help_unknown_command(self):
         self.assertRaises(exc.CommandError, self.shell, 'help foofoo')
@@ -281,54 +327,36 @@ class ShellTestCommon(ShellBase):
             self.assertEqual(output1, output2)
             self.assertRegexpMatches(output1, '^usage: heat %s' % command)
 
+    @httpretty.activate
     def test_debug_switch_raises_error(self):
-        fakes.script_keystone_client()
+        self.register_keystone_auth_fixture()
         http.HTTPClient.json_request(
             'GET', '/stacks?').AndRaise(exc.Unauthorized("FAIL"))
 
         self.m.ReplayAll()
 
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
         args = ['--debug', 'stack-list']
         self.assertRaises(exc.Unauthorized, heatclient.shell.main, args)
 
+    @httpretty.activate
     def test_dash_d_switch_raises_error(self):
-        fakes.script_keystone_client()
+        self.register_keystone_auth_fixture()
         http.HTTPClient.json_request(
             'GET', '/stacks?').AndRaise(exc.CommandError("FAIL"))
 
         self.m.ReplayAll()
 
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
         args = ['-d', 'stack-list']
         self.assertRaises(exc.CommandError, heatclient.shell.main, args)
 
+    @httpretty.activate
     def test_no_debug_switch_no_raises_errors(self):
-        fakes.script_keystone_client()
+        self.register_keystone_auth_fixture()
         http.HTTPClient.json_request(
             'GET', '/stacks?').AndRaise(exc.Unauthorized("FAIL"))
 
         self.m.ReplayAll()
 
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
         args = ['stack-list']
         self.assertRaises(SystemExit, heatclient.shell.main, args)
 
@@ -352,21 +380,12 @@ class ShellTestUserPass(ShellBase):
         super(ShellTestUserPass, self).setUp()
         self._set_fake_env()
 
-    # Patch os.environ to avoid required auth info.
     def _set_fake_env(self):
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
-    def _script_keystone_client(self):
-        fakes.script_keystone_client()
-
+    @httpretty.activate
     def test_stack_list(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         fakes.script_heat_list()
 
         self.m.ReplayAll()
@@ -385,8 +404,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    @httpretty.activate
     def test_stack_list_with_args(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         expected_url = '/stacks?%s' % parse.urlencode({
             'limit': 2,
             'status': ['COMPLETE', 'FAILED'],
@@ -413,7 +433,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    @httpretty.activate
     def test_parsable_error(self):
+        self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
         resp_dict = {
             "explanation": "The resource could not be found.",
@@ -426,7 +448,6 @@ class ShellTestUserPass(ShellBase):
             "title": "Not Found"
         }
 
-        self._script_keystone_client()
         fakes.script_heat_error(jsonutils.dumps(resp_dict))
 
         self.m.ReplayAll()
@@ -434,7 +455,9 @@ class ShellTestUserPass(ShellBase):
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: " + message, str(e))
 
+    @httpretty.activate
     def test_parsable_verbose(self):
+        self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
         resp_dict = {
             "explanation": "The resource could not be found.",
@@ -447,7 +470,6 @@ class ShellTestUserPass(ShellBase):
             "title": "Not Found"
         }
 
-        self._script_keystone_client()
         fakes.script_heat_error(jsonutils.dumps(resp_dict))
 
         self.m.ReplayAll()
@@ -457,15 +479,18 @@ class ShellTestUserPass(ShellBase):
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertIn(message, str(e))
 
+    @httpretty.activate
     def test_parsable_malformed_error(self):
+        self.register_keystone_auth_fixture()
         invalid_json = "ERROR: {Invalid JSON Error."
-        self._script_keystone_client()
         fakes.script_heat_error(invalid_json)
         self.m.ReplayAll()
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: " + invalid_json, str(e))
 
+    @httpretty.activate
     def test_parsable_malformed_error_missing_message(self):
+        self.register_keystone_auth_fixture()
         missing_message = {
             "explanation": "The resource could not be found.",
             "code": 404,
@@ -476,14 +501,15 @@ class ShellTestUserPass(ShellBase):
             "title": "Not Found"
         }
 
-        self._script_keystone_client()
         fakes.script_heat_error(jsonutils.dumps(missing_message))
         self.m.ReplayAll()
 
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: Internal Error", str(e))
 
+    @httpretty.activate
     def test_parsable_malformed_error_missing_traceback(self):
+        self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
         resp_dict = {
             "explanation": "The resource could not be found.",
@@ -495,7 +521,6 @@ class ShellTestUserPass(ShellBase):
             "title": "Not Found"
         }
 
-        self._script_keystone_client()
         fakes.script_heat_error(jsonutils.dumps(resp_dict))
         self.m.ReplayAll()
 
@@ -505,8 +530,9 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("ERROR: The Stack (bad) could not be found.\n",
                          str(e))
 
+    @httpretty.activate
     def test_stack_show(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
             "stack_name": "teststack",
@@ -537,8 +563,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    @httpretty.activate
     def test_stack_abandon(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
 
         resp_dict = {"stack": {
             "id": "1",
@@ -580,7 +607,6 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
 
     def _output_fake_response(self):
-        self._script_keystone_client()
 
         resp_dict = {"stack": {
             "id": "1",
@@ -618,24 +644,31 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
+    @httpretty.activate
     def test_output_list(self):
+        self.register_keystone_auth_fixture()
         self._output_fake_response()
         list_text = self.shell('output-list teststack/1')
         for r in ['output1', 'output2', 'output_uni']:
             self.assertRegexpMatches(list_text, r)
 
+    @httpretty.activate
     def test_output_show(self):
+        self.register_keystone_auth_fixture()
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output1')
         self.assertRegexpMatches(list_text, 'value1')
 
+    @httpretty.activate
     def test_output_show_unicode(self):
+        self.register_keystone_auth_fixture()
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output_uni')
         self.assertRegexpMatches(list_text, u'test\u2665')
 
+    @httpretty.activate
     def test_template_show_cfn(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         template_data = open(os.path.join(TEST_VAR_DIR,
                                           'minimal.template')).read()
         resp = fakes.FakeHTTPResponse(
@@ -661,8 +694,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    @httpretty.activate
     def test_template_show_cfn_unicode(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"AWSTemplateFormatVersion": "2010-09-09",
                      "Description": u"test\u2665",
                      "Outputs": {},
@@ -691,8 +725,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    @httpretty.activate
     def test_template_show_hot(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
                      "resources": {},
@@ -717,8 +752,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    @httpretty.activate
     def test_stack_preview(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
             "stack_name": "teststack",
@@ -757,8 +793,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(preview_text, r)
 
+    @httpretty.activate
     def test_stack_create(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             201,
             'Created',
@@ -790,8 +827,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    @httpretty.activate
     def test_stack_create_timeout(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
         resp = fakes.FakeHTTPResponse(
@@ -837,8 +875,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    @httpretty.activate
     def test_stack_update_timeout(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
         resp = fakes.FakeHTTPResponse(
@@ -884,9 +923,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
+    @httpretty.activate
     def test_stack_create_url(self):
-
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             201,
             'Created',
@@ -932,9 +971,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    @httpretty.activate
     def test_stack_create_object(self):
-
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
         http.HTTPClient.raw_request(
@@ -972,8 +1011,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    @httpretty.activate
     def test_stack_adopt(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             201,
             'Created',
@@ -1007,17 +1047,19 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(adopt_text, r)
 
+    @httpretty.activate
     def test_stack_adopt_without_data(self):
+        self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
-        self._script_keystone_client()
         self.m.ReplayAll()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self.shell_error(
             'stack-adopt teststack '
             '--template-file=%s ' % template_file, failed_msg)
 
+    @httpretty.activate
     def test_stack_update(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             202,
             'Accepted',
@@ -1050,8 +1092,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
+    @httpretty.activate
     def test_stack_delete(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
@@ -1075,8 +1118,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(delete_text, r)
 
+    @httpretty.activate
     def test_stack_delete_multiple(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
@@ -1103,8 +1147,9 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(delete_text, r)
 
+    @httpretty.activate
     def test_build_info(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {
             'build_info': {
                 'api': {'revision': 'api_revision'},
@@ -1133,22 +1178,10 @@ class ShellTestUserPass(ShellBase):
 
 
 class ShellTestEvents(ShellBase):
+
     def setUp(self):
         super(ShellTestEvents, self).setUp()
-        self._set_fake_env()
-
-    # Patch os.environ to avoid required auth info.
-    def _set_fake_env(self):
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-
-    def _script_keystone_client(self):
-        fakes.script_keystone_client()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     scenarios = [
         ('integer_id', dict(
@@ -1158,8 +1191,9 @@ class ShellTestEvents(ShellBase):
             event_id_one='3d68809e-c4aa-4dc9-a008-933823d2e44f',
             event_id_two='43b68bae-ed5d-4aed-a99f-0b3d39c2418a'))]
 
+    @httpretty.activate
     def test_event_list(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"events": [
                      {"event_time": "2013-12-05T14:14:30Z",
                       "id": self.event_id_one,
@@ -1224,8 +1258,9 @@ class ShellTestEvents(ShellBase):
         for r in required:
             self.assertRegexpMatches(event_list_text, r)
 
+    @httpretty.activate
     def test_event_show(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"event":
                      {"event_time": "2013-12-05T14:14:30Z",
                       "id": self.event_id_one,
@@ -1294,25 +1329,13 @@ class ShellTestEvents(ShellBase):
 
 
 class ShellTestResources(ShellBase):
+
     def setUp(self):
         super(ShellTestResources, self).setUp()
-        self._set_fake_env()
-
-    # Patch os.environ to avoid required auth info.
-    def _set_fake_env(self):
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-
-    def _script_keystone_client(self):
-        fakes.script_keystone_client()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _test_resource_list(self, with_resource_name):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"resources": [
                      {"links": [{"href": "http://heat.example.com:8004/foo",
                                  "rel": "self"},
@@ -1361,14 +1384,17 @@ class ShellTestResources(ShellBase):
         for r in required:
             self.assertRegexpMatches(resource_list_text, r)
 
+    @httpretty.activate
     def test_resource_list(self):
         self._test_resource_list(True)
 
+    @httpretty.activate
     def test_resource_list_no_resource_name(self):
         self._test_resource_list(False)
 
+    @httpretty.activate
     def test_resource_list_empty(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"resources": []}
         resp = fakes.FakeHTTPResponse(
             200,
@@ -1395,8 +1421,9 @@ class ShellTestResources(ShellBase):
 --------------+
 ''', resource_list_text)
 
+    @httpretty.activate
     def test_resource_show(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"resource":
                      {"description": "",
                       "links": [{"href": "http://heat.example.com:8004/foo",
@@ -1455,8 +1482,9 @@ class ShellTestResources(ShellBase):
         for r in required:
             self.assertRegexpMatches(resource_show_text, r)
 
+    @httpretty.activate
     def test_resource_signal(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1480,8 +1508,9 @@ class ShellTestResources(ShellBase):
                 stack_id, resource_name))
         self.assertEqual("", text)
 
+    @httpretty.activate
     def test_resource_signal_no_data(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1503,8 +1532,9 @@ class ShellTestResources(ShellBase):
             'resource-signal {0} {1}'.format(stack_id, resource_name))
         self.assertEqual("", text)
 
+    @httpretty.activate
     def test_resource_signal_no_json(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
 
@@ -1516,8 +1546,9 @@ class ShellTestResources(ShellBase):
                 stack_id, resource_name))
         self.assertIn('Data should be in JSON format', str(error))
 
+    @httpretty.activate
     def test_resource_signal_no_dict(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
 
@@ -1529,8 +1560,9 @@ class ShellTestResources(ShellBase):
                 stack_id, resource_name))
         self.assertEqual('Data should be a JSON dict', str(error))
 
+    @httpretty.activate
     def test_resource_signal_both_data(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
 
@@ -1543,8 +1575,9 @@ class ShellTestResources(ShellBase):
         self.assertEqual('Can only specify one of data and data-file',
                          str(error))
 
+    @httpretty.activate
     def test_resource_signal_data_file(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1575,23 +1608,11 @@ class ShellTestResources(ShellBase):
 class ShellTestResourceTypes(ShellBase):
     def setUp(self):
         super(ShellTestResourceTypes, self).setUp()
-        self._set_fake_env()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
-    # Patch os.environ to avoid required auth info.
-    def _set_fake_env(self):
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-
-    def _script_keystone_client(self):
-        fakes.script_keystone_client()
-
+    @httpretty.activate
     def test_resource_type_template_yaml(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
                      "resources": {},
@@ -1619,8 +1640,9 @@ class ShellTestResourceTypes(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    @httpretty.activate
     def test_resource_type_template_json(self):
-        self._script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {"AWSTemplateFormatVersion": "2013-05-23",
                      "Parameters": {},
                      "Resources": {},
@@ -1652,23 +1674,18 @@ class ShellTestResourceTypes(ShellBase):
 
 
 class ShellTestBuildInfo(ShellBase):
+
     def setUp(self):
         super(ShellTestBuildInfo, self).setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
         '''Patch os.environ to avoid required auth info.'''
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
-        fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': 'http://no.where',
-        }
-        self.set_fake_env(fake_env)
-
+    @httpretty.activate
     def test_build_info(self):
-        fakes.script_keystone_client()
+        self.register_keystone_auth_fixture()
         resp_dict = {
             'build_info': {
                 'api': {'revision': 'api_revision'},
@@ -1717,8 +1734,11 @@ class ShellTestToken(ShellTestUserPass):
         }
         self.set_fake_env(fake_env)
 
-    def _script_keystone_client(self):
-        fakes.script_keystone_client(token=self.token)
+
+class ShellTestUserPassKeystoneV3(ShellTestUserPass):
+
+    def _set_fake_env(self):
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
 
 class ShellTestStandaloneToken(ShellTestUserPass):
@@ -1743,11 +1763,9 @@ class ShellTestStandaloneToken(ShellTestUserPass):
         }
         self.set_fake_env(fake_env)
 
-    def _script_keystone_client(self):
-        # The StanaloneMode shouldn't need any keystoneclient stubbing
-        pass
-
+    @httpretty.activate
     def test_bad_template_file(self):
+        self.register_keystone_auth_fixture()
         failed_msg = 'Error parsing template '
 
         with tempfile.NamedTemporaryFile() as bad_json_file:

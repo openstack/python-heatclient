@@ -18,21 +18,196 @@ from __future__ import print_function
 
 import argparse
 import logging
-import six
 import sys
 
-from keystoneclient.v2_0 import client as ksclient
+import six
+import six.moves.urllib.parse as urlparse
+
+from keystoneclient.auth.identity import v2 as v2_auth
+from keystoneclient.auth.identity import v3 as v3_auth
+from keystoneclient.auth import token_endpoint
+from keystoneclient import discover
+from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
+from keystoneclient import session as kssession
 
 import heatclient
 from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
+from heatclient.openstack.common.gettextutils import _
 from heatclient.openstack.common import strutils
 
 logger = logging.getLogger(__name__)
 
 
 class HeatShell(object):
+
+    def _append_global_identity_args(self, parser):
+        # FIXME(gyee): these are global identity (Keystone) arguments which
+        # should be consistent and shared by all service clients. Therefore,
+        # they should be provided by python-keystoneclient. We will need to
+        # refactor this code once this functionality is avaible in
+        # python-keystoneclient.
+        parser.add_argument('-k', '--insecure',
+                            default=False,
+                            action='store_true',
+                            help='Explicitly allow heatclient to perform '
+                            '\"insecure SSL\" (https) requests. The server\'s '
+                            'certificate will not be verified against any '
+                            'certificate authorities. This option should '
+                            'be used with caution.')
+
+        parser.add_argument('--os-cert',
+                            help='Path of certificate file to use in SSL '
+                            'connection. This file can optionally be '
+                            'prepended with the private key.')
+
+        # for backward compatibility only
+        parser.add_argument('--cert-file',
+                            dest='os_cert',
+                            help='DEPRECATED! Use --os-cert.')
+
+        parser.add_argument('--os-key',
+                            help='Path of client key to use in SSL '
+                            'connection. This option is not necessary '
+                            'if your key is prepended to your cert file.')
+
+        parser.add_argument('--key-file',
+                            dest='os_key',
+                            help='DEPRECATED! Use --os-key.')
+
+        parser.add_argument('--os-cacert',
+                            metavar='<ca-certificate-file>',
+                            dest='os_cacert',
+                            default=utils.env('OS_CACERT'),
+                            help='Path of CA TLS certificate(s) used to '
+                            'verify the remote server\'s certificate. '
+                            'Without this option glance looks for the '
+                            'default system CA certificates.')
+
+        parser.add_argument('--ca-file',
+                            dest='os_cacert',
+                            help='DEPRECATED! Use --os-cacert.')
+
+        parser.add_argument('--os-username',
+                            default=utils.env('OS_USERNAME'),
+                            help='Defaults to env[OS_USERNAME].')
+
+        parser.add_argument('--os_username',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-user-id',
+                            default=utils.env('OS_USER_ID'),
+                            help='Defaults to env[OS_USER_ID].')
+
+        parser.add_argument('--os_user_id',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-user-domain-id',
+                            default=utils.env('OS_USER_DOMAIN_ID'),
+                            help='Defaults to env[OS_USER_DOMAIN_ID].')
+
+        parser.add_argument('--os_user_domain_id',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-user-domain-name',
+                            default=utils.env('OS_USER_DOMAIN_NAME'),
+                            help='Defaults to env[OS_USER_DOMAIN_NAME].')
+
+        parser.add_argument('--os_user_domain_name',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-project-id',
+                            default=utils.env('OS_PROJECT_ID'),
+                            help='Another way to specify tenant ID. '
+                                 'This option is mutually exclusive with '
+                                 ' --os-tenant-id. '
+                                 'Defaults to env[OS_PROJECT_ID].')
+
+        parser.add_argument('--os_project_id',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-project-name',
+                            default=utils.env('OS_PROJECT_NAME'),
+                            help='Another way to specify tenant name. '
+                                 'This option is mutually exclusive with '
+                                 ' --os-tenant-name. '
+                                 'Defaults to env[OS_PROJECT_NAME].')
+
+        parser.add_argument('--os_project_name',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-project-domain-id',
+                            default=utils.env('OS_PROJECT_DOMAIN_ID'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_ID].')
+
+        parser.add_argument('--os_project_domain_id',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-project-domain-name',
+                            default=utils.env('OS_PROJECT_DOMAIN_NAME'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_NAME].')
+
+        parser.add_argument('--os_project_domain_name',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-password',
+                            default=utils.env('OS_PASSWORD'),
+                            help='Defaults to env[OS_PASSWORD].')
+
+        parser.add_argument('--os_password',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-tenant-id',
+                            default=utils.env('OS_TENANT_ID'),
+                            help='Defaults to env[OS_TENANT_ID].')
+
+        parser.add_argument('--os_tenant_id',
+                            default=utils.env('OS_TENANT_ID'),
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-tenant-name',
+                            default=utils.env('OS_TENANT_NAME'),
+                            help='Defaults to env[OS_TENANT_NAME].')
+
+        parser.add_argument('--os_tenant_name',
+                            default=utils.env('OS_TENANT_NAME'),
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-auth-url',
+                            default=utils.env('OS_AUTH_URL'),
+                            help='Defaults to env[OS_AUTH_URL].')
+
+        parser.add_argument('--os_auth_url',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-region-name',
+                            default=utils.env('OS_REGION_NAME'),
+                            help='Defaults to env[OS_REGION_NAME].')
+
+        parser.add_argument('--os_region_name',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-auth-token',
+                            default=utils.env('OS_AUTH_TOKEN'),
+                            help='Defaults to env[OS_AUTH_TOKEN].')
+
+        parser.add_argument('--os_auth_token',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-service-type',
+                            default=utils.env('OS_SERVICE_TYPE'),
+                            help='Defaults to env[OS_SERVICE_TYPE].')
+
+        parser.add_argument('--os_service_type',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-endpoint-type',
+                            default=utils.env('OS_ENDPOINT_TYPE'),
+                            help='Defaults to env[OS_ENDPOINT_TYPE].')
+
+        parser.add_argument('--os_endpoint_type',
+                            help=argparse.SUPPRESS)
 
     def get_base_parser(self):
         parser = argparse.ArgumentParser(
@@ -63,92 +238,13 @@ class HeatShell(object):
                             default=False, action="store_true",
                             help="Print more verbose output.")
 
-        parser.add_argument('-k', '--insecure',
-                            default=False,
-                            action='store_true',
-                            help="Explicitly allow the client to perform "
-                            "\"insecure\" SSL (https) requests. The server's "
-                            "certificate will not be verified against any "
-                            "certificate authorities. "
-                            "This option should be used with caution.")
-
-        parser.add_argument('--os-cacert',
-                            metavar='<ca-certificate>',
-                            default=utils.env('OS_CACERT', default=None),
-                            help='Specify a CA bundle file to use in '
-                            'verifying a TLS (https) server certificate. '
-                            'Defaults to env[OS_CACERT]')
-
-        parser.add_argument('--cert-file',
-                            help='Path of certificate file to use in SSL '
-                            'connection. This file can optionally be '
-                            'prepended with the private key.')
-
-        parser.add_argument('--key-file',
-                            help='Path of client key to use in SSL connection.'
-                            'This option is not necessary if your key is'
-                            ' prepended to your cert file.')
-
-        parser.add_argument('--ca-file',
-                            help='Path of CA SSL certificate(s) used to verify'
-                            ' the remote server\'s certificate. Without this'
-                            ' option the client looks'
-                            ' for the default system CA certificates.')
-
         parser.add_argument('--api-timeout',
                             help='Number of seconds to wait for an '
                                  'API response, '
                                  'defaults to system socket timeout')
 
-        parser.add_argument('--os-username',
-                            default=utils.env('OS_USERNAME'),
-                            help='Defaults to env[OS_USERNAME].')
-
-        parser.add_argument('--os_username',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-password',
-                            default=utils.env('OS_PASSWORD'),
-                            help='Defaults to env[OS_PASSWORD].')
-
-        parser.add_argument('--os_password',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-tenant-id',
-                            default=utils.env('OS_TENANT_ID'),
-                            help='Defaults to env[OS_TENANT_ID].')
-
-        parser.add_argument('--os_tenant_id',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-tenant-name',
-                            default=utils.env('OS_TENANT_NAME'),
-                            help='Defaults to env[OS_TENANT_NAME].')
-
-        parser.add_argument('--os_tenant_name',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-auth-url',
-                            default=utils.env('OS_AUTH_URL'),
-                            help='Defaults to env[OS_AUTH_URL].')
-
-        parser.add_argument('--os_auth_url',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-region-name',
-                            default=utils.env('OS_REGION_NAME'),
-                            help='Defaults to env[OS_REGION_NAME].')
-
-        parser.add_argument('--os_region_name',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-auth-token',
-                            default=utils.env('OS_AUTH_TOKEN'),
-                            help='Defaults to env[OS_AUTH_TOKEN].')
-
-        parser.add_argument('--os_auth_token',
-                            help=argparse.SUPPRESS)
-
+        # os-no-client-auth tells heatclient to use token, instead of
+        # env[OS_AUTH_URL]
         parser.add_argument('--os-no-client-auth',
                             default=utils.env('OS_NO_CLIENT_AUTH'),
                             action='store_true',
@@ -169,20 +265,6 @@ class HeatShell(object):
         parser.add_argument('--heat_api_version',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('--os-service-type',
-                            default=utils.env('OS_SERVICE_TYPE'),
-                            help='Defaults to env[OS_SERVICE_TYPE].')
-
-        parser.add_argument('--os_service_type',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-endpoint-type',
-                            default=utils.env('OS_ENDPOINT_TYPE'),
-                            help='Defaults to env[OS_ENDPOINT_TYPE].')
-
-        parser.add_argument('--os_endpoint_type',
-                            help=argparse.SUPPRESS)
-
         # This unused option should remain so that scripts that
         # use it do not break. It is suppressed so it will not
         # appear in the help.
@@ -195,6 +277,12 @@ class HeatShell(object):
                             default=bool(utils.env('HEAT_INCLUDE_PASSWORD')),
                             action='store_true',
                             help='Send os-username and os-password to heat.')
+
+        # FIXME(gyee): this method should come from python-keystoneclient.
+        # Will refactor this code once it is available.
+        # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
+
+        self._append_global_identity_args(parser)
 
         return parser
 
@@ -241,45 +329,6 @@ class HeatShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
-    def _get_ksclient(self, **kwargs):
-        """Get an endpoint and auth token from Keystone.
-
-        :param username: name of user
-        :param password: user's password
-        :param tenant_id: unique identifier of tenant
-        :param tenant_name: name of tenant
-        :param auth_url: endpoint to authenticate against
-        :param token: token to use instead of username/password
-        """
-        kc_args = {'auth_url': kwargs.get('auth_url'),
-                   'insecure': kwargs.get('insecure'),
-                   'cacert': kwargs.get('cacert')}
-
-        if kwargs.get('tenant_id'):
-            kc_args['tenant_id'] = kwargs.get('tenant_id')
-        else:
-            kc_args['tenant_name'] = kwargs.get('tenant_name')
-
-        if kwargs.get('token'):
-            kc_args['token'] = kwargs.get('token')
-        else:
-            kc_args['username'] = kwargs.get('username')
-            kc_args['password'] = kwargs.get('password')
-
-        return ksclient.Client(**kc_args)
-
-    def _get_endpoint(self, client, **kwargs):
-        """Get an endpoint using the provided keystone client."""
-        if kwargs.get('region_name'):
-            return client.service_catalog.url_for(
-                service_type=kwargs.get('service_type') or 'orchestration',
-                attr='region',
-                filter_value=kwargs.get('region_name'),
-                endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
-        return client.service_catalog.url_for(
-            service_type=kwargs.get('service_type') or 'orchestration',
-            endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
-
     def _setup_logging(self, debug):
         log_lvl = logging.DEBUG if debug else logging.WARNING
         logging.basicConfig(
@@ -291,6 +340,132 @@ class HeatShell(object):
     def _setup_verbose(self, verbose):
         if verbose:
             exc.verbose = 1
+
+    def _discover_auth_versions(self, session, auth_url):
+        # discover the API versions the server is supporting base on the
+        # given URL
+        v2_auth_url = None
+        v3_auth_url = None
+        try:
+            ks_discover = discover.Discover(session=session, auth_url=auth_url)
+            v2_auth_url = ks_discover.url_for('2.0')
+            v3_auth_url = ks_discover.url_for('3.0')
+        except ks_exc.ClientException:
+            # Identity service may not support discover API version.
+            # Lets trying to figure out the API version from the original URL.
+            url_parts = urlparse.urlparse(auth_url)
+            (scheme, netloc, path, params, query, fragment) = url_parts
+            path = path.lower()
+            if path.startswith('/v3'):
+                v3_auth_url = auth_url
+            elif path.startswith('/v2'):
+                v2_auth_url = auth_url
+            else:
+                # not enough information to determine the auth version
+                msg = _('Unable to determine the Keystone version '
+                        'to authenticate with using the given '
+                        'auth_url. Identity service may not support API '
+                        'version discovery. Please provide a versioned '
+                        'auth_url instead.')
+                raise exc.CommandError(msg)
+
+        return (v2_auth_url, v3_auth_url)
+
+    def _get_keystone_session(self, **kwargs):
+        # first create a Keystone session
+        cacert = kwargs.pop('cacert', None)
+        cert = kwargs.pop('cert', None)
+        key = kwargs.pop('key', None)
+        insecure = kwargs.pop('insecure', False)
+        timeout = kwargs.pop('timeout', None)
+        verify = kwargs.pop('verify', None)
+
+        # FIXME(gyee): this code should come from keystoneclient
+        if verify is None:
+            if insecure:
+                verify = False
+            else:
+                # TODO(gyee): should we do
+                # heatclient.common.http.get_system_ca_fle()?
+                verify = cacert or True
+        if cert and key:
+            # passing cert and key together is deprecated in favour of the
+            # requests lib form of having the cert and key as a tuple
+            cert = (cert, key)
+
+        return kssession.Session(verify=verify, cert=cert, timeout=timeout)
+
+    def _get_keystone_auth(self, session, auth_url, **kwargs):
+        # FIXME(gyee): this code should come from keystoneclient
+        # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
+
+        auth_token = kwargs.pop('auth_token', None)
+        # static token auth only
+        if auth_token:
+            endpoint = kwargs.pop('endpoint', None)
+            return token_endpoint.Token(endpoint, auth_token)
+
+        # discover the supported keystone versions using the given url
+        (v2_auth_url, v3_auth_url) = self._discover_auth_versions(
+            session=session,
+            auth_url=auth_url)
+
+        # Determine which authentication plugin to use. First inspect the
+        # auth_url to see the supported version. If both v3 and v2 are
+        # supported, then use the highest version if possible.
+        username = kwargs.pop('username', None)
+        user_id = kwargs.pop('user_id', None)
+        user_domain_name = kwargs.pop('user_domain_name', None)
+        user_domain_id = kwargs.pop('user_domain_id', None)
+        project_domain_name = kwargs.pop('project_domain_name', None)
+        project_domain_id = kwargs.pop('project_domain_id', None)
+        auth = None
+        if v3_auth_url and v2_auth_url:
+            # support both v2 and v3 auth. Use v3 if domain information is
+            # provided.
+            if (user_domain_name or user_domain_id or project_domain_name or
+                    project_domain_id):
+                auth = v3_auth.Password(
+                    v3_auth_url,
+                    username=username,
+                    user_id=user_id,
+                    user_domain_name=user_domain_name,
+                    user_domain_id=user_domain_id,
+                    project_domain_name=project_domain_name,
+                    project_domain_id=project_domain_id,
+                    **kwargs)
+            else:
+                auth = v2_auth.Password(
+                    v2_auth_url,
+                    username,
+                    kwargs.pop('password', None),
+                    tenant_id=kwargs.pop('project_id', None),
+                    tenant_name=kwargs.pop('project_name', None))
+        elif v3_auth_url:
+            # support only v3
+            auth = v3_auth.Password(
+                v3_auth_url,
+                username=username,
+                user_id=user_id,
+                user_domain_name=user_domain_name,
+                user_domain_id=user_domain_id,
+                project_domain_name=project_domain_name,
+                project_domain_id=project_domain_id,
+                **kwargs)
+        elif v2_auth_url:
+            # support only v2
+            auth = v2_auth.Password(
+                v2_auth_url,
+                username,
+                kwargs.pop('password', None),
+                tenant_id=kwargs.pop('project_id', None),
+                tenant_name=kwargs.pop('project_name', None))
+        else:
+            raise exc.CommandError('Unable to determine the Keystone version '
+                                   'to authenticate with using the given '
+                                   'auth_url.')
+
+        return auth
 
     def main(self, argv):
         # Parse args once to find version
@@ -340,13 +515,21 @@ class HeatShell(object):
                                        " via either --heat-url or"
                                        " env[HEAT_URL]")
         else:
-            # Tenant name or ID is needed to make keystoneclient retrieve a
-            # service catalog, it's not required if os_no_client_auth is
-            # specified, neither is the auth URL
-            if not (args.os_tenant_id or args.os_tenant_name):
-                raise exc.CommandError("You must provide a tenant_id via"
-                                       " either --os-tenant-id or via"
-                                       " env[OS_TENANT_ID]")
+            # Tenant/project name or ID is needed to make keystoneclient
+            # retrieve a service catalog, it's not required if
+            # os_no_client_auth is specified, neither is the auth URL
+
+            if not (args.os_tenant_id or args.os_tenant_name or
+                    args.os_project_id or args.os_project_name):
+                raise exc.CommandError("You must provide a tenant id via"
+                                       " either --os-tenant-id or"
+                                       " env[OS_TENANT_ID] or a tenant name"
+                                       " via either --os-tenant-name or"
+                                       " env[OS_TENANT_NAME] or a project id"
+                                       " via either --os-project-id or"
+                                       " env[OS_PROJECT_ID] or a project"
+                                       " name via either --os-project-name or"
+                                       " env[OS_PROJECT_NAME]")
 
             if not args.os_auth_url:
                 raise exc.CommandError("You must provide an auth url via"
@@ -354,45 +537,54 @@ class HeatShell(object):
                                        " env[OS_AUTH_URL]")
 
         kwargs = {
-            'username': args.os_username,
-            'password': args.os_password,
-            'token': args.os_auth_token,
-            'tenant_id': args.os_tenant_id,
-            'tenant_name': args.os_tenant_name,
-            'auth_url': args.os_auth_url,
-            'service_type': args.os_service_type,
-            'endpoint_type': args.os_endpoint_type,
             'insecure': args.insecure,
             'cacert': args.os_cacert,
-            'include_pass': args.include_password
+            'cert': args.os_cert,
+            'key': args.os_key,
+            'timeout': args.api_timeout
         }
+        keystone_session = self._get_keystone_session(**kwargs)
 
         endpoint = args.heat_url
-
-        if not args.os_no_client_auth:
-            _ksclient = self._get_ksclient(**kwargs)
-            token = args.os_auth_token or _ksclient.auth_token
-
+        if args.os_no_client_auth:
             kwargs = {
-                'token': token,
-                'insecure': args.insecure,
-                'ca_file': args.ca_file,
-                'cert_file': args.cert_file,
-                'key_file': args.key_file,
+                'endpoint': endpoint,
+                'auth_token': args.os_auth_token}
+            keystone_auth = self._get_keystone_auth(keystone_session,
+                                                    args.os_auth_url,
+                                                    **kwargs)
+        else:
+            project_id = args.os_project_id or args.os_tenant_id
+            project_name = args.os_project_name or args.os_tenant_name
+            kwargs = {
                 'username': args.os_username,
+                'user_id': args.os_user_id,
+                'user_domain_id': args.os_user_domain_id,
+                'user_domain_name': args.os_user_domain_name,
                 'password': args.os_password,
-                'endpoint_type': args.os_endpoint_type,
-                'include_pass': args.include_password
+                'auth_token': args.os_auth_token,
+                'project_id': project_id,
+                'project_name': project_name,
+                'project_domain_id': args.os_project_domain_id,
+                'project_domain_name': args.os_project_domain_name,
             }
+            keystone_auth = self._get_keystone_auth(keystone_session,
+                                                    args.os_auth_url,
+                                                    **kwargs)
 
-            if args.os_region_name:
-                kwargs['region_name'] = args.os_region_name
-
-            if not endpoint:
-                endpoint = self._get_endpoint(_ksclient, **kwargs)
-
-        if args.api_timeout:
-            kwargs['timeout'] = args.api_timeout
+        service_type = args.os_service_type or 'orchestration'
+        endpoint_type = args.os_endpoint_type or 'publicURL'
+        kwargs = {
+            'auth_url': args.os_auth_url,
+            'session': keystone_session,
+            'auth': keystone_auth,
+            'service_type': service_type,
+            'endpoint_type': endpoint_type,
+            'region_name': args.os_region_name,
+            'username': args.os_username,
+            'password': args.os_password,
+            'include_pass': args.include_password
+        }
 
         client = heat_client.Client(api_version, endpoint, **kwargs)
 
