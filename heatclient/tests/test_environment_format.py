@@ -56,7 +56,7 @@ parameters: }
         self.assertIn(expect, str(e))
 
     def test_parse_document(self):
-        env = '["foo" , "bar"]'
+        env = '["foo", "bar"]'
         expect = 'The environment is not a valid YAML mapping data type.'
         e = self.assertRaises(ValueError, environment_format.parse, env)
         self.assertIn(expect, str(e))

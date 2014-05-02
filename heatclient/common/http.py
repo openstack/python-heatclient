@@ -162,7 +162,7 @@ class HTTPClient(object):
         # that we should follow that URL with the same method as before,
         # requests doesn't follow that and send a GET instead for the method.
         # Hopefully this could be fixed as they say in a comment in a future
-        # point version i.e: 3.x
+        # point version i.e.: 3.x
         # See issue: https://github.com/kennethreitz/requests/issues/1704
         allow_redirects = False
 

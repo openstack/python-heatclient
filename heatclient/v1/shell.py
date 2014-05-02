@@ -119,7 +119,7 @@ def do_stack_create(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift).')
+           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
            help='Stack creation timeout in minutes.'
@@ -183,7 +183,7 @@ def do_stack_adopt(hc, args):
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g from swift)')
+           help='URL to retrieve template object (e.g. from swift)')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to preview the stack. '
            'This can be specified multiple times, or once with parameters '
