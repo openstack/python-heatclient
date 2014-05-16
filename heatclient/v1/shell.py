@@ -698,7 +698,7 @@ def do_event_list(hc, args):
                 fields.insert(0, 'resource_name')
             else:
                 fields.insert(0, 'logical_resource_id')
-        utils.print_list(events, fields)
+        utils.print_list(events, fields, sortby_index=None)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
