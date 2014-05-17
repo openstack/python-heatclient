@@ -507,11 +507,6 @@ def do_template_show(hc, args):
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
-@utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values to validate. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
-           action='append')
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
     logger.warning('DEPRECATED! Use template-validate instead.')
@@ -526,11 +521,6 @@ def do_validate(hc, args):
            help='Path to the environment.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
-@utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values to validate. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
-           action='append')
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
 
@@ -543,7 +533,6 @@ def do_template_validate(hc, args):
     env_files, env = template_utils.process_environment_and_files(
         env_path=args.environment_file)
     fields = {
-        'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
