@@ -329,6 +329,11 @@ def do_stack_show(hc, args):
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack update timeout in minutes.')
+@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -353,6 +358,8 @@ def do_update(hc, args):
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
            help='Stack update timeout in minutes.')
+@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -374,6 +381,7 @@ def do_stack_update(hc, args):
 
     fields = {
         'stack_id': args.id,
+        'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
