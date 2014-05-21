@@ -1271,21 +1271,22 @@ class ShellTestResources(ShellBase):
     def _script_keystone_client(self):
         fakes.script_keystone_client()
 
-    def test_resource_list(self):
+    def _test_resource_list(self, with_resource_name):
         self._script_keystone_client()
         resp_dict = {"resources": [
                      {"links": [{"href": "http://heat.example.com:8004/foo",
                                  "rel": "self"},
                                 {"href": "http://heat.example.com:8004/foo2",
                                  "rel": "resource"}],
-                      "logical_resource_id": "aResource",
+                      "logical_resource_id": "aLogicalResource",
                       "physical_resource_id":
                       "43b68bae-ed5d-4aed-a99f-0b3d39c2418a",
-                      "resource_name": "aResource",
                       "resource_status": "CREATE_COMPLETE",
                       "resource_status_reason": "state changed",
                       "resource_type": "OS::Nova::Server",
                       "updated_time": "2014-01-06T16:14:26Z"}]}
+        if with_resource_name:
+            resp_dict["resources"][0]["resource_name"] = "aResource"
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1301,17 +1302,28 @@ class ShellTestResources(ShellBase):
         resource_list_text = self.shell('resource-list {0}'.format(stack_id))
 
         required = [
-            'resource_name',
             'resource_type',
             'resource_status',
             'updated_time',
-            'aResource',
             'OS::Nova::Server',
             'CREATE_COMPLETE',
             '2014-01-06T16:14:26Z'
         ]
+        if with_resource_name:
+            required.append('resource_name')
+            required.append('aResource')
+        else:
+            required.append('logical_resource_id')
+            required.append("aLogicalResource")
+
         for r in required:
             self.assertRegexpMatches(resource_list_text, r)
+
+    def test_resource_list(self):
+        self._test_resource_list(True)
+
+    def test_resource_list_no_resource_name(self):
+        self._test_resource_list(False)
 
     def test_resource_show(self):
         self._script_keystone_client()
