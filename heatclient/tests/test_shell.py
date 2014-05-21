@@ -1325,6 +1325,30 @@ class ShellTestResources(ShellBase):
     def test_resource_list_no_resource_name(self):
         self._test_resource_list(False)
 
+    def test_resource_list_empty(self):
+        self._script_keystone_client()
+        resp_dict = {"resources": []}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/resources' % (
+                stack_id)).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        resource_list_text = self.shell('resource-list {0}'.format(stack_id))
+
+        self.assertEqual('''\
++---------------+---------------+-----------------+--------------+
+| resource_name | resource_type | resource_status | updated_time |
++---------------+---------------+-----------------+--------------+
++---------------+---------------+-----------------+--------------+
+''', resource_list_text)
+
     def test_resource_show(self):
         self._script_keystone_client()
         resp_dict = {"resource":
