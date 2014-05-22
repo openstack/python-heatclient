@@ -24,6 +24,7 @@ import tempfile
 import testscenarios
 import testtools
 import uuid
+import yaml
 
 from oslo.serialization import jsonutils
 from oslo.utils import encodeutils
@@ -2396,6 +2397,270 @@ class ShellTestResourceTypes(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(show_text, r)
+
+
+class ShellTestConfig(ShellBase):
+
+    def setUp(self):
+        super(ShellTestConfig, self).setUp()
+        self._set_fake_env()
+
+    def _set_fake_env(self):
+        '''Patch os.environ to avoid required auth info.'''
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def test_config_create(self):
+        self.register_keystone_auth_fixture()
+
+        definition = {
+            'inputs': [
+                {'name': 'foo'},
+                {'name': 'bar'},
+            ],
+            'outputs': [
+                {'name': 'result'}
+            ],
+            'options': {'a': 'b'}
+        }
+        validate_template = {'template': {
+            'heat_template_version': '2013-05-23',
+            'resources': {
+                'config_name': {
+                    'type': 'OS::Heat::SoftwareConfig',
+                    'properties': {
+                        'config': 'the config script',
+                        'group': 'script',
+                        'inputs': [
+                            {'name': 'foo'},
+                            {'name': 'bar'},
+                        ],
+                        'outputs': [
+                            {'name': 'result'}
+                        ],
+                        'options': {'a': 'b'},
+                        'config': 'the config script'
+                    }
+                }
+            }
+        }}
+
+        create_dict = {
+            'group': 'script',
+            'name': 'config_name',
+            'inputs': [
+                {'name': 'foo'},
+                {'name': 'bar'},
+            ],
+            'outputs': [
+                {'name': 'result'}
+            ],
+            'options': {'a': 'b'},
+            'config': 'the config script'
+        }
+
+        resp_dict = {'software_config': {
+            'group': 'script',
+            'name': 'config_name',
+            'inputs': [
+                {'name': 'foo'},
+                {'name': 'bar'},
+            ],
+            'outputs': [
+                {'name': 'result'}
+            ],
+            'options': {'a': 'b'},
+            'config': 'the config script',
+            'id': 'abcd'
+        }}
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+
+        self.m.StubOutWithMock(request, 'urlopen')
+        request.urlopen('file:///tmp/defn').AndReturn(
+            six.StringIO(yaml.safe_dump(definition, indent=2)))
+        request.urlopen('file:///tmp/config_script').AndReturn(
+            six.StringIO('the config script'))
+
+        http.HTTPClient.json_request(
+            'POST', '/validate', data=validate_template).AndReturn(response)
+        http.HTTPClient.json_request(
+            'POST', '/software_configs', data=create_dict).AndReturn(response)
+
+        self.m.ReplayAll()
+
+        text = self.shell('config-create -c /tmp/config_script '
+                          '-g script -f /tmp/defn config_name')
+
+        self.assertEqual(resp_dict['software_config'], jsonutils.loads(text))
+
+    def test_config_show(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {'software_config': {
+            'inputs': [],
+            'group': 'script',
+            'name': 'config_name',
+            'outputs': [],
+            'options': {},
+            'config': 'the config script',
+            'id': 'abcd'}}
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request(
+            'GET', '/software_configs/abcd').AndReturn(response)
+        http.HTTPClient.json_request(
+            'GET', '/software_configs/abcd').AndReturn(response)
+        http.HTTPClient.json_request(
+            'GET', '/software_configs/abcde').AndRaise(exc.HTTPNotFound())
+
+        self.m.ReplayAll()
+
+        text = self.shell('config-show abcd')
+
+        required = [
+            'inputs',
+            'group',
+            'name',
+            'outputs',
+            'options',
+            'config',
+            'id',
+        ]
+        for r in required:
+            self.assertRegexpMatches(text, r)
+
+        self.assertEqual(
+            'the config script\n',
+            self.shell('config-show --config-only abcd'))
+        self.assertRaises(exc.CommandError, self.shell, 'config-show abcde')
+
+    def test_config_delete(self):
+        self.register_keystone_auth_fixture()
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(204, 'OK', headers, None)
+        response = (http_resp, '')
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_configs/abcd').AndReturn(response)
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_configs/qwer').AndReturn(response)
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_configs/abcd').AndRaise(exc.HTTPNotFound())
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_configs/qwer').AndRaise(exc.HTTPNotFound())
+
+        self.m.ReplayAll()
+
+        self.assertEqual('', self.shell('config-delete abcd qwer'))
+        self.assertRaises(
+            exc.CommandError, self.shell, 'config-delete abcd qwer')
+
+
+class ShellTestDeployment(ShellBase):
+
+    def setUp(self):
+        super(ShellTestDeployment, self).setUp()
+        self._set_fake_env()
+
+    def _set_fake_env(self):
+        '''Patch os.environ to avoid required auth info.'''
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def test_deploy_show(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {'software_deployment': {
+            'status': 'COMPLETE',
+            'server_id': '700115e5-0100-4ecc-9ef7-9e05f27d8803',
+            'config_id': '18c4fc03-f897-4a1d-aaad-2b7622e60257',
+            'output_values': {
+                'deploy_stdout': '',
+                'deploy_stderr': '',
+                'deploy_status_code': 0,
+                'result': 'The result value'
+            },
+            'input_values': {},
+            'action': 'CREATE',
+            'status_reason': 'Outputs received',
+            'id': 'defg'
+        }}
+
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request(
+            'GET', '/software_deployments/defg').AndReturn(response)
+        http.HTTPClient.json_request(
+            'GET', '/software_deployments/defgh').AndRaise(exc.HTTPNotFound())
+
+        self.m.ReplayAll()
+
+        text = self.shell('deployment-show defg')
+
+        required = [
+            'status',
+            'server_id',
+            'config_id',
+            'output_values',
+            'input_values',
+            'action',
+            'status_reason',
+            'id',
+        ]
+        for r in required:
+            self.assertRegexpMatches(text, r)
+        self.assertRaises(exc.CommandError, self.shell,
+                          'deployment-show defgh')
+
+    def test_deploy_delete(self):
+        self.register_keystone_auth_fixture()
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(204, 'OK', headers, None)
+        response = (http_resp, '')
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_deployments/defg').AndReturn(response)
+        http.HTTPClient.raw_request(
+            'DELETE', '/software_deployments/qwer').AndReturn(response)
+        http.HTTPClient.raw_request(
+            'DELETE',
+            '/software_deployments/defg').AndRaise(exc.HTTPNotFound())
+        http.HTTPClient.raw_request(
+            'DELETE',
+            '/software_deployments/qwer').AndRaise(exc.HTTPNotFound())
+
+        self.m.ReplayAll()
+
+        self.assertEqual('', self.shell('deployment-delete defg qwer'))
+        self.assertRaises(exc.CommandError, self.shell,
+                          'deployment-delete defg qwer')
+
+    def test_deploy_metadata(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {'metadata': [
+            {'id': 'abcd'},
+            {'id': 'defg'}
+        ]}
+
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request(
+            'GET', '/software_deployments/metadata/aaaa').AndReturn(response)
+
+        self.m.ReplayAll()
+
+        build_info_text = self.shell('deployment-metadata-show aaaa')
+
+        required = [
+            'abcd',
+            'defg',
+            'id',
+        ]
+        for r in required:
+            self.assertRegexpMatches(build_info_text, r)
 
 
 class ShellTestBuildInfo(ShellBase):

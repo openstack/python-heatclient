@@ -21,6 +21,7 @@ import yaml
 from oslo.serialization import jsonutils
 from oslo.utils import strutils
 
+from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
 
@@ -947,6 +948,127 @@ def do_event_show(hc, args):
             'resource_properties': utils.json_formatter
         }
         utils.print_dict(event.to_dict(), formatters=formatters)
+
+
+@utils.arg('-f', '--definition-file', metavar='<FILE or URL>',
+           help=_('Path to JSON/YAML containing map defining '
+           '<inputs>, <outputs>, and <options>.'))
+@utils.arg('-c', '--config-file', metavar='<FILE or URL>',
+           help=_('Path to configuration script/data.'))
+@utils.arg('-g', '--group', metavar='<GROUP_NAME>', default='Heat::Ungrouped',
+           help=_('Group name of configuration tool expected by the config.'))
+@utils.arg('name', metavar='<CONFIG_NAME>',
+           help=_('Name of the configuration to create.'))
+def do_config_create(hc, args):
+    '''Create a software configuration.'''
+    config = {
+        'group': args.group,
+        'config': ''
+    }
+
+    defn = {}
+    if args.definition_file:
+        defn_url = template_utils.normalise_file_path_to_url(
+            args.definition_file)
+        defn_raw = request.urlopen(defn_url).read() or '{}'
+        defn = yaml.load(defn_raw, Loader=template_format.yaml_loader)
+
+    config['inputs'] = defn.get('inputs', [])
+    config['outputs'] = defn.get('outputs', [])
+    config['options'] = defn.get('options', {})
+
+    if args.config_file:
+        config_url = template_utils.normalise_file_path_to_url(
+            args.config_file)
+        config['config'] = request.urlopen(config_url).read()
+
+    # build a mini-template with a config resource and validate it
+    validate_template = {
+        'heat_template_version': '2013-05-23',
+        'resources': {
+            args.name: {
+                'type': 'OS::Heat::SoftwareConfig',
+                'properties': config
+            }
+        }
+    }
+    hc.stacks.validate(template=validate_template)
+
+    config['name'] = args.name
+
+    sc = hc.software_configs.create(**config)
+    print(jsonutils.dumps(sc.to_dict(), indent=2))
+
+
+@utils.arg('id', metavar='<ID>',
+           help=_('ID of the config.'))
+@utils.arg('-c', '--config-only', default=False, action="store_true",
+           help=_('Only display the value of the <config> property.'))
+def do_config_show(hc, args):
+    '''View details of a software configuration.'''
+    try:
+        sc = hc.software_configs.get(config_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Configuration not found: %s' % args.id)
+    else:
+        if args.config_only:
+            print(sc.config)
+        else:
+            print(jsonutils.dumps(sc.to_dict(), indent=2))
+
+
+@utils.arg('id', metavar='<ID>', nargs='+',
+           help=_('IDs of the configurations to delete.'))
+def do_config_delete(hc, args):
+    '''Delete software configurations.'''
+    failure_count = 0
+
+    for config_id in args.id:
+        try:
+            hc.software_configs.delete(config_id=config_id)
+        except exc.HTTPNotFound as e:
+            failure_count += 1
+            print(e)
+    if failure_count == len(args.id):
+        raise exc.CommandError(_("Unable to delete any of the specified "
+                                 "configs."))
+
+
+@utils.arg('id', metavar='<ID>',
+           help=_('ID of the deployment.'))
+def do_deployment_show(hc, args):
+    '''Show the details of a software deployment.'''
+    try:
+        sd = hc.software_deployments.get(deployment_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Deployment not found: %s' % args.id)
+    else:
+        print(jsonutils.dumps(sd.to_dict(), indent=2))
+
+
+@utils.arg('id', metavar='<ID>',
+           help=_('ID of the server to fetch deployments for.'))
+def do_deployment_metadata_show(hc, args):
+    '''Get deployment configuration metadata for the specified server.'''
+    md = hc.software_deployments.metadata(server_id=args.id)
+    print(jsonutils.dumps(md, indent=2))
+
+
+@utils.arg('id', metavar='<ID>', nargs='+',
+           help=_('IDs of the deployments to delete.'))
+def do_deployment_delete(hc, args):
+    '''Delete software deployments.'''
+    failure_count = 0
+
+    for deploy_id in args.id:
+        try:
+            hc.software_deployments.delete(deployment_id=deploy_id)
+        except exc.HTTPNotFound as e:
+            failure_count += 1
+            print(e)
+    if failure_count == len(args.id):
+        raise exc.CommandError(_("Unable to delete any of the specified "
+                                 "deployments."))
 
 
 def do_build_info(hc, args):
