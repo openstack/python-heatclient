@@ -397,6 +397,7 @@ class ShellTestUserPass(ShellBase):
             'limit': 2,
             'status': ['COMPLETE', 'FAILED'],
             'marker': 'fake_id',
+            'global_tenant': True
         }, True)
         fakes.script_heat_list(expected_url)
 
@@ -406,7 +407,8 @@ class ShellTestUserPass(ShellBase):
                                ' --limit 2'
                                ' --marker fake_id'
                                ' --filters=status=COMPLETE'
-                               ' --filters=status=FAILED')
+                               ' --filters=status=FAILED'
+                               ' --global-tenant')
 
         required = [
             'teststack',

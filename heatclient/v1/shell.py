@@ -402,13 +402,19 @@ def do_list(hc, args=None):
            help='Limit the number of stacks returned.')
 @utils.arg('-m', '--marker', metavar='<ID>',
            help='Only return stacks that appear after the given stack ID.')
+@utils.arg('-g', '--global-tenant',
+           action='store_true',
+           default=False,
+           help='Display stacks from all tenants. Operation only authorized '
+                'for users who match the policy in heat\'s policy.json.')
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
     if args:
         kwargs = {'limit': args.limit,
                   'marker': args.marker,
-                  'filters': utils.format_parameters(args.filters)}
+                  'filters': utils.format_parameters(args.filters),
+                  'global_tenant': args.global_tenant}
 
     stacks = hc.stacks.list(**kwargs)
     fields = ['id', 'stack_name', 'stack_status', 'creation_time']
