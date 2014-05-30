@@ -579,6 +579,51 @@ class ShellTestUserPass(ShellBase):
         abandon_resp = self.shell('stack-abandon teststack/1')
         self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
 
+    def test_stack_abandon_with_outputfile(self):
+        self._script_keystone_client()
+
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        abandoned_stack = {
+            "action": "CREATE",
+            "status": "COMPLETE",
+            "name": "teststack",
+            "id": "1",
+            "resources": {
+                "foo": {
+                    "name": "foo",
+                    "resource_id": "test-res-id",
+                    "action": "CREATE",
+                    "status": "COMPLETE",
+                    "resource_data": {},
+                    "metadata": {},
+                }
+            }
+        }
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+        http.HTTPClient.json_request(
+            'DELETE',
+            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+
+        self.m.ReplayAll()
+
+        with tempfile.NamedTemporaryFile() as file_obj:
+            self.shell('stack-abandon teststack/1 -O %s' % file_obj.name)
+            result = jsonutils.loads(file_obj.read().decode())
+            self.assertEqual(abandoned_stack, result)
+
     def _output_fake_response(self):
         self._script_keystone_client()
 

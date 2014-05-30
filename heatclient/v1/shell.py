@@ -261,6 +261,10 @@ def do_stack_delete(hc, args):
     do_stack_list(hc)
 
 
+@utils.arg('-O', '--output-file', metavar='<FILE>',
+           help='file to output abandon result. '
+           'If the option is specified, the result will be'
+           ' output into <FILE>.')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to abandon.')
 def do_stack_abandon(hc, args):
@@ -268,7 +272,7 @@ def do_stack_abandon(hc, args):
 
     This will delete the record of the stack from Heat, but will not delete
     any of the underlying resources. Prints an adoptable JSON representation
-    of the stack to stdout on success.
+    of the stack to stdout or a file on success.
     '''
     fields = {'stack_id': args.id}
     try:
@@ -276,7 +280,16 @@ def do_stack_abandon(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        print(jsonutils.dumps(stack, indent=2))
+        result = jsonutils.dumps(stack, indent=2)
+        if args.output_file is not None:
+            try:
+                with open(args.output_file, "w") as f:
+                    f.write(result)
+            except IOError as err:
+                print(result)
+                raise exc.CommandError(str(err))
+        else:
+            print(result)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
