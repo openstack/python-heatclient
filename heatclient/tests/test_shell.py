@@ -820,7 +820,8 @@ class ShellTestUserPass(ShellBase):
                            'LinuxDistribution': 'F17"',
                            '"InstanceType': 'm1.large',
                            'DBPassword': 'verybadpassword'},
-            'timeout_mins': 123}
+            'timeout_mins': 123,
+            'disable_rollback': True}
         http.HTTPClient.json_request(
             'PUT', '/stacks/teststack2/2',
             data=expected_data,
@@ -999,6 +1000,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
+            '--enable-rollback '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"' % template_file)
