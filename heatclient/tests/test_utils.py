@@ -97,6 +97,11 @@ class shellTest(testtools.TestCase):
                 {'href': 'http://foo.example.com'},
                 {'href': 'http://bar.example.com'}]))
         self.assertEqual(
+            'http://foo.example.com (a)\nhttp://bar.example.com (b)',
+            utils.link_formatter([
+                {'href': 'http://foo.example.com', 'rel': 'a'},
+                {'href': 'http://bar.example.com', 'rel': 'b'}]))
+        self.assertEqual(
             '\n',
             utils.link_formatter([
                 {'hrf': 'http://foo.example.com'},
