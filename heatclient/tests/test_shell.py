@@ -143,12 +143,6 @@ class ShellParamValidationTest(TestCase):
         ('stack-update', dict(
             command='stack-update ts -P "a-b"',
             err='Malformed parameter')),
-        ('validate', dict(
-            command='validate -P "a=b;c"',
-            err='Malformed parameter')),
-        ('template-validate', dict(
-            command='template-validate -P "a$b"',
-            err='Malformed parameter')),
     ]
 
     def setUp(self):
