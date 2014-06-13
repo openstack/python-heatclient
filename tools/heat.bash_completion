@@ -24,4 +24,4 @@ _heat()
     fi
     return 0
 }
-complete -o default -o nospace -F _heat heat
+complete -o default -F _heat heat
