@@ -1342,9 +1342,11 @@ class ShellTestResources(ShellBase):
         resource_list_text = self.shell('resource-list {0}'.format(stack_id))
 
         required = [
+            'physical_resource_id',
             'resource_type',
             'resource_status',
             'updated_time',
+            '43b68bae-ed5d-4aed-a99f-0b3d39c2418a',
             'OS::Nova::Server',
             'CREATE_COMPLETE',
             '2014-01-06T16:14:26Z'
@@ -1383,10 +1385,14 @@ class ShellTestResources(ShellBase):
         resource_list_text = self.shell('resource-list {0}'.format(stack_id))
 
         self.assertEqual('''\
-+---------------+---------------+-----------------+--------------+
-| resource_name | resource_type | resource_status | updated_time |
-+---------------+---------------+-----------------+--------------+
-+---------------+---------------+-----------------+--------------+
++---------------+----------------------+---------------+-----------------+\
+--------------+
+| resource_name | physical_resource_id | resource_type | resource_status |\
+ updated_time |
++---------------+----------------------+---------------+-----------------+\
+--------------+
++---------------+----------------------+---------------+-----------------+\
+--------------+
 ''', resource_list_text)
 
     def test_resource_show(self):
