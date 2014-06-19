@@ -27,9 +27,6 @@ from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
-if not LOG.handlers:
-    LOG.addHandler(logging.StreamHandler())
-    LOG.propagate = False
 USER_AGENT = 'python-heatclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
