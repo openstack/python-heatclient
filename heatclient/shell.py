@@ -283,8 +283,10 @@ class HeatShell(object):
     def _setup_logging(self, debug):
         log_lvl = logging.DEBUG if debug else logging.WARNING
         logging.basicConfig(
-            format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
+            format="%(levelname)s (%(module)s) %(message)s",
             level=log_lvl)
+        logging.getLogger('iso8601').setLevel(logging.WARNING)
+        logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
 
     def _setup_verbose(self, verbose):
         if verbose:
