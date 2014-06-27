@@ -469,7 +469,7 @@ def do_output_show(hc, args):
         else:
             return
 
-        print (jsonutils.dumps(value, indent=2))
+        print (jsonutils.dumps(value, indent=2, ensure_ascii=False))
 
 
 def do_resource_type_list(hc, args={}):
@@ -513,7 +513,7 @@ def do_template_show(hc, args):
         if 'heat_template_version' in template:
             print(yaml.safe_dump(template, indent=2))
         else:
-            print(jsonutils.dumps(template, indent=2))
+            print(jsonutils.dumps(template, indent=2, ensure_ascii=False))
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
@@ -556,7 +556,7 @@ def do_template_validate(hc, args):
     }
 
     validation = hc.stacks.validate(**fields)
-    print(jsonutils.dumps(validation, indent=2))
+    print(jsonutils.dumps(validation, indent=2, ensure_ascii=False))
 
 
 @utils.arg('id', metavar='<NAME or ID>',

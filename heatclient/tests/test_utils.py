@@ -107,6 +107,8 @@ class shellTest(testtools.TestCase):
         self.assertEqual('{}', utils.json_formatter({}))
         self.assertEqual('{\n  "foo": "bar"\n}',
                          utils.json_formatter({"foo": "bar"}))
+        self.assertEqual(u'{\n  "Uni": "test\u2665"\n}',
+                         utils.json_formatter({"Uni": u"test\u2665"}))
 
     def test_text_wrap_formatter(self):
         self.assertEqual('', utils.text_wrap_formatter(None))

@@ -598,6 +598,11 @@ class ShellTestUserPass(ShellBase):
                     "output_key": "output2",
                     "description": "test output 2",
                 },
+                {
+                    "output_value": u"test\u2665",
+                    "output_key": "output_uni",
+                    "description": "test output unicode",
+                },
             ],
             "creation_time": "2012-10-25T01:58:47Z"
         }}
@@ -616,13 +621,18 @@ class ShellTestUserPass(ShellBase):
     def test_output_list(self):
         self._output_fake_response()
         list_text = self.shell('output-list teststack/1')
-        for r in ['output1', 'output2']:
+        for r in ['output1', 'output2', 'output_uni']:
             self.assertRegexpMatches(list_text, r)
 
     def test_output_show(self):
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output1')
         self.assertRegexpMatches(list_text, 'value1')
+
+    def test_output_show_unicode(self):
+        self._output_fake_response()
+        list_text = self.shell('output-show teststack/1 output_uni')
+        self.assertRegexpMatches(list_text, u'test\u2665')
 
     def test_template_show_cfn(self):
         self._script_keystone_client()
@@ -646,6 +656,36 @@ class ShellTestUserPass(ShellBase):
             '  "Outputs": {}',
             '  "Resources": {}',
             '  "Parameters": {}',
+            '}'
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
+    def test_template_show_cfn_unicode(self):
+        self._script_keystone_client()
+        resp_dict = {"AWSTemplateFormatVersion": "2010-09-09",
+                     "Description": u"test\u2665",
+                     "Outputs": {},
+                     "Resources": {},
+                     "Parameters": {}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/template').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        show_text = self.shell('template-show teststack')
+        required = [
+            '{',
+            '  "AWSTemplateFormatVersion": "2010-09-09"',
+            '  "Outputs": {}',
+            '  "Parameters": {}',
+            u'  "Description": "test\u2665"',
+            '  "Resources": {}',
             '}'
         ]
         for r in required:
