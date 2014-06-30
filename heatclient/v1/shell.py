@@ -184,6 +184,11 @@ def do_stack_adopt(hc, args):
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift)')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
+           type=int,
+           help='Stack creation timeout in minutes.')
+@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
+           help='Enable rollback on create/update failure.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to preview the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -203,6 +208,8 @@ def do_stack_preview(hc, args):
 
     fields = {
         'stack_name': args.name,
+        'disable_rollback': not(args.enable_rollback),
+        'timeout_mins': args.timeout,
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),

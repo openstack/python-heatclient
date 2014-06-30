@@ -717,7 +717,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
-    def test_stack_preview(self):
+    def _test_stack_preview(self, timeout=None, enable_rollback=False):
         self._script_keystone_client()
         resp_dict = {"stack": {
             "id": "1",
@@ -725,6 +725,8 @@ class ShellTestUserPass(ShellBase):
             "stack_status": 'CREATE_COMPLETE',
             "resources": {'1': {'name': 'r1'}},
             "creation_time": "2012-10-25T01:58:47Z",
+            "timeout_mins": timeout,
+            "disable_rollback": not(enable_rollback)
         }}
         resp = fakes.FakeHTTPResponse(
             200,
@@ -739,23 +741,35 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        preview_text = self.shell(
-            'stack-preview teststack '
-            '--template-file=%s '
-            '--parameters="InstanceType=m1.large;DBUsername=wp;'
-            'DBPassword=verybadpassword;KeyName=heat_key;'
-            'LinuxDistribution=F17"' % template_file)
+        cmd = ('stack-preview teststack '
+               '--template-file=%s '
+               '--parameters="InstanceType=m1.large;DBUsername=wp;'
+               'DBPassword=verybadpassword;KeyName=heat_key;'
+               'LinuxDistribution=F17" ' % template_file)
+        if enable_rollback:
+            cmd += '-r '
+        if timeout:
+            cmd += '--timeout=%d ' % timeout
+        preview_text = self.shell(cmd)
 
         required = [
             'stack_name',
             'id',
             'teststack',
             '1',
-            'resources'
+            'resources',
+            'timeout_mins',
+            'disable_rollback'
         ]
 
         for r in required:
             self.assertRegexpMatches(preview_text, r)
+
+    def test_stack_preview(self):
+        self._test_stack_preview()
+
+    def test_stack_preview_timeout(self):
+        self._test_stack_preview(300, True)
 
     def test_stack_create(self):
         self._script_keystone_client()
