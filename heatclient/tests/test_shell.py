@@ -1572,6 +1572,85 @@ class ShellTestResources(ShellBase):
             self.assertEqual("", text)
 
 
+class ShellTestResourceTypes(ShellBase):
+    def setUp(self):
+        super(ShellTestResourceTypes, self).setUp()
+        self._set_fake_env()
+
+    # Patch os.environ to avoid required auth info.
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_NAME': 'tenant_name',
+            'OS_AUTH_URL': 'http://no.where',
+        }
+        self.set_fake_env(fake_env)
+
+    def _script_keystone_client(self):
+        fakes.script_keystone_client()
+
+    def test_resource_type_template_yaml(self):
+        self._script_keystone_client()
+        resp_dict = {"heat_template_version": "2013-05-23",
+                     "parameters": {},
+                     "resources": {},
+                     "outputs": {}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+
+        http.HTTPClient.json_request(
+            'GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
+        ).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        show_text = self.shell(
+            'resource-type-template -F yaml OS::Nova::KeyPair')
+        required = [
+            "heat_template_version: '2013-05-23'",
+            "outputs: {}",
+            "parameters: {}",
+            "resources: {}"
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
+    def test_resource_type_template_json(self):
+        self._script_keystone_client()
+        resp_dict = {"AWSTemplateFormatVersion": "2013-05-23",
+                     "Parameters": {},
+                     "Resources": {},
+                     "Outputs": {}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+
+        http.HTTPClient.json_request(
+            'GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
+        ).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        show_text = self.shell(
+            'resource-type-template -F json OS::Nova::KeyPair')
+        required = [
+            '{',
+            '  "AWSTemplateFormatVersion": "2013-05-23"',
+            '  "Outputs": {}',
+            '  "Resources": {}',
+            '  "Parameters": {}',
+            '}'
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
+
 class ShellTestBuildInfo(ShellBase):
     def setUp(self):
         super(ShellTestBuildInfo, self).setUp()

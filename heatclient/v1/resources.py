@@ -86,6 +86,9 @@ class ResourceManager(stacks.StackChildManager):
         return body
 
     def generate_template(self, resource_name):
+        """DEPRECATED! Use `generate_template` of `ResourceTypeManager`
+        instead.
+        """
         url_str = '/resource_types/%s/template' % (
                   parse.quote(strutils.safe_encode(resource_name), ''))
         resp, body = self.client.json_request('GET', url_str)

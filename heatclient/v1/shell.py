@@ -492,6 +492,26 @@ def do_resource_type_show(hc, args={}):
         print(jsonutils.dumps(resource_type, indent=2))
 
 
+@utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
+           help='Resource type to generate a template for.')
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help="The template output format, one of: %s."
+                % ', '.join(utils.supported_formats.keys()))
+def do_resource_type_template(hc, args):
+    '''Generate a template based on a resource type.'''
+    fields = {'resource_type': args.resource_type}
+    try:
+        template = hc.resource_types.generate_template(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(
+            'Resource Type %s not found.' % args.resource_type)
+    else:
+        if args.format:
+            print(utils.format_output(template, format=args.format))
+        else:
+            print(utils.format_output(template))
+
+
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to get the template for.')
 def do_gettemplate(hc, args):
@@ -610,23 +630,15 @@ def do_resource_show(hc, args):
         utils.print_dict(resource.to_dict(), formatters=formatters)
 
 
-@utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource to generate a template for.')
+@utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
+           help='Resource type to generate a template for.')
 @utils.arg('-F', '--format', metavar='<FORMAT>',
            help="The template output format, one of: %s."
                 % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
-    '''Generate a template based on a resource.'''
-    fields = {'resource_name': args.resource}
-    try:
-        template = hc.resources.generate_template(**fields)
-    except exc.HTTPNotFound:
-        raise exc.CommandError('Resource %s not found.' % args.resource)
-    else:
-        if args.format:
-            print(utils.format_output(template, format=args.format))
-        else:
-            print(utils.format_output(template))
+    '''DEPRECATED! Use resource-type-template instead.'''
+    logger.warning('DEPRECATED! Use resource-type-template instead.')
+    do_resource_type_template(hc, args)
 
 
 @utils.arg('id', metavar='<NAME or ID>',

@@ -11,7 +11,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 import testtools
 
 from heatclient.v1.resource_types import ResourceTypeManager
@@ -19,27 +18,48 @@ from heatclient.v1.resource_types import ResourceTypeManager
 
 class ResourceTypeManagerTest(testtools.TestCase):
 
-    def test_list_types(self):
-        manager = ResourceTypeManager(None)
-        manager._list = mock.MagicMock()
-        manager.list()
-        manager._list.assert_called_once_with('/resource_types',
-                                              'resource_types')
-
-    def test_get(self):
-        resource_type = u'OS::Nova::KeyPair'
+    def _base_test(self, expect, key):
 
         class FakeAPI(object):
             """Fake API and ensure request url is correct."""
-            def __init__(self, *args, **kwargs):
-                self.requests = []
+
+            def get(self, *args, **kwargs):
+                assert ('GET', args[0]) == expect
 
             def json_request(self, *args, **kwargs):
-                self.requests.append(args)
-                return {}, {'attributes': [], 'properties': []}
+                assert args == expect
+                ret = key and {key: []} or {}
+                return {}, {key: ret}
 
-        test_api = FakeAPI()
-        manager = ResourceTypeManager(test_api)
-        manager.get(resource_type)
+        manager = ResourceTypeManager(FakeAPI())
+        return manager
+
+    def test_list_types(self):
+        key = 'resource_types'
+        expect = ('GET', '/resource_types')
+
+        class FakeResponse(object):
+            def json(self):
+                return {key: {}}
+
+        class FakeClient(object):
+            def get(self, *args, **kwargs):
+                assert ('GET', args[0]) == expect
+                return FakeResponse()
+
+        manager = ResourceTypeManager(FakeClient())
+        manager.list()
+
+    def test_get(self):
+        key = 'resource_types'
+        resource_type = 'OS::Nova::KeyPair'
         expect = ('GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair')
-        self.assertIn(expect, test_api.requests)
+        manager = self._base_test(expect, key)
+        manager.get(resource_type)
+
+    def test_generate_template(self):
+        key = 'resource_types'
+        resource_type = 'OS::Nova::KeyPair'
+        expect = ('GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template')
+        manager = self._base_test(expect, key)
+        manager.generate_template(resource_type)
