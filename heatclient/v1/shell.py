@@ -569,13 +569,14 @@ def do_resource_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        fields = ['resource_type', 'resource_status', 'updated_time']
+        fields = ['physical_resource_id', 'resource_type',
+                  'resource_status', 'updated_time']
         if len(resources) >= 1 and not hasattr(resources[0], 'resource_name'):
             fields.insert(0, 'logical_resource_id')
         else:
             fields.insert(0, 'resource_name')
 
-        utils.print_list(resources, fields, sortby_index=3)
+        utils.print_list(resources, fields, sortby_index=4)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
