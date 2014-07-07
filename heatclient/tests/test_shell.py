@@ -1259,6 +1259,60 @@ class ShellTestEvents(ShellBase):
             self.assertRegexpMatches(event_list_text, r)
 
     @httpretty.activate
+    def test_event_list_pagination(self):
+        self.register_keystone_auth_fixture()
+        # test for pagination
+        resp_dict = {"events": [
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_one,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id": None,
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_IN_PROGRESS",
+                      "resource_status_reason": "state changed"}]
+                     }
+        params = {'limit': 1,
+                  'resource_action': 'CREATE',
+                  'resource_status': 'IN_PROGRESS'}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        url = '/stacks/%s/events' % stack_id
+        url += '?%s' % parse.urlencode(params, True)
+        http.HTTPClient.json_request('GET', url).AndReturn((resp, resp_dict))
+        self.m.ReplayAll()
+
+        event_list_text = self.shell('event-list {0} -l 1 '
+                                     '-f resource_status=IN_PROGRESS '
+                                     '-f resource_action=CREATE'.format(
+                                     stack_id))
+
+        required = [
+            'resource_name',
+            'id',
+            'resource_status_reason',
+            'resource_status',
+            'event_time',
+            'aResource',
+            self.event_id_one,
+            'state changed',
+            'CREATE_IN_PROGRESS',
+            '2013-12-05T14:14:30Z',
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(event_list_text, r)
+
+    @httpretty.activate
     def test_event_show(self):
         self.register_keystone_auth_fixture()
         resp_dict = {"event":

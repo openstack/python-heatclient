@@ -698,10 +698,22 @@ def do_resource_signal(hc, args):
            help='Name or ID of stack to show the events for.')
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
            help='Name of the resource to filter events by.')
+@utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
+           help='Filter parameters to apply on returned events. '
+           'This can be specified multiple times, or once with parameters '
+           'separated by a semicolon.',
+           action='append')
+@utils.arg('-l', '--limit', metavar='<LIMIT>',
+           help='Limit the number of events returned.')
+@utils.arg('-m', '--marker', metavar='<ID>',
+           help='Only return events that appear after the given event ID.')
 def do_event_list(hc, args):
     '''List events for a stack.'''
     fields = {'stack_id': args.id,
-              'resource_name': args.resource}
+              'resource_name': args.resource,
+              'limit': args.limit,
+              'marker': args.marker,
+              'filters': utils.format_parameters(args.filters)}
     try:
         events = hc.events.list(**fields)
     except exc.HTTPNotFound as ex:

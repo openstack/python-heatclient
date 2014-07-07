@@ -65,6 +65,29 @@ class EventManagerTest(testtools.TestCase):
         manager._list.assert_called_once_with('/stacks/teststack/'
                                               'events', "events")
 
+    def test_list_event_with_kwargs(self):
+        stack_id = 'teststack',
+        resource_name = 'testresource'
+        kwargs = {'limit': 2,
+                  'marker': '6d6935f4-0ae5',
+                  'filters': {
+                      'resource_action': 'CREATE',
+                      'resource_status': 'COMPLETE'
+                  }}
+        manager = EventManager(None)
+        self.m.StubOutWithMock(manager, '_resolve_stack_id')
+        manager._resolve_stack_id(stack_id).AndReturn('teststack/abcd1234')
+        self.m.ReplayAll()
+        manager._list = MagicMock()
+        manager.list(stack_id, resource_name, **kwargs)
+        # Make sure url is correct.
+        manager._list.assert_called_once_with('/stacks/teststack%2Fabcd1234/'
+                                              'resources/testresource/events'
+                                              '?marker=6d6935f4-0ae5&limit=2'
+                                              '&resource_action=CREATE&'
+                                              'resource_status=COMPLETE',
+                                              "events")
+
     def test_get_event(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': 'testresource',
