@@ -10,6 +10,7 @@ ChangeLog
 run_tests.err.log
 .tox
 doc/source/api
+doc/build
 *.egg
 heatclient/versioninfo
 *.egg-info
