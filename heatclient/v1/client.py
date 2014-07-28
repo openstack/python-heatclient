@@ -36,7 +36,7 @@ class Client(object):
 
     def __init__(self, *args, **kwargs):
         """Initialize a new client for the Heat v1 API."""
-        self.http_client = http._construct_http_client(*args, **kwargs)
+        self.http_client = http.HTTPClient(*args, **kwargs)
         self.stacks = stacks.StackManager(self.http_client)
         self.resources = resources.ResourceManager(self.http_client)
         self.resource_types = resource_types.ResourceTypeManager(

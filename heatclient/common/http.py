@@ -216,12 +216,6 @@ class HTTPClient(object):
 
     def credentials_headers(self):
         creds = {}
-        # NOTE(dhu): (shardy) When deferred_auth_method=password, Heat
-        # encrypts and stores username/password.  For Keystone v3, the
-        # intent is to use trusts since SHARDY is working towards
-        # deferred_auth_method=trusts as the default.
-        # TODO(dhu): Make Keystone v3 work in Heat standalone mode.  Maye
-        # require X-Auth-User-Domain.
         if self.username:
             creds['X-Auth-User'] = self.username
         if self.password:
@@ -275,56 +269,3 @@ class HTTPClient(object):
 
     def patch(self, url, **kwargs):
         return self.client_request("PATCH", url, **kwargs)
-
-
-class SessionClient(HTTPClient):
-    """HTTP client based on Keystone client session."""
-
-    # NOTE(dhu):  Will eventually move to a common session client.
-    # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
-    def __init__(self, session, auth, **kwargs):
-        self.session = session
-        self.auth = auth
-
-        self.auth_url = kwargs.get('auth_url')
-        self.region_name = kwargs.get('region_name')
-        self.interface = kwargs.get('interface',
-                                    kwargs.get('endpoint_type', 'public'))
-        self.service_type = kwargs.get('service_type')
-
-        self.include_pass = kwargs.get('include_pass')
-        self.username = kwargs.get('username')
-        self.password = kwargs.get('password')
-        # see if we can get the auth_url from auth plugin if one is not
-        # provided from kwargs
-        if not self.auth_url and hasattr(self.auth, 'auth_url'):
-            self.auth_url = self.auth.auth_url
-
-    def _http_request(self, url, method, **kwargs):
-        kwargs.setdefault('user_agent', USER_AGENT)
-        kwargs.setdefault('auth', self.auth)
-
-        endpoint_filter = kwargs.setdefault('endpoint_filter', {})
-        endpoint_filter.setdefault('interface', self.interface)
-        endpoint_filter.setdefault('service_type', self.service_type)
-        endpoint_filter.setdefault('region_name', self.region_name)
-
-        # TODO(gyee): what are these headers for?
-        if self.auth_url:
-            kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
-        if self.region_name:
-            kwargs['headers'].setdefault('X-Region-Name', self.region_name)
-        if self.include_pass and 'X-Auth-Key' not in kwargs['headers']:
-            kwargs['headers'].update(self.credentials_headers())
-
-        return self.session.request(url, method, raise_exc=False, **kwargs)
-
-
-def _construct_http_client(*args, **kwargs):
-    session = kwargs.pop('session', None)
-    auth = kwargs.pop('auth', None)
-
-    if session:
-        return SessionClient(session, auth, **kwargs)
-    else:
-        return HTTPClient(*args, **kwargs)
