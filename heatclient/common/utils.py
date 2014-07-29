@@ -37,7 +37,12 @@ print_list = cliutils.print_list
 
 
 def link_formatter(links):
-    return '\n'.join([l.get('href', '') for l in links or []])
+    def format_link(l):
+        if 'rel' in l:
+            return "%s (%s)" % (l.get('href', ''), l.get('rel', ''))
+        else:
+            return "%s" % (l.get('href', ''))
+    return '\n'.join(format_link(l) for l in links or [])
 
 
 def json_formatter(js):
