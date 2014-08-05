@@ -114,15 +114,9 @@ def do_stack_create(hc, args):
     do_stack_list(hc)
 
 
-@utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
            help='Path to the environment, it can be specified multiple times.',
            action='append')
-@utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
-@utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
            help='Stack creation timeout in minutes.'
@@ -143,13 +137,8 @@ def do_stack_create(hc, args):
            help='Name of the stack to adopt.')
 def do_stack_adopt(hc, args):
     '''Adopt a stack.'''
-    tpl_files, template = template_utils.get_template_contents(
-        args.template_file,
-        args.template_url,
-        args.template_object,
-        hc.http_client.raw_request)
-    env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment_file)
+    env_files, env = template_utils.process_environment_and_files(
+        env_path=args.environment_file)
 
     if not args.adopt_file:
         raise exc.CommandError('Need to specify --adopt-file')
@@ -166,8 +155,7 @@ def do_stack_adopt(hc, args):
         'disable_rollback': not(args.enable_rollback),
         'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),
-        'template': template,
-        'files': dict(list(tpl_files.items()) + list(env_files.items())),
+        'files': dict(list(env_files.items())),
         'environment': env
     }
 
