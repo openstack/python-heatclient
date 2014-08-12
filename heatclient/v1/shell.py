@@ -581,9 +581,14 @@ def do_template_validate(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to show the resources for.')
+@utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
+           help='Depth of nested stacks from which to display resources.')
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
-    fields = {'stack_id': args.id}
+    fields = {
+        'stack_id': args.id,
+        'nested_depth': args.nested_depth,
+    }
     try:
         resources = hc.resources.list(**fields)
     except exc.HTTPNotFound:
@@ -595,6 +600,9 @@ def do_resource_list(hc, args):
             fields.insert(0, 'logical_resource_id')
         else:
             fields.insert(0, 'resource_name')
+
+        if args.nested_depth:
+            fields.append('parent_resource')
 
         utils.print_list(resources, fields, sortby_index=4)
 

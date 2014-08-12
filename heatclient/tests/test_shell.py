@@ -1448,6 +1448,34 @@ class ShellTestResources(ShellBase):
 --------------+
 ''', resource_list_text)
 
+    def test_resource_list_nested(self):
+        self._script_keystone_client()
+        resp_dict = {"resources": [{
+            "resource_name": "foobar",
+            "parent_resource": "my_parent_resource",
+        }]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/resources?nested_depth=99' % (
+                stack_id)).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        shell_cmd = 'resource-list {0} --nested-depth {1}'.format(stack_id, 99)
+        resource_list_text = self.shell(shell_cmd)
+
+        required = [
+            'resource_name', 'foobar',
+            'parent_resource', 'my_parent_resource',
+        ]
+        for field in required:
+            self.assertRegexpMatches(resource_list_text, field)
+
     def test_resource_show(self):
         self._script_keystone_client()
         resp_dict = {"resource":

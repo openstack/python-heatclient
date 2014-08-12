@@ -89,6 +89,27 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager.list(**fields)
 
+    def test_list_nested(self):
+        fields = {'stack_id': 'teststack', 'nested_depth': '99'}
+        expect = ('/stacks/teststack/resources?nested_depth=99')
+        key = 'resources'
+
+        class FakeResponse(object):
+            def json(self):
+                return {key: {}}
+
+        class FakeClient(object):
+            def get(self, *args, **kwargs):
+                assert args[0] == expect
+                return FakeResponse()
+
+        manager = ResourceManager(FakeClient())
+        self.m.StubOutWithMock(manager, '_resolve_stack_id')
+        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
+        self.m.ReplayAll()
+
+        manager.list(**fields)
+
     def test_metadata(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': 'testresource'}
