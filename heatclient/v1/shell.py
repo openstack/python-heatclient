@@ -418,6 +418,8 @@ def do_list(hc):
 
 @utils.arg('-s', '--show-deleted', default=False, action="store_true",
            help='Include soft-deleted stacks in the stack listing.')
+@utils.arg('-n', '--show-nested', default=False, action="store_true",
+           help='Include nested stacks in the stack listing.')
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Filter parameters to apply on returned stacks. '
            'This can be specified multiple times, or once with parameters '
@@ -435,15 +437,18 @@ def do_list(hc):
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
+    fields = ['id', 'stack_name', 'stack_status', 'creation_time']
     if args:
         kwargs = {'limit': args.limit,
                   'marker': args.marker,
                   'filters': utils.format_parameters(args.filters),
                   'global_tenant': args.global_tenant,
                   'show_deleted': args.show_deleted}
+        if args.show_nested:
+            fields.append('parent')
+            kwargs['show_nested'] = True
 
     stacks = hc.stacks.list(**kwargs)
-    fields = ['id', 'stack_name', 'stack_status', 'creation_time']
     utils.print_list(stacks, fields, sortby_index=3)
 
 
