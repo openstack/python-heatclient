@@ -39,11 +39,13 @@ class Resource(base.Resource):
 class ResourceManager(stacks.StackChildManager):
     resource_class = Resource
 
-    def list(self, stack_id):
+    def list(self, stack_id, nested_depth=0):
         """Get a list of resources.
         :rtype: list of :class:`Resource`
         """
         url = '/stacks/%s/resources' % stack_id
+        if nested_depth:
+            url += '?nested_depth=%s' % nested_depth
         return self._list(url, "resources")
 
     def get(self, stack_id, resource_name):
