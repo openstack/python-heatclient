@@ -460,11 +460,12 @@ def do_list(hc):
            help='Limit the number of stacks returned.')
 @utils.arg('-m', '--marker', metavar='<ID>',
            help='Only return stacks that appear after the given stack ID.')
-@utils.arg('-g', '--global-tenant',
-           action='store_true',
-           default=False,
+@utils.arg('-g', '--global-tenant', action='store_true', default=False,
            help='Display stacks from all tenants. Operation only authorized '
                 'for users who match the policy in heat\'s policy.json.')
+@utils.arg('-o', '--show-owner', action='store_true', default=False,
+           help='Display stack owner information. This is automatically '
+                'enabled when using --global-tenant.')
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
@@ -478,6 +479,11 @@ def do_stack_list(hc, args=None):
         if args.show_nested:
             fields.append('parent')
             kwargs['show_nested'] = True
+
+        if args.global_tenant or args.show_owner:
+            fields.insert(2, 'stack_owner')
+        if args.global_tenant:
+            fields.insert(2, 'project')
 
     stacks = hc.stacks.list(**kwargs)
     utils.print_list(stacks, fields, sortby_index=3)

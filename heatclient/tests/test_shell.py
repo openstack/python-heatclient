@@ -553,6 +553,9 @@ class ShellTestUserPass(ShellBase):
                                ' --show-deleted')
 
         required = [
+            'stack_owner',
+            'project',
+            'testproject',
             'teststack',
             'teststack2',
         ]
@@ -579,6 +582,21 @@ class ShellTestUserPass(ShellBase):
             'teststack_nested',
             'parent',
             'theparentof3'
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    @httpretty.activate
+    def test_stack_list_show_owner(self):
+        self.register_keystone_auth_fixture()
+        fakes.script_heat_list()
+        self.m.ReplayAll()
+
+        list_text = self.shell('stack-list --show-owner')
+
+        required = [
+            'stack_owner',
+            'testowner',
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)

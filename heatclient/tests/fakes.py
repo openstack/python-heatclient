@@ -24,12 +24,16 @@ def script_heat_list(url=None, show_nested=False):
         {
             "id": "1",
             "stack_name": "teststack",
+            "stack_owner": "testowner",
+            "project": "testproject",
             "stack_status": 'CREATE_COMPLETE',
             "creation_time": "2012-10-25T01:58:47Z"
         },
         {
             "id": "2",
             "stack_name": "teststack2",
+            "stack_owner": "testowner",
+            "project": "testproject",
             "stack_status": 'IN_PROGRESS',
             "creation_time": "2012-10-25T01:58:47Z"
         }]
