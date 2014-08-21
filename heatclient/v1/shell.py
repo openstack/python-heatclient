@@ -402,7 +402,7 @@ def do_stack_update(hc, args):
     do_stack_list(hc)
 
 
-def do_list(hc, args=None):
+def do_list(hc):
     '''DEPRECATED! Use stack-list instead.'''
     logger.warning('DEPRECATED! Use stack-list instead.')
     do_stack_list(hc)
@@ -479,16 +479,15 @@ def do_output_show(hc, args):
         print (jsonutils.dumps(value, indent=2, ensure_ascii=False))
 
 
-def do_resource_type_list(hc, args={}):
+def do_resource_type_list(hc, args):
     '''List the available resource types.'''
-    kwargs = {}
-    types = hc.resource_types.list(**kwargs)
+    types = hc.resource_types.list()
     utils.print_list(types, ['resource_type'], sortby_index=0)
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
            help='Resource type to get the details for.')
-def do_resource_type_show(hc, args={}):
+def do_resource_type_show(hc, args):
     '''Show the resource type.'''
     try:
         resource_type = hc.resource_types.get(args.resource_type)
