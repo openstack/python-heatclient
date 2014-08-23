@@ -182,6 +182,117 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual({}, env)
         self.assertEqual({}, files)
 
+    def test_process_multiple_environments_and_files(self):
+
+        self.m.StubOutWithMock(request, 'urlopen')
+        env_file1 = '/home/my/dir/env1.yaml'
+        env_file2 = '/home/my/dir/env2.yaml'
+
+        env1 = b'''
+        parameters:
+          "param1": "value1"
+        resource_registry:
+          "OS::Thingy1": "file:///home/b/a.yaml"
+        '''
+        env2 = b'''
+        parameters:
+          "param2": "value2"
+        resource_registry:
+          "OS::Thingy2": "file:///home/b/b.yaml"
+        '''
+
+        request.urlopen('file://%s' % env_file1).AndReturn(
+            six.BytesIO(env1))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file://%s' % env_file2).AndReturn(
+            six.BytesIO(env2))
+        request.urlopen('file:///home/b/b.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        self.m.ReplayAll()
+
+        files, env = template_utils.process_multiple_environments_and_files(
+            [env_file1, env_file2])
+        self.assertEqual(
+            {
+                'resource_registry': {
+                    'OS::Thingy1': 'file:///home/b/a.yaml',
+                    'OS::Thingy2': 'file:///home/b/b.yaml'},
+                'parameters': {
+                    'param1': 'value1',
+                    'param2': 'value2'}
+            },
+            env)
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['file:///home/b/a.yaml'])
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['file:///home/b/b.yaml'])
+
+    def test_process_multiple_environments_default_resources(self):
+
+        self.m.StubOutWithMock(request, 'urlopen')
+        env_file1 = '/home/my/dir/env1.yaml'
+        env_file2 = '/home/my/dir/env2.yaml'
+
+        env1 = b'''
+        resource_registry:
+          resources:
+            resource1:
+              "OS::Thingy1": "file:///home/b/a.yaml"
+            resource2:
+              "OS::Thingy2": "file:///home/b/b.yaml"
+        '''
+        env2 = b'''
+        resource_registry:
+          resources:
+            resource1:
+              "OS::Thingy3": "file:///home/b/a.yaml"
+            resource2:
+              "OS::Thingy4": "file:///home/b/b.yaml"
+        '''
+
+        request.urlopen('file://%s' % env_file1).AndReturn(
+            six.BytesIO(env1))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/b.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file://%s' % env_file2).AndReturn(
+            six.BytesIO(env2))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/b.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        self.m.ReplayAll()
+
+        files, env = template_utils.process_multiple_environments_and_files(
+            [env_file1, env_file2])
+        self.assertEqual(
+            {
+                'resource_registry': {
+                    'resources': {
+                        'resource1': {
+                            'OS::Thingy1': 'file:///home/b/a.yaml',
+                            'OS::Thingy3': 'file:///home/b/a.yaml'
+                        },
+                        'resource2': {
+                            'OS::Thingy2': 'file:///home/b/b.yaml',
+                            'OS::Thingy4': 'file:///home/b/b.yaml'
+                        }
+                    }
+                }
+            },
+            env)
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['file:///home/b/a.yaml'])
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['file:///home/b/b.yaml'])
+
+    def test_no_process_multiple_environments_and_files(self):
+        files, env = template_utils.process_multiple_environments_and_files()
+        self.assertEqual({}, env)
+        self.assertEqual({}, files)
+
     def test_global_files(self):
         url = 'file:///home/b/a.yaml'
         env = '''

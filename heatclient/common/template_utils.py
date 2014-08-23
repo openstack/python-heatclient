@@ -14,6 +14,7 @@
 #    under the License.
 
 import base64
+import collections
 import os
 import six
 from six.moves.urllib import error
@@ -157,6 +158,38 @@ def normalise_file_path_to_url(path):
         return path
     path = os.path.abspath(path)
     return parse.urljoin('file:', request.pathname2url(path))
+
+
+def deep_update(old, new):
+    '''Merge nested dictionaries.'''
+    for k, v in new.items():
+        if isinstance(v, collections.Mapping):
+            r = deep_update(old.get(k, {}), v)
+            old[k] = r
+        else:
+            old[k] = new[k]
+    return old
+
+
+def process_multiple_environments_and_files(env_paths=None, template=None,
+                                            template_url=None):
+    merged_files = {}
+    merged_env = {}
+
+    if env_paths:
+        for env_path in env_paths:
+            files, env = process_environment_and_files(env_path, template,
+                                                       template_url)
+
+            # 'files' looks like {"filename1": contents, "filename2": contents}
+            # so a simple update is enough for merging
+            merged_files.update(files)
+
+            # 'env' can be a deeply nested dictionary, so a simple update is
+            # not enough
+            merged_env = deep_update(merged_env, env)
+
+    return merged_files, merged_env
 
 
 def process_environment_and_files(env_path=None, template=None,

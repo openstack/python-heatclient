@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -60,7 +61,8 @@ def do_create(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -88,8 +90,8 @@ def do_stack_create(hc, args):
         args.template_url,
         args.template_object,
         hc.http_client.raw_request)
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
 
     if args.create_timeout:
         logger.warning('-c/--create-timeout is deprecated, '
@@ -115,7 +117,8 @@ def do_stack_create(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -145,8 +148,8 @@ def do_stack_adopt(hc, args):
         args.template_url,
         args.template_object,
         hc.http_client.raw_request)
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
 
     if not args.adopt_file:
         raise exc.CommandError('Need to specify --adopt-file')
@@ -179,7 +182,8 @@ def do_stack_adopt(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -203,8 +207,8 @@ def do_stack_preview(hc, args):
         args.template_url,
         args.template_object,
         hc.http_client.raw_request)
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
 
     fields = {
         'stack_name': args.name,
@@ -331,7 +335,8 @@ def do_stack_show(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -357,7 +362,8 @@ def do_update(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -383,8 +389,8 @@ def do_stack_update(hc, args):
         args.template_object,
         hc.http_client.raw_request)
 
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
 
     fields = {
         'stack_id': args.id,
@@ -548,7 +554,8 @@ def do_template_show(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
 def do_validate(hc, args):
@@ -562,7 +569,8 @@ def do_validate(hc, args):
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help='Path to the template.')
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment.')
+           help='Path to the environment, it can be specified multiple times.',
+           action='append')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift).')
 def do_template_validate(hc, args):
@@ -574,8 +582,8 @@ def do_template_validate(hc, args):
         args.template_object,
         hc.http_client.raw_request)
 
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
     fields = {
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
