@@ -188,11 +188,12 @@ def do_stack_adopt(hc, args):
            help='URL of template.')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help='URL to retrieve template object (e.g. from swift)')
-@utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
-           type=int,
-           help='Stack creation timeout in minutes.')
+@utils.arg('-t', '--timeout', metavar='<TIMEOUT>', type=int,
+           help='Stack creation timeout in minutes. This is only used during'
+           'validation in preview.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help='Enable rollback on failure. This option is not used during'
+           'preview and exists only for symmetry with stack-create.')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to preview the stack. '
            'This can be specified multiple times, or once with parameters '
