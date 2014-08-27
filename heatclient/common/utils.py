@@ -57,7 +57,8 @@ def newline_list_formatter(r):
     return '\n'.join(r or [])
 
 
-def print_dict(d, formatters={}):
+def print_dict(d, formatters=None):
+    formatters = formatters or {}
     pt = prettytable.PrettyTable(['Property', 'Value'],
                                  caching=False, print_empty=False)
     pt.align = 'l'
