@@ -219,7 +219,7 @@ class HTTPClient(object):
         if location is None:
             message = "Location not returned with 302"
             raise exc.InvalidEndpoint(message=message)
-        elif location.startswith(self.endpoint):
+        elif location.lower().startswith(self.endpoint.lower()):
             return location[len(self.endpoint):]
         else:
             message = "Prohibited endpoint redirect %s" % location
