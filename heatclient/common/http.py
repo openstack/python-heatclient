@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+import hashlib
 import logging
 import os
 import socket
@@ -29,6 +30,7 @@ from heatclient.openstack.common import strutils
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
 CHUNKSIZE = 1024 * 64  # 64kB
+SENSITIVE_HEADERS = ('X-Auth-Token',)
 
 
 def get_system_ca_file():
@@ -79,12 +81,21 @@ class HTTPClient(object):
             else:
                 self.verify_cert = kwargs.get('ca_file', get_system_ca_file())
 
+    def safe_header(self, name, value):
+        if name in SENSITIVE_HEADERS:
+            # because in python3 byte string handling is ... ug
+            v = value.encode('utf-8')
+            h = hashlib.sha1(v)
+            d = h.hexdigest()
+            return strutils.safe_decode(name), "{SHA1}%s" % d
+        else:
+            return strutils.safe_decode(name), strutils.safe_decode(value)
+
     def log_curl_request(self, method, url, kwargs):
         curl = ['curl -i -X %s' % method]
 
         for (key, value) in kwargs['headers'].items():
-            header = '-H \'%s: %s\'' % (strutils.safe_decode(key),
-                                        strutils.safe_decode(value))
+            header = '-H \'%s: %s\'' % self.safe_header(key, value)
             curl.append(header)
 
         conn_params_fmt = [
