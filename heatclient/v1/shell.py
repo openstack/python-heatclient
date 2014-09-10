@@ -570,7 +570,11 @@ def do_output_show(hc, args):
     else:
         for output in stack.to_dict().get('outputs', []):
             if output['output_key'] == args.output:
-                value = output['output_value']
+                if 'output_error' in output:
+                    msg = "Error: %s" % output['output_error']
+                    raise exc.CommandError(msg)
+                else:
+                    value = output['output_value']
                 break
         else:
             return
