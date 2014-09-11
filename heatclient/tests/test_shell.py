@@ -1202,15 +1202,13 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
-        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         adopt_data_file = os.path.join(TEST_VAR_DIR, 'adopt_stack_data.json')
         adopt_text = self.shell(
             'stack-adopt teststack '
-            '--template-file=%s '
             '--adopt-file=%s '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
-            'LinuxDistribution=F17"' % (template_file, adopt_data_file))
+            'LinuxDistribution=F17"' % (adopt_data_file))
 
         required = [
             'stack_name',
@@ -1227,10 +1225,7 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
         self.m.ReplayAll()
-        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        self.shell_error(
-            'stack-adopt teststack '
-            '--template-file=%s ' % template_file, failed_msg)
+        self.shell_error('stack-adopt teststack ', failed_msg)
 
     @httpretty.activate
     def test_stack_update(self):
