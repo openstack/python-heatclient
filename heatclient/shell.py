@@ -630,6 +630,9 @@ def main(args=None):
             args = sys.argv[1:]
 
         HeatShell().main(args)
+    except KeyboardInterrupt:
+        print("... terminating heat client", file=sys.stderr)
+        sys.exit(130)
     except Exception as e:
         if '--debug' in args or '-d' in args:
             raise
