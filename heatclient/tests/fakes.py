@@ -16,7 +16,7 @@ from heatclient import exc
 from heatclient.openstack.common import jsonutils
 
 
-def script_heat_list(url=None):
+def script_heat_list(url=None, show_nested=False):
     if url is None:
         url = '/stacks?'
 
@@ -34,6 +34,15 @@ def script_heat_list(url=None):
             "creation_time": "2012-10-25T01:58:47Z"
         }]
     }
+    if show_nested:
+        nested = {
+            "id": "3",
+            "stack_name": "teststack_nested",
+            "stack_status": 'IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z",
+            "parent": "theparentof3"
+        }
+        resp_dict["stacks"].append(nested)
     resp = FakeHTTPResponse(200,
                             'success, you',
                             {'content-type': 'application/json'},

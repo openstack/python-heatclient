@@ -83,6 +83,15 @@ class TestCase(testtools.TestCase):
                 msg, expected_regexp.pattern, text)
             raise self.failureException(msg)
 
+    # required for testing with Python 2.6
+    def assertNotRegexpMatches(self, text, expected_regexp, msg=None):
+        try:
+            self.assertRegexpMatches(text, expected_regexp, msg)
+        except self.failureException:
+            pass
+        else:
+            raise self.failureException(msg)
+
     def shell_error(self, argstr, error_match):
         orig = sys.stderr
         sys.stderr = six.StringIO()
@@ -518,6 +527,7 @@ class ShellTestUserPass(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
 
     @httpretty.activate
     def test_stack_list_with_args(self):
@@ -544,6 +554,30 @@ class ShellTestUserPass(ShellBase):
         required = [
             'teststack',
             'teststack2',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
+
+    @httpretty.activate
+    def test_stack_list_show_nested(self):
+        self.register_keystone_auth_fixture()
+        expected_url = '/stacks?%s' % parse.urlencode({
+            'show_nested': True,
+        }, True)
+        fakes.script_heat_list(expected_url, show_nested=True)
+
+        self.m.ReplayAll()
+
+        list_text = self.shell('stack-list'
+                               ' --show-nested')
+
+        required = [
+            'teststack',
+            'teststack2',
+            'teststack_nested',
+            'parent',
+            'theparentof3'
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)
