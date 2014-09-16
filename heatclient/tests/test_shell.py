@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import re
 import six
@@ -1119,6 +1120,7 @@ class ShellTestUserPass(ShellBase):
             'stack-update teststack2/2 '
             '--template-file=%s '
             '--timeout 123 '
+            '--rollback off '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"' % template_file)
@@ -1262,8 +1264,17 @@ class ShellTestUserPass(ShellBase):
         self.shell_error('stack-adopt teststack ', failed_msg)
 
     @httpretty.activate
-    def test_stack_update(self):
+    def test_stack_update_enable_rollback(self):
         self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        with open(template_file) as f:
+            template_data = json.load(f)
+        expected_data = {'files': {},
+                         'environment': {},
+                         'template': template_data,
+                         'disable_rollback': False,
+                         'parameters': mox.IgnoreArg()
+                         }
         resp = fakes.FakeHTTPResponse(
             202,
             'Accepted',
@@ -1271,18 +1282,16 @@ class ShellTestUserPass(ShellBase):
             'The request is accepted for processing.')
         http.HTTPClient.json_request(
             'PUT', '/stacks/teststack2/2',
-            data=mox.IgnoreArg(),
+            data=expected_data,
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
-
         self.m.ReplayAll()
 
-        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         update_text = self.shell(
             'stack-update teststack2/2 '
+            '--rollback on '
             '--template-file=%s '
-            '--enable-rollback '
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"' % template_file)
@@ -1292,6 +1301,99 @@ class ShellTestUserPass(ShellBase):
             'id',
             'teststack2',
             '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    @httpretty.activate
+    def test_stack_update_disable_rollback(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        with open(template_file) as f:
+            template_data = json.load(f)
+        expected_data = {'files': {},
+                         'environment': {},
+                         'template': template_data,
+                         'disable_rollback': True,
+                         'parameters': mox.IgnoreArg()
+                         }
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'PUT', '/stacks/teststack2',
+            data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2 '
+            '--template-file=%s '
+            '--rollback off '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    @httpretty.activate
+    def test_stack_update_fault_rollback_value(self):
+        self.register_keystone_auth_fixture()
+        self.m.ReplayAll()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        self.shell_error('stack-update teststack2/2 '
+                         '--rollback Foo '
+                         '--template-file=%s' % template_file,
+                         "Unrecognized value 'Foo', acceptable values are:"
+                         )
+
+    @httpretty.activate
+    def test_stack_update_rollback_default(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        with open(template_file) as f:
+            template_data = json.load(f)
+        expected_data = {'files': {},
+                         'environment': {},
+                         'template': template_data,
+                         'parameters': mox.IgnoreArg()
+                         }
+        resp_update = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'PUT', '/stacks/teststack2',
+            data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp_update, None))
+        fakes.script_heat_list()
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2 '
+            '--template-file=%s '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '2'
         ]
         for r in required:
             self.assertRegexpMatches(update_text, r)

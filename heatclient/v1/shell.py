@@ -21,6 +21,7 @@ import yaml
 from heatclient.common import template_utils
 from heatclient.common import utils
 from heatclient.openstack.common import jsonutils
+from heatclient.openstack.common import strutils
 
 import heatclient.exc as exc
 
@@ -347,7 +348,16 @@ def do_stack_show(hc, args):
            type=int,
            help='Stack update timeout in minutes.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help='DEPRECATED! Use --rollback argument instead. '
+           'Enable rollback on stack update failure. '
+           'NOTE: default behavior is now to use the rollback value '
+           'of existing stack.')
+@utils.arg('--rollback', default=None, metavar='<VALUE>',
+           help='Set rollback on update failure. '
+           'Values %(true)s  set rollback to enabled. '
+           'Values %(false)s set rollback to disabled. '
+           'Default is to use the value of existing stack to be updated.'
+           % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -374,7 +384,16 @@ def do_update(hc, args):
            type=int,
            help='Stack update timeout in minutes.')
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help='DEPRECATED! Use --rollback argument instead. '
+           'Enable rollback on stack update failure. '
+           'NOTE: default behavior is now to use the rollback value '
+           'of existing stack.')
+@utils.arg('--rollback', default=None, metavar='<VALUE>',
+           help='Set rollback on update failure. '
+           'Values %(true)s  set rollback to enabled. '
+           'Values %(false)s set rollback to disabled. '
+           'Default is to use the value of existing stack to be updated.'
+           % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help='Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -396,7 +415,6 @@ def do_stack_update(hc, args):
 
     fields = {
         'stack_id': args.id,
-        'disable_rollback': not(args.enable_rollback),
         'parameters': utils.format_parameters(args.parameters),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
@@ -405,6 +423,19 @@ def do_stack_update(hc, args):
 
     if args.timeout:
         fields['timeout_mins'] = args.timeout
+
+    if args.rollback is not None:
+        try:
+            rollback = strutils.bool_from_string(args.rollback, strict=True)
+        except ValueError as ex:
+            raise exc.CommandError(six.text_type(ex))
+        else:
+            fields['disable_rollback'] = not(rollback)
+    # TODO(pshchelo): remove the following 'else' clause after deprecation
+    # period of --enable-rollback switch and assign -r shortcut to --rollback
+    else:
+        if args.enable_rollback:
+            fields['disable_rollback'] = False
 
     hc.stacks.update(**fields)
     do_stack_list(hc)
