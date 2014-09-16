@@ -24,6 +24,7 @@ import six
 from six.moves.urllib import parse
 
 from heatclient import exc
+from heatclient.openstack.common import importutils
 from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common import strutils
 
@@ -31,6 +32,7 @@ LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 SENSITIVE_HEADERS = ('X-Auth-Token',)
+osprofiler_web = importutils.try_import("osprofiler.web")
 
 
 def get_system_ca_file():
@@ -149,6 +151,8 @@ class HTTPClient(object):
             kwargs['headers'].setdefault('X-Region-Name', self.region_name)
         if self.include_pass and not 'X-Auth-Key' in kwargs['headers']:
             kwargs['headers'].update(self.credentials_headers())
+        if osprofiler_web:
+            kwargs['headers'].update(osprofiler_web.get_trace_id_headers())
 
         self.log_curl_request(method, url, kwargs)
 

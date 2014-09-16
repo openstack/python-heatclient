@@ -34,9 +34,11 @@ from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common.gettextutils import _
+from heatclient.openstack.common import importutils
 from heatclient.openstack.common import strutils
 
 logger = logging.getLogger(__name__)
+osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 
 
 class HeatShell(object):
@@ -283,6 +285,18 @@ class HeatShell(object):
 
         self._append_global_identity_args(parser)
 
+        if osprofiler_profiler:
+            parser.add_argument('--profile',
+                                metavar='HMAC_KEY',
+                                help='HMAC key to use for encrypting context '
+                                'data for performance profiling of operation. '
+                                'This key should be the value of HMAC key '
+                                'configured in osprofiler middleware in heat, '
+                                'it is specified in the paste configuration '
+                                '(/etc/heat/api-paste.ini). '
+                                'Without the key, profiling will not be '
+                                'triggered even if osprofiler is enabled '
+                                'on server side.')
         return parser
 
     def get_subcommand_parser(self, version):
@@ -585,7 +599,17 @@ class HeatShell(object):
 
         client = heat_client.Client(api_version, endpoint, **kwargs)
 
+        profile = osprofiler_profiler and options.profile
+        if profile:
+            osprofiler_profiler.init(options.profile)
+
         args.func(client, args)
+
+        if profile:
+            trace_id = osprofiler_profiler.get().get_base_id()
+            print("Trace ID: %s" % trace_id)
+            print("To display trace use next command:\n"
+                  "osprofiler trace show --html %s " % trace_id)
 
     def do_bash_completion(self, args):
         """Prints all of the commands and options to stdout.
