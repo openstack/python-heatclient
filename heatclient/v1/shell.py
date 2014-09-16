@@ -464,6 +464,19 @@ def do_stack_update(hc, args):
     do_stack_list(hc)
 
 
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to cancel update for.')
+def do_stack_cancel_update(hc, args):
+    '''Cancel currently running update of the stack.'''
+    fields = {'stack_id': args.id}
+    try:
+        hc.actions.cancel_update(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        do_stack_list(hc)
+
+
 def do_list(hc):
     '''DEPRECATED! Use stack-list instead.'''
     logger.warning('DEPRECATED! Use stack-list instead.')

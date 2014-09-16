@@ -46,3 +46,10 @@ class ActionManager(stacks.StackChildManager):
         resp, body = self.client.json_request('POST',
                                               '/stacks/%s/actions' % stack_id,
                                               data=body)
+
+    def cancel_update(self, stack_id):
+        """Cancel running update of a stack."""
+        body = {'cancel_update': None}
+        resp, body = self.client.json_request('POST',
+                                              '/stacks/%s/actions' % stack_id,
+                                              data=body)

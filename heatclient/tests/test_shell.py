@@ -1595,6 +1595,34 @@ class ShellTestUserPass(ShellBase):
             self.assertRegexpMatches(update_text, r)
 
     @httpretty.activate
+    def test_stack_cancel_update(self):
+        self.register_keystone_auth_fixture()
+        expected_data = {'cancel_update': None}
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        update_text = self.shell('stack-cancel-update teststack2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    @httpretty.activate
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
