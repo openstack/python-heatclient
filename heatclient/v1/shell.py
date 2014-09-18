@@ -363,6 +363,11 @@ def do_stack_show(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.',
            action='append')
+@utils.arg('-x', '--existing', default=False, action="store_true",
+           help='Re-use the set of parameters of the current stack. '
+           'Parameters specified in --parameters will patch over the existing '
+           'values in the current stack. Parameters omitted will keep '
+           'the existing values.')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_update(hc, args):
@@ -399,6 +404,11 @@ def do_update(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.',
            action='append')
+@utils.arg('-x', '--existing', default=False, action="store_true",
+           help='Re-use the set of parameters of the current stack. '
+           'Parameters specified in --parameters will patch over the existing '
+           'values in the current stack. Parameters omitted will keep '
+           'the existing values.')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
@@ -416,6 +426,7 @@ def do_stack_update(hc, args):
     fields = {
         'stack_id': args.id,
         'parameters': utils.format_parameters(args.parameters),
+        'existing': args.existing,
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
