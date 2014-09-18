@@ -1498,6 +1498,103 @@ class ShellTestUserPass(ShellBase):
             self.assertRegexpMatches(update_text, r)
 
     @httpretty.activate
+    def test_stack_update_with_existing_and_default_parameters(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        expected_data = {
+            'files': {},
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'parameters': {},
+            'clear_parameters': ['InstanceType', 'DBUsername',
+                                 'DBPassword', 'KeyPairName',
+                                 'LinuxDistribution'],
+            'disable_rollback': False}
+        http.HTTPClient.json_request(
+            'PATCH', '/stacks/teststack2/2',
+            data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--existing '
+            '--clear-parameter=InstanceType '
+            '--clear-parameter=DBUsername '
+            '--clear-parameter=DBPassword '
+            '--clear-parameter=KeyPairName '
+            '--clear-parameter=LinuxDistribution' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    @httpretty.activate
+    def test_stack_update_with_patched_and_default_parameters(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        expected_data = {
+            'files': {},
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'parameters': {'"KeyPairName': 'updated_key"'},
+            'clear_parameters': ['InstanceType', 'DBUsername',
+                                 'DBPassword', 'KeyPairName',
+                                 'LinuxDistribution'],
+            'disable_rollback': False}
+        http.HTTPClient.json_request(
+            'PATCH', '/stacks/teststack2/2',
+            data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--existing '
+            '--parameters="KeyPairName=updated_key" '
+            '--clear-parameter=InstanceType '
+            '--clear-parameter=DBUsername '
+            '--clear-parameter=DBPassword '
+            '--clear-parameter=KeyPairName '
+            '--clear-parameter=LinuxDistribution' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    @httpretty.activate
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(

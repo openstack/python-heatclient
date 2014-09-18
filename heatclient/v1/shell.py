@@ -368,6 +368,11 @@ def do_stack_show(hc, args):
            'Parameters specified in --parameters will patch over the existing '
            'values in the current stack. Parameters omitted will keep '
            'the existing values.')
+@utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
+           help='Remove the parameters from the set of parameters of current '
+           'stack for the stack-update. The default value in the template '
+           'will be used. This can be specified multiple times.',
+           action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_update(hc, args):
@@ -409,6 +414,11 @@ def do_update(hc, args):
            'Parameters specified in --parameters will patch over the existing '
            'values in the current stack. Parameters omitted will keep '
            'the existing values.')
+@utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
+           help='Remove the parameters from the set of parameters of current '
+           'stack for the stack-update. The default value in the template '
+           'will be used. This can be specified multiple times.',
+           action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to update.')
 def do_stack_update(hc, args):
@@ -434,6 +444,8 @@ def do_stack_update(hc, args):
 
     if args.timeout:
         fields['timeout_mins'] = args.timeout
+    if args.clear_parameter:
+        fields['clear_parameters'] = list(args.clear_parameter)
 
     if args.rollback is not None:
         try:
