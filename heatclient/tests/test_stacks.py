@@ -44,7 +44,8 @@ class StackStatusActionTest(testtools.TestCase):
         ('UPDATE', dict(action='UPDATE')),
         ('ROLLBACK', dict(action='ROLLBACK')),
         ('SUSPEND', dict(action='SUSPEND')),
-        ('RESUME', dict(action='RESUME'))
+        ('RESUME', dict(action='RESUME')),
+        ('CHECK', dict(action='CHECK'))
     ], [
         ('IN_PROGRESS', dict(status='IN_PROGRESS')),
         ('FAILED', dict(status='FAILED')),
