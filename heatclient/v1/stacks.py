@@ -122,8 +122,7 @@ class StackManager(base.BaseManager):
     def update(self, stack_id, **kwargs):
         """Update a stack."""
         headers = self.client.credentials_headers()
-        method = 'PATCH' if kwargs['existing'] else 'PUT'
-        del kwargs['existing']
+        method = 'PATCH' if kwargs.pop('existing', None) else 'PUT'
         resp, body = self.client.json_request(method, '/stacks/%s' % stack_id,
                                               data=kwargs, headers=headers)
 
