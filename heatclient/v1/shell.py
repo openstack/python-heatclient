@@ -477,7 +477,7 @@ def do_stack_cancel_update(hc, args):
         do_stack_list(hc)
 
 
-def do_list(hc):
+def do_list(hc, args):
     '''DEPRECATED! Use stack-list instead.'''
     logger.warning('DEPRECATED! Use stack-list instead.')
     do_stack_list(hc)
