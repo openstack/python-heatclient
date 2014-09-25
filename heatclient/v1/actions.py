@@ -53,3 +53,10 @@ class ActionManager(stacks.StackChildManager):
         resp, body = self.client.json_request('POST',
                                               '/stacks/%s/actions' % stack_id,
                                               data=body)
+
+    def check(self, stack_id):
+        """Check a stack."""
+        body = {'check': None}
+        resp, body = self.client.json_request('POST',
+                                              '/stacks/%s/actions' % stack_id,
+                                              data=body)

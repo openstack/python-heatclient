@@ -307,6 +307,19 @@ def do_action_resume(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to check.')
+def do_action_check(hc, args):
+    '''Check that stack resources are in expected states.'''
+    fields = {'stack_id': args.id}
+    try:
+        hc.actions.check(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        do_stack_list(hc)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of stack to describe.')
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''

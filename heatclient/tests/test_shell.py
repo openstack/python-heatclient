@@ -1623,6 +1623,34 @@ class ShellTestUserPass(ShellBase):
             self.assertRegexpMatches(update_text, r)
 
     @httpretty.activate
+    def test_stack_check(self):
+        self.register_keystone_auth_fixture()
+        expected_data = {'check': None}
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        check_text = self.shell('action-check teststack2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(check_text, r)
+
+    @httpretty.activate
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
