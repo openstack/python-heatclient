@@ -1845,6 +1845,32 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("", resp)
 
     @httpretty.activate
+    def test_stack_restore(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {},
+            None)
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'POST',
+            '/stacks/teststack/1/snapshots/2/restore').AndReturn((resp, {}))
+
+        self.m.ReplayAll()
+        resp = self.shell('stack-restore teststack/1 2')
+        self.assertEqual("", resp)
+
+    @httpretty.activate
     def test_snapshot_list(self):
         self.register_keystone_auth_fixture()
 

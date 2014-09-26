@@ -943,6 +943,19 @@ def do_snapshot_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of the stack containing the snapshot.')
+@utils.arg('snapshot', metavar='<SNAPSHOT>',
+           help='The ID of the snapshot to restore.')
+def do_stack_restore(hc, args):
+    '''Restore a snapshot of a stack.'''
+    fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
+    try:
+        hc.stacks.restore(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or snapshot not found')
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help='Name or ID of the stack containing the snapshots.')
 def do_snapshot_list(hc, args):
     '''List the snapshots of a stack.'''
