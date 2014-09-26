@@ -895,3 +895,70 @@ def do_build_info(hc, args):
         'engine': utils.json_formatter,
     }
     utils.print_dict(result, formatters=formatters)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of stack to snapshot.')
+@utils.arg('-n', '--name', metavar='<NAME>',
+           help='If specified, the name given to the snapshot.')
+def do_stack_snapshot(hc, args):
+    '''Make a snapshot of a stack.'''
+    fields = {'stack_id': args.id}
+    if args.name:
+        fields['name'] = args.name
+    try:
+        snapshot = hc.stacks.snapshot(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        print(jsonutils.dumps(snapshot, indent=2, ensure_ascii=False))
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of the stack containing the snapshot.')
+@utils.arg('snapshot', metavar='<SNAPSHOT>',
+           help='The ID of the snapshot to show.')
+def do_snapshot_show(hc, args):
+    '''Show a snapshot of a stack.'''
+    fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
+    try:
+        snapshot = hc.stacks.snapshot_show(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or snapshot not found')
+    else:
+        print(jsonutils.dumps(snapshot, indent=2, ensure_ascii=False))
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of the stack containing the snapshot.')
+@utils.arg('snapshot', metavar='<SNAPSHOT>',
+           help='The ID of the snapshot to delete.')
+def do_snapshot_delete(hc, args):
+    '''Delete a snapshot of a stack.'''
+    fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
+    try:
+        hc.stacks.snapshot_delete(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack or snapshot not found')
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help='Name or ID of the stack containing the snapshots.')
+def do_snapshot_list(hc, args):
+    '''List the snapshots of a stack.'''
+    fields = {'stack_id': args.id}
+    try:
+        snapshots = hc.stacks.snapshot_list(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError('Stack not found: %s' % args.id)
+    else:
+        fields = ['id', 'name', 'status', 'status_reason', 'data']
+        formatters = {
+            'id': lambda x: x['id'],
+            'name': lambda x: x['name'],
+            'status': lambda x: x['status'],
+            'status_reason': lambda x: x['status_reason'],
+            'data': lambda x: jsonutils.dumps(x['data'], indent=2,
+                                              ensure_ascii=False),
+        }
+        utils.print_list(snapshots["snapshots"], fields, formatters=formatters)

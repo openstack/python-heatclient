@@ -105,6 +105,32 @@ class StackOperationsTest(testtools.TestCase):
         stack = stack.preview()
         manager.preview.assert_called_once_with()
 
+    def test_snapshot(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.snapshot('foo')
+        manager.snapshot.assert_called_once_with('the_stack/abcd1234', 'foo')
+
+    def test_snapshot_show(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.snapshot_show('snap1234')
+        manager.snapshot_show.assert_called_once_with(
+            'the_stack/abcd1234', 'snap1234')
+
+    def test_snapshot_delete(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.snapshot_delete('snap1234')
+        manager.snapshot_delete.assert_called_once_with(
+            'the_stack/abcd1234', 'snap1234')
+
+    def test_snapshot_list(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.snapshot_list()
+        manager.snapshot_list.assert_called_once_with('the_stack/abcd1234')
+
 
 class StackManagerNoPaginationTest(testtools.TestCase):
 
