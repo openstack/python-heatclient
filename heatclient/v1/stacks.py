@@ -147,6 +147,16 @@ class StackManager(base.BaseManager):
             self.client.put('/stacks/%s' % stack_id, data=kwargs,
                             headers=headers)
 
+    def preview_update(self, stack_id, **kwargs):
+        """Preview a stack update."""
+        s = self.get(stack_id)
+        headers = self.client.credentials_headers()
+        resp = self.client.put('/stacks/%s/%s/preview' %
+                               (s.stack_name, s.id),
+                               data=kwargs, headers=headers)
+        body = utils.get_response_body(resp)
+        return body
+
     def delete(self, stack_id):
         """Delete a stack."""
         self._delete("/stacks/%s" % stack_id)

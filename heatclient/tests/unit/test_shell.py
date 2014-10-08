@@ -2248,6 +2248,101 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
+    def test_stack_update_dry_run(self):
+        self.register_keystone_auth_fixture()
+
+        resp_dict = {"stack": {
+            "id": "2",
+            "stack_name": "teststack2",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2/2', 'GET').AndReturn(resp)
+        else:
+            self.client.json_request(
+                'GET', '/stacks/teststack2/2').AndReturn((resp, resp_dict))
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+
+        replaced_res = {"resource_name": "my_res",
+                        "resource_identity": {"stack_name": "teststack2",
+                                              "stack_id": "2",
+                                              "tenant": "1234",
+                                              "path": "/resources/my_res"},
+                        "description": "",
+                        "stack_identity": {"stack_name": "teststack2",
+                                           "stack_id": "2",
+                                           "tenant": "1234",
+                                           "path": ""},
+                        "stack_name": "teststack2",
+                        "creation_time": "2015-08-19T19:43:34.025507",
+                        "resource_status": "COMPLETE",
+                        "updated_time": "2015-08-19T19:43:34.025507",
+                        "resource_type": "OS::Heat::RandomString",
+                        "required_by": [],
+                        "resource_status_reason": "",
+                        "physical_resource_id": "",
+                        "attributes": {"value": None},
+                        "resource_action": "INIT",
+                        "metadata": {}}
+        resp_dict = {"resource_changes": {"deleted": [],
+                                          "unchanged": [],
+                                          "added": [],
+                                          "replaced": [replaced_res],
+                                          "updated": []}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        expected_data = {
+            'files': {},
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'parameters': {'"KeyPairName': 'updated_key"'},
+            'disable_rollback': False,
+            'existing': True}
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2/2/preview', 'PUT',
+                data=expected_data, headers={}).AndReturn(resp)
+        else:
+            http.HTTPClient.json_request(
+                'PUT', '/stacks/teststack2/2/preview',
+                data=expected_data,
+                headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+            ).AndReturn((resp, None))
+
+        self.m.ReplayAll()
+
+        update_preview_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--existing '
+            '--parameters="KeyPairName=updated_key" '
+            '--dry-run ' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '2',
+            'state',
+            'replaced'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_preview_text, r)
+
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
