@@ -858,6 +858,36 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
 
+    def _error_output_fake_response(self):
+
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z",
+            "outputs": [
+                {
+                    "output_value": "null",
+                    "output_key": "output1",
+                    "description": "test output 1",
+                    "output_error": "The Referenced Attribute (0 PublicIP) "
+                                    "is incorrect."
+                },
+            ],
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
     @httpretty.activate
     def test_output_list(self):
         self.register_keystone_auth_fixture()
@@ -879,6 +909,16 @@ class ShellTestUserPass(ShellBase):
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output_uni')
         self.assertRegexpMatches(list_text, u'test\u2665')
+
+    @httpretty.activate
+    def test_output_show_error(self):
+        self.register_keystone_auth_fixture()
+        self._error_output_fake_response()
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'output-show teststack/1 output1')
+        self.assertIn('The Referenced Attribute (0 PublicIP) is incorrect.',
+                      str(error))
 
     @httpretty.activate
     def test_template_show_cfn(self):
