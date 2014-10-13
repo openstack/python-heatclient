@@ -24,6 +24,7 @@ import fixtures
 import httpretty
 from keystoneclient.fixture import v2 as ks_v2_fixture
 from keystoneclient.fixture import v3 as ks_v3_fixture
+import requests
 import tempfile
 import testscenarios
 import testtools
@@ -2407,3 +2408,53 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             bad_json_file.flush()
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
                              failed_msg)
+
+    @httpretty.activate
+    def test_commandline_args_passed_to_requests(self):
+        """Check that we have sent the proper arguments to requests."""
+        self.register_keystone_auth_fixture()
+
+        # we need a mock for 'request' to check whether proper arguments
+        # sent to request in the form of HTTP headers. So unset
+        # stubs(json_request, raw_request) and create a new mock for request.
+        self.m.UnsetStubs()
+        self.m.StubOutWithMock(requests, 'request')
+
+        # Record a 200
+        mock_conn = http.requests.request(
+            'GET', 'http://no.where/stacks?',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'X-Auth-Token': self.token,
+                     'X-Auth-Url': keystone_client_fixtures.BASE_URL,
+                     'User-Agent': 'python-heatclient'})
+        resp_dict = {"stacks": [
+            {
+                "id": "1",
+                "stack_name": "teststack",
+                "stack_owner": "testowner",
+                "project": "testproject",
+                "stack_status": 'CREATE_COMPLETE',
+                "creation_time": "2014-10-15T01:58:47Z"
+            }]}
+        mock_conn.AndReturn(
+            fakes.FakeHTTPResponse(
+                200, 'OK',
+                {'content-type': 'application/json'},
+                jsonutils.dumps(resp_dict)))
+
+        # Replay, create client, assert
+        self.m.ReplayAll()
+        list_text = self.shell('stack-list')
+        required = [
+            'id',
+            'stack_status',
+            'creation_time',
+            'teststack',
+            '1',
+            'CREATE_COMPLETE',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
