@@ -553,6 +553,7 @@ class HeatShell(object):
             kwargs = {
                 'username': args.os_username,
                 'password': args.os_password,
+                'auth_url': args.os_auth_url,
                 'token': args.os_auth_token,
                 'include_pass': args.include_password,
                 'insecure': args.insecure,
