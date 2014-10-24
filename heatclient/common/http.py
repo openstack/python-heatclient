@@ -337,6 +337,11 @@ class SessionClient(HTTPClient):
         # just return the redirect response.  Useful for using stacks:lookup.
         follow_redirects = kwargs.pop('follow_redirects', True)
 
+        # If the endpoint is passed in, make sure keystone uses it
+        # instead of looking up the endpoint in the auth plugin.
+        if self.endpoint:
+            kwargs['endpoint_override'] = self.endpoint
+
         resp = self.session.request(url, method, redirect=follow_redirects,
                                     raise_exc=False, **kwargs)
 
