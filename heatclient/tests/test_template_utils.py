@@ -253,15 +253,15 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         request.urlopen('file://%s' % env_file1).AndReturn(
             six.BytesIO(env1))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
+        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').AndReturn(
+        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
         request.urlopen('file://%s' % env_file2).AndReturn(
             six.BytesIO(env2))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
+        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').AndReturn(
+        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
         self.m.ReplayAll()
 
