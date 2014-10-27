@@ -24,6 +24,7 @@ import fixtures
 import httpretty
 from keystoneclient.fixture import v2 as ks_v2_fixture
 from keystoneclient.fixture import v3 as ks_v3_fixture
+from oslotest import mockpatch
 import requests
 import tempfile
 import testscenarios
@@ -131,6 +132,12 @@ class TestCase(testtools.TestCase):
             httpretty.GET,
             keystone_client_fixtures.BASE_URL,
             body=keystone_client_fixtures.keystone_request_callback)
+
+    # NOTE(tlashchova): this overrides the testtools.TestCase.patch method
+    # that does simple monkey-patching in favor of mock's patching
+    def patch(self, target, **kwargs):
+        mockfixture = self.useFixture(mockpatch.Patch(target, **kwargs))
+        return mockfixture.mock
 
 
 class EnvVarTest(TestCase):
