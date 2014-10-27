@@ -54,6 +54,41 @@ def script_heat_list(url=None, show_nested=False):
     http.HTTPClient.json_request('GET', url).AndReturn((resp, resp_dict))
 
 
+def mock_script_heat_list(show_nested=False):
+    resp_dict = {"stacks": [
+        {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_owner": "testowner",
+            "project": "testproject",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        },
+        {
+            "id": "2",
+            "stack_name": "teststack2",
+            "stack_owner": "testowner",
+            "project": "testproject",
+            "stack_status": 'IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }]
+    }
+    if show_nested:
+        nested = {
+            "id": "3",
+            "stack_name": "teststack_nested",
+            "stack_status": 'IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z",
+            "parent": "theparentof3"
+        }
+        resp_dict["stacks"].append(nested)
+    resp = FakeHTTPResponse(200,
+                            'success, you',
+                            {'content-type': 'application/json'},
+                            jsonutils.dumps(resp_dict))
+    return resp, resp_dict
+
+
 def script_heat_normal_error():
     resp_dict = {
         "explanation": "The resource could not be found.",

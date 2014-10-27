@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import prettytable
+from six.moves.urllib import parse
 import sys
 import textwrap
 import uuid
@@ -147,3 +148,8 @@ def format_output(output, format='yaml'):
     except KeyError:
         raise exc.HTTPUnsupported("The format(%s) is unsupported."
                                   % output_format)
+
+
+def parse_query_url(url):
+    base_url, query_params = url.split('?')
+    return base_url, parse.parse_qs(query_params)

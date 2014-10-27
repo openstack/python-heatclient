@@ -35,6 +35,7 @@ from heatclient.openstack.common import strutils
 from mox3 import mox
 
 from heatclient.common import http
+from heatclient.common import utils
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
@@ -533,39 +534,6 @@ class ShellTestUserPass(ShellBase):
             '1',
             'CREATE_COMPLETE',
             'IN_PROGRESS',
-        ]
-        for r in required:
-            self.assertRegexpMatches(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
-
-    @httpretty.activate
-    def test_stack_list_with_args(self):
-        self.register_keystone_auth_fixture()
-        expected_url = '/stacks?%s' % parse.urlencode({
-            'limit': 2,
-            'status': ['COMPLETE', 'FAILED'],
-            'marker': 'fake_id',
-            'global_tenant': True,
-            'show_deleted': 'True',
-        }, True)
-        fakes.script_heat_list(expected_url)
-
-        self.m.ReplayAll()
-
-        list_text = self.shell('stack-list'
-                               ' --limit 2'
-                               ' --marker fake_id'
-                               ' --filters=status=COMPLETE'
-                               ' --filters=status=FAILED'
-                               ' --global-tenant'
-                               ' --show-deleted')
-
-        required = [
-            'stack_owner',
-            'project',
-            'testproject',
-            'teststack',
-            'teststack2',
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)
@@ -2465,3 +2433,132 @@ class ShellTestStandaloneToken(ShellTestUserPass):
         for r in required:
             self.assertRegexpMatches(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
+
+
+class MockShellBase(TestCase):
+
+    def setUp(self):
+        super(MockShellBase, self).setUp()
+        self.jreq_mock = self.patch(
+            'heatclient.common.http.HTTPClient.json_request')
+
+        # Some tests set exc.verbose = 1, so reset on cleanup
+        def unset_exc_verbose():
+            exc.verbose = 0
+
+        self.addCleanup(unset_exc_verbose)
+
+    def shell(self, argstr):
+        orig = sys.stdout
+        try:
+            sys.stdout = six.StringIO()
+            _shell = heatclient.shell.HeatShell()
+            _shell.main(argstr.split())
+            self.subcommands = _shell.subcommands.keys()
+        except SystemExit:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.assertEqual(0, exc_value.code)
+        finally:
+            out = sys.stdout.getvalue()
+            sys.stdout.close()
+            sys.stdout = orig
+
+        return out
+
+
+class MockShellTestUserPass(MockShellBase):
+
+    def setUp(self):
+        super(MockShellTestUserPass, self).setUp()
+        self._set_fake_env()
+
+    def _set_fake_env(self):
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    @httpretty.activate
+    def test_stack_list_with_args(self):
+        self.register_keystone_auth_fixture()
+        self.jreq_mock.return_value = fakes.mock_script_heat_list()
+
+        list_text = self.shell('stack-list'
+                               ' --limit 2'
+                               ' --marker fake_id'
+                               ' --filters=status=COMPLETE'
+                               ' --filters=status=FAILED'
+                               ' --global-tenant'
+                               ' --show-deleted')
+
+        required = [
+            'stack_owner',
+            'project',
+            'testproject',
+            'teststack',
+            'teststack2',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
+
+        self.assertEqual(1, self.jreq_mock.call_count)
+        method, url = self.jreq_mock.call_args[0]
+        self.assertEqual('GET', method)
+        base_url, query_params = utils.parse_query_url(url)
+        self.assertEqual('/stacks', base_url)
+        expected_query_dict = {'limit': ['2'],
+                               'status': ['COMPLETE', 'FAILED'],
+                               'marker': ['fake_id'],
+                               'global_tenant': ['True'],
+                               'show_deleted': ['True']}
+        self.assertEqual(expected_query_dict, query_params)
+
+
+class MockShellTestToken(MockShellTestUserPass):
+
+    # Rerun all ShellTestUserPass test with token auth
+    def setUp(self):
+        self.token = 'a_token'
+        super(MockShellTestToken, self).setUp()
+
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_AUTH_TOKEN': self.token,
+            'OS_TENANT_ID': 'tenant_id',
+            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            # Note we also set username/password, because create/update
+            # pass them even if we have a token to support storing credentials
+            # Hopefully at some point we can remove this and move to only
+            # storing trust id's in heat-engine instead..
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password'
+        }
+        self.set_fake_env(fake_env)
+
+
+class MockShellTestUserPassKeystoneV3(MockShellTestUserPass):
+
+    def _set_fake_env(self):
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
+
+
+class MockShellTestStandaloneToken(MockShellTestUserPass):
+
+    # Rerun all ShellTestUserPass test in standalone mode, where we
+    # specify --os-no-client-auth, a token and Heat endpoint
+    def setUp(self):
+        self.token = 'a_token'
+        super(MockShellTestStandaloneToken, self).setUp()
+
+    def _set_fake_env(self):
+        fake_env = {
+            'OS_AUTH_TOKEN': self.token,
+            'OS_NO_CLIENT_AUTH': 'True',
+            'HEAT_URL': 'http://no.where',
+            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            # Note we also set username/password, because create/update
+            # pass them even if we have a token to support storing credentials
+            # Hopefully at some point we can remove this and move to only
+            # storing trust id's in heat-engine instead..
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password'
+        }
+        self.set_fake_env(fake_env)
