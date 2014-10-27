@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from heatclient.common import utils
 from heatclient.v1.events import EventManager
 
 from mock import MagicMock
@@ -81,12 +82,20 @@ class EventManagerTest(testtools.TestCase):
         manager._list = MagicMock()
         manager.list(stack_id, resource_name, **kwargs)
         # Make sure url is correct.
-        manager._list.assert_called_once_with('/stacks/teststack%2Fabcd1234/'
-                                              'resources/testresource/events'
-                                              '?marker=6d6935f4-0ae5&limit=2'
-                                              '&resource_action=CREATE&'
-                                              'resource_status=COMPLETE',
-                                              "events")
+        self.assertEqual(1, manager._list.call_count)
+        args = manager._list.call_args
+        self.assertEqual(2, len(args[0]))
+        url, param = args[0]
+        self.assertEqual("events", param)
+        base_url, query_params = utils.parse_query_url(url)
+        expected_base_url = ('/stacks/teststack%2Fabcd1234/'
+                             'resources/testresource/events')
+        self.assertEqual(expected_base_url, base_url)
+        expected_query_dict = {'marker': ['6d6935f4-0ae5'],
+                               'limit': ['2'],
+                               'resource_action': ['CREATE'],
+                               'resource_status': ['COMPLETE']}
+        self.assertEqual(expected_query_dict, query_params)
 
     def test_get_event(self):
         fields = {'stack_id': 'teststack',
