@@ -23,6 +23,8 @@ import sys
 import six
 import six.moves.urllib.parse as urlparse
 
+from oslo.utils import encodeutils
+
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import discover
@@ -35,7 +37,6 @@ from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common.gettextutils import _
 from heatclient.openstack.common import importutils
-from heatclient.openstack.common import strutils
 
 logger = logging.getLogger(__name__)
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
@@ -662,7 +663,7 @@ def main(args=None):
         if '--debug' in args or '-d' in args:
             raise
         else:
-            print(strutils.safe_encode(six.text_type(e)), file=sys.stderr)
+            print(encodeutils.safe_encode(six.text_type(e)), file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

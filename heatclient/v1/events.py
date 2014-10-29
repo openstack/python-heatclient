@@ -16,8 +16,9 @@
 import six
 from six.moves.urllib import parse
 
+from oslo.utils import encodeutils
+
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common import strutils
 from heatclient.v1 import stacks
 
 DEFAULT_PAGE_SIZE = 20
@@ -61,7 +62,7 @@ class EventManager(stacks.StackChildManager):
             stack_id = self._resolve_stack_id(stack_id)
             url = '/stacks/%s/resources/%s/events' % (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(resource_name), ''))
+                parse.quote(encodeutils.safe_encode(resource_name), ''))
         if params:
             url += '?%s' % parse.urlencode(params, True)
 
@@ -77,7 +78,7 @@ class EventManager(stacks.StackChildManager):
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s/events/%s' % (
                   parse.quote(stack_id, ''),
-                  parse.quote(strutils.safe_encode(resource_name), ''),
+                  parse.quote(encodeutils.safe_encode(resource_name), ''),
                   parse.quote(event_id, ''))
         resp, body = self.client.json_request('GET', url_str)
         return Event(self, body['event'])

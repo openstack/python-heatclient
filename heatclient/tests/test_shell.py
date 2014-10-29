@@ -27,11 +27,11 @@ import testtools
 import uuid
 
 from oslo.serialization import jsonutils
+from oslo.utils import encodeutils
 
 from keystoneclient.fixture import v2 as ks_v2_fixture
 from keystoneclient.fixture import v3 as ks_v3_fixture
 
-from heatclient.openstack.common import strutils
 from mox3 import mox
 
 from heatclient.common import http
@@ -1806,7 +1806,7 @@ class ShellTestEvents(ShellBase):
         http.HTTPClient.json_request(
             'GET', '/stacks/%s/resources/%s/events' % (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), ''))).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
@@ -1864,7 +1864,7 @@ class ShellTestEvents(ShellBase):
             'GET', '/stacks/%s/resources/%s/events/%s' %
             (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), ''),
                 parse.quote(self.event_id_one, '')
             )).AndReturn((resp, resp_dict))
@@ -2053,7 +2053,7 @@ class ShellTestResources(ShellBase):
             'GET', '/stacks/%s/resources/%s' %
             (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), '')
             )).AndReturn((resp, resp_dict))
 
@@ -2099,7 +2099,7 @@ class ShellTestResources(ShellBase):
             'POST', '/stacks/%s/resources/%s/signal' %
             (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), '')
             ),
             data={'message': 'Content'}).AndReturn((resp, ''))
@@ -2125,7 +2125,7 @@ class ShellTestResources(ShellBase):
             'POST', '/stacks/%s/resources/%s/signal' %
             (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), '')
             ), data=None).AndReturn((resp, ''))
 
@@ -2192,7 +2192,7 @@ class ShellTestResources(ShellBase):
             'POST', '/stacks/%s/resources/%s/signal' %
             (
                 parse.quote(stack_id, ''),
-                parse.quote(strutils.safe_encode(
+                parse.quote(encodeutils.safe_encode(
                     resource_name), '')
             ),
             data={'message': 'Content'}).AndReturn((resp, ''))

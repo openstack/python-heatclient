@@ -24,10 +24,10 @@ import six
 from six.moves.urllib import parse
 
 from oslo.serialization import jsonutils
+from oslo.utils import encodeutils
 
 from heatclient import exc
 from heatclient.openstack.common import importutils
-from heatclient.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
@@ -84,15 +84,20 @@ class HTTPClient(object):
             else:
                 self.verify_cert = kwargs.get('ca_file', get_system_ca_file())
 
+        # FIXME(shardy): We need this for compatibility with the oslo apiclient
+        # we should move to inheriting this class from the oslo HTTPClient
+        self.last_request_id = None
+
     def safe_header(self, name, value):
         if name in SENSITIVE_HEADERS:
             # because in python3 byte string handling is ... ug
             v = value.encode('utf-8')
             h = hashlib.sha1(v)
             d = h.hexdigest()
-            return strutils.safe_decode(name), "{SHA1}%s" % d
+            return encodeutils.safe_decode(name), "{SHA1}%s" % d
         else:
-            return strutils.safe_decode(name), strutils.safe_decode(value)
+            return (encodeutils.safe_decode(name),
+                    encodeutils.safe_decode(value))
 
     def log_curl_request(self, method, url, kwargs):
         curl = ['curl -i -X %s' % method]
