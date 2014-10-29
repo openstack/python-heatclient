@@ -22,10 +22,10 @@ import uuid
 import yaml
 
 from oslo.serialization import jsonutils
+from oslo.utils import importutils
 
 from heatclient import exc
 from heatclient.openstack.common import cliutils
-from heatclient.openstack.common import importutils
 
 supported_formats = {
     "json": lambda x: jsonutils.dumps(x, indent=2),

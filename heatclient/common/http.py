@@ -25,9 +25,9 @@ from six.moves.urllib import parse
 
 from oslo.serialization import jsonutils
 from oslo.utils import encodeutils
+from oslo.utils import importutils
 
 from heatclient import exc
-from heatclient.openstack.common import importutils
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'

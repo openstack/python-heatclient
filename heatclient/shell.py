@@ -24,6 +24,7 @@ import six
 import six.moves.urllib.parse as urlparse
 
 from oslo.utils import encodeutils
+from oslo.utils import importutils
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
@@ -36,7 +37,6 @@ from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common.gettextutils import _  # noqa
-from heatclient.openstack.common import importutils
 
 logger = logging.getLogger(__name__)
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
