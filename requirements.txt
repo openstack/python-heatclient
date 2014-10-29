@@ -6,6 +6,7 @@ pbr>=0.6,!=0.7,<1.0
 argparse
 iso8601>=0.1.9
 PrettyTable>=0.7,<0.8
+oslo.serialization>=1.0.0               # Apache-2.0
 python-keystoneclient>=0.11.1
 PyYAML>=3.1.0
 requests>=2.2.0,!=2.4.0

@@ -12,7 +12,7 @@
 
 import sys
 
-from heatclient.openstack.common import jsonutils
+from oslo.serialization import jsonutils
 
 verbose = 0
 

@@ -10,11 +10,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from keystoneclient.fixture import v2 as ks_v2_fixture
-from keystoneclient.fixture import v3 as ks_v3_fixture
 import uuid
 
-from heatclient.openstack.common import jsonutils
+from oslo.serialization import jsonutils
+
+from keystoneclient.fixture import v2 as ks_v2_fixture
+from keystoneclient.fixture import v3 as ks_v3_fixture
 
 # these are copied from python-keystoneclient tests
 BASE_HOST = 'http://keystone.example.com'
