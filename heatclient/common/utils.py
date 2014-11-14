@@ -21,10 +21,11 @@ import textwrap
 import uuid
 import yaml
 
+from oslo.serialization import jsonutils
+
 from heatclient import exc
 from heatclient.openstack.common import cliutils
 from heatclient.openstack.common import importutils
-from heatclient.openstack.common import jsonutils
 
 supported_formats = {
     "json": lambda x: jsonutils.dumps(x, indent=2),

@@ -21,10 +21,11 @@ from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
 
+from oslo.serialization import jsonutils
+
 from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient import exc
-from heatclient.openstack.common import jsonutils
 
 
 def get_template_contents(template_file=None, template_url=None,

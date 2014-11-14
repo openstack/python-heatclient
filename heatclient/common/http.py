@@ -23,9 +23,10 @@ import requests
 import six
 from six.moves.urllib import parse
 
+from oslo.serialization import jsonutils
+
 from heatclient import exc
 from heatclient.openstack.common import importutils
-from heatclient.openstack.common import jsonutils
 from heatclient.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)

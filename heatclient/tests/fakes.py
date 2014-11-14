@@ -11,9 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo.serialization import jsonutils
+
 from heatclient.common import http
 from heatclient import exc
-from heatclient.openstack.common import jsonutils
 
 
 def script_heat_list(url=None, show_nested=False):

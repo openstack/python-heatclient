@@ -11,26 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+import fixtures
+import httpretty
 import os
+from oslotest import mockpatch
 import re
+import requests
 import six
 from six.moves.urllib import parse
 from six.moves.urllib import request
 import sys
-import uuid
-
-import fixtures
-import httpretty
-from keystoneclient.fixture import v2 as ks_v2_fixture
-from keystoneclient.fixture import v3 as ks_v3_fixture
-from oslotest import mockpatch
-import requests
 import tempfile
 import testscenarios
 import testtools
+import uuid
 
-from heatclient.openstack.common import jsonutils
+from oslo.serialization import jsonutils
+
+from keystoneclient.fixture import v2 as ks_v2_fixture
+from keystoneclient.fixture import v3 as ks_v3_fixture
+
 from heatclient.openstack.common import strutils
 from mox3 import mox
 
@@ -1301,8 +1301,8 @@ class ShellTestUserPass(ShellBase):
     def test_stack_update_enable_rollback(self):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        with open(template_file) as f:
-            template_data = json.load(f)
+        with open(template_file, 'rb') as f:
+            template_data = jsonutils.load(f)
         expected_data = {'files': {},
                          'environment': {},
                          'template': template_data,
@@ -1343,8 +1343,8 @@ class ShellTestUserPass(ShellBase):
     def test_stack_update_disable_rollback(self):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        with open(template_file) as f:
-            template_data = json.load(f)
+        with open(template_file, 'rb') as f:
+            template_data = jsonutils.load(f)
         expected_data = {'files': {},
                          'environment': {},
                          'template': template_data,
@@ -1396,8 +1396,8 @@ class ShellTestUserPass(ShellBase):
     def test_stack_update_rollback_default(self):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        with open(template_file) as f:
-            template_data = json.load(f)
+        with open(template_file, 'rb') as f:
+            template_data = jsonutils.load(f)
         expected_data = {'files': {},
                          'environment': {},
                          'template': template_data,
