@@ -15,8 +15,8 @@ from heatclient.common.template_format import yaml_loader
 import yaml
 
 
-SECTIONS = (PARAMETERS, RESOURCE_REGISTRY) = \
-           ('parameters', 'resource_registry')
+SECTIONS = (PARAMETER_DEFAULTS, PARAMETERS, RESOURCE_REGISTRY) = \
+           ('parameter_defaults', 'parameters', 'resource_registry')
 
 
 def parse(env_str):
