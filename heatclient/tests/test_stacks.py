@@ -9,19 +9,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from heatclient.v1.stacks import Stack
-from heatclient.v1.stacks import StackManager
+from heatclient.v1 import stacks
 
-from mock import MagicMock
+import mock
 import testscenarios
-from testscenarios.scenarios import multiply_scenarios
+from testscenarios import scenarios as scnrs
 import testtools
 
 load_tests = testscenarios.load_tests_apply_scenarios
 
 
 def mock_stack(manager, stack_name, stack_id):
-    return Stack(manager, {
+    return stacks.Stack(manager, {
         "id": stack_id,
         "stack_name": stack_name,
         "links": [{
@@ -38,7 +37,7 @@ def mock_stack(manager, stack_name, stack_id):
 
 class StackStatusActionTest(testtools.TestCase):
 
-    scenarios = multiply_scenarios([
+    scenarios = scnrs.multiply_scenarios([
         ('CREATE', dict(action='CREATE')),
         ('DELETE', dict(action='DELETE')),
         ('UPDATE', dict(action='UPDATE')),
@@ -70,70 +69,70 @@ class StackIdentifierTest(testtools.TestCase):
 class StackOperationsTest(testtools.TestCase):
 
     def test_delete_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.delete()
         manager.delete.assert_called_once_with('the_stack/abcd1234')
 
     def test_abandon_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.abandon()
         manager.abandon.assert_called_once_with('the_stack/abcd1234')
 
     def test_get_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.get()
         manager.get.assert_called_once_with('the_stack/abcd1234')
 
     def test_update_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.update()
         manager.update.assert_called_once_with('the_stack/abcd1234')
 
     def test_create_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack = stack.create()
         manager.create.assert_called_once_with('the_stack/abcd1234')
 
     def test_preview_stack(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack = stack.preview()
         manager.preview.assert_called_once_with()
 
     def test_snapshot(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot('foo')
         manager.snapshot.assert_called_once_with('the_stack/abcd1234', 'foo')
 
     def test_snapshot_show(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_show('snap1234')
         manager.snapshot_show.assert_called_once_with(
             'the_stack/abcd1234', 'snap1234')
 
     def test_snapshot_delete(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_delete('snap1234')
         manager.snapshot_delete.assert_called_once_with(
             'the_stack/abcd1234', 'snap1234')
 
     def test_restore(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.restore('snap1234')
         manager.restore.assert_called_once_with(
             'the_stack/abcd1234', 'snap1234')
 
     def test_snapshot_list(self):
-        manager = MagicMock()
+        manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_list()
         manager.snapshot_list.assert_called_once_with('the_stack/abcd1234')
@@ -160,8 +159,8 @@ class StackManagerNoPaginationTest(testtools.TestCase):
     limit = 50
 
     def mock_manager(self):
-        manager = StackManager(None)
-        manager._list = MagicMock()
+        manager = stacks.StackManager(None)
+        manager._list = mock.MagicMock()
 
         def mock_list(*args, **kwargs):
             def results():
@@ -260,8 +259,8 @@ class StackManagerPaginationTest(testtools.TestCase):
     limit = 50
 
     def mock_manager(self):
-        manager = StackManager(None)
-        manager._list = MagicMock()
+        manager = stacks.StackManager(None)
+        manager._list = mock.MagicMock()
 
         def mock_list(arg_url, arg_response_key):
             try:

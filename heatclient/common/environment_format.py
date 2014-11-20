@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common.template_format import yaml_loader
+from heatclient.common import template_format
 
 import yaml
 
@@ -26,7 +26,7 @@ def parse(env_str):
     YAML format.
     '''
     try:
-        env = yaml.load(env_str, Loader=yaml_loader)
+        env = yaml.load(env_str, Loader=template_format.yaml_loader)
     except yaml.YAMLError as yea:
         raise ValueError(yea)
     else:

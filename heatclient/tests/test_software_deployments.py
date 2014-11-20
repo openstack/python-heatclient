@@ -13,8 +13,7 @@
 import mock
 import testtools
 
-from heatclient.v1.software_deployments import SoftwareDeployment
-from heatclient.v1.software_deployments import SoftwareDeploymentManager
+from heatclient.v1 import software_deployments
 
 
 class SoftwareDeploymentTest(testtools.TestCase):
@@ -22,7 +21,7 @@ class SoftwareDeploymentTest(testtools.TestCase):
     def setUp(self):
         super(SoftwareDeploymentTest, self).setUp()
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
-        self.deployment = SoftwareDeployment(
+        self.deployment = software_deployments.SoftwareDeployment(
             mock.MagicMock(), info={'id': deployment_id})
         self.deployment_id = deployment_id
 
@@ -48,7 +47,8 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     def setUp(self):
         super(SoftwareDeploymentManagerTest, self).setUp()
-        self.manager = SoftwareDeploymentManager(mock.MagicMock())
+        self.manager = software_deployments.SoftwareDeploymentManager(
+            mock.MagicMock())
 
     def test_list(self):
         server_id = 'fc01f89f-e151-4dc5-9c28-543c0d20ed6a'
@@ -102,7 +102,8 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
         self.manager.client.json_request.return_value = (
             {}, {'software_deployment': data})
         result = self.manager.get(deployment_id=deployment_id)
-        self.assertEqual(SoftwareDeployment(self.manager, data), result)
+        self.assertEqual(software_deployments.SoftwareDeployment(
+            self.manager, data), result)
         call_args = self.manager.client.json_request.call_args
         self.assertEqual(
             ('GET', '/software_deployments/%s' % deployment_id), *call_args)
@@ -124,7 +125,8 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
         self.manager.client.json_request.return_value = (
             {}, {'software_deployment': data})
         result = self.manager.create(**body)
-        self.assertEqual(SoftwareDeployment(self.manager, data), result)
+        self.assertEqual(software_deployments.SoftwareDeployment(
+            self.manager, data), result)
         args, kwargs = self.manager.client.json_request.call_args
         self.assertEqual('POST', args[0])
         self.assertEqual('/software_deployments', args[1])
@@ -154,7 +156,8 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
         self.manager.client.json_request.return_value = (
             {}, {'software_deployment': data})
         result = self.manager.update(deployment_id, **body)
-        self.assertEqual(SoftwareDeployment(self.manager, data), result)
+        self.assertEqual(software_deployments.SoftwareDeployment(
+            self.manager, data), result)
         args, kwargs = self.manager.client.json_request.call_args
         self.assertEqual('PUT', args[0])
         self.assertEqual('/software_deployments/%s' % deployment_id, args[1])

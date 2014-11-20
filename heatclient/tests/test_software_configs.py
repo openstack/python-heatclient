@@ -13,8 +13,7 @@
 import mock
 import testtools
 
-from heatclient.v1.software_configs import SoftwareConfig
-from heatclient.v1.software_configs import SoftwareConfigManager
+from heatclient.v1 import software_configs
 
 
 class SoftwareConfigTest(testtools.TestCase):
@@ -22,7 +21,8 @@ class SoftwareConfigTest(testtools.TestCase):
     def setUp(self):
         super(SoftwareConfigTest, self).setUp()
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
-        self.config = SoftwareConfig(mock.MagicMock(), info={'id': config_id})
+        self.config = software_configs.SoftwareConfig(mock.MagicMock(),
+                                                      info={'id': config_id})
         self.config_id = config_id
 
     def test_delete(self):
@@ -44,7 +44,7 @@ class SoftwareConfigManagerTest(testtools.TestCase):
 
     def setUp(self):
         super(SoftwareConfigManagerTest, self).setUp()
-        self.manager = SoftwareConfigManager(mock.MagicMock())
+        self.manager = software_configs.SoftwareConfigManager(mock.MagicMock())
 
     def test_get(self):
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
@@ -60,7 +60,8 @@ class SoftwareConfigManagerTest(testtools.TestCase):
         self.manager.client.json_request.return_value = (
             {}, {'software_config': data})
         result = self.manager.get(config_id=config_id)
-        self.assertEqual(SoftwareConfig(self.manager, data), result)
+        self.assertEqual(software_configs.SoftwareConfig(self.manager, data),
+                         result)
         call_args = self.manager.client.json_request.call_args
         self.assertEqual(
             ('GET', '/software_configs/%s' % config_id), *call_args)
@@ -79,7 +80,8 @@ class SoftwareConfigManagerTest(testtools.TestCase):
         self.manager.client.json_request.return_value = (
             {}, {'software_config': data})
         result = self.manager.create(**body)
-        self.assertEqual(SoftwareConfig(self.manager, data), result)
+        self.assertEqual(software_configs.SoftwareConfig(self.manager, data),
+                         result)
         args, kargs = self.manager.client.json_request.call_args
         self.assertEqual('POST', args[0])
         self.assertEqual('/software_configs', args[1])

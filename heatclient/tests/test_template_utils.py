@@ -19,7 +19,7 @@ import six
 from six.moves.urllib import request
 import tempfile
 import testtools
-from testtools.matchers import MatchesRegex
+from testtools import matchers
 import yaml
 
 from heatclient.common import template_utils
@@ -429,7 +429,7 @@ class TestGetTemplateContents(testtools.TestCase):
                 tmpl_file.name)
             self.assertThat(
                 str(ex),
-                MatchesRegex(
+                matchers.MatchesRegex(
                     'Error parsing template file://%s ' % tmpl_file.name))
 
     def test_get_template_contents_url(self):

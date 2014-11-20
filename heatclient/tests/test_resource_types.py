@@ -13,7 +13,7 @@
 
 import testtools
 
-from heatclient.v1.resource_types import ResourceTypeManager
+from heatclient.v1 import resource_types
 
 
 class ResourceTypeManagerTest(testtools.TestCase):
@@ -31,7 +31,7 @@ class ResourceTypeManagerTest(testtools.TestCase):
                 ret = key and {key: []} or {}
                 return {}, {key: ret}
 
-        manager = ResourceTypeManager(FakeAPI())
+        manager = resource_types.ResourceTypeManager(FakeAPI())
         return manager
 
     def test_list_types(self):
@@ -47,7 +47,7 @@ class ResourceTypeManagerTest(testtools.TestCase):
                 assert ('GET', args[0]) == expect
                 return FakeResponse()
 
-        manager = ResourceTypeManager(FakeClient())
+        manager = resource_types.ResourceTypeManager(FakeClient())
         manager.list()
 
     def test_get(self):

@@ -33,7 +33,7 @@ import heatclient
 from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
-from heatclient.openstack.common.gettextutils import _
+from heatclient.openstack.common.gettextutils import _  # noqa
 from heatclient.openstack.common import importutils
 from heatclient.openstack.common import strutils
 

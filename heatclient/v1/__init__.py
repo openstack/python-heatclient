@@ -15,4 +15,4 @@
 
 __all__ = ['Client']
 
-from heatclient.v1.client import Client
+from heatclient.v1.client import Client  # noqa

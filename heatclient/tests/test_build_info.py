@@ -16,7 +16,7 @@
 import mock
 import testtools
 
-from heatclient.v1.build_info import BuildInfoManager
+from heatclient.v1 import build_info
 
 
 class BuildInfoManagerTest(testtools.TestCase):
@@ -24,7 +24,7 @@ class BuildInfoManagerTest(testtools.TestCase):
         super(BuildInfoManagerTest, self).setUp()
         self.client = mock.Mock()
         self.client.json_request.return_value = ('resp', 'body')
-        self.manager = BuildInfoManager(self.client)
+        self.manager = build_info.BuildInfoManager(self.client)
 
     def test_build_info_makes_a_call_to_the_api(self):
         self.manager.build_info()
