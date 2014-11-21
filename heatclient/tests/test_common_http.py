@@ -581,7 +581,7 @@ class HttpClientTest(testtools.TestCase):
         headers = {'key': 'value'}
 
         mock_logging_debug = logging.Logger.debug(
-            "curl -i -X GET -H 'key: value' --key TEST_KEY "
+            "curl -g -i -X GET -H 'key: value' --key TEST_KEY "
             "--cert TEST_CERT --cacert TEST_CA "
             "-k -d 'text' http://foo/bar"
         )
@@ -672,7 +672,7 @@ class HttpClientTest(testtools.TestCase):
         kwargs = {'headers': {'Key': b'foo\xe3\x8a\x8e'}}
 
         mock_logging_debug = logging.Logger.debug(
-            u"curl -i -X GET -H 'Key: foo㊎' http://somewhere"
+            u"curl -g -i -X GET -H 'Key: foo㊎' http://somewhere"
         )
         mock_logging_debug.AndReturn(None)
 
