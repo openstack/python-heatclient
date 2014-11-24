@@ -47,6 +47,9 @@ class Stack(base.Resource):
     def snapshot_delete(self, snapshot_id):
         return self.manager.snapshot_delete(self.identifier, snapshot_id)
 
+    def restore(self, snapshot_id):
+        return self.manager.restore(self.identifier, snapshot_id)
+
     def snapshot_list(self):
         return self.manager.snapshot_list(self.identifier)
 
@@ -174,6 +177,14 @@ class StackManager(base.BaseManager):
         resp, body = self.client.json_request(
             'DELETE',
             '/stacks/%s/snapshots/%s' % (stack.identifier, snapshot_id))
+        return body
+
+    def restore(self, stack_id, snapshot_id):
+        stack = self.get(stack_id)
+        resp, body = self.client.json_request(
+            'POST',
+            '/stacks/%s/snapshots/%s/restore' % (stack.identifier,
+                                                 snapshot_id))
         return body
 
     def snapshot_list(self, stack_id):

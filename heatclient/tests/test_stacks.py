@@ -125,6 +125,13 @@ class StackOperationsTest(testtools.TestCase):
         manager.snapshot_delete.assert_called_once_with(
             'the_stack/abcd1234', 'snap1234')
 
+    def test_restore(self):
+        manager = MagicMock()
+        stack = mock_stack(manager, 'the_stack', 'abcd1234')
+        stack.restore('snap1234')
+        manager.restore.assert_called_once_with(
+            'the_stack/abcd1234', 'snap1234')
+
     def test_snapshot_list(self):
         manager = MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
