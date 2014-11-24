@@ -1750,6 +1750,146 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(build_info_text, r)
 
+    @httpretty.activate
+    def test_stack_snapshot(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"snapshot": {
+            "id": "1",
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'POST',
+            '/stacks/teststack/1/snapshots',
+            data={}).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        resp = self.shell('stack-snapshot teststack/1')
+        self.assertEqual(resp_dict, jsonutils.loads(resp))
+
+    @httpretty.activate
+    def test_snapshot_show(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"snapshot": {
+            "id": "2",
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'GET',
+            '/stacks/teststack/1/snapshots/2').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        resp = self.shell('snapshot-show teststack/1 2')
+        self.assertEqual(resp_dict, jsonutils.loads(resp))
+
+    @httpretty.activate
+    def test_snapshot_delete(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"snapshot": {
+            "id": "2",
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {},
+            None)
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'DELETE',
+            '/stacks/teststack/1/snapshots/2').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        resp = self.shell('snapshot-delete teststack/1 2')
+        self.assertEqual("", resp)
+
+    @httpretty.activate
+    def test_snapshot_list(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"snapshots": [{
+            "id": "2",
+            "name": "snap1",
+            "status": "COMPLETE",
+            "status_reason": "",
+            "data": {}
+        }]}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'GET',
+            '/stacks/teststack/1/snapshots').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        list_text = self.shell('snapshot-list teststack/1')
+
+        required = [
+            'id',
+            'name',
+            'status',
+            'status_reason',
+            'data',
+            '2',
+            'COMPLETE',
+            '{}',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
 
 class ShellTestEvents(ShellBase):
 
