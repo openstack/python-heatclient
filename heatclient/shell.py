@@ -36,7 +36,7 @@ import heatclient
 from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _  # noqa
+from heatclient.openstack.common._i18n import _
 
 logger = logging.getLogger(__name__)
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
@@ -53,116 +53,141 @@ class HeatShell(object):
         parser.add_argument('-k', '--insecure',
                             default=False,
                             action='store_true',
-                            help='Explicitly allow heatclient to perform '
+                            help=_('Explicitly allow heatclient to perform '
                             '\"insecure SSL\" (https) requests. The server\'s '
                             'certificate will not be verified against any '
                             'certificate authorities. This option should '
-                            'be used with caution.')
+                            'be used with caution.'))
 
         parser.add_argument('--os-cert',
-                            help='Path of certificate file to use in SSL '
+                            help=_('Path of certificate file to use in SSL '
                             'connection. This file can optionally be '
-                            'prepended with the private key.')
+                            'prepended with the private key.'))
 
         # for backward compatibility only
         parser.add_argument('--cert-file',
                             dest='os_cert',
-                            help='DEPRECATED! Use --os-cert.')
+                            help=_('DEPRECATED! Use %(arg)s.') %
+                                 {'arg': '--os-cert'})
 
         parser.add_argument('--os-key',
-                            help='Path of client key to use in SSL '
+                            help=_('Path of client key to use in SSL '
                             'connection. This option is not necessary '
-                            'if your key is prepended to your cert file.')
+                            'if your key is prepended to your cert file.'))
 
         parser.add_argument('--key-file',
                             dest='os_key',
-                            help='DEPRECATED! Use --os-key.')
+                            help=_('DEPRECATED! Use %(arg)s.') %
+                                 {'arg': '--os-key'})
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate-file>',
                             dest='os_cacert',
                             default=utils.env('OS_CACERT'),
-                            help='Path of CA TLS certificate(s) used to '
+                            help=_('Path of CA TLS certificate(s) used to '
                             'verify the remote server\'s certificate. '
                             'Without this option glance looks for the '
-                            'default system CA certificates.')
+                            'default system CA certificates.'))
 
         parser.add_argument('--ca-file',
                             dest='os_cacert',
-                            help='DEPRECATED! Use --os-cacert.')
+                            help=_('DEPRECATED! Use %(arg)s.') %
+                                 {'arg': '--os-cacert'})
 
         parser.add_argument('--os-username',
                             default=utils.env('OS_USERNAME'),
-                            help='Defaults to env[OS_USERNAME].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_USERNAME]'
+                            })
 
         parser.add_argument('--os_username',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-user-id',
                             default=utils.env('OS_USER_ID'),
-                            help='Defaults to env[OS_USER_ID].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_USER_ID]'
+                            })
 
         parser.add_argument('--os_user_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-user-domain-id',
                             default=utils.env('OS_USER_DOMAIN_ID'),
-                            help='Defaults to env[OS_USER_DOMAIN_ID].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_USER_DOMAIN_ID]'
+                            })
 
         parser.add_argument('--os_user_domain_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-user-domain-name',
                             default=utils.env('OS_USER_DOMAIN_NAME'),
-                            help='Defaults to env[OS_USER_DOMAIN_NAME].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_USER_DOMAIN_NAME]'
+                            })
 
         parser.add_argument('--os_user_domain_name',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-project-id',
                             default=utils.env('OS_PROJECT_ID'),
-                            help='Another way to specify tenant ID. '
-                                 'This option is mutually exclusive with '
-                                 ' --os-tenant-id. '
-                                 'Defaults to env[OS_PROJECT_ID].')
+                            help=(_('Another way to specify tenant ID. '
+                                    'This option is mutually exclusive with '
+                                    '%(arg)s. Defaults to %(value)s.') %
+                                  {
+                                      'arg': '--os-tenant-id',
+                                      'value': 'env[OS_PROJECT_ID]'
+                                  }))
 
         parser.add_argument('--os_project_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-project-name',
                             default=utils.env('OS_PROJECT_NAME'),
-                            help='Another way to specify tenant name. '
-                                 'This option is mutually exclusive with '
-                                 ' --os-tenant-name. '
-                                 'Defaults to env[OS_PROJECT_NAME].')
+                            help=(_('Another way to specify tenant name. '
+                                    'This option is mutually exclusive with '
+                                    '%(arg)s. Defaults to %(value)s.') %
+                                  {
+                                      'arg': '--os-tenant-name',
+                                      'value': 'env[OS_PROJECT_NAME]'
+                                  }))
 
         parser.add_argument('--os_project_name',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-project-domain-id',
                             default=utils.env('OS_PROJECT_DOMAIN_ID'),
-                            help='Defaults to env[OS_PROJECT_DOMAIN_ID].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_PROJECT_DOMAIN_ID]'
+                            })
 
         parser.add_argument('--os_project_domain_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-project-domain-name',
                             default=utils.env('OS_PROJECT_DOMAIN_NAME'),
-                            help='Defaults to env[OS_PROJECT_DOMAIN_NAME].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_PROJECT_DOMAIN_NAME]'
+                            })
 
         parser.add_argument('--os_project_domain_name',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-password',
                             default=utils.env('OS_PASSWORD'),
-                            help='Defaults to env[OS_PASSWORD].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_PASSWORD]'
+                            })
 
         parser.add_argument('--os_password',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-tenant-id',
                             default=utils.env('OS_TENANT_ID'),
-                            help='Defaults to env[OS_TENANT_ID].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_TENANT_ID]'
+                            })
 
         parser.add_argument('--os_tenant_id',
                             default=utils.env('OS_TENANT_ID'),
@@ -170,7 +195,9 @@ class HeatShell(object):
 
         parser.add_argument('--os-tenant-name',
                             default=utils.env('OS_TENANT_NAME'),
-                            help='Defaults to env[OS_TENANT_NAME].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_TENANT_NAME]'
+                            })
 
         parser.add_argument('--os_tenant_name',
                             default=utils.env('OS_TENANT_NAME'),
@@ -178,35 +205,45 @@ class HeatShell(object):
 
         parser.add_argument('--os-auth-url',
                             default=utils.env('OS_AUTH_URL'),
-                            help='Defaults to env[OS_AUTH_URL].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_AUTH_URL]'
+                            })
 
         parser.add_argument('--os_auth_url',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-region-name',
                             default=utils.env('OS_REGION_NAME'),
-                            help='Defaults to env[OS_REGION_NAME].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_REGION_NAME]'
+                            })
 
         parser.add_argument('--os_region_name',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-auth-token',
                             default=utils.env('OS_AUTH_TOKEN'),
-                            help='Defaults to env[OS_AUTH_TOKEN].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_AUTH_TOKEN]'
+                            })
 
         parser.add_argument('--os_auth_token',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-service-type',
                             default=utils.env('OS_SERVICE_TYPE'),
-                            help='Defaults to env[OS_SERVICE_TYPE].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_SERVICE_TYPE]'
+                            })
 
         parser.add_argument('--os_service_type',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-endpoint-type',
                             default=utils.env('OS_ENDPOINT_TYPE'),
-                            help='Defaults to env[OS_ENDPOINT_TYPE].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[OS_ENDPOINT_TYPE]'
+                            })
 
         parser.add_argument('--os_endpoint_type',
                             help=argparse.SUPPRESS)
@@ -215,8 +252,9 @@ class HeatShell(object):
         parser = argparse.ArgumentParser(
             prog='heat',
             description=__doc__.strip(),
-            epilog='See "heat help COMMAND" '
-                   'for help on a specific command.',
+            epilog=_('See "%(arg)s" for help on a specific command.') % {
+                'arg': 'heat help COMMAND'
+            },
             add_help=False,
             formatter_class=HelpFormatter,
         )
@@ -229,40 +267,47 @@ class HeatShell(object):
         parser.add_argument('--version',
                             action='version',
                             version=heatclient.__version__,
-                            help="Shows the client version and exits.")
+                            help=_("Shows the client version and exits."))
 
         parser.add_argument('-d', '--debug',
                             default=bool(utils.env('HEATCLIENT_DEBUG')),
                             action='store_true',
-                            help='Defaults to env[HEATCLIENT_DEBUG].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[HEATCLIENT_DEBUG]'
+                            })
 
         parser.add_argument('-v', '--verbose',
                             default=False, action="store_true",
-                            help="Print more verbose output.")
+                            help=_("Print more verbose output."))
 
         parser.add_argument('--api-timeout',
-                            help='Number of seconds to wait for an '
-                                 'API response, '
-                                 'defaults to system socket timeout')
+                            help=_('Number of seconds to wait for an '
+                                   'API response, '
+                                   'defaults to system socket timeout'))
 
         # os-no-client-auth tells heatclient to use token, instead of
         # env[OS_AUTH_URL]
         parser.add_argument('--os-no-client-auth',
                             default=utils.env('OS_NO_CLIENT_AUTH'),
                             action='store_true',
-                            help="Do not contact keystone for a token. "
-                                 "Defaults to env[OS_NO_CLIENT_AUTH].")
+                            help=(_("Do not contact keystone for a token. "
+                                   "Defaults to %(value)s.") %
+                                  {'value': 'env[OS_NO_CLIENT_AUTH]'}))
 
         parser.add_argument('--heat-url',
                             default=utils.env('HEAT_URL'),
-                            help='Defaults to env[HEAT_URL].')
+                            help=_('Defaults to %(value)s.') % {
+                                'value': 'env[HEAT_URL]'
+                            })
 
         parser.add_argument('--heat_url',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--heat-api-version',
                             default=utils.env('HEAT_API_VERSION', default='1'),
-                            help='Defaults to env[HEAT_API_VERSION] or 1.')
+                            help=_('Defaults to %(value)s or 1.') % {
+                                'value': 'env[HEAT_API_VERSION]'
+                            })
 
         parser.add_argument('--heat_api_version',
                             help=argparse.SUPPRESS)
@@ -278,7 +323,10 @@ class HeatShell(object):
         parser.add_argument('--include-password',
                             default=bool(utils.env('HEAT_INCLUDE_PASSWORD')),
                             action='store_true',
-                            help='Send os-username and os-password to heat.')
+                            help=_('Send %(arg1)s and %(arg2)s to heat.') % {
+                                'arg1': 'os-username',
+                                'arg2': 'os-password'
+                            })
 
         # FIXME(gyee): this method should come from python-keystoneclient.
         # Will refactor this code once it is available.
@@ -289,15 +337,15 @@ class HeatShell(object):
         if osprofiler_profiler:
             parser.add_argument('--profile',
                                 metavar='HMAC_KEY',
-                                help='HMAC key to use for encrypting context '
-                                'data for performance profiling of operation. '
-                                'This key should be the value of HMAC key '
-                                'configured in osprofiler middleware in heat, '
-                                'it is specified in the paste configuration '
-                                '(/etc/heat/api-paste.ini). '
+                                help=_('HMAC key to use for encrypting '
+                                'context data for performance profiling of '
+                                'operation. This key should be the value of '
+                                'HMAC key configured in osprofiler middleware '
+                                'in heat, it is specified in the paste '
+                                'configuration (/etc/heat/api-paste.ini). '
                                 'Without the key, profiling will not be '
                                 'triggered even if osprofiler is enabled '
-                                'on server side.')
+                                'on server side.'))
         return parser
 
     def get_subcommand_parser(self, version):
@@ -609,9 +657,9 @@ class HeatShell(object):
 
         if profile:
             trace_id = osprofiler_profiler.get().get_base_id()
-            print("Trace ID: %s" % trace_id)
-            print("To display trace use next command:\n"
-                  "osprofiler trace show --html %s " % trace_id)
+            print(_("Trace ID: %s") % trace_id)
+            print(_("To display trace use next command:\n"
+                  "osprofiler trace show --html %s ") % trace_id)
 
     def do_bash_completion(self, args):
         """Prints all of the commands and options to stdout.
@@ -630,7 +678,7 @@ class HeatShell(object):
         print(' '.join(commands | options))
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-               help='Display help for <subcommand>.')
+               help=_('Display help for <subcommand>.'))
     def do_help(self, args):
         """Display help about this program or one of its subcommands."""
         if getattr(args, 'command', None):
