@@ -28,6 +28,7 @@ from oslo.utils import encodeutils
 from oslo.utils import importutils
 
 from heatclient import exc
+from heatclient.openstack.common._i18n import _
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
@@ -192,12 +193,12 @@ class HTTPClient(object):
                 allow_redirects=allow_redirects,
                 **kwargs)
         except socket.gaierror as e:
-            message = ("Error finding address for %(url)s: %(e)s" %
+            message = (_("Error finding address for %(url)s: %(e)s") %
                        {'url': self.endpoint_url + url, 'e': e})
             raise exc.InvalidEndpoint(message=message)
         except (socket.error, socket.timeout) as e:
             endpoint = self.endpoint
-            message = ("Error communicating with %(endpoint)s %(e)s" %
+            message = (_("Error communicating with %(endpoint)s %(e)s") %
                        {'endpoint': endpoint, 'e': e})
             raise exc.CommunicationError(message=message)
 
@@ -206,11 +207,14 @@ class HTTPClient(object):
         if not 'X-Auth-Key' in kwargs['headers'] and \
                 (resp.status_code == 401 or
                  (resp.status_code == 500 and "(HTTP 401)" in resp.content)):
-            raise exc.HTTPUnauthorized("Authentication failed. Please try"
-                                       " again with option "
-                                       "--include-password or export "
-                                       "HEAT_INCLUDE_PASSWORD=1\n%s"
-                                       % resp.content)
+            raise exc.HTTPUnauthorized(_("Authentication failed. Please try"
+                                         " again with option %(option)s or "
+                                         "export %(var)s\n%(content)s") %
+                                       {
+                                           'option': '--include-password',
+                                           'var': 'HEAT_INCLUDE_PASSWORD=1',
+                                           'content': resp.content
+                                       })
         elif 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
@@ -227,12 +231,12 @@ class HTTPClient(object):
 
     def strip_endpoint(self, location):
         if location is None:
-            message = "Location not returned with 302"
+            message = _("Location not returned with 302")
             raise exc.InvalidEndpoint(message=message)
         elif location.lower().startswith(self.endpoint.lower()):
             return location[len(self.endpoint):]
         else:
-            message = "Prohibited endpoint redirect %s" % location
+            message = _("Prohibited endpoint redirect %s") % location
             raise exc.InvalidEndpoint(message=message)
 
     def credentials_headers(self):

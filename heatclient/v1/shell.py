@@ -151,7 +151,8 @@ def do_stack_adopt(hc, args):
         env_path=args.environment_file)
 
     if not args.adopt_file:
-        raise exc.CommandError('Need to specify --adopt-file')
+        raise exc.CommandError(_('Need to specify %(arg)s') %
+                               {'arg': '--adopt-file'})
 
     adopt_url = template_utils.normalise_file_path_to_url(args.adopt_file)
     adopt_data = request.urlopen(adopt_url).read()
@@ -256,8 +257,8 @@ def do_stack_delete(hc, args):
             failure_count += 1
             print(e)
     if failure_count == len(args.id):
-        raise exc.CommandError("Unable to delete any of the specified "
-                               "stacks.")
+        raise exc.CommandError(_("Unable to delete any of the specified "
+                               "stacks."))
     do_stack_list(hc)
 
 
@@ -278,7 +279,7 @@ def do_stack_abandon(hc, args):
     try:
         stack = hc.stacks.abandon(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         result = jsonutils.dumps(stack, indent=2)
         if args.output_file is not None:
@@ -300,7 +301,7 @@ def do_action_suspend(hc, args):
     try:
         hc.actions.suspend(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         do_stack_list(hc)
 
@@ -313,7 +314,7 @@ def do_action_resume(hc, args):
     try:
         hc.actions.resume(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         do_stack_list(hc)
 
@@ -326,7 +327,7 @@ def do_action_check(hc, args):
     try:
         hc.actions.check(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         do_stack_list(hc)
 
@@ -347,7 +348,7 @@ def do_stack_show(hc, args):
     try:
         stack = hc.stacks.get(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         formatters = {
             'description': utils.text_wrap_formatter,
@@ -503,7 +504,7 @@ def do_stack_cancel_update(hc, args):
     try:
         hc.actions.cancel_update(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         do_stack_list(hc)
 
@@ -563,7 +564,7 @@ def do_output_list(hc, args):
     try:
         stack = hc.stacks.get(stack_id=args.id)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         outputs = stack.to_dict()['outputs']
         fields = ['output_key', 'description']
@@ -584,12 +585,12 @@ def do_output_show(hc, args):
     try:
         stack = hc.stacks.get(stack_id=args.id)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         for output in stack.to_dict().get('outputs', []):
             if output['output_key'] == args.output:
                 if 'output_error' in output:
-                    msg = "Error: %s" % output['output_error']
+                    msg = _("Error: %s") % output['output_error']
                     raise exc.CommandError(msg)
                 else:
                     value = output['output_value']
@@ -614,7 +615,7 @@ def do_resource_type_show(hc, args):
         resource_type = hc.resource_types.get(args.resource_type)
     except exc.HTTPNotFound:
         raise exc.CommandError(
-            'Resource Type not found: %s' % args.resource_type)
+            _('Resource Type not found: %s') % args.resource_type)
     else:
         print(jsonutils.dumps(resource_type, indent=2))
 
@@ -631,7 +632,7 @@ def do_resource_type_template(hc, args):
         template = hc.resource_types.generate_template(**fields)
     except exc.HTTPNotFound:
         raise exc.CommandError(
-            'Resource Type %s not found.' % args.resource_type)
+            _('Resource Type %s not found.') % args.resource_type)
     else:
         if args.format:
             print(utils.format_output(template, format=args.format))
@@ -655,7 +656,7 @@ def do_template_show(hc, args):
     try:
         template = hc.stacks.template(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         if 'heat_template_version' in template:
             print(yaml.safe_dump(template, indent=2))
@@ -723,7 +724,7 @@ def do_resource_list(hc, args):
     try:
         resources = hc.resources.list(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         fields = ['physical_resource_id', 'resource_type',
                   'resource_status', 'updated_time']
@@ -759,8 +760,9 @@ def do_resource_show(hc, args):
     try:
         resource = hc.resources.get(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or resource not found: %s %s' %
-                               (args.id, args.resource))
+        raise exc.CommandError(_('Stack or resource not found: '
+                                 '%(id)s %(resource)s') %
+                               {'id': args.id, 'resource': args.resource})
     else:
         formatters = {
             'links': utils.link_formatter,
@@ -791,8 +793,9 @@ def do_resource_metadata(hc, args):
     try:
         metadata = hc.resources.metadata(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or resource not found: %s %s' %
-                               (args.id, args.resource))
+        raise exc.CommandError(_('Stack or resource not found: '
+                                 '%(id)s %(resource)s') %
+                               {'id': args.id, 'resource': args.resource})
     else:
         print(jsonutils.dumps(metadata, indent=2))
 
@@ -812,7 +815,7 @@ def do_resource_signal(hc, args):
     data = args.data
     data_file = args.data_file
     if data and data_file:
-        raise exc.CommandError('Can only specify one of data and data-file')
+        raise exc.CommandError(_('Can only specify one of data and data-file'))
     if data_file:
         data_url = template_utils.normalise_file_path_to_url(data_file)
         data = request.urlopen(data_url).read()
@@ -822,15 +825,16 @@ def do_resource_signal(hc, args):
         try:
             data = jsonutils.loads(data)
         except ValueError as ex:
-            raise exc.CommandError('Data should be in JSON format: %s' % ex)
+            raise exc.CommandError(_('Data should be in JSON format: %s') % ex)
         if not isinstance(data, dict):
-            raise exc.CommandError('Data should be a JSON dict')
+            raise exc.CommandError(_('Data should be a JSON dict'))
         fields['data'] = data
     try:
         hc.resources.signal(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or resource not found: %s %s' %
-                               (args.id, args.resource))
+        raise exc.CommandError(_('Stack or resource not found: '
+                                 '%(id)s %(resource)s') %
+                               {'id': args.id, 'resource': args.resource})
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -929,7 +933,7 @@ def do_stack_snapshot(hc, args):
     try:
         snapshot = hc.stacks.snapshot(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         print(jsonutils.dumps(snapshot, indent=2, ensure_ascii=False))
 
@@ -944,7 +948,7 @@ def do_snapshot_show(hc, args):
     try:
         snapshot = hc.stacks.snapshot_show(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or snapshot not found')
+        raise exc.CommandError(_('Stack or snapshot not found'))
     else:
         print(jsonutils.dumps(snapshot, indent=2, ensure_ascii=False))
 
@@ -959,7 +963,7 @@ def do_snapshot_delete(hc, args):
     try:
         hc.stacks.snapshot_delete(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or snapshot not found')
+        raise exc.CommandError(_('Stack or snapshot not found'))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -972,7 +976,7 @@ def do_stack_restore(hc, args):
     try:
         hc.stacks.restore(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack or snapshot not found')
+        raise exc.CommandError(_('Stack or snapshot not found'))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -983,7 +987,7 @@ def do_snapshot_list(hc, args):
     try:
         snapshots = hc.stacks.snapshot_list(**fields)
     except exc.HTTPNotFound:
-        raise exc.CommandError('Stack not found: %s' % args.id)
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
         fields = ['id', 'name', 'status', 'status_reason', 'data']
         formatters = {

@@ -14,6 +14,8 @@ import sys
 
 from oslo.serialization import jsonutils
 
+from heatclient.openstack.common._i18n import _
+
 verbose = 0
 
 
@@ -47,7 +49,7 @@ class HTTPException(BaseException):
         try:
             self.error = jsonutils.loads(message)
             if 'error' not in self.error:
-                raise KeyError('Key "error" not exists')
+                raise KeyError(_('Key "error" not exists'))
         except KeyError:
             # NOTE(jianingy): If key 'error' happens not exist,
             # self.message becomes no sense. In this case, we
@@ -62,19 +64,24 @@ class HTTPException(BaseException):
         message = self.error['error'].get('message', 'Internal Error')
         if verbose:
             traceback = self.error['error'].get('traceback', '')
-            return 'ERROR: %s\n%s' % (message, traceback)
+            return (_('ERROR: %(message)s\n%(traceback)s') %
+                    {'message': message, 'traceback': traceback})
         else:
-            return 'ERROR: %s' % message
+            return _('ERROR: %s') % message
 
 
 class HTTPMultipleChoices(HTTPException):
     code = 300
 
     def __str__(self):
-        self.details = ("Requested version of Heat API is not"
-                        "available.")
-        return "%s (HTTP %s) %s" % (self.__class__.__name__, self.code,
-                                    self.details)
+        self.details = _("Requested version of Heat API is not"
+                         "available.")
+        return (_("%(name)s (HTTP %(code)s) %(details)s") %
+                {
+                    'name': self.__class__.__name__,
+                    'code': self.code,
+                    'details': self.details
+                })
 
 
 class BadRequest(HTTPException):
