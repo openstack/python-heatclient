@@ -13,8 +13,9 @@
 
 from six.moves.urllib import parse
 
+from oslo.utils import encodeutils
+
 from heatclient.openstack.common.apiclient import base
-from heatclient.openstack.common import strutils
 
 
 class ResourceType(base.Resource):
@@ -43,12 +44,12 @@ class ResourceTypeManager(base.BaseManager):
         :param resource_type: name of the resource type to get the details for
         """
         url_str = '/resource_types/%s' % (
-                  parse.quote(strutils.safe_encode(resource_type), ''))
+                  parse.quote(encodeutils.safe_encode(resource_type), ''))
         resp, body = self.client.json_request('GET', url_str)
         return body
 
     def generate_template(self, resource_type):
         url_str = '/resource_types/%s/template' % (
-                  parse.quote(strutils.safe_encode(resource_type), ''))
+                  parse.quote(encodeutils.safe_encode(resource_type), ''))
         resp, body = self.client.json_request('GET', url_str)
         return body

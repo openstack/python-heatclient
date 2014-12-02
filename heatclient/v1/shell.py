@@ -19,10 +19,10 @@ from six.moves.urllib import request
 import yaml
 
 from oslo.serialization import jsonutils
+from oslo.utils import strutils
 
 from heatclient.common import template_utils
 from heatclient.common import utils
-from heatclient.openstack.common import strutils
 
 import heatclient.exc as exc
 
