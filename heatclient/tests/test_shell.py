@@ -1886,7 +1886,8 @@ class ShellTestUserPass(ShellBase):
             "name": "snap1",
             "status": "COMPLETE",
             "status_reason": "",
-            "data": {}
+            "data": {},
+            "creation_time": "2014-12-05T01:25:52Z"
         }]}
 
         resp = fakes.FakeHTTPResponse(
@@ -1909,9 +1910,11 @@ class ShellTestUserPass(ShellBase):
             'status',
             'status_reason',
             'data',
+            'creation_time',
             '2',
             'COMPLETE',
             '{}',
+            '2014-12-05T01:25:52Z',
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)

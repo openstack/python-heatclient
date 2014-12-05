@@ -966,7 +966,8 @@ def do_snapshot_list(hc, args):
     except exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % args.id)
     else:
-        fields = ['id', 'name', 'status', 'status_reason', 'data']
+        fields = ['id', 'name', 'status', 'status_reason', 'data',
+                  'creation_time']
         formatters = {
             'id': lambda x: x['id'],
             'name': lambda x: x['name'],
@@ -974,5 +975,6 @@ def do_snapshot_list(hc, args):
             'status_reason': lambda x: x['status_reason'],
             'data': lambda x: jsonutils.dumps(x['data'], indent=2,
                                               ensure_ascii=False),
+            'creation_time': lambda x: x['creation_time'],
         }
         utils.print_list(snapshots["snapshots"], fields, formatters=formatters)
