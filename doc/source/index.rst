@@ -72,4 +72,4 @@ using `Gerrit`_.
 
 .. _on GitHub: https://github.com/openstack/python-heatclient
 .. _Launchpad: https://launchpad.net/python-heatclient
-.. _Gerrit: http://wiki.openstack.org/GerritWorkflow
+.. _Gerrit: http://docs.openstack.org/infra/manual/developers.html#development-workflow
