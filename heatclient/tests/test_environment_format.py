@@ -26,6 +26,7 @@ class YamlEnvironmentTest(testtools.TestCase):
     def test_minimal_yaml(self):
         yaml1 = ''
         yaml2 = '''
+parameter_defaults: {}
 parameters: {}
 resource_registry: {}
 '''
