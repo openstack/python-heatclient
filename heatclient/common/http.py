@@ -100,7 +100,7 @@ class HTTPClient(object):
                     encodeutils.safe_decode(value))
 
     def log_curl_request(self, method, url, kwargs):
-        curl = ['curl -i -X %s' % method]
+        curl = ['curl -g -i -X %s' % method]
 
         for (key, value) in kwargs['headers'].items():
             header = '-H \'%s: %s\'' % self.safe_header(key, value)
