@@ -26,6 +26,7 @@ from oslo.serialization import jsonutils
 from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient import exc
+from heatclient.openstack.common._i18n import _
 
 
 def get_template_contents(template_file=None, template_url=None,
@@ -44,12 +45,16 @@ def get_template_contents(template_file=None, template_url=None,
         tpl = object_request and object_request('GET',
                                                 template_object)
     else:
-        raise exc.CommandError('Need to specify exactly one of '
-                               '--template-file, --template-url '
-                               'or --template-object')
+        raise exc.CommandError(_('Need to specify exactly one of '
+                               '%(arg1)s, %(arg2)s or %(arg3)s') %
+                               {
+                                   'arg1': '--template-file',
+                                   'arg2': '--template-url',
+                                   'arg3': '--template-object'
+                               })
 
     if not tpl:
-        raise exc.CommandError('Could not fetch template from %s'
+        raise exc.CommandError(_('Could not fetch template from %s')
                                % template_url)
 
     try:
@@ -57,8 +62,8 @@ def get_template_contents(template_file=None, template_url=None,
             tpl = tpl.decode('utf-8')
         template = template_format.parse(tpl)
     except ValueError as e:
-        raise exc.CommandError(
-            'Error parsing template %s %s' % (template_url, e))
+        raise exc.CommandError(_('Error parsing template %(url)s %(error)s') %
+                               {'url': template_url, 'error': e})
 
     tmpl_base_url = base_url_for_url(template_url)
     if files is None:
@@ -138,8 +143,8 @@ def read_url_content(url):
     try:
         content = request.urlopen(url).read()
     except error.URLError:
-        raise exc.CommandError('Could not fetch contents for %s'
-                               % url)
+        raise exc.CommandError(_('Could not fetch contents for %s') % url)
+
     if content:
         try:
             content.decode('utf-8')

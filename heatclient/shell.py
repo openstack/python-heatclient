@@ -511,9 +511,9 @@ class HeatShell(object):
             # support only v2
             auth = self._get_keystone_v2_auth(v2_auth_url, **kwargs)
         else:
-            raise exc.CommandError('Unable to determine the Keystone version '
-                                   'to authenticate with using the given '
-                                   'auth_url.')
+            raise exc.CommandError(_('Unable to determine the Keystone '
+                                     'version to authenticate with using the '
+                                     'given auth_url.'))
 
         return auth
 
@@ -547,23 +547,23 @@ class HeatShell(object):
             return 0
 
         if not args.os_username and not args.os_auth_token:
-            raise exc.CommandError("You must provide a username via"
+            raise exc.CommandError(_("You must provide a username via"
                                    " either --os-username or env[OS_USERNAME]"
                                    " or a token via --os-auth-token or"
-                                   " env[OS_AUTH_TOKEN]")
+                                   " env[OS_AUTH_TOKEN]"))
 
         if not args.os_password and not args.os_auth_token:
-            raise exc.CommandError("You must provide a password via"
+            raise exc.CommandError(_("You must provide a password via"
                                    " either --os-password or env[OS_PASSWORD]"
                                    " or a token via --os-auth-token or"
-                                   " env[OS_AUTH_TOKEN]")
+                                   " env[OS_AUTH_TOKEN]"))
 
         if args.os_no_client_auth:
             if not args.heat_url:
-                raise exc.CommandError("If you specify --os-no-client-auth"
+                raise exc.CommandError(_("If you specify --os-no-client-auth"
                                        " you must also specify a Heat API URL"
                                        " via either --heat-url or"
-                                       " env[HEAT_URL]")
+                                       " env[HEAT_URL]"))
         else:
             # Tenant/project name or ID is needed to make keystoneclient
             # retrieve a service catalog, it's not required if
@@ -571,7 +571,7 @@ class HeatShell(object):
 
             if not (args.os_tenant_id or args.os_tenant_name or
                     args.os_project_id or args.os_project_name):
-                raise exc.CommandError("You must provide a tenant id via"
+                raise exc.CommandError(_("You must provide a tenant id via"
                                        " either --os-tenant-id or"
                                        " env[OS_TENANT_ID] or a tenant name"
                                        " via either --os-tenant-name or"
@@ -579,12 +579,12 @@ class HeatShell(object):
                                        " via either --os-project-id or"
                                        " env[OS_PROJECT_ID] or a project"
                                        " name via either --os-project-name or"
-                                       " env[OS_PROJECT_NAME]")
+                                       " env[OS_PROJECT_NAME]"))
 
             if not args.os_auth_url:
-                raise exc.CommandError("You must provide an auth url via"
+                raise exc.CommandError(_("You must provide an auth url via"
                                        " either --os-auth-url or via"
-                                       " env[OS_AUTH_URL]")
+                                       " env[OS_AUTH_URL]"))
 
         kwargs = {
             'insecure': args.insecure,
@@ -705,7 +705,7 @@ def main(args=None):
 
         HeatShell().main(args)
     except KeyboardInterrupt:
-        print("... terminating heat client", file=sys.stderr)
+        print(_("... terminating heat client"), file=sys.stderr)
         sys.exit(130)
     except Exception as e:
         if '--debug' in args or '-d' in args:

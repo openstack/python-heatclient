@@ -13,6 +13,8 @@
 import json
 import yaml
 
+from heatclient.openstack.common._i18n import _
+
 if hasattr(yaml, 'CSafeLoader'):
     yaml_loader = yaml.CSafeLoader
 else:
@@ -57,5 +59,5 @@ def parse(tmpl_str):
     if not ('HeatTemplateFormatVersion' in tpl
             or 'heat_template_version' in tpl
             or 'AWSTemplateFormatVersion' in tpl):
-        raise ValueError("Template format version not found.")
+        raise ValueError(_("Template format version not found."))
     return tpl

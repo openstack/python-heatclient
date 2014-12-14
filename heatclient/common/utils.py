@@ -25,6 +25,7 @@ from oslo.serialization import jsonutils
 from oslo.utils import importutils
 
 from heatclient import exc
+from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common import cliutils
 
 supported_formats = {
@@ -93,8 +94,12 @@ def find_resource(manager, name_or_id):
     try:
         return manager.find(name=name_or_id)
     except exc.NotFound:
-        msg = "No %s with a name or ID of '%s' exists." % \
-              (manager.resource_class.__name__.lower(), name_or_id)
+        msg = _("No %(name)s with a name or ID of "
+                "'%(name_or_id)s' exists.") % \
+            {
+                'name': manager.resource_class.__name__.lower(),
+                'name_or_id': name_or_id
+            }
         raise exc.CommandError(msg)
 
 
@@ -127,8 +132,7 @@ def format_parameters(params):
         try:
             (n, v) = p.split(('='), 1)
         except ValueError:
-            msg = '%s(%s). %s.' % ('Malformed parameter', p,
-                                   'Use the key=value format')
+            msg = _('Malformed parameter(%s). Use the key=value format.') % p
             raise exc.CommandError(msg)
 
         if n not in parameters:
@@ -147,7 +151,7 @@ def format_output(output, format='yaml'):
     try:
         return supported_formats[output_format](output)
     except KeyError:
-        raise exc.HTTPUnsupported("The format(%s) is unsupported."
+        raise exc.HTTPUnsupported(_("The format(%s) is unsupported.")
                                   % output_format)
 
 

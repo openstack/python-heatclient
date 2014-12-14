@@ -11,6 +11,7 @@
 #    under the License.
 
 from heatclient.common import template_format
+from heatclient.openstack.common._i18n import _
 
 import yaml
 
@@ -33,12 +34,12 @@ def parse(env_str):
         if env is None:
             env = {}
         elif not isinstance(env, dict):
-            raise ValueError('The environment is not a valid '
-                             'YAML mapping data type.')
+            raise ValueError(_('The environment is not a valid '
+                             'YAML mapping data type.'))
 
     for param in env:
         if param not in SECTIONS:
-            raise ValueError('environment has wrong section "%s"' % param)
+            raise ValueError(_('environment has wrong section "%s"') % param)
 
     return env
 
