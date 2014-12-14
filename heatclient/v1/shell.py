@@ -24,36 +24,40 @@ from oslo.utils import strutils
 from heatclient.common import template_utils
 from heatclient.common import utils
 
+from heatclient.openstack.common._i18n import _
+
 import heatclient.exc as exc
 
 logger = logging.getLogger(__name__)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.'
-                '  DEPRECATED use --timeout instead.')
+           help=_('Stack creation timeout in minutes.'
+           ' DEPRECATED use %(arg)s instead.')
+           % {'arg': '--timeout'})
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.')
+           help=_('Stack creation timeout in minutes.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help=_('Enable rollback on create/update failure.'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack. '
+           help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
-           help='Name of the stack to create.')
+           help=_('Name of the stack to create.'))
 def do_create(hc, args):
     '''DEPRECATED! Use stack-create instead.'''
     logger.warning('DEPRECATED! Use stack-create instead.')
@@ -61,30 +65,32 @@ def do_create(hc, args):
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.'
-                '  DEPRECATED use --timeout instead.')
+           help=_('Stack creation timeout in minutes.'
+           '  DEPRECATED use %(arg)s instead.')
+           % {'arg': '--timeout'})
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.')
+           help=_('Stack creation timeout in minutes.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help=_('Enable rollback on create/update failure.'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack. '
+           help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
-           help='Name of the stack to create.')
+           help=_('Name of the stack to create.'))
 def do_stack_create(hc, args):
     '''Create the stack.'''
     tpl_files, template = template_utils.get_template_contents(
@@ -117,26 +123,28 @@ def do_stack_create(hc, args):
 
 
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.'
-                '  DEPRECATED use --timeout instead.')
+           help=_('Stack creation timeout in minutes.'
+           '  DEPRECATED use %(arg)s instead.')
+           % {'arg': '--timeout'})
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack creation timeout in minutes.')
+           help=_('Stack creation timeout in minutes.'))
 @utils.arg('-a', '--adopt-file', metavar='<FILE or URL>',
-           help='Path to adopt stack data file.')
+           help=_('Path to adopt stack data file.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on create/update failure.')
+           help=_('Enable rollback on create/update failure.'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack. '
+           help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
-           help='Name of the stack to adopt.')
+           help=_('Name of the stack to adopt.'))
 def do_stack_adopt(hc, args):
     '''Adopt a stack.'''
     env_files, env = template_utils.process_environment_and_files(
@@ -170,27 +178,29 @@ def do_stack_adopt(hc, args):
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift)')
+           help=_('URL to retrieve template object (e.g. from swift)'))
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>', type=int,
-           help='Stack creation timeout in minutes. This is only used during'
-           'validation in preview.')
+           help=_('Stack creation timeout in minutes. This is only used during'
+           'validation in preview.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='Enable rollback on failure. This option is not used during'
-           'preview and exists only for symmetry with stack-create.')
+           help=_('Enable rollback on failure. This option is not used during'
+           'preview and exists only for symmetry with %(cmd)s.')
+           % {'cmd': 'stack-create'})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to preview the stack. '
+           help=_('Parameter values used to preview the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.',
+           'separated by semicolon.'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
-           help='Name of the stack to preview.')
+           help=_('Name of the stack to preview.'))
 def do_stack_preview(hc, args):
     '''Preview the stack.'''
     tpl_files, template = template_utils.get_template_contents(
@@ -225,7 +235,7 @@ def do_stack_preview(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>', nargs='+',
-           help='Name or ID of stack(s) to delete.')
+           help=_('Name or ID of stack(s) to delete.'))
 def do_delete(hc, args):
     '''DEPRECATED! Use stack-delete instead.'''
     logger.warning('DEPRECATED! Use stack-delete instead.')
@@ -233,7 +243,7 @@ def do_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>', nargs='+',
-           help='Name or ID of stack(s) to delete.')
+           help=_('Name or ID of stack(s) to delete.'))
 def do_stack_delete(hc, args):
     '''Delete the stack(s).'''
     failure_count = 0
@@ -252,11 +262,11 @@ def do_stack_delete(hc, args):
 
 
 @utils.arg('-O', '--output-file', metavar='<FILE>',
-           help='file to output abandon result. '
+           help=_('file to output abandon result. '
            'If the option is specified, the result will be'
-           ' output into <FILE>.')
+           ' output into <FILE>.'))
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to abandon.')
+           help=_('Name or ID of stack to abandon.'))
 def do_stack_abandon(hc, args):
     '''Abandon the stack.
 
@@ -283,7 +293,7 @@ def do_stack_abandon(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to suspend.')
+           help=_('Name or ID of stack to suspend.'))
 def do_action_suspend(hc, args):
     '''Suspend the stack.'''
     fields = {'stack_id': args.id}
@@ -295,7 +305,8 @@ def do_action_suspend(hc, args):
         do_stack_list(hc)
 
 
-@utils.arg('id', metavar='<NAME or ID>', help='Name or ID of stack to resume.')
+@utils.arg('id', metavar='<NAME or ID>',
+           help=_('Name or ID of stack to resume.'))
 def do_action_resume(hc, args):
     '''Resume the stack.'''
     fields = {'stack_id': args.id}
@@ -308,7 +319,7 @@ def do_action_resume(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to check.')
+           help=_('Name or ID of stack to check.'))
 def do_action_check(hc, args):
     '''Check that stack resources are in expected states.'''
     fields = {'stack_id': args.id}
@@ -321,7 +332,7 @@ def do_action_check(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to describe.')
+           help=_('Name or ID of stack to describe.'))
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''
     logger.warning('DEPRECATED! Use stack-show instead.')
@@ -329,7 +340,7 @@ def do_describe(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to describe.')
+           help=_('Name or ID of stack to describe.'))
 def do_stack_show(hc, args):
     '''Describe the stack.'''
     fields = {'stack_id': args.id}
@@ -350,45 +361,47 @@ def do_stack_show(hc, args):
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack update timeout in minutes.')
+           help=_('Stack update timeout in minutes.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='DEPRECATED! Use --rollback argument instead. '
-           'Enable rollback on stack update failure. '
-           'NOTE: default behavior is now to use the rollback value '
-           'of existing stack.')
+           help=_('DEPRECATED! Use %(arg)s argument instead. '
+                  'Enable rollback on stack update failure. '
+                  'NOTE: default behavior is now to use the rollback value '
+                  'of existing stack.') % {'arg': '--rollback'})
 @utils.arg('--rollback', default=None, metavar='<VALUE>',
-           help='Set rollback on update failure. '
+           help=_('Set rollback on update failure. '
            'Values %(true)s  set rollback to enabled. '
            'Values %(false)s set rollback to disabled. '
-           'Default is to use the value of existing stack to be updated.'
+           'Default is to use the value of existing stack to be updated.')
            % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack. '
+           help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
-           help='Re-use the set of parameters of the current stack. '
-           'Parameters specified in --parameters will patch over the existing '
+           help=_('Re-use the set of parameters of the current stack. '
+           'Parameters specified in %(arg)s will patch over the existing '
            'values in the current stack. Parameters omitted will keep '
            'the existing values.')
+           % {'arg': '--parameters'})
 @utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
-           help='Remove the parameters from the set of parameters of current '
-           'stack for the stack-update. The default value in the template '
-           'will be used. This can be specified multiple times.',
+           help=_('Remove the parameters from the set of parameters of '
+           'current stack for the stack-update. The default value in the '
+           'template will be used. This can be specified multiple times.'),
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to update.')
+           help=_('Name or ID of stack to update.'))
 def do_update(hc, args):
     '''DEPRECATED! Use stack-update instead.'''
     logger.warning('DEPRECATED! Use stack-update instead.')
@@ -396,45 +409,49 @@ def do_update(hc, args):
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
-           help='Stack update timeout in minutes.')
+           help=_('Stack update timeout in minutes.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help='DEPRECATED! Use --rollback argument instead. '
+           help=_('DEPRECATED! Use %(arg)s argument instead. '
            'Enable rollback on stack update failure. '
            'NOTE: default behavior is now to use the rollback value '
            'of existing stack.')
+           % {'arg': '--rollback'})
 @utils.arg('--rollback', default=None, metavar='<VALUE>',
-           help='Set rollback on update failure. '
+           help=_('Set rollback on update failure. '
            'Values %(true)s  set rollback to enabled. '
            'Values %(false)s set rollback to disabled. '
-           'Default is to use the value of existing stack to be updated.'
+           'Default is to use the value of existing stack to be updated.')
            % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Parameter values used to create the stack. '
+           help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
-           help='Re-use the set of parameters of the current stack. '
-           'Parameters specified in --parameters will patch over the existing '
+           help=_('Re-use the set of parameters of the current stack. '
+           'Parameters specified in %(arg)s will patch over the existing '
            'values in the current stack. Parameters omitted will keep '
            'the existing values.')
+           % {'arg': '--parameters'})
 @utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
-           help='Remove the parameters from the set of parameters of current '
-           'stack for the stack-update. The default value in the template '
-           'will be used. This can be specified multiple times.',
+           help=_('Remove the parameters from the set of parameters of '
+           'current stack for the %(cmd)s. The default value in the '
+           'template will be used. This can be specified multiple times.')
+           % {'cmd': 'stack-update'},
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to update.')
+           help=_('Name or ID of stack to update.'))
 def do_stack_update(hc, args):
     '''Update the stack.'''
 
@@ -479,7 +496,7 @@ def do_stack_update(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to cancel update for.')
+           help=_('Name or ID of stack to cancel update for.'))
 def do_stack_cancel_update(hc, args):
     '''Cancel currently running update of the stack.'''
     fields = {'stack_id': args.id}
@@ -498,24 +515,24 @@ def do_list(hc, args):
 
 
 @utils.arg('-s', '--show-deleted', default=False, action="store_true",
-           help='Include soft-deleted stacks in the stack listing.')
+           help=_('Include soft-deleted stacks in the stack listing.'))
 @utils.arg('-n', '--show-nested', default=False, action="store_true",
-           help='Include nested stacks in the stack listing.')
+           help=_('Include nested stacks in the stack listing.'))
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Filter parameters to apply on returned stacks. '
+           help=_('Filter parameters to apply on returned stacks. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
-           help='Limit the number of stacks returned.')
+           help=_('Limit the number of stacks returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
-           help='Only return stacks that appear after the given stack ID.')
+           help=_('Only return stacks that appear after the given stack ID.'))
 @utils.arg('-g', '--global-tenant', action='store_true', default=False,
-           help='Display stacks from all tenants. Operation only authorized '
-                'for users who match the policy in heat\'s policy.json.')
+           help=_('Display stacks from all tenants. Operation only authorized '
+                  'for users who match the policy in heat\'s policy.json.'))
 @utils.arg('-o', '--show-owner', action='store_true', default=False,
-           help='Display stack owner information. This is automatically '
-                'enabled when using --global-tenant.')
+           help=_('Display stack owner information. This is automatically '
+                  'enabled when using %(arg)s.') % {'arg': '--global-tenant'})
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
@@ -540,7 +557,7 @@ def do_stack_list(hc, args=None):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to query.')
+           help=_('Name or ID of stack to query.'))
 def do_output_list(hc, args):
     '''Show available outputs.'''
     try:
@@ -559,9 +576,9 @@ def do_output_list(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to query.')
+           help=_('Name or ID of stack to query.'))
 @utils.arg('output', metavar='<OUTPUT NAME>',
-           help='Name of an output to display.')
+           help=_('Name of an output to display.'))
 def do_output_show(hc, args):
     '''Show a specific stack output.'''
     try:
@@ -590,7 +607,7 @@ def do_resource_type_list(hc, args):
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
-           help='Resource type to get the details for.')
+           help=_('Resource type to get the details for.'))
 def do_resource_type_show(hc, args):
     '''Show the resource type.'''
     try:
@@ -603,10 +620,10 @@ def do_resource_type_show(hc, args):
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
-           help='Resource type to generate a template for.')
+           help=_('Resource type to generate a template for.'))
 @utils.arg('-F', '--format', metavar='<FORMAT>',
-           help="The template output format, one of: %s."
-                % ', '.join(utils.supported_formats.keys()))
+           help=_("The template output format, one of: %s.")
+                 % ', '.join(utils.supported_formats.keys()))
 def do_resource_type_template(hc, args):
     '''Generate a template based on a resource type.'''
     fields = {'resource_type': args.resource_type}
@@ -623,7 +640,7 @@ def do_resource_type_template(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to get the template for.')
+           help=_('Name or ID of stack to get the template for.'))
 def do_gettemplate(hc, args):
     '''DEPRECATED! Use template-show instead.'''
     logger.warning('DEPRECATED! Use template-show instead.')
@@ -631,7 +648,7 @@ def do_gettemplate(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to get the template for.')
+           help=_('Name or ID of stack to get the template for.'))
 def do_template_show(hc, args):
     '''Get the template for the specified stack.'''
     fields = {'stack_id': args.id}
@@ -647,14 +664,15 @@ def do_template_show(hc, args):
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
     logger.warning('DEPRECATED! Use template-validate instead.')
@@ -662,14 +680,15 @@ def do_validate(hc, args):
 
 
 @utils.arg('-u', '--template-url', metavar='<URL>',
-           help='URL of template.')
+           help=_('URL of template.'))
 @utils.arg('-f', '--template-file', metavar='<FILE>',
-           help='Path to the template.')
+           help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
-           help='Path to the environment, it can be specified multiple times.',
+           help=_('Path to the environment, it can be specified '
+                  'multiple times.'),
            action='append')
 @utils.arg('-o', '--template-object', metavar='<URL>',
-           help='URL to retrieve template object (e.g. from swift).')
+           help=_('URL to retrieve template object (e.g. from swift).'))
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
 
@@ -692,9 +711,9 @@ def do_template_validate(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the resources for.')
+           help=_('Name or ID of stack to show the resources for.'))
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
-           help='Depth of nested stacks from which to display resources.')
+           help=_('Depth of nested stacks from which to display resources.'))
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
     fields = {
@@ -720,9 +739,9 @@ def do_resource_list(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the resource for.')
+           help=_('Name or ID of stack to show the resource for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource to show the details for.')
+           help=_('Name of the resource to show the details for.'))
 def do_resource(hc, args):
     '''DEPRECATED! Use resource-show instead.'''
     logger.warning('DEPRECATED! Use resource-show instead.')
@@ -730,9 +749,9 @@ def do_resource(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the resource for.')
+           help=_('Name or ID of stack to show the resource for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource to show the details for.')
+           help=_('Name of the resource to show the details for.'))
 def do_resource_show(hc, args):
     '''Describe the resource.'''
     fields = {'stack_id': args.id,
@@ -751,10 +770,10 @@ def do_resource_show(hc, args):
 
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
-           help='Resource type to generate a template for.')
+           help=_('Resource type to generate a template for.'))
 @utils.arg('-F', '--format', metavar='<FORMAT>',
-           help="The template output format, one of: %s."
-                % ', '.join(utils.supported_formats.keys()))
+           help=_("The template output format, one of: %s.")
+                 % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
     '''DEPRECATED! Use resource-type-template instead.'''
     logger.warning('DEPRECATED! Use resource-type-template instead.')
@@ -762,9 +781,9 @@ def do_resource_template(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the resource metadata for.')
+           help=_('Name or ID of stack to show the resource metadata for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource to show the metadata for.')
+           help=_('Name of the resource to show the metadata for.'))
 def do_resource_metadata(hc, args):
     '''List resource metadata.'''
     fields = {'stack_id': args.id,
@@ -779,13 +798,13 @@ def do_resource_metadata(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack the resource belongs to.')
+           help=_('Name or ID of stack the resource belongs to.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource to signal.')
+           help=_('Name of the resource to signal.'))
 @utils.arg('-D', '--data', metavar='<DATA>',
-           help='JSON Data to send to the signal handler.')
+           help=_('JSON Data to send to the signal handler.'))
 @utils.arg('-f', '--data-file', metavar='<FILE>',
-           help='File containing JSON data to send to the signal handler.')
+           help=_('File containing JSON data to send to the signal handler.'))
 def do_resource_signal(hc, args):
     '''Send a signal to a resource.'''
     fields = {'stack_id': args.id,
@@ -815,18 +834,18 @@ def do_resource_signal(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the events for.')
+           help=_('Name or ID of stack to show the events for.'))
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
-           help='Name of the resource to filter events by.')
+           help=_('Name of the resource to filter events by.'))
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help='Filter parameters to apply on returned events. '
+           help=_('Filter parameters to apply on returned events. '
            'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.',
+           'separated by a semicolon.'),
            action='append')
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
-           help='Limit the number of events returned.')
+           help=_('Limit the number of events returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
-           help='Only return events that appear after the given event ID.')
+           help=_('Only return events that appear after the given event ID.'))
 def do_event_list(hc, args):
     '''List events for a stack.'''
     fields = {'stack_id': args.id,
@@ -852,11 +871,11 @@ def do_event_list(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the events for.')
+           help=_('Name or ID of stack to show the events for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource the event belongs to.')
+           help=_('Name of the resource the event belongs to.'))
 @utils.arg('event', metavar='<EVENT>',
-           help='ID of event to display details for.')
+           help=_('ID of event to display details for.'))
 def do_event(hc, args):
     '''DEPRECATED! Use event-show instead.'''
     logger.warning('DEPRECATED! Use event-show instead.')
@@ -864,11 +883,11 @@ def do_event(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to show the events for.')
+           help=_('Name or ID of stack to show the events for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help='Name of the resource the event belongs to.')
+           help=_('Name of the resource the event belongs to.'))
 @utils.arg('event', metavar='<EVENT>',
-           help='ID of event to display details for.')
+           help=_('ID of event to display details for.'))
 def do_event_show(hc, args):
     '''Describe the event.'''
     fields = {'stack_id': args.id,
@@ -899,9 +918,9 @@ def do_build_info(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of stack to snapshot.')
+           help=_('Name or ID of stack to snapshot.'))
 @utils.arg('-n', '--name', metavar='<NAME>',
-           help='If specified, the name given to the snapshot.')
+           help=_('If specified, the name given to the snapshot.'))
 def do_stack_snapshot(hc, args):
     '''Make a snapshot of a stack.'''
     fields = {'stack_id': args.id}
@@ -916,9 +935,9 @@ def do_stack_snapshot(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of the stack containing the snapshot.')
+           help=_('Name or ID of the stack containing the snapshot.'))
 @utils.arg('snapshot', metavar='<SNAPSHOT>',
-           help='The ID of the snapshot to show.')
+           help=_('The ID of the snapshot to show.'))
 def do_snapshot_show(hc, args):
     '''Show a snapshot of a stack.'''
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
@@ -931,9 +950,9 @@ def do_snapshot_show(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of the stack containing the snapshot.')
+           help=_('Name or ID of the stack containing the snapshot.'))
 @utils.arg('snapshot', metavar='<SNAPSHOT>',
-           help='The ID of the snapshot to delete.')
+           help=_('The ID of the snapshot to delete.'))
 def do_snapshot_delete(hc, args):
     '''Delete a snapshot of a stack.'''
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
@@ -944,9 +963,9 @@ def do_snapshot_delete(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of the stack containing the snapshot.')
+           help=_('Name or ID of the stack containing the snapshot.'))
 @utils.arg('snapshot', metavar='<SNAPSHOT>',
-           help='The ID of the snapshot to restore.')
+           help=_('The ID of the snapshot to restore.'))
 def do_stack_restore(hc, args):
     '''Restore a snapshot of a stack.'''
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
@@ -957,7 +976,7 @@ def do_stack_restore(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
-           help='Name or ID of the stack containing the snapshots.')
+           help=_('Name or ID of the stack containing the snapshots.'))
 def do_snapshot_list(hc, args):
     '''List the snapshots of a stack.'''
     fields = {'stack_id': args.id}
