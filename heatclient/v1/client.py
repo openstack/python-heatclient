@@ -19,6 +19,7 @@ from heatclient.v1 import build_info
 from heatclient.v1 import events
 from heatclient.v1 import resource_types
 from heatclient.v1 import resources
+from heatclient.v1 import services
 from heatclient.v1 import software_configs
 from heatclient.v1 import software_deployments
 from heatclient.v1 import stacks
@@ -49,3 +50,4 @@ class Client(object):
                 self.http_client)
         self.software_configs = software_configs.SoftwareConfigManager(
             self.http_client)
+        self.services = services.ServiceManager(self.http_client)
