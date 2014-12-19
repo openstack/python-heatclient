@@ -73,6 +73,10 @@ class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.requests = self.useFixture(rm_fixture.Fixture())
+        # httpretty doesn't work as expected if http proxy environmen
+        # variable is set.
+        self.useFixture(fixtures.EnvironmentVariable('http_proxy'))
+        self.useFixture(fixtures.EnvironmentVariable('https_proxy'))
 
     def set_fake_env(self, fake_env):
         client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
