@@ -765,6 +765,7 @@ def do_resource_show(hc, args):
                                {'id': args.id, 'resource': args.resource})
     else:
         formatters = {
+            'attributes': utils.json_formatter,
             'links': utils.link_formatter,
             'required_by': utils.newline_list_formatter
         }
