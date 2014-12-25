@@ -29,6 +29,8 @@ from oslo.utils import importutils
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LE
+from heatclient.openstack.common._i18n import _LW
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
@@ -52,7 +54,7 @@ def get_system_ca_file():
         if os.path.exists(ca):
             LOG.debug("Using ca file %s", ca)
             return ca
-    LOG.warn("System ca file could not be found.")
+    LOG.warn(_LW("System ca file could not be found."))
 
 
 class HTTPClient(object):
@@ -267,7 +269,7 @@ class HTTPClient(object):
             try:
                 body = resp.json()
             except ValueError:
-                LOG.error('Could not decode response body as JSON')
+                LOG.error(_LE('Could not decode response body as JSON'))
         else:
             body = None
 

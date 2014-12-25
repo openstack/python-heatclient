@@ -25,6 +25,7 @@ from heatclient.common import template_utils
 from heatclient.common import utils
 
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LW
 
 import heatclient.exc as exc
 
@@ -60,7 +61,8 @@ logger = logging.getLogger(__name__)
            help=_('Name of the stack to create.'))
 def do_create(hc, args):
     '''DEPRECATED! Use stack-create instead.'''
-    logger.warning('DEPRECATED! Use stack-create instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'stack-create'})
     do_stack_create(hc, args)
 
 
@@ -102,8 +104,12 @@ def do_stack_create(hc, args):
         env_paths=args.environment_file)
 
     if args.create_timeout:
-        logger.warning('-c/--create-timeout is deprecated, '
-                       'please use -t/--timeout instead')
+        logger.warning(_LW('%(arg1)s is deprecated, '
+                           'please use %(arg2)s instead'),
+                       {
+                           'arg1': '-c/--create-timeout',
+                           'arg2': '-t/--timeout'
+                       })
 
     fields = {
         'stack_name': args.name,
@@ -158,8 +164,12 @@ def do_stack_adopt(hc, args):
     adopt_data = request.urlopen(adopt_url).read()
 
     if args.create_timeout:
-        logger.warning('-c/--create-timeout is deprecated, '
-                       'please use -t/--timeout instead')
+        logger.warning(_LW('%(arg1)s is deprecated, '
+                           'please use %(arg2)s instead'),
+                       {
+                           'arg1': '-c/--create-timeout',
+                           'arg2': '-t/--timeout'
+                       })
 
     fields = {
         'stack_name': args.name,
@@ -239,7 +249,8 @@ def do_stack_preview(hc, args):
            help=_('Name or ID of stack(s) to delete.'))
 def do_delete(hc, args):
     '''DEPRECATED! Use stack-delete instead.'''
-    logger.warning('DEPRECATED! Use stack-delete instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'stack-delete '})
     do_stack_delete(hc, args)
 
 
@@ -336,7 +347,8 @@ def do_action_check(hc, args):
            help=_('Name or ID of stack to describe.'))
 def do_describe(hc, args):
     '''DEPRECATED! Use stack-show instead.'''
-    logger.warning('DEPRECATED! Use stack-show instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'stack-show'})
     do_stack_show(hc, args)
 
 
@@ -405,7 +417,8 @@ def do_stack_show(hc, args):
            help=_('Name or ID of stack to update.'))
 def do_update(hc, args):
     '''DEPRECATED! Use stack-update instead.'''
-    logger.warning('DEPRECATED! Use stack-update instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'stack-update'})
     do_stack_update(hc, args)
 
 
@@ -511,7 +524,8 @@ def do_stack_cancel_update(hc, args):
 
 def do_list(hc, args):
     '''DEPRECATED! Use stack-list instead.'''
-    logger.warning('DEPRECATED! Use stack-list instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'stack-list'})
     do_stack_list(hc)
 
 
@@ -644,7 +658,8 @@ def do_resource_type_template(hc, args):
            help=_('Name or ID of stack to get the template for.'))
 def do_gettemplate(hc, args):
     '''DEPRECATED! Use template-show instead.'''
-    logger.warning('DEPRECATED! Use template-show instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'template-show'})
     do_template_show(hc, args)
 
 
@@ -676,7 +691,8 @@ def do_template_show(hc, args):
            help=_('URL to retrieve template object (e.g. from swift).'))
 def do_validate(hc, args):
     '''DEPRECATED! Use template-validate instead.'''
-    logger.warning('DEPRECATED! Use template-validate instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'template-validate'})
     do_template_validate(hc, args)
 
 
@@ -745,7 +761,8 @@ def do_resource_list(hc, args):
            help=_('Name of the resource to show the details for.'))
 def do_resource(hc, args):
     '''DEPRECATED! Use resource-show instead.'''
-    logger.warning('DEPRECATED! Use resource-show instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'resource-show'})
     do_resource_show(hc, args)
 
 
@@ -778,7 +795,8 @@ def do_resource_show(hc, args):
                  % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
     '''DEPRECATED! Use resource-type-template instead.'''
-    logger.warning('DEPRECATED! Use resource-type-template instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'resource-type-template'})
     do_resource_type_template(hc, args)
 
 
@@ -882,7 +900,8 @@ def do_event_list(hc, args):
            help=_('ID of event to display details for.'))
 def do_event(hc, args):
     '''DEPRECATED! Use event-show instead.'''
-    logger.warning('DEPRECATED! Use event-show instead.')
+    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
+                   {'cmd': 'event-show'})
     do_event_show(hc, args)
 
 
