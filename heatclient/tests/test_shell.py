@@ -29,8 +29,7 @@ import uuid
 from oslo.serialization import jsonutils
 from oslo.utils import encodeutils
 
-from keystoneclient.fixture import v2 as ks_v2_fixture
-from keystoneclient.fixture import v3 as ks_v3_fixture
+from keystoneclient import fixture as keystone_fixture
 
 from mox3 import mox
 
@@ -39,24 +38,29 @@ from heatclient.common import utils
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
-from heatclient.tests import keystone_client_fixtures
 
 load_tests = testscenarios.load_tests_apply_scenarios
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
 
+BASE_HOST = 'http://keystone.example.com'
+BASE_URL = "%s:5000/" % BASE_HOST
+V2_URL = "%sv2.0" % BASE_URL
+V3_URL = "%sv3" % BASE_URL
+
+
 FAKE_ENV_KEYSTONE_V2 = {
     'OS_USERNAME': 'username',
     'OS_PASSWORD': 'password',
     'OS_TENANT_NAME': 'tenant_name',
-    'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+    'OS_AUTH_URL': BASE_URL,
 }
 
 FAKE_ENV_KEYSTONE_V3 = {
     'OS_USERNAME': 'username',
     'OS_PASSWORD': 'password',
     'OS_TENANT_NAME': 'tenant_name',
-    'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+    'OS_AUTH_URL': BASE_URL,
     'OS_USER_DOMAIN_ID': 'default',
     'OS_PROJECT_DOMAIN_ID': 'default',
 }
@@ -64,7 +68,7 @@ FAKE_ENV_KEYSTONE_V3 = {
 
 class TestCase(testtools.TestCase):
 
-    tokenid = keystone_client_fixtures.TOKENID
+    tokenid = uuid.uuid4().hex
 
     def set_fake_env(self, fake_env):
         client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
@@ -108,31 +112,33 @@ class TestCase(testtools.TestCase):
         return err
 
     def register_keystone_v2_token_fixture(self):
-        v2_token = ks_v2_fixture.Token(token_id=self.tokenid)
+        v2_token = keystone_fixture.V2Token(token_id=self.tokenid)
         service = v2_token.add_service('orchestration')
         service.add_endpoint('http://heat.example.com', region='RegionOne')
         httpretty.register_uri(
             httpretty.POST,
-            '%s/tokens' % (keystone_client_fixtures.V2_URL),
+            '%s/tokens' % (V2_URL),
             body=jsonutils.dumps(v2_token))
 
     def register_keystone_v3_token_fixture(self):
-        v3_token = ks_v3_fixture.Token()
+        v3_token = keystone_fixture.V3Token()
         service = v3_token.add_service('orchestration')
         service.add_standard_endpoints(public='http://heat.example.com')
         httpretty.register_uri(
             httpretty.POST,
-            '%s/auth/tokens' % (keystone_client_fixtures.V3_URL),
+            '%s/auth/tokens' % (V3_URL),
             body=jsonutils.dumps(v3_token),
             adding_headers={'X-Subject-Token': self.tokenid})
 
     def register_keystone_auth_fixture(self):
         self.register_keystone_v2_token_fixture()
         self.register_keystone_v3_token_fixture()
+
+        version_list = keystone_fixture.DiscoveryList(href=BASE_URL)
         httpretty.register_uri(
             httpretty.GET,
-            keystone_client_fixtures.BASE_URL,
-            body=keystone_client_fixtures.keystone_request_callback)
+            BASE_URL,
+            body=jsonutils.dumps(version_list))
 
     # NOTE(tlashchova): this overrides the testtools.TestCase.patch method
     # that does simple monkey-patching in favor of mock's patching
@@ -224,7 +230,7 @@ class ShellParamValidationTest(TestCase):
             'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
             'OS_TENANT_NAME': 'tenant_name',
-            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            'OS_AUTH_URL': BASE_URL,
         }
         self.set_fake_env(fake_env)
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -2496,7 +2502,7 @@ class ShellTestToken(ShellTestUserPass):
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_TENANT_ID': 'tenant_id',
-            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            'OS_AUTH_URL': BASE_URL,
             # Note we also set username/password, because create/update
             # pass them even if we have a token to support storing credentials
             # Hopefully at some point we can remove this and move to only
@@ -2526,7 +2532,7 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             'OS_AUTH_TOKEN': self.token,
             'OS_NO_CLIENT_AUTH': 'True',
             'HEAT_URL': 'http://no.where',
-            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            'OS_AUTH_URL': BASE_URL,
             # Note we also set username/password, because create/update
             # pass them even if we have a token to support storing credentials
             # Hopefully at some point we can remove this and move to only
@@ -2571,7 +2577,7 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'X-Auth-Token': self.token,
-                     'X-Auth-Url': keystone_client_fixtures.BASE_URL,
+                     'X-Auth-Url': BASE_URL,
                      'User-Agent': 'python-heatclient'})
         resp_dict = {"stacks": [
             {
@@ -2692,7 +2698,7 @@ class MockShellTestToken(MockShellTestUserPass):
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_TENANT_ID': 'tenant_id',
-            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            'OS_AUTH_URL': BASE_URL,
             # Note we also set username/password, because create/update
             # pass them even if we have a token to support storing credentials
             # Hopefully at some point we can remove this and move to only
@@ -2722,7 +2728,7 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
             'OS_AUTH_TOKEN': self.token,
             'OS_NO_CLIENT_AUTH': 'True',
             'HEAT_URL': 'http://no.where',
-            'OS_AUTH_URL': keystone_client_fixtures.BASE_URL,
+            'OS_AUTH_URL': BASE_URL,
             # Note we also set username/password, because create/update
             # pass them even if we have a token to support storing credentials
             # Hopefully at some point we can remove this and move to only
