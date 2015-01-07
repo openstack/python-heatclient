@@ -32,6 +32,15 @@ import heatclient.exc as exc
 logger = logging.getLogger(__name__)
 
 
+def _authenticated_fetcher(hc):
+    """A wrapper around the heat client object to fetch a template.
+    """
+    def _do(*args, **kwargs):
+        return hc.http_client.raw_request(*args, **kwargs).content
+
+    return _do
+
+
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
@@ -99,7 +108,7 @@ def do_stack_create(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        hc.http_client.raw_request)
+        _authenticated_fetcher(hc))
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)
 
@@ -218,7 +227,7 @@ def do_stack_preview(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        hc.http_client.raw_request)
+        _authenticated_fetcher(hc))
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)
 
@@ -473,7 +482,7 @@ def do_stack_update(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        hc.http_client.raw_request)
+        _authenticated_fetcher(hc))
 
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)
@@ -713,7 +722,7 @@ def do_template_validate(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        hc.http_client.raw_request)
+        _authenticated_fetcher(hc))
 
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)

@@ -1221,10 +1221,17 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
+
+        raw_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            template_data)
+
         http.HTTPClient.raw_request(
             'GET',
             'http://no.where/container/minimal.template',
-        ).AndReturn(template_data)
+        ).AndReturn(raw_resp)
 
         resp = fakes.FakeHTTPResponse(
             201,
