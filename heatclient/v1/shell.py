@@ -601,27 +601,37 @@ def do_output_list(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to query.'))
-@utils.arg('output', metavar='<OUTPUT NAME>',
+@utils.arg('output', metavar='<OUTPUT NAME>', nargs='?', default=None,
            help=_('Name of an output to display.'))
+@utils.arg('-a', '--all', default=False, action='store_true',
+           help=_('Display all stack outputs.'))
 def do_output_show(hc, args):
     '''Show a specific stack output.'''
+    if (not args.all and args.output is None or
+            args.all and args.output is not None):
+        raise exc.CommandError(
+            _('Error: either %(output)s or %(all)s argument is needed.')
+            % {'output': '<OUTPUT NAME>', 'all': '--all'})
     try:
         stack = hc.stacks.get(stack_id=args.id)
     except exc.HTTPNotFound:
         raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
-        for output in stack.to_dict().get('outputs', []):
-            if output['output_key'] == args.output:
-                if 'output_error' in output:
-                    msg = _("Error: %s") % output['output_error']
-                    raise exc.CommandError(msg)
-                else:
-                    value = output['output_value']
-                break
+        if args.all:
+            print(utils.json_formatter(stack.to_dict().get('outputs', [])))
         else:
-            return
+            for output in stack.to_dict().get('outputs', []):
+                if output['output_key'] == args.output:
+                    if 'output_error' in output:
+                        msg = _("Error: %s") % output['output_error']
+                        raise exc.CommandError(msg)
+                    else:
+                        value = output['output_value']
+                    break
+            else:
+                return
 
-        print (jsonutils.dumps(value, indent=2, ensure_ascii=False))
+            print(utils.json_formatter(value))
 
 
 def do_resource_type_list(hc, args):

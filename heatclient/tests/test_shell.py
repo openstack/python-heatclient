@@ -859,6 +859,20 @@ class ShellTestUserPass(ShellBase):
         list_text = self.shell('output-show teststack/1 output_uni')
         self.assertRegexpMatches(list_text, u'test\u2665')
 
+    def test_output_show_all(self):
+        self.register_keystone_auth_fixture()
+        self._output_fake_response()
+        list_text = self.shell('output-show teststack/1 --all')
+        for r in ['output1', 'value1', 'output2', 'test output unicode']:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show_missing_arg(self):
+        self.register_keystone_auth_fixture()
+        error = self.assertRaises(
+            exc.CommandError, self.shell, 'output-show teststack/1')
+        self.assertIn('either <OUTPUT NAME> or --all argument is needed.',
+                      str(error))
+
     def test_output_show_error(self):
         self.register_keystone_auth_fixture()
         self._error_output_fake_response()
