@@ -75,6 +75,9 @@ def _authenticated_fetcher(hc):
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to create.'))
+@utils.arg('--pre-create', metavar='<RESOURCE>',
+           default=None, action='append',
+           help=_('Name of a resource to set a pre-create hook to.'))
 def do_create(hc, args):
     '''DEPRECATED! Use stack-create instead.'''
     logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
@@ -88,6 +91,14 @@ def do_create(hc, args):
            help=_('Path to the environment, it can be specified '
                   'multiple times.'),
            action='append')
+@utils.arg('--pre-create', metavar='<RESOURCE>',
+           default=None, action='append',
+           help=_('Name of a resource to set a pre-create hook to. Resources '
+                  'in nested stacks can be set using slash as a separator: '
+                  'nested_stack/another/my_resource. You can use wildcards '
+                  'to match multiple stacks or resources: '
+                  'nested_stack/an*/*_resource. This can be specified '
+                  'multiple times'))
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -132,6 +143,9 @@ def do_stack_create(hc, args):
                            'arg2': '-t/--timeout'
                        })
 
+    if args.pre_create:
+        hooks_to_env(env, args.pre_create, 'pre-create')
+
     fields = {
         'stack_name': args.name,
         'disable_rollback': not(args.enable_rollback),
@@ -150,6 +164,31 @@ def do_stack_create(hc, args):
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
+
+
+def hooks_to_env(env, arg_hooks, hook):
+    '''Add hooks from args to environment's resource_registry section.
+
+    Hooks are either "resource_name" (if it's a top-level resource) or
+    "nested_stack/resource_name" (if the resource is in a nested stack).
+
+    The environment expects each hook to be associated with the resource
+    within `resource_registry/resources` using the `hooks: pre-create` format.
+
+    '''
+    if 'resource_registry' not in env:
+        env['resource_registry'] = {}
+    if 'resources' not in env['resource_registry']:
+        env['resource_registry']['resources'] = {}
+    for hook_declaration in arg_hooks:
+        hook_path = [r for r in hook_declaration.split('/') if r]
+        resources = env['resource_registry']['resources']
+        for nested_stack in hook_path:
+            if nested_stack not in resources:
+                resources[nested_stack] = {}
+            resources = resources[nested_stack]
+        else:
+            resources['hooks'] = hook
 
 
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
@@ -452,6 +491,9 @@ def do_stack_show(hc, args):
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to update.'))
+@utils.arg('--pre-update', metavar='<RESOURCE>',
+           default=None, action='append',
+           help=_('Name of a resource to set a pre-update hook to.'))
 def do_update(hc, args):
     '''DEPRECATED! Use stack-update instead.'''
     logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
@@ -465,6 +507,14 @@ def do_update(hc, args):
            help=_('Path to the environment, it can be specified '
                   'multiple times.'),
            action='append')
+@utils.arg('--pre-update', metavar='<RESOURCE>',
+           default=None, action='append',
+           help=_('Name of a resource to set a pre-update hook to. Resources '
+                  'in nested stacks can be set using slash as a separator: '
+                  'nested_stack/another/my_resource. You can use wildcards '
+                  'to match multiple stacks or resources: '
+                  'nested_stack/an*/*_resource. This can be specified '
+                  'multiple times'))
 @utils.arg('-u', '--template-url', metavar='<URL>',
            help=_('URL of template.'))
 @utils.arg('-o', '--template-object', metavar='<URL>',
@@ -519,6 +569,9 @@ def do_stack_update(hc, args):
 
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)
+
+    if args.pre_update:
+        hooks_to_env(env, args.pre_update, 'pre-update')
 
     fields = {
         'stack_id': args.id,
@@ -917,6 +970,46 @@ def do_resource_signal(hc, args):
         raise exc.CommandError(_('Stack or resource not found: '
                                  '%(id)s %(resource)s') %
                                {'id': args.id, 'resource': args.resource})
+
+
+@utils.arg('id', metavar='<NAME or ID>',
+           help=_('Name or ID of the stack these resources belong to.'))
+@utils.arg('--pre-create', action='store_true', default=False,
+           help=_('Clear the pre-create hooks'))
+@utils.arg('--pre-update', action='store_true', default=False,
+           help=_('Clear the pre-update hooks'))
+@utils.arg('hook', metavar='<RESOURCE>', nargs='+',
+           help=_('Resource names with hooks to clear. Resources '
+                  'in nested stacks can be set using slash as a separator: '
+                  'nested_stack/another/my_resource. You can use wildcards '
+                  'to match multiple stacks or resources: '
+                  'nested_stack/an*/*_resource'))
+def do_hook_clear(hc, args):
+    '''Clear hooks on a given stack.'''
+    if not (args.pre_create or args.pre_update):
+        raise exc.CommandError(
+            "You must specify at least one hook type (--pre-create, "
+            "--pre-update or both)")
+    for hook_string in args.hook:
+        hook = [b for b in hook_string.split('/') if b]
+        resource_name = hook[-1]
+        stack_id = args.id
+        for nested_stack_name in hook[:-1]:
+            nested_stack = hc.resources.get(
+                stack_id=stack_id, resource_name=nested_stack_name)
+            stack_id = nested_stack.physical_resource_id
+        try:
+            if args.pre_create:
+                hc.resources.signal(stack_id=stack_id,
+                                    resource_name=resource_name,
+                                    data={'unset_hook': 'pre-create'})
+            if args.pre_update:
+                hc.resources.signal(stack_id=stack_id,
+                                    resource_name=resource_name,
+                                    data={'unset_hook': 'pre-update'})
+        except exc.HTTPNotFound:
+            raise exc.CommandError('Stack %s or resource %s not found.' %
+                                   (stack_id, resource_name))
 
 
 @utils.arg('id', metavar='<NAME or ID>',
