@@ -606,6 +606,9 @@ def do_output_list(hc, args):
            help=_('Name of an output to display.'))
 @utils.arg('-a', '--all', default=False, action='store_true',
            help=_('Display all stack outputs.'))
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help=_('The output value format, one of: json, raw'),
+           default='json')
 def do_output_show(hc, args):
     '''Show a specific stack output.'''
     if (not args.all and args.output is None or
@@ -632,7 +635,12 @@ def do_output_show(hc, args):
             else:
                 return
 
-            print(utils.json_formatter(value))
+            if (args.format == 'json'
+                    or isinstance(value, dict)
+                    or isinstance(value, list)):
+                print(utils.json_formatter(value))
+            else:
+                print(value)
 
 
 def do_resource_type_list(hc, args):

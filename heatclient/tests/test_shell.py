@@ -811,7 +811,8 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(resp_dict))
 
         http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+            'GET', '/stacks/teststack/1').MultipleTimes().AndReturn(
+                (resp, resp_dict))
 
         self.m.ReplayAll()
 
@@ -854,15 +855,27 @@ class ShellTestUserPass(ShellBase):
 
     def test_output_show(self):
         self.register_keystone_auth_fixture()
+
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output1')
-        self.assertRegexpMatches(list_text, 'value1')
+        self.assertEqual('"value1"\n', list_text)
+
+        list_text = self.shell('output-show  -F raw teststack/1 output1')
+        self.assertEqual('value1\n', list_text)
+
+        list_text = self.shell('output-show  -F raw teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
+
+        list_text = self.shell('output-show  -F json teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
 
     def test_output_show_unicode(self):
         self.register_keystone_auth_fixture()
         self._output_fake_response()
         list_text = self.shell('output-show teststack/1 output_uni')
-        self.assertRegexpMatches(list_text, u'test\u2665')
+        self.assertEqual(u'"test\u2665"\n', list_text)
 
     def test_output_show_all(self):
         self.register_keystone_auth_fixture()
