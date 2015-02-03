@@ -49,7 +49,8 @@ def link_formatter(links):
 
 
 def json_formatter(js):
-    return jsonutils.dumps(js, indent=2, ensure_ascii=False)
+    return jsonutils.dumps(js, indent=2, ensure_ascii=False,
+                           separators=(', ', ': '))
 
 
 def text_wrap_formatter(d):
