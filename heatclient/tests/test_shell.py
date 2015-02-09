@@ -2958,3 +2958,87 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
             'OS_PASSWORD': 'password'
         }
         self.set_fake_env(fake_env)
+
+
+class ShellTestManageService(ShellBase):
+
+    def setUp(self):
+        super(ShellTestManageService, self).setUp()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def _set_fake_env(self):
+        '''Patch os.environ to avoid required auth info.'''
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def _test_error_case(self, code, message):
+        self.register_keystone_auth_fixture()
+
+        resp_dict = {
+            'explanation': '',
+            'code': code,
+            'error': {
+                'message': message,
+                'type': '',
+                'traceback': '',
+            },
+            'title': 'test title'
+        }
+        resp_string = jsonutils.dumps(resp_dict)
+        resp = fakes.FakeHTTPResponse(
+            code,
+            'test reason',
+            {'content-type': 'application/json'},
+            resp_string)
+        (http.HTTPClient.json_request('GET', '/services').
+         AndRaise(exc.from_response(resp)))
+
+        exc.verbose = 1
+
+        self.m.ReplayAll()
+        e = self.assertRaises(exc.HTTPException,
+                              self.shell, "service-list")
+        self.m.VerifyAll()
+        self.assertIn(message, str(e))
+
+    def test_service_list(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {
+            'services': [
+                {
+                    "status": "up",
+                    "binary": "heat-engine",
+                    "engine_id": "9d9242c3-4b9e-45e1-9e74-7615fbf20e5d",
+                    "hostname": "mrkanag",
+                    "updated_at": "2015-02-03T05:57:59.000000",
+                    "topic": "engine",
+                    "host": "engine-1"
+                }
+            ]
+        }
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request('GET', '/services').AndReturn(response)
+
+        self.m.ReplayAll()
+        services_text = self.shell('service-list')
+        self.m.VerifyAll()
+
+        required = [
+            'hostname', 'binary', 'engine_id', 'host',
+            'topic', 'updated_at', 'status'
+        ]
+        for r in required:
+            self.assertRegexpMatches(services_text, r)
+
+    def test_service_list_503(self):
+        self._test_error_case(
+            message='All heat engines are down',
+            code=503)
+
+    def test_service_list_403(self):
+        self._test_error_case(
+            message=('You are not authorized to '
+                     'complete this action'),
+            code=403)

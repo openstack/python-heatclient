@@ -1170,3 +1170,11 @@ def do_snapshot_list(hc, args):
             'creation_time': lambda x: x['creation_time'],
         }
         utils.print_list(snapshots["snapshots"], fields, formatters=formatters)
+
+
+def do_service_list(hc, args=None):
+    '''List the Heat engines.'''
+    fields = ['hostname', 'binary', 'engine_id', 'host',
+              'topic', 'updated_at', 'status']
+    services = hc.services.list()
+    utils.print_list(services, fields, sortby_index=1)
