@@ -1954,7 +1954,7 @@ class ShellTestEvents(ShellBase):
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
         http.HTTPClient.json_request(
-            'GET', '/stacks/%s/resources/%s/events' % (
+            'GET', '/stacks/%s/resources/%s/events?sort_dir=asc' % (
                 parse.quote(stack_id, ''),
                 parse.quote(encodeutils.safe_encode(
                     resource_name), ''))).AndReturn((resp, resp_dict))
