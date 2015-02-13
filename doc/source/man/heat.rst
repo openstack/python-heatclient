@@ -85,6 +85,10 @@ Adopt a stack ::
 
     heat stack-adopt -a <adopt_file> mystack
 
+List heat-engines running status ::
+
+    heat service-list
+
 Note: stack-adopt and stack-abandon commands are not available by default.
 Please ask your Openstack operator to enable this feature.
 
