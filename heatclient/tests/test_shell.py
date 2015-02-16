@@ -39,6 +39,7 @@ from heatclient.common import utils
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
+import heatclient.v1.shell
 
 load_tests = testscenarios.load_tests_apply_scenarios
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -123,13 +124,18 @@ class TestCase(testtools.TestCase):
     def register_keystone_v2_token_fixture(self):
         v2_token = keystone_fixture.V2Token(token_id=self.tokenid)
         service = v2_token.add_service('orchestration')
-        service.add_endpoint('http://heat.example.com', region='RegionOne')
+        service.add_endpoint('http://heat.example.com',
+                             admin='http://heat-admin.localdomain',
+                             internal='http://heat.localdomain',
+                             region='RegionOne')
         self.requests.post('%s/tokens' % V2_URL, json=v2_token)
 
     def register_keystone_v3_token_fixture(self):
         v3_token = keystone_fixture.V3Token()
         service = v3_token.add_service('orchestration')
-        service.add_standard_endpoints(public='http://heat.example.com')
+        service.add_standard_endpoints(public='http://heat.example.com',
+                                       admin='http://heat-admin.localdomain',
+                                       internal='http://heat.localdomain')
         self.requests.post('%s/auth/tokens' % V3_URL,
                            json=v3_token,
                            headers={'X-Subject-Token': self.tokenid})
@@ -423,6 +429,77 @@ class ShellTestNoMoxV3(ShellTestNoMox):
 
     def _set_fake_env(self):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
+
+
+class ShellTestEndpointType(TestCase):
+
+    def setUp(self):
+        super(ShellTestEndpointType, self).setUp()
+        self.m = mox.Mox()
+        self.m.StubOutWithMock(http, '_construct_http_client')
+        self.m.StubOutWithMock(heatclient.v1.shell, 'do_stack_list')
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def test_endpoint_type_public_url(self):
+        self.register_keystone_auth_fixture()
+        kwargs = {
+            'auth_url': 'http://keystone.example.com:5000/',
+            'session': mox.IgnoreArg(),
+            'auth': mox.IgnoreArg(),
+            'service_type': 'orchestration',
+            'endpoint_type': 'publicURL',
+            'region_name': '',
+            'username': 'username',
+            'password': 'password',
+            'include_pass': False
+        }
+        http._construct_http_client(u'http://heat.example.com', **kwargs)
+        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
+
+        self.m.ReplayAll()
+        heatclient.shell.main(('stack-list',))
+
+    def test_endpoint_type_admin_url(self):
+        self.register_keystone_auth_fixture()
+        kwargs = {
+            'auth_url': 'http://keystone.example.com:5000/',
+            'session': mox.IgnoreArg(),
+            'auth': mox.IgnoreArg(),
+            'service_type': 'orchestration',
+            'endpoint_type': 'adminURL',
+            'region_name': '',
+            'username': 'username',
+            'password': 'password',
+            'include_pass': False
+        }
+        http._construct_http_client(u'http://heat-admin.localdomain', **kwargs)
+        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
+
+        self.m.ReplayAll()
+        heatclient.shell.main(('--os-endpoint-type=adminURL', 'stack-list',))
+
+    def test_endpoint_type_internal_url(self):
+        self.register_keystone_auth_fixture()
+        self.useFixture(fixtures.EnvironmentVariable('OS_ENDPOINT_TYPE',
+                                                     'internalURL'))
+        kwargs = {
+            'auth_url': 'http://keystone.example.com:5000/',
+            'session': mox.IgnoreArg(),
+            'auth': mox.IgnoreArg(),
+            'service_type': 'orchestration',
+            'endpoint_type': 'internalURL',
+            'region_name': '',
+            'username': 'username',
+            'password': 'password',
+            'include_pass': False
+        }
+        http._construct_http_client(u'http://heat.localdomain', **kwargs)
+        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
+
+        self.m.ReplayAll()
+        heatclient.shell.main(('stack-list',))
 
 
 class ShellTestCommon(ShellBase):

@@ -612,6 +612,7 @@ class HeatShell(object):
             keystone_session = self._get_keystone_session(**kwargs)
             project_id = args.os_project_id or args.os_tenant_id
             project_name = args.os_project_name or args.os_tenant_name
+            endpoint_type = args.os_endpoint_type or 'publicURL'
             kwargs = {
                 'username': args.os_username,
                 'user_id': args.os_user_id,
@@ -632,9 +633,8 @@ class HeatShell(object):
                 region_name = args.os_region_name
                 endpoint = keystone_auth.get_endpoint(keystone_session,
                                                       service_type=svc_type,
+                                                      interface=endpoint_type,
                                                       region_name=region_name)
-
-            endpoint_type = args.os_endpoint_type or 'publicURL'
             kwargs = {
                 'auth_url': args.os_auth_url,
                 'session': keystone_session,
