@@ -903,7 +903,8 @@ def do_event_list(hc, args):
               'resource_name': args.resource,
               'limit': args.limit,
               'marker': args.marker,
-              'filters': utils.format_parameters(args.filters)}
+              'filters': utils.format_parameters(args.filters),
+              'sort_dir': 'asc'}
     try:
         events = hc.events.list(**fields)
     except exc.HTTPNotFound as ex:
