@@ -1081,6 +1081,45 @@ def do_deployment_delete(hc, args):
                                  "deployments."))
 
 
+@utils.arg('id', metavar='<ID>',
+           help=_('ID deployment to show the output for.'))
+@utils.arg('output', metavar='<OUTPUT NAME>', nargs='?', default=None,
+           help=_('Name of an output to display.'))
+@utils.arg('-a', '--all', default=False, action='store_true',
+           help=_('Display all deployment outputs.'))
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help=_('The output value format, one of: raw, json'),
+           default='raw')
+def do_deployment_output_show(hc, args):
+    '''Show a specific stack output.'''
+    if (not args.all and args.output is None or
+            args.all and args.output is not None):
+        raise exc.CommandError(
+            _('Error: either %(output)s or %(all)s argument is needed.')
+            % {'output': '<OUTPUT NAME>', 'all': '--all'})
+    try:
+        sd = hc.software_deployments.get(deployment_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Deployment not found: %s') % args.id)
+    outputs = sd.to_dict().get('output_values', {})
+
+    if args.all:
+        print(utils.json_formatter(outputs))
+    else:
+        for output_key, value in outputs.items():
+            if output_key == args.output:
+                break
+        else:
+            return
+
+        if (args.format == 'json'
+                or isinstance(value, dict)
+                or isinstance(value, list)):
+            print(utils.json_formatter(value))
+        else:
+            print(value)
+
+
 def do_build_info(hc, args):
     '''Retrieve build information.'''
     result = hc.build_info.build_info()

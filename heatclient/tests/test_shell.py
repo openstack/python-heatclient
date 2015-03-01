@@ -2752,6 +2752,76 @@ class ShellTestDeployment(ShellBase):
         for r in required:
             self.assertRegexpMatches(build_info_text, r)
 
+    def test_deploy_output_show(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {'software_deployment': {
+            'status': 'COMPLETE',
+            'server_id': '700115e5-0100-4ecc-9ef7-9e05f27d8803',
+            'config_id': '18c4fc03-f897-4a1d-aaad-2b7622e60257',
+            'output_values': {
+                'deploy_stdout': '',
+                'deploy_stderr': '',
+                'deploy_status_code': 0,
+                'result': 'The result value',
+                'dict_output': {'foo': 'bar'},
+                'list_output': ['foo', 'bar']
+            },
+            'input_values': {},
+            'action': 'CREATE',
+            'status_reason': 'Outputs received',
+            'id': 'defg'
+        }}
+
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        http.HTTPClient.json_request(
+            'GET', '/software_deployments/defgh').AndRaise(exc.HTTPNotFound())
+        http.HTTPClient.json_request(
+            'GET', '/software_deployments/defg').MultipleTimes().AndReturn(
+                response)
+
+        self.m.ReplayAll()
+
+        self.assertRaises(exc.CommandError, self.shell,
+                          'deployment-output-show defgh result')
+        self.assertEqual(
+            'The result value\n',
+            self.shell('deployment-output-show defg result'))
+        self.assertEqual(
+            '"The result value"\n',
+            self.shell('deployment-output-show --format json defg result'))
+
+        self.assertEqual(
+            '{\n  "foo": "bar"\n}\n',
+            self.shell('deployment-output-show defg dict_output'))
+        self.assertEqual(
+            self.shell(
+                'deployment-output-show --format raw defg dict_output'),
+            self.shell(
+                'deployment-output-show --format json defg dict_output'))
+
+        self.assertEqual(
+            '[\n  "foo", \n  "bar"\n]\n',
+            self.shell('deployment-output-show defg list_output'))
+        self.assertEqual(
+            self.shell(
+                'deployment-output-show --format raw defg list_output'),
+            self.shell(
+                'deployment-output-show --format json defg list_output'))
+
+        self.assertEqual({
+            'deploy_stdout': '',
+            'deploy_stderr': '',
+            'deploy_status_code': 0,
+            'result': 'The result value',
+            'dict_output': {'foo': 'bar'},
+            'list_output': ['foo', 'bar']},
+            jsonutils.loads(self.shell(
+                'deployment-output-show --format json defg --all'))
+        )
+
 
 class ShellTestBuildInfo(ShellBase):
 
