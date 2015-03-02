@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import mock
 import os
 import socket
 
@@ -21,6 +22,9 @@ import testtools
 from heatclient.common import http
 from heatclient import exc
 from heatclient.tests import fakes
+from heatclient.tests import test_shell
+from keystoneclient.auth.identity import v2 as ks_v2_auth
+from keystoneclient import session
 from mox3 import mox
 
 
@@ -682,3 +686,44 @@ class HttpClientTest(testtools.TestCase):
         client.log_curl_request("GET", '', kwargs=kwargs)
 
         self.m.VerifyAll()
+
+
+class SessionClientTest(test_shell.TestCase, testtools.TestCase):
+    def setUp(self):
+        super(SessionClientTest, self).setUp()
+        self.register_keystone_auth_fixture()
+        self.auth_session = session.Session()
+        self.auth_session.request = mock.Mock()
+        self.auth_plugin = ks_v2_auth.Password(test_shell.V2_URL, 'xx', 'xx')
+
+    def test_session_raw_request(self):
+        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK', {'content-type': 'application/octet-stream'}, '')
+
+        client = http.SessionClient(session=self.auth_session,
+                                    auth=self.auth_plugin)
+        resp = client.raw_request(method='GET', url='')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual('', ''.join([x for x in resp.content]))
+
+    def test_session_json_request(self):
+        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK', {'content-type': 'application/json'}, '{}')
+
+        client = http.SessionClient(session=self.auth_session,
+                                    auth=self.auth_plugin)
+
+        resp, body = client.json_request('GET', '')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
+
+    def test_404_error_response(self):
+        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
+            404, 'OK', {'content-type': 'application/octet-stream'}, '')
+
+        client = http.SessionClient(session=self.auth_session,
+                                    auth=self.auth_plugin)
+        e = self.assertRaises(exc.HTTPNotFound,
+                              client.raw_request, 'GET', '')
+        # Assert that the raised exception can be converted to string
+        self.assertIsNotNone(str(e))

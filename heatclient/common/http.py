@@ -309,11 +309,14 @@ class SessionClient(HTTPClient):
 
     # NOTE(dhu):  Will eventually move to a common session client.
     # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
-    def __init__(self, session, auth, endpoint, **kwargs):
+    def __init__(self, session, auth, endpoint=None, **kwargs):
         self.session = session
         self.auth = auth
-        self.endpoint = endpoint
 
+        if endpoint is not None:
+            self.endpoint = endpoint
+        else:
+            self.endpoint = kwargs.get('endpoint')
         self.auth_url = kwargs.get('auth_url')
         self.region_name = kwargs.get('region_name')
         self.interface = kwargs.get('interface',
@@ -351,7 +354,7 @@ class SessionClient(HTTPClient):
 
         # If the endpoint is passed in, make sure keystone uses it
         # instead of looking up the endpoint in the auth plugin.
-        if self.endpoint:
+        if self.endpoint is not None:
             kwargs['endpoint_override'] = self.endpoint
 
         resp = self.session.request(url, method, redirect=follow_redirects,
@@ -364,8 +367,13 @@ class SessionClient(HTTPClient):
             # unless caller specified follow_redirects=False
             if follow_redirects:
                 location = resp.headers.get('location')
-                path = self.strip_endpoint(location)
-                resp = self._http_request(path, method, **kwargs)
+                if location is None:
+                    message = _("Location not returned with 302")
+                    raise exc.InvalidEndpoint(message=message)
+                elif (self.endpoint is not None and
+                        location.lower().startswith(self.endpoint.lower())):
+                    location = location[len(self.endpoint):]
+                resp = self._http_request(location, method, **kwargs)
         elif resp.status_code == 300:
             raise exc.from_response(resp)
 
