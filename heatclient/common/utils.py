@@ -117,16 +117,17 @@ def exit(msg=''):
     sys.exit(1)
 
 
-def format_parameters(params):
+def format_parameters(params, parse_semicolon=True):
     '''Reformat parameters into dict of format expected by the API.'''
 
     if not params:
         return {}
 
-    # expect multiple invocations of --parameters but fall back
-    # to ; delimited if only one --parameters is specified
-    if len(params) == 1:
-        params = params[0].split(';')
+    if parse_semicolon:
+        # expect multiple invocations of --parameters but fall back
+        # to ; delimited if only one --parameters is specified
+        if len(params) == 1:
+            params = params[0].split(';')
 
     parameters = {}
     for p in params:

@@ -66,6 +66,12 @@ class shellTest(testtools.TestCase):
                                        'ww7a4oAO;NQ/fD==',
                           'UpstreamDNS': '8.8.8.8'}, p)
 
+    def test_format_parameters_parse_semicolon_false(self):
+        p = utils.format_parameters(
+            ['KeyName=heat_key;UpstreamDNS=8.8.8.8;a=b'],
+            parse_semicolon=False)
+        self.assertEqual({'KeyName': 'heat_key;UpstreamDNS=8.8.8.8;a=b'}, p)
+
     def test_format_parameters_multiple_values_per_pamaters(self):
         p = utils.format_parameters([
             'status=COMPLETE',
