@@ -20,9 +20,11 @@ import requests
 import testtools
 
 from heatclient.common import http
+from heatclient.common import utils
 from heatclient import exc
 from heatclient.tests.unit import fakes
 from heatclient.tests.unit import test_shell
+from keystoneclient import adapter
 from keystoneclient.auth.identity import v2 as ks_v2_auth
 from keystoneclient import session
 from mox3 import mox
@@ -665,37 +667,40 @@ class SessionClientTest(test_shell.TestCase, testtools.TestCase):
         super(SessionClientTest, self).setUp()
         self.register_keystone_auth_fixture()
         self.auth_session = session.Session()
-        self.auth_session.request = mock.Mock()
         self.auth_plugin = ks_v2_auth.Password(test_shell.V2_URL, 'xx', 'xx')
 
-    def test_session_raw_request(self):
-        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
-            200, 'OK', {'content-type': 'application/octet-stream'}, '')
+    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
+    def test_session_raw_request(self, mock_request):
+        mock_request.return_value = (fakes.FakeHTTPResponse(
+            200, 'OK', {'content-type': 'application/octet-stream'}, ''), '')
 
         client = http.SessionClient(session=self.auth_session,
                                     auth=self.auth_plugin)
-        resp = client.raw_request(method='GET', url='')
+        resp = client.request(method='GET', url='')
         self.assertEqual(200, resp.status_code)
         self.assertEqual('', ''.join([x for x in resp.content]))
 
-    def test_session_json_request(self):
-        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
-            200, 'OK', {'content-type': 'application/json'}, '{}')
+    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
+    def test_session_json_request(self, mock_request):
+        mock_request.return_value = (fakes.FakeHTTPResponse(
+            200, 'OK', {'content-type': 'application/json'}, '{}'), {})
 
         client = http.SessionClient(session=self.auth_session,
                                     auth=self.auth_plugin)
 
-        resp, body = client.json_request('GET', '')
+        resp = client.request('', 'GET')
+        body = utils.get_response_body(resp)
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
 
-    def test_404_error_response(self):
-        self.auth_session.request.return_value = fakes.FakeHTTPResponse(
-            404, 'OK', {'content-type': 'application/octet-stream'}, '')
+    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
+    def test_404_error_response(self, mock_request):
+        mock_request.return_value = (fakes.FakeHTTPResponse(
+            404, 'OK', {'content-type': 'application/octet-stream'}, ''), '')
 
         client = http.SessionClient(session=self.auth_session,
                                     auth=self.auth_plugin)
         e = self.assertRaises(exc.HTTPNotFound,
-                              client.raw_request, 'GET', '')
+                              client.request, '', 'GET')
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(str(e))

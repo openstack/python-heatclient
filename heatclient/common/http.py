@@ -30,6 +30,7 @@ from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LW
+from keystoneclient import adapter
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'
@@ -295,87 +296,57 @@ class HTTPClient(object):
         return self.client_request("PATCH", url, **kwargs)
 
 
-class SessionClient(HTTPClient):
+class SessionClient(adapter.LegacyJsonAdapter):
     """HTTP client based on Keystone client session."""
 
-    # NOTE(dhu):  Will eventually move to a common session client.
-    # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
-    def __init__(self, session, auth, endpoint=None, **kwargs):
-        self.session = session
-        self.auth = auth
-
-        if endpoint is not None:
-            self.endpoint = endpoint
-        else:
-            self.endpoint = kwargs.get('endpoint')
-        self.auth_url = kwargs.get('auth_url')
-        self.region_name = kwargs.get('region_name')
-        self.interface = kwargs.get('interface',
-                                    kwargs.get('endpoint_type', 'public'))
-        self.service_type = kwargs.get('service_type')
-
-        self.include_pass = kwargs.get('include_pass')
-        self.username = kwargs.get('username')
-        self.password = kwargs.get('password')
-        # see if we can get the auth_url from auth plugin if one is not
-        # provided from kwargs
-        if not self.auth_url and hasattr(self.auth, 'auth_url'):
-            self.auth_url = self.auth.auth_url
-
-    def _http_request(self, url, method, **kwargs):
+    def request(self, url, method, **kwargs):
         kwargs.setdefault('user_agent', USER_AGENT)
-        kwargs.setdefault('auth', self.auth)
 
-        endpoint_filter = kwargs.setdefault('endpoint_filter', {})
-        endpoint_filter.setdefault('interface', self.interface)
-        endpoint_filter.setdefault('service_type', self.service_type)
-        endpoint_filter.setdefault('region_name', self.region_name)
+        try:
+            kwargs.setdefault('json', kwargs.pop('data'))
+        except KeyError:
+            pass
 
-        # TODO(gyee): what are these headers for?
-        if self.auth_url:
-            kwargs['headers'].setdefault('X-Auth-Url', self.auth_url)
-        if self.region_name:
-            kwargs['headers'].setdefault('X-Region-Name', self.region_name)
-        if self.include_pass and 'X-Auth-Key' not in kwargs['headers']:
-            kwargs['headers'].update(self.credentials_headers())
-
-        # Allow caller to specify not to follow redirects, in which case we
-        # just return the redirect response.  Useful for using stacks:lookup.
-        follow_redirects = kwargs.pop('follow_redirects', True)
-
-        # If the endpoint is passed in, make sure keystone uses it
-        # instead of looking up the endpoint in the auth plugin.
-        if self.endpoint is not None:
-            kwargs['endpoint_override'] = self.endpoint
-
-        resp = self.session.request(url, method, redirect=follow_redirects,
-                                    raise_exc=False, **kwargs)
+        resp, body = super(SessionClient, self).request(url, method,
+                                                        raise_exc=False,
+                                                        **kwargs)
 
         if 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
-            # Redirected. Reissue the request to the new location,
-            # unless caller specified follow_redirects=False
-            if follow_redirects:
-                location = resp.headers.get('location')
-                if location is None:
-                    message = _("Location not returned with 302")
-                    raise exc.InvalidEndpoint(message=message)
-                elif (self.endpoint is not None and
-                        location.lower().startswith(self.endpoint.lower())):
-                    location = location[len(self.endpoint):]
-                resp = self._http_request(location, method, **kwargs)
+            location = resp.headers.get('location')
+            path = self.strip_endpoint(location)
+            resp = self.request(path, method, **kwargs)
         elif resp.status_code == 300:
             raise exc.from_response(resp)
 
         return resp
 
+    def credentials_headers(self):
+        return {}
 
-def _construct_http_client(*args, **kwargs):
+    def strip_endpoint(self, location):
+        if location is None:
+            message = _("Location not returned with 302")
+            raise exc.InvalidEndpoint(message=message)
+        if (self.endpoint_override is not None and
+                location.lower().startswith(self.endpoint_override.lower())):
+                return location[len(self.endpoint_override):]
+        else:
+            return location
+
+
+def _construct_http_client(endpoint=None, username=None, password=None,
+                           include_pass=None, endpoint_type=None,
+                           auth_url=None, **kwargs):
     session = kwargs.pop('session', None)
     auth = kwargs.pop('auth', None)
 
     if session:
-        return SessionClient(session, auth, *args, **kwargs)
+        kwargs['endpoint_override'] = endpoint
+        return SessionClient(session, auth=auth, **kwargs)
     else:
-        return HTTPClient(*args, **kwargs)
+        return HTTPClient(endpoint=endpoint, username=username,
+                          password=password, include_pass=include_pass,
+                          endpoint_type=endpoint_type, auth_url=auth_url,
+                          **kwargs)
