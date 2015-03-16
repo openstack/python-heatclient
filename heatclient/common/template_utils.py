@@ -66,17 +66,20 @@ def get_template_contents(template_file=None, template_url=None,
     if files is None:
         files = {}
     resolve_template_get_files(template, files, tmpl_base_url)
-    resolve_template_type(template, files, tmpl_base_url)
     return files, template
 
 
 def resolve_template_get_files(template, files, template_base_url):
 
     def ignore_if(key, value):
-        if key != 'get_file':
+        if key != 'get_file' and key != 'type':
             return True
         if not isinstance(value, six.string_types):
             return True
+        if (key == 'type' and
+                not value.endswith(('.yaml', '.template'))):
+            return True
+        return False
 
     def recurse_if(value):
         return isinstance(value, (dict, list))
@@ -85,26 +88,18 @@ def resolve_template_get_files(template, files, template_base_url):
                       ignore_if, recurse_if)
 
 
-def resolve_template_type(template, files, template_base_url):
-
-    def ignore_if(key, value):
-        if key != 'type':
-            return True
-        if not isinstance(value, six.string_types):
-            return True
-        if not value.endswith(('.yaml', '.template')):
-            return True
+def is_template(file_content):
+    try:
+        if isinstance(file_content, six.binary_type):
+            file_content = file_content.decode('utf-8')
+        template_format.parse(file_content)
+    except (ValueError, TypeError):
         return False
-
-    def recurse_if(value):
-        return isinstance(value, (dict, list))
-
-    get_file_contents(template, files, template_base_url,
-                      ignore_if, recurse_if, file_is_template=True)
+    return True
 
 
 def get_file_contents(from_data, files, base_url=None,
-                      ignore_if=None, recurse_if=None, file_is_template=False):
+                      ignore_if=None, recurse_if=None):
 
     if recurse_if and recurse_if(from_data):
         if isinstance(from_data, dict):
@@ -112,8 +107,7 @@ def get_file_contents(from_data, files, base_url=None,
         else:
             recurse_data = from_data
         for value in recurse_data:
-            get_file_contents(value, files, base_url, ignore_if, recurse_if,
-                              file_is_template=file_is_template)
+            get_file_contents(value, files, base_url, ignore_if, recurse_if)
 
     if isinstance(from_data, dict):
         for key, value in iter(from_data.items()):
@@ -125,12 +119,11 @@ def get_file_contents(from_data, files, base_url=None,
 
             str_url = parse.urljoin(base_url, value)
             if str_url not in files:
-                if file_is_template:
+                file_content = read_url_content(str_url)
+                if is_template(file_content):
                     template = get_template_contents(
                         template_url=str_url, files=files)[1]
                     file_content = jsonutils.dumps(template)
-                else:
-                    file_content = utils.read_url_content(str_url)
                 files[str_url] = file_content
             # replace the data value with the normalised absolute URL
             from_data[key] = str_url
@@ -219,9 +212,9 @@ def resolve_environment_urls(resource_registry, files, env_base_url):
             # don't need downloading.
             return True
 
-    get_file_contents(rr, files, base_url, ignore_if, file_is_template=True)
+    get_file_contents(rr, files, base_url, ignore_if)
 
     for res_name, res_dict in iter(rr.get('resources', {}).items()):
         res_base_url = res_dict.get('base_url', base_url)
         get_file_contents(
-            res_dict, files, res_base_url, ignore_if, file_is_template=True)
+            res_dict, files, res_base_url, ignore_if)

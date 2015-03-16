@@ -44,6 +44,7 @@ class ShellEnvironmentTest(testtools.TestCase):
         if url:
             self.m.StubOutWithMock(request, 'urlopen')
             request.urlopen(url).AndReturn(six.BytesIO(content))
+            request.urlopen(url).AndReturn(six.BytesIO(content))
             self.m.ReplayAll()
 
         template_utils.resolve_environment_urls(
@@ -62,6 +63,8 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         request.urlopen('file://%s' % env_file).AndReturn(
             six.BytesIO(env))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
         request.urlopen('file:///home/b/a.yaml').AndReturn(
             six.BytesIO(self.template_a))
         self.m.ReplayAll()
@@ -87,6 +90,8 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         request.urlopen(env_url).AndReturn(
             six.BytesIO(env))
+        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
         request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
             six.BytesIO(self.template_a))
         self.m.ReplayAll()
@@ -122,6 +127,8 @@ class ShellEnvironmentTest(testtools.TestCase):
             six.BytesIO(env))
         request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
             six.BytesIO(self.template_a))
+        request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
         self.m.ReplayAll()
 
         env_url = 'file://%s' % env_file
@@ -152,6 +159,7 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         self.m.StubOutWithMock(request, 'urlopen')
         request.urlopen(url).AndReturn(six.BytesIO(env))
+        request.urlopen(tmpl_url).AndReturn(six.BytesIO(self.template_a))
         request.urlopen(tmpl_url).AndReturn(six.BytesIO(self.template_a))
         self.m.ReplayAll()
 
@@ -205,8 +213,12 @@ class ShellEnvironmentTest(testtools.TestCase):
             six.BytesIO(env1))
         request.urlopen('file:///home/b/a.yaml').AndReturn(
             six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
         request.urlopen('file://%s' % env_file2).AndReturn(
             six.BytesIO(env2))
+        request.urlopen('file:///home/b/b.yaml').AndReturn(
+            six.BytesIO(self.template_a))
         request.urlopen('file:///home/b/b.yaml').AndReturn(
             six.BytesIO(self.template_a))
         self.m.ReplayAll()
@@ -251,14 +263,22 @@ class ShellEnvironmentTest(testtools.TestCase):
               "OS::Thingy4": "file:///home/b/b.yaml"
         '''
 
-        request.urlopen('file://%s' % env_file1).AndReturn(
+        request.urlopen('file://%s' % env_file1).InAnyOrder().AndReturn(
             six.BytesIO(env1))
         request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
         request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
-        request.urlopen('file://%s' % env_file2).AndReturn(
+        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file://%s' % env_file2).InAnyOrder().AndReturn(
             six.BytesIO(env2))
+        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
+            six.BytesIO(self.template_a))
         request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
             six.BytesIO(self.template_a))
         request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
@@ -718,8 +738,14 @@ parameters:
         request.urlopen(
             'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
                 six.BytesIO(self.foo_template))
+        request.urlopen(
+            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
+                six.BytesIO(self.foo_template))
         request.urlopen(url).InAnyOrder().AndReturn(
             six.BytesIO(self.hot_template))
+        request.urlopen(
+            'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
+                six.BytesIO(self.egg_template))
         request.urlopen(
             'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
                 six.BytesIO(self.egg_template))
@@ -751,6 +777,90 @@ parameters:
                     u'properties': {
                         u'resource_def': {
                             u'type': u'file:///home/my/dir/spam/egg.yaml'
+                        }
+                    }
+                }
+            }
+        }, tmpl_parsed)
+
+
+class TestTemplateInFileFunctions(testtools.TestCase):
+
+    hot_template = b'''heat_template_version: 2013-05-23
+resources:
+  resource1:
+    type: OS::Heat::Stack
+    properties:
+      template: {get_file: foo.yaml}
+    '''
+
+    foo_template = b'''heat_template_version: "2013-05-23"
+resources:
+  foo:
+    type: OS::Type1
+    properties:
+      config: {get_file: bar.yaml}
+    '''
+
+    bar_template = b'''heat_template_version: "2013-05-23"
+parameters:
+  bar:
+    type: string
+    '''
+
+    def setUp(self):
+        super(TestTemplateInFileFunctions, self).setUp()
+        self.m = mox.Mox()
+
+        self.addCleanup(self.m.VerifyAll)
+        self.addCleanup(self.m.UnsetStubs)
+
+    def test_hot_template(self):
+        self.m.StubOutWithMock(request, 'urlopen')
+        tmpl_file = '/home/my/dir/template.yaml'
+        url = 'file:///home/my/dir/template.yaml'
+        foo_url = 'file:///home/my/dir/foo.yaml'
+        bar_url = 'file:///home/my/dir/bar.yaml'
+        request.urlopen(url).InAnyOrder().AndReturn(
+            six.BytesIO(self.hot_template))
+        request.urlopen(foo_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.foo_template))
+        request.urlopen(foo_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.foo_template))
+        request.urlopen(bar_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.bar_template))
+        request.urlopen(bar_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.bar_template))
+        self.m.ReplayAll()
+
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_file=tmpl_file)
+
+        self.assertEqual(yaml.load(self.bar_template.decode('utf-8')),
+                         json.loads(files.get('file:///home/my/dir/bar.yaml')))
+
+        self.assertEqual({
+            u'heat_template_version': u'2013-05-23',
+            u'resources': {
+                u'foo': {
+                    u'type': u'OS::Type1',
+                    u'properties': {
+                        u'config': {
+                            u'get_file': u'file:///home/my/dir/bar.yaml'
+                        }
+                    }
+                }
+            }
+        }, json.loads(files.get('file:///home/my/dir/foo.yaml')))
+
+        self.assertEqual({
+            u'heat_template_version': u'2013-05-23',
+            u'resources': {
+                u'resource1': {
+                    u'type': u'OS::Heat::Stack',
+                    u'properties': {
+                        u'template': {
+                            u'get_file': u'file:///home/my/dir/foo.yaml'
                         }
                     }
                 }
@@ -827,6 +937,8 @@ parameters:
             six.BytesIO(env))
         request.urlopen(template_url).AndReturn(
             six.BytesIO(self.hot_template))
+        request.urlopen(template_url).AndReturn(
+            six.BytesIO(self.hot_template))
 
         request.urlopen(foo_url).InAnyOrder().AndReturn(
             six.BytesIO(self.foo_template))
@@ -840,6 +952,15 @@ parameters:
             six.BytesIO(self.foo_template))
         request.urlopen(three_url).InAnyOrder().AndReturn(
             six.BytesIO(b'three contents'))
+        request.urlopen(foo_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.foo_template))
+        request.urlopen(egg_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.egg_template))
+        request.urlopen(one_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.foo_template))
+        request.urlopen(two_url).InAnyOrder().AndReturn(
+            six.BytesIO(self.foo_template))
+
         self.m.ReplayAll()
 
         files, env_dict = template_utils.process_environment_and_files(
