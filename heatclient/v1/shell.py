@@ -14,12 +14,12 @@
 #    under the License.
 
 import logging
+
+from oslo_serialization import jsonutils
+from oslo_utils import strutils
 import six
 from six.moves.urllib import request
 import yaml
-
-from oslo.serialization import jsonutils
-from oslo.utils import strutils
 
 from heatclient.common import deployment_utils
 from heatclient.common import template_format

@@ -16,12 +16,12 @@
 import base64
 import collections
 import os
+
+from oslo_serialization import jsonutils
 import six
 from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
-
-from oslo.serialization import jsonutils
 
 from heatclient.common import environment_format
 from heatclient.common import template_format

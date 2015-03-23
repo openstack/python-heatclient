@@ -26,8 +26,8 @@ import testtools
 import uuid
 import yaml
 
-from oslo.serialization import jsonutils
-from oslo.utils import encodeutils
+from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from requests_mock.contrib import fixture as rm_fixture
 
 from keystoneclient import fixture as keystone_fixture

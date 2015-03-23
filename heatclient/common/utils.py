@@ -14,15 +14,15 @@
 #    under the License.
 from __future__ import print_function
 
-import prettytable
-from six.moves.urllib import parse
 import sys
 import textwrap
 import uuid
-import yaml
 
-from oslo.serialization import jsonutils
-from oslo.utils import importutils
+from oslo_serialization import jsonutils
+from oslo_utils import importutils
+import prettytable
+from six.moves.urllib import parse
+import yaml
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _

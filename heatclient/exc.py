@@ -12,7 +12,7 @@
 
 import sys
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from heatclient.openstack.common._i18n import _
 

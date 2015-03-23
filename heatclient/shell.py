@@ -20,11 +20,10 @@ import argparse
 import logging
 import sys
 
+from oslo_utils import encodeutils
+from oslo_utils import importutils
 import six
 import six.moves.urllib.parse as urlparse
-
-from oslo.utils import encodeutils
-from oslo.utils import importutils
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth

@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import encodeutils
 from six.moves.urllib import parse
-
-from oslo.utils import encodeutils
 
 from heatclient.openstack.common.apiclient import base
 from heatclient.v1 import stacks

@@ -19,13 +19,12 @@ import logging
 import os
 import socket
 
+from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
+from oslo_utils import importutils
 import requests
 import six
 from six.moves.urllib import parse
-
-from oslo.serialization import jsonutils
-from oslo.utils import encodeutils
-from oslo.utils import importutils
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
