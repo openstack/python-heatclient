@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import fnmatch
 import logging
 
 from oslo_serialization import jsonutils
@@ -27,6 +28,7 @@ from heatclient.common import template_utils
 from heatclient.common import utils
 
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LE
 from heatclient.openstack.common._i18n import _LW
 
 import heatclient.exc as exc
@@ -992,24 +994,41 @@ def do_hook_clear(hc, args):
             "--pre-update or both)")
     for hook_string in args.hook:
         hook = [b for b in hook_string.split('/') if b]
-        resource_name = hook[-1]
+        resource_pattern = hook[-1]
         stack_id = args.id
-        for nested_stack_name in hook[:-1]:
-            nested_stack = hc.resources.get(
-                stack_id=stack_id, resource_name=nested_stack_name)
-            stack_id = nested_stack.physical_resource_id
-        try:
-            if args.pre_create:
-                hc.resources.signal(stack_id=stack_id,
-                                    resource_name=resource_name,
-                                    data={'unset_hook': 'pre-create'})
-            if args.pre_update:
-                hc.resources.signal(stack_id=stack_id,
-                                    resource_name=resource_name,
-                                    data={'unset_hook': 'pre-update'})
-        except exc.HTTPNotFound:
-            raise exc.CommandError('Stack %s or resource %s not found.' %
-                                   (stack_id, resource_name))
+
+        def clear_hook(stack_id, resource_name, hook_type):
+            try:
+                hc.resources.signal(
+                    stack_id=stack_id,
+                    resource_name=resource_name,
+                    data={'unset_hook': hook_type})
+            except exc.HTTPNotFound:
+                logger.error(
+                    _LE("Stack %(stack)s or resource %(resource)s not found"),
+                    {'resource': resource_name, 'stack': stack_id})
+
+        def clear_wildcard_hooks(stack_id, stack_patterns):
+            if stack_patterns:
+                for resource in hc.resources.list(stack_id):
+                    res_name = resource.resource_name
+                    if fnmatch.fnmatchcase(res_name, stack_patterns[0]):
+                        nested_stack = hc.resources.get(
+                            stack_id=stack_id,
+                            resource_name=res_name)
+                        clear_wildcard_hooks(
+                            nested_stack.physical_resource_id,
+                            stack_patterns[1:])
+            else:
+                for resource in hc.resources.list(stack_id):
+                    res_name = resource.resource_name
+                    if fnmatch.fnmatchcase(res_name, resource_pattern):
+                        if args.pre_create:
+                            clear_hook(stack_id, res_name, 'pre-create')
+                        if args.pre_update:
+                            clear_hook(stack_id, res_name, 'pre-update')
+
+        clear_wildcard_hooks(stack_id, hook[:-1])
 
 
 @utils.arg('id', metavar='<NAME or ID>',
