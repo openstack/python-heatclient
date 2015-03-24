@@ -68,6 +68,11 @@ def _authenticated_fetcher(hc):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+           help=_('Parameter values from file used to create the stack. '
+           'This can be specified multiple times. Parameter value '
+           'would be the content of the file'),
+           action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to create.'))
 def do_create(hc, args):
@@ -102,6 +107,11 @@ def do_create(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+           help=_('Parameter values from file used to create the stack. '
+           'This can be specified multiple times. Parameter value '
+           'would be the content of the file'),
+           action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to create.'))
 def do_stack_create(hc, args):
@@ -125,7 +135,10 @@ def do_stack_create(hc, args):
     fields = {
         'stack_name': args.name,
         'disable_rollback': not(args.enable_rollback),
-        'parameters': utils.format_parameters(args.parameters),
+        'parameters': utils.format_all_parameters(args.parameters,
+                                                  args.parameter_file,
+                                                  args.template_file,
+                                                  args.template_url),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
@@ -171,7 +184,7 @@ def do_stack_adopt(hc, args):
         raise exc.CommandError(_('Need to specify %(arg)s') %
                                {'arg': '--adopt-file'})
 
-    adopt_url = template_utils.normalise_file_path_to_url(args.adopt_file)
+    adopt_url = utils.normalise_file_path_to_url(args.adopt_file)
     adopt_data = request.urlopen(adopt_url).read()
 
     if args.create_timeout:
@@ -221,6 +234,11 @@ def do_stack_adopt(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by semicolon.'),
            action='append')
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+           help=_('Parameter values from file used to create the stack. '
+           'This can be specified multiple times. Parameter value '
+           'would be the content of the file'),
+           action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to preview.'))
 def do_stack_preview(hc, args):
@@ -237,7 +255,10 @@ def do_stack_preview(hc, args):
         'stack_name': args.name,
         'disable_rollback': not(args.enable_rollback),
         'timeout_mins': args.timeout,
-        'parameters': utils.format_parameters(args.parameters),
+        'parameters': utils.format_all_parameters(args.parameters,
+                                                  args.parameter_file,
+                                                  args.template_file,
+                                                  args.template_url),
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
@@ -413,6 +434,11 @@ def do_stack_show(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+           help=_('Parameter values from file used to create the stack. '
+           'This can be specified multiple times. Parameter value '
+           'would be the content of the file'),
+           action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
            help=_('Re-use the set of parameters of the current stack. '
            'Parameters specified in %(arg)s will patch over the existing '
@@ -463,6 +489,11 @@ def do_update(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+           help=_('Parameter values from file used to create the stack. '
+           'This can be specified multiple times. Parameter value '
+           'would be the content of the file'),
+           action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
            help=_('Re-use the set of parameters of the current stack. '
            'Parameters specified in %(arg)s will patch over the existing '
@@ -491,7 +522,10 @@ def do_stack_update(hc, args):
 
     fields = {
         'stack_id': args.id,
-        'parameters': utils.format_parameters(args.parameters),
+        'parameters': utils.format_all_parameters(args.parameters,
+                                                  args.parameter_file,
+                                                  args.template_file,
+                                                  args.template_url),
         'existing': args.existing,
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
@@ -865,7 +899,7 @@ def do_resource_signal(hc, args):
     if data and data_file:
         raise exc.CommandError(_('Can only specify one of data and data-file'))
     if data_file:
-        data_url = template_utils.normalise_file_path_to_url(data_file)
+        data_url = utils.normalise_file_path_to_url(data_file)
         data = request.urlopen(data_url).read()
     if data:
         if isinstance(data, six.binary_type):
@@ -979,7 +1013,7 @@ def do_config_create(hc, args):
 
     defn = {}
     if args.definition_file:
-        defn_url = template_utils.normalise_file_path_to_url(
+        defn_url = utils.normalise_file_path_to_url(
             args.definition_file)
         defn_raw = request.urlopen(defn_url).read() or '{}'
         defn = yaml.load(defn_raw, Loader=template_format.yaml_loader)
@@ -989,7 +1023,7 @@ def do_config_create(hc, args):
     config['options'] = defn.get('options', {})
 
     if args.config_file:
-        config_url = template_utils.normalise_file_path_to_url(
+        config_url = utils.normalise_file_path_to_url(
             args.config_file)
         config['config'] = request.urlopen(config_url).read()
 

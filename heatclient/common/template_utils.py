@@ -13,18 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import base64
 import collections
-import os
-
 from oslo_serialization import jsonutils
 import six
-from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
 
 from heatclient.common import environment_format
 from heatclient.common import template_format
+from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
 
@@ -35,7 +32,7 @@ def get_template_contents(template_file=None, template_url=None,
 
     # Transform a bare file path to a file:// URL.
     if template_file:
-        template_url = normalise_file_path_to_url(template_file)
+        template_url = utils.normalise_file_path_to_url(template_file)
 
     if template_url:
         tpl = request.urlopen(template_url).read()
@@ -65,7 +62,7 @@ def get_template_contents(template_file=None, template_url=None,
         raise exc.CommandError(_('Error parsing template %(url)s %(error)s') %
                                {'url': template_url, 'error': e})
 
-    tmpl_base_url = base_url_for_url(template_url)
+    tmpl_base_url = utils.base_url_for_url(template_url)
     if files is None:
         files = {}
     resolve_template_get_files(template, files, tmpl_base_url)
@@ -133,37 +130,25 @@ def get_file_contents(from_data, files, base_url=None,
                         template_url=str_url, files=files)[1]
                     file_content = jsonutils.dumps(template)
                 else:
-                    file_content = read_url_content(str_url)
+                    file_content = utils.read_url_content(str_url)
                 files[str_url] = file_content
             # replace the data value with the normalised absolute URL
             from_data[key] = str_url
 
 
 def read_url_content(url):
-    try:
-        content = request.urlopen(url).read()
-    except error.URLError:
-        raise exc.CommandError(_('Could not fetch contents for %s') % url)
-
-    if content:
-        try:
-            content.decode('utf-8')
-        except ValueError:
-            content = base64.encodestring(content)
-    return content
+    '''DEPRECATED!  Use 'utils.read_url_content' instead.'''
+    return utils.read_url_content(url)
 
 
 def base_url_for_url(url):
-    parsed = parse.urlparse(url)
-    parsed_dir = os.path.dirname(parsed.path)
-    return parse.urljoin(url, parsed_dir)
+    '''DEPRECATED! Use 'utils.base_url_for_url' instead.'''
+    return utils.base_url_for_url(url)
 
 
 def normalise_file_path_to_url(path):
-    if parse.urlparse(path).scheme:
-        return path
-    path = os.path.abspath(path)
-    return parse.urljoin('file:', request.pathname2url(path))
+    '''DEPRECATED! Use 'utils.normalise_file_path_to_url' instead.'''
+    return utils.normalise_file_path_to_url(path)
 
 
 def deep_update(old, new):
@@ -204,8 +189,8 @@ def process_environment_and_files(env_path=None, template=None,
     env = {}
 
     if env_path:
-        env_url = normalise_file_path_to_url(env_path)
-        env_base_url = base_url_for_url(env_url)
+        env_url = utils.normalise_file_path_to_url(env_path)
+        env_base_url = utils.base_url_for_url(env_url)
         raw_env = request.urlopen(env_url).read()
         env = environment_format.parse(raw_env)
 

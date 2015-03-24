@@ -12,16 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from __future__ import print_function
 
-import sys
+import base64
+import os
 import textwrap
 import uuid
 
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
 import prettytable
+from six.moves.urllib import error
 from six.moves.urllib import parse
+from six.moves.urllib import request
 import yaml
 
 from heatclient import exc
@@ -111,12 +113,6 @@ def import_versioned_module(version, submodule=None):
     return importutils.import_module(module)
 
 
-def exit(msg=''):
-    if msg:
-        print(msg, file=sys.stderr)
-    sys.exit(1)
-
-
 def format_parameters(params, parse_semicolon=True):
     '''Reformat parameters into dict of format expected by the API.'''
 
@@ -147,6 +143,43 @@ def format_parameters(params, parse_semicolon=True):
     return parameters
 
 
+def format_all_parameters(params, param_files,
+                          template_file=None, template_url=None):
+    parameters = {}
+    parameters.update(format_parameters(params))
+    parameters.update(format_parameter_file(
+        param_files,
+        template_file,
+        template_url))
+    return parameters
+
+
+def format_parameter_file(param_files, template_file=None,
+                          template_url=None):
+    '''Reformat file parameters into dict of format expected by the API.'''
+    if not param_files:
+        return {}
+    params = format_parameters(param_files, False)
+
+    template_base_url = None
+    if template_file or template_url:
+        template_base_url = base_url_for_url(get_template_url(
+            template_file, template_url))
+
+    param_file = {}
+    for key, value in iter(params.items()):
+                param_file[key] = resolve_param_get_file(value,
+                                                         template_base_url)
+    return param_file
+
+
+def resolve_param_get_file(file, base_url):
+    if base_url and not base_url.endswith('/'):
+        base_url = base_url + '/'
+    str_url = parse.urljoin(base_url, file)
+    return read_url_content(str_url)
+
+
 def format_output(output, format='yaml'):
     """Format the supplied dict as specified."""
     output_format = format.lower()
@@ -160,3 +193,36 @@ def format_output(output, format='yaml'):
 def parse_query_url(url):
     base_url, query_params = url.split('?')
     return base_url, parse.parse_qs(query_params)
+
+
+def get_template_url(template_file=None, template_url=None):
+    if template_file:
+        template_url = normalise_file_path_to_url(template_file)
+    return template_url
+
+
+def read_url_content(url):
+    try:
+        content = request.urlopen(url).read()
+    except error.URLError:
+        raise exc.CommandError(_('Could not fetch contents for %s') % url)
+
+    if content:
+        try:
+            content.decode('utf-8')
+        except ValueError:
+            content = base64.encodestring(content)
+    return content
+
+
+def base_url_for_url(url):
+    parsed = parse.urlparse(url)
+    parsed_dir = os.path.dirname(parsed.path)
+    return parse.urljoin(url, parsed_dir)
+
+
+def normalise_file_path_to_url(path):
+    if parse.urlparse(path).scheme:
+        return path
+    path = os.path.abspath(path)
+    return parse.urljoin('file:', request.pathname2url(path))

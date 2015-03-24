@@ -14,7 +14,6 @@
 import base64
 import json
 from mox3 import mox
-import os
 import six
 from six.moves.urllib import request
 import tempfile
@@ -23,6 +22,7 @@ from testtools import matchers
 import yaml
 
 from heatclient.common import template_utils
+from heatclient.common import utils
 from heatclient import exc
 
 
@@ -93,10 +93,10 @@ class ShellEnvironmentTest(testtools.TestCase):
 
         self.assertEqual(
             env_url,
-            template_utils.normalise_file_path_to_url(env_file))
+            utils.normalise_file_path_to_url(env_file))
         self.assertEqual(
             'file:///home/my/dir',
-            template_utils.base_url_for_url(env_url))
+            utils.base_url_for_url(env_url))
 
         files, env_dict = template_utils.process_environment_and_files(
             env_file)
@@ -127,10 +127,10 @@ class ShellEnvironmentTest(testtools.TestCase):
         env_url = 'file://%s' % env_file
         self.assertEqual(
             env_url,
-            template_utils.normalise_file_path_to_url(env_file))
+            utils.normalise_file_path_to_url(env_file))
         self.assertEqual(
             'file:///home/my/dir',
-            template_utils.base_url_for_url(env_url))
+            utils.base_url_for_url(env_url))
 
         files, env_dict = template_utils.process_environment_and_files(
             env_file)
@@ -897,68 +897,3 @@ parameters:
                          files.get(three_url))
 
         self.m.VerifyAll()
-
-
-class TestURLFunctions(testtools.TestCase):
-
-    def setUp(self):
-        super(TestURLFunctions, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_normalise_file_path_to_url_relative(self):
-        self.assertEqual(
-            'file://%s/foo' % os.getcwd(),
-            template_utils.normalise_file_path_to_url(
-                'foo'))
-
-    def test_normalise_file_path_to_url_absolute(self):
-        self.assertEqual(
-            'file:///tmp/foo',
-            template_utils.normalise_file_path_to_url(
-                '/tmp/foo'))
-
-    def test_normalise_file_path_to_url_file(self):
-        self.assertEqual(
-            'file:///tmp/foo',
-            template_utils.normalise_file_path_to_url(
-                'file:///tmp/foo'))
-
-    def test_normalise_file_path_to_url_http(self):
-        self.assertEqual(
-            'http://localhost/foo',
-            template_utils.normalise_file_path_to_url(
-                'http://localhost/foo'))
-
-    def test_base_url_for_url(self):
-        self.assertEqual(
-            'file:///foo/bar',
-            template_utils.base_url_for_url(
-                'file:///foo/bar/baz'))
-        self.assertEqual(
-            'file:///foo/bar',
-            template_utils.base_url_for_url(
-                'file:///foo/bar/baz.txt'))
-        self.assertEqual(
-            'file:///foo/bar',
-            template_utils.base_url_for_url(
-                'file:///foo/bar/'))
-        self.assertEqual(
-            'file:///',
-            template_utils.base_url_for_url(
-                'file:///'))
-        self.assertEqual(
-            'file:///',
-            template_utils.base_url_for_url(
-                'file:///foo'))
-
-        self.assertEqual(
-            'http://foo/bar',
-            template_utils.base_url_for_url(
-                'http://foo/bar/'))
-        self.assertEqual(
-            'http://foo/bar',
-            template_utils.base_url_for_url(
-                'http://foo/bar/baz.template'))

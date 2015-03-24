@@ -273,6 +273,17 @@ class ShellValidationTest(TestCase):
             'LinuxDistribution=F17"',
             'Need to specify exactly one of')
 
+    def test_stack_create_with_paramfile_validation(self):
+        self.register_keystone_auth_fixture()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+        self.shell_error(
+            'stack-create teststack '
+            '--parameter-file private_key=private_key.env '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"',
+            'Need to specify exactly one of')
+
     def test_stack_create_validation_keystone_v3(self):
         self.register_keystone_auth_fixture()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
@@ -1126,7 +1137,6 @@ class ShellTestUserPass(ShellBase):
             headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
         ).AndReturn((resp, None))
         fakes.script_heat_list()
-
         self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -1136,6 +1146,78 @@ class ShellTestUserPass(ShellBase):
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
+    def test_stack_create_param_file(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
+        http.HTTPClient.json_request(
+            'POST', '/stacks', data=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.StubOutWithMock(utils, 'read_url_content')
+        url = 'file://%s/private_key.env' % TEST_VAR_DIR
+        utils.read_url_content(url).AndReturn('xxxxxx')
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        create_text = self.shell(
+            'stack-create teststack '
+            '--template-file=%s '
+            '--parameter-file private_key=private_key.env '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
+    def test_stack_create_only_param_file(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
+        http.HTTPClient.json_request(
+            'POST', '/stacks', data=mox.IgnoreArg(),
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.StubOutWithMock(utils, 'read_url_content')
+        url = 'file://%s/private_key.env' % TEST_VAR_DIR
+        utils.read_url_content(url).AndReturn('xxxxxx')
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        create_text = self.shell(
+            'stack-create teststack '
+            '--template-file=%s '
+            '--parameter-file private_key=private_key.env '
+            % template_file)
 
         required = [
             'stack_name',
