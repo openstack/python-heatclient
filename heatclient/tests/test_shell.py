@@ -210,14 +210,8 @@ class EnvVarTestToken(TestCase):
 class ShellParamValidationTest(TestCase):
 
     scenarios = [
-        ('create', dict(
-            command='create ts -P "a!b"',
-            err='Malformed parameter')),
         ('stack-create', dict(
             command='stack-create ts -P "ab"',
-            err='Malformed parameter')),
-        ('update', dict(
-            command='update ts -P "a~b"',
             err='Malformed parameter')),
         ('stack-update', dict(
             command='stack-update ts -P "a-b"',
