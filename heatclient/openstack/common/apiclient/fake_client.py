@@ -21,6 +21,19 @@ wrong the tests might raise AssertionError. I've indicated in comments the
 places where actual behavior differs from the spec.
 """
 
+########################################################################
+#
+# THIS MODULE IS DEPRECATED
+#
+# Please refer to
+# https://etherpad.openstack.org/p/kilo-oslo-library-proposals for
+# the discussion leading to this deprecation.
+#
+# We recommend checking out the python-openstacksdk project
+# (https://launchpad.net/python-openstacksdk) instead.
+#
+########################################################################
+
 # W0102: Dangerous default value %s as argument
 # pylint: disable=W0102
 
@@ -30,7 +43,6 @@ import requests
 import six
 from six.moves.urllib import parse
 
-from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common.apiclient import client
 
 
@@ -42,7 +54,7 @@ def assert_has_keys(dct, required=None, optional=None):
             assert k in dct
         except AssertionError:
             extra_keys = set(dct.keys()).difference(set(required + optional))
-            raise AssertionError(_("found unexpected keys: %s") %
+            raise AssertionError("found unexpected keys: %s" %
                                  list(extra_keys))
 
 
@@ -92,9 +104,9 @@ class FakeHTTPClient(client.HTTPClient):
         expected = (method, url)
         called = self.callstack[pos][0:2]
         assert self.callstack, \
-            _("Expected %s %s but no calls were made.") % expected
+            "Expected %s %s but no calls were made." % expected
 
-        assert expected == called, _('Expected %s %s; got %s %s') % \
+        assert expected == called, 'Expected %s %s; got %s %s' % \
             (expected + called)
 
         if body is not None:
@@ -108,7 +120,7 @@ class FakeHTTPClient(client.HTTPClient):
         expected = (method, url)
 
         assert self.callstack, \
-            _("Expected %s %s but no calls were made.") % expected
+            "Expected %s %s but no calls were made." % expected
 
         found = False
         entry = None
@@ -117,7 +129,7 @@ class FakeHTTPClient(client.HTTPClient):
                 found = True
                 break
 
-        assert found, _('Expected %s %s; got %s') % \
+        assert found, 'Expected %s %s; got %s' % \
             (method, url, self.callstack)
         if body is not None:
             assert entry[3] == body, "%s != %s" % (entry[3], body)
@@ -159,8 +171,8 @@ class FakeHTTPClient(client.HTTPClient):
         callback = "%s_%s" % (method.lower(), munged_url)
 
         if not hasattr(self, callback):
-            raise AssertionError(_('Called unknown API method: %s %s, '
-                                 'expected fakes method name: %s') %
+            raise AssertionError('Called unknown API method: %s %s, '
+                                 'expected fakes method name: %s' %
                                  (method, url, callback))
 
         resp = getattr(self, callback)(**kwargs)
