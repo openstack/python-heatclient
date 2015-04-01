@@ -19,7 +19,7 @@ import os
 import testtools
 
 
-class shellTest(testtools.TestCase):
+class ShellTest(testtools.TestCase):
 
     def test_format_parameter_none(self):
         self.assertEqual({}, utils.format_parameters(None))
@@ -141,7 +141,7 @@ class shellTest(testtools.TestCase):
                          utils.newline_list_formatter(['one', 'two']))
 
 
-class shellTestParameterFiles(testtools.TestCase):
+class ShellTestParameterFiles(testtools.TestCase):
 
     def test_format_parameter_file_none(self):
         self.assertEqual({}, utils.format_parameter_file(None))
