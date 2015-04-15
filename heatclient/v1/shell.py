@@ -941,6 +941,68 @@ def do_event_list(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help=_('Name or ID of stack to show the pending hooks for.'))
+@utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
+           help=_('Depth of nested stacks from which to display hooks.'))
+def do_hook_poll(hc, args):
+    '''List resources with pending hook for a stack.'''
+
+    # There are a few steps to determining if a stack has pending hooks
+    # 1. The stack is IN_PROGRESS status (otherwise, by definition no hooks
+    #    can be pending
+    # 2. There is an event for a resource associated with hitting a hook
+    # 3. There is not an event associated with clearing the hook in step(2)
+    #
+    # So, essentially, this ends up being a specially filtered type of event
+    # listing, because all hook status is exposed via events.  In future
+    # we might consider exposing some more efficient interface via the API
+    # to reduce the expense of this brute-force polling approach
+    display_fields = ['id', 'resource_status_reason',
+                      'resource_status', 'event_time']
+    if args.nested_depth:
+        try:
+            nested_depth = int(args.nested_depth)
+        except ValueError:
+            msg = _("--nested-depth invalid value %s") % args.nested_depth
+            raise exc.CommandError(msg)
+        display_fields.append('stack_name')
+    else:
+        nested_depth = 0
+
+    try:
+        stack = hc.stacks.get(stack_id=args.id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack not found: %s') % args.id)
+    else:
+        if 'IN_PROGRESS' not in stack.stack_status:
+            raise exc.CommandError(_('Stack status %s not IN_PROGRESS') %
+                                   stack.stack_status)
+
+    if 'CREATE' in stack.stack_status:
+        hook_type = 'pre-create'
+    elif 'UPDATE' in stack.stack_status:
+        hook_type = 'pre-update'
+    else:
+        raise exc.CommandError(_('Unexpected stack status %s, '
+                                 'only create/update supported')
+                               % stack.stack_action)
+
+    stack_id = args.id
+    event_args = {'sort_dir': 'asc'}
+    hook_events = event_utils.get_hook_events(
+        hc, stack_id=stack_id, event_args=event_args,
+        nested_depth=nested_depth, hook_type=hook_type)
+
+    if len(hook_events) >= 1:
+        if hasattr(hook_events[0], 'resource_name'):
+            display_fields.insert(0, 'resource_name')
+        else:
+            display_fields.insert(0, 'logical_resource_id')
+
+    utils.print_list(hook_events, display_fields, sortby_index=None)
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to show the events for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
            help=_('Name of the resource the event belongs to.'))
