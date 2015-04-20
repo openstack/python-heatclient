@@ -46,7 +46,7 @@ class ResourceManagerTest(testtools.TestCase):
 
         return manager
 
-    def test_get_event(self):
+    def test_get(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': 'testresource'}
         expect = ('GET',
@@ -57,7 +57,7 @@ class ResourceManagerTest(testtools.TestCase):
         manager = self._base_test(expect, key)
         manager.get(**fields)
 
-    def test_get_event_with_unicode_resource_name(self):
+    def test_get_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': u'\u5de5\u4f5c'}
         expect = ('GET',
