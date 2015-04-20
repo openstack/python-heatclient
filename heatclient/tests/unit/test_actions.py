@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from heatclient.tests.unit import fakes
 from heatclient.v1 import actions
 
 import testtools
@@ -29,7 +30,43 @@ class ActionManagerTest(testtools.TestCase):
             def json_request(self, *args, **kwargs):
                 assert expect_args == args
                 assert expect_kwargs['data'] == kwargs['data']
-                return {}, {}
+                return fakes.FakeHTTPResponse(
+                    '200',
+                    '',
+                    {'content-type': 'application/json'},
+                    {}), {}
+
+            def raw_request(self, *args, **kwargs):
+                assert expect_args == args
+                return fakes.FakeHTTPResponse(
+                    '200',
+                    '',
+                    {},
+                    {})
+
+            def head(self, url, **kwargs):
+                resp, body = self.json_request("HEAD", url, **kwargs)
+                return resp
+
+            def get(self, url, **kwargs):
+                resp, body = self.json_request("GET", url, **kwargs)
+                return resp
+
+            def post(self, url, **kwargs):
+                resp, body = self.json_request("POST", url, **kwargs)
+                return resp
+
+            def put(self, url, **kwargs):
+                resp, body = self.json_request("PUT", url, **kwargs)
+                return resp
+
+            def delete(self, url, **kwargs):
+                resp, body = self.raw_request("DELETE", url, **kwargs)
+                return resp
+
+            def patch(self, url, **kwargs):
+                resp, body = self.json_request("PATCH", url, **kwargs)
+                return resp
 
         manager = actions.ActionManager(FakeAPI())
         return manager

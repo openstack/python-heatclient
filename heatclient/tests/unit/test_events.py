@@ -111,9 +111,14 @@ class EventManagerTest(testtools.TestCase):
                 assert args == expect
                 return {}, {'event': []}
 
+            def get(self, *args, **kwargs):
+                pass
+
         manager = events.EventManager(FakeAPI())
         with mock.patch('heatclient.v1.events.Event'):
             self.m.StubOutWithMock(manager, '_resolve_stack_id')
+            self.m.StubOutWithMock(utils, 'get_response_body')
+            utils.get_response_body(mox.IgnoreArg()).AndReturn({'event': []})
             manager._resolve_stack_id('teststack').AndReturn(
                 'teststack/abcd1234')
             self.m.ReplayAll()
@@ -134,9 +139,14 @@ class EventManagerTest(testtools.TestCase):
                 assert args == expect
                 return {}, {'event': []}
 
+            def get(self, *args, **kwargs):
+                pass
+
         manager = events.EventManager(FakeAPI())
         with mock.patch('heatclient.v1.events.Event'):
             self.m.StubOutWithMock(manager, '_resolve_stack_id')
+            self.m.StubOutWithMock(utils, 'get_response_body')
+            utils.get_response_body(mox.IgnoreArg()).AndReturn({'event': []})
             manager._resolve_stack_id('teststack').AndReturn(
                 'teststack/abcd1234')
             self.m.ReplayAll()

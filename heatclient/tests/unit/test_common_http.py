@@ -293,7 +293,7 @@ class HttpClientTest(testtools.TestCase):
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'not/json'},
-                '{}'))
+                {}))
         # Replay, create client, assert
         self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')

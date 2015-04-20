@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from heatclient.common import utils
 
 import six
 from six.moves.urllib import parse
@@ -123,23 +124,28 @@ class StackManager(base.BaseManager):
     def preview(self, **kwargs):
         """Preview a stack."""
         headers = self.client.credentials_headers()
-        resp, body = self.client.json_request('POST', '/stacks/preview',
-                                              data=kwargs, headers=headers)
-        return Stack(self, body['stack'])
+        resp = self.client.post('/stacks/preview',
+                                data=kwargs, headers=headers)
+        body = utils.get_response_body(resp)
+        return Stack(self, body.get('stack'))
 
     def create(self, **kwargs):
         """Create a stack."""
         headers = self.client.credentials_headers()
-        resp, body = self.client.json_request('POST', '/stacks',
-                                              data=kwargs, headers=headers)
+        resp = self.client.post('/stacks',
+                                data=kwargs, headers=headers)
+        body = utils.get_response_body(resp)
         return body
 
     def update(self, stack_id, **kwargs):
         """Update a stack."""
         headers = self.client.credentials_headers()
-        method = 'PATCH' if kwargs.pop('existing', None) else 'PUT'
-        resp, body = self.client.json_request(method, '/stacks/%s' % stack_id,
-                                              data=kwargs, headers=headers)
+        if kwargs.pop('existing', None):
+            self.client.patch('/stacks/%s' % stack_id, data=kwargs,
+                              headers=headers)
+        else:
+            self.client.put('/stacks/%s' % stack_id, data=kwargs,
+                            headers=headers)
 
     def delete(self, stack_id):
         """Delete a stack."""
@@ -148,9 +154,8 @@ class StackManager(base.BaseManager):
     def abandon(self, stack_id):
         """Abandon a stack."""
         stack = self.get(stack_id)
-        resp, body = self.client.json_request(
-            'DELETE',
-            '/stacks/%s/abandon' % stack.identifier)
+        resp = self.client.delete('/stacks/%s/abandon' % stack.identifier)
+        body = utils.get_response_body(resp)
         return body
 
     def snapshot(self, stack_id, name=None):
@@ -159,39 +164,36 @@ class StackManager(base.BaseManager):
         data = {}
         if name:
             data['name'] = name
-        resp, body = self.client.json_request(
-            'POST',
-            '/stacks/%s/snapshots' % stack.identifier,
-            data=data)
+        resp = self.client.post('/stacks/%s/snapshots' % stack.identifier,
+                                data=data)
+        body = utils.get_response_body(resp)
         return body
 
     def snapshot_show(self, stack_id, snapshot_id):
         stack = self.get(stack_id)
-        resp, body = self.client.json_request(
-            'GET',
-            '/stacks/%s/snapshots/%s' % (stack.identifier, snapshot_id))
+        resp = self.client.get('/stacks/%s/snapshots/%s' % (stack.identifier,
+                                                            snapshot_id))
+        body = utils.get_response_body(resp)
         return body
 
     def snapshot_delete(self, stack_id, snapshot_id):
         stack = self.get(stack_id)
-        resp, body = self.client.json_request(
-            'DELETE',
-            '/stacks/%s/snapshots/%s' % (stack.identifier, snapshot_id))
+        resp = self.client.delete('/stacks/%s/snapshots/%s' %
+                                  (stack.identifier, snapshot_id))
+        body = utils.get_response_body(resp)
         return body
 
     def restore(self, stack_id, snapshot_id):
         stack = self.get(stack_id)
-        resp, body = self.client.json_request(
-            'POST',
-            '/stacks/%s/snapshots/%s/restore' % (stack.identifier,
-                                                 snapshot_id))
+        resp = self.client.post('/stacks/%s/snapshots/%s/restore' %
+                                (stack.identifier, snapshot_id))
+        body = utils.get_response_body(resp)
         return body
 
     def snapshot_list(self, stack_id):
         stack = self.get(stack_id)
-        resp, body = self.client.json_request(
-            'GET',
-            '/stacks/%s/snapshots' % stack.identifier)
+        resp = self.client.get('/stacks/%s/snapshots' % stack.identifier)
+        body = utils.get_response_body(resp)
         return body
 
     def get(self, stack_id):
@@ -199,8 +201,9 @@ class StackManager(base.BaseManager):
 
         :param stack_id: Stack ID to lookup
         """
-        resp, body = self.client.json_request('GET', '/stacks/%s' % stack_id)
-        return Stack(self, body['stack'])
+        resp = self.client.get('/stacks/%s' % stack_id)
+        body = utils.get_response_body(resp)
+        return Stack(self, body.get('stack'))
 
     def template(self, stack_id):
         """Get the template content for a specific stack as a parsed JSON
@@ -208,13 +211,14 @@ class StackManager(base.BaseManager):
 
         :param stack_id: Stack ID to get the template for
         """
-        resp, body = self.client.json_request(
-            'GET', '/stacks/%s/template' % stack_id)
+        resp = self.client.get('/stacks/%s/template' % stack_id)
+        body = utils.get_response_body(resp)
         return body
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        resp, body = self.client.json_request('POST', '/validate', data=kwargs)
+        resp = self.client.post('/validate', data=kwargs)
+        body = utils.get_response_body(resp)
         return body
 
 
@@ -232,9 +236,8 @@ class StackChildManager(base.BaseManager):
         # since all we want is the stacks:lookup response to get the
         # fully qualified ID, and not all users are allowed to do the
         # redirected stacks:show, so pass follow_redirects=False
-        resp, body = self.client.json_request('GET',
-                                              '/stacks/%s' % stack_id,
-                                              follow_redirects=False)
+        resp = self.client.get('/stacks/%s' % stack_id,
+                               follow_redirects=False)
         location = resp.headers.get('location')
         path = self.client.strip_endpoint(location)
         return path[len('/stacks/'):]

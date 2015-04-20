@@ -10,6 +10,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from heatclient.common import utils
 
 from oslo_utils import encodeutils
 from six.moves.urllib import parse
@@ -44,7 +45,8 @@ class ResourceTypeManager(base.BaseManager):
         """
         url_str = '/resource_types/%s' % (
                   parse.quote(encodeutils.safe_encode(resource_type), ''))
-        resp, body = self.client.json_request('GET', url_str)
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
         return body
 
     def generate_template(self, resource_type, template_type='cfn'):
@@ -53,5 +55,6 @@ class ResourceTypeManager(base.BaseManager):
         if template_type:
             url_str += '?%s' % parse.urlencode(
                 {'template_type': template_type}, True)
-        resp, body = self.client.json_request('GET', url_str)
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
         return body

@@ -11,6 +11,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from heatclient.common import utils
 
 from heatclient.v1 import resources
 
@@ -39,8 +40,30 @@ class ResourceManagerTest(testtools.TestCase):
                 ret = key and {key: []} or {}
                 return {}, {key: ret}
 
+            def raw_request(self, *args, **kwargs):
+                assert args == expect
+                return {}
+
+            def head(self, url, **kwargs):
+                return self.json_request("HEAD", url, **kwargs)
+
+            def post(self, url, **kwargs):
+                return self.json_request("POST", url, **kwargs)
+
+            def put(self, url, **kwargs):
+                return self.json_request("PUT", url, **kwargs)
+
+            def delete(self, url, **kwargs):
+                return self.raw_request("DELETE", url, **kwargs)
+
+            def patch(self, url, **kwargs):
+                return self.json_request("PATCH", url, **kwargs)
+
         manager = resources.ResourceManager(FakeAPI())
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
+        self.m.StubOutWithMock(utils, 'get_response_body')
+        utils.get_response_body(mox.IgnoreArg()).AndReturn(
+            {key: key and {key: []} or {}})
         manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
         self.m.ReplayAll()
 
