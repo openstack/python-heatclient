@@ -772,93 +772,6 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def test_stack_abandon(self):
-        self.register_keystone_auth_fixture()
-
-        resp_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        abandoned_stack = {
-            "action": "CREATE",
-            "status": "COMPLETE",
-            "name": "teststack",
-            "id": "1",
-            "resources": {
-                "foo": {
-                    "name": "foo",
-                    "resource_id": "test-res-id",
-                    "action": "CREATE",
-                    "status": "COMPLETE",
-                    "resource_data": {},
-                    "metadata": {},
-                }
-            }
-        }
-
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
-        http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
-        http.HTTPClient.json_request(
-            'DELETE',
-            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
-
-        self.m.ReplayAll()
-        abandon_resp = self.shell('stack-abandon teststack/1')
-        self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
-
-    def test_stack_abandon_with_outputfile(self):
-        self.register_keystone_auth_fixture()
-
-        resp_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        abandoned_stack = {
-            "action": "CREATE",
-            "status": "COMPLETE",
-            "name": "teststack",
-            "id": "1",
-            "resources": {
-                "foo": {
-                    "name": "foo",
-                    "resource_id": "test-res-id",
-                    "action": "CREATE",
-                    "status": "COMPLETE",
-                    "resource_data": {},
-                    "metadata": {},
-                }
-            }
-        }
-
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
-        http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
-        http.HTTPClient.json_request(
-            'DELETE',
-            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
-
-        self.m.ReplayAll()
-
-        with tempfile.NamedTemporaryFile() as file_obj:
-            self.shell('stack-abandon teststack/1 -O %s' % file_obj.name)
-            result = jsonutils.loads(file_obj.read().decode())
-            self.assertEqual(abandoned_stack, result)
-
     def _output_fake_response(self):
 
         resp_dict = {"stack": {
@@ -1411,6 +1324,93 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    def test_stack_abandon(self):
+        self.register_keystone_auth_fixture()
+
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        abandoned_stack = {
+            "action": "CREATE",
+            "status": "COMPLETE",
+            "name": "teststack",
+            "id": "1",
+            "resources": {
+                "foo": {
+                    "name": "foo",
+                    "resource_id": "test-res-id",
+                    "action": "CREATE",
+                    "status": "COMPLETE",
+                    "resource_data": {},
+                    "metadata": {},
+                }
+            }
+        }
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+        http.HTTPClient.json_request(
+            'DELETE',
+            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+
+        self.m.ReplayAll()
+        abandon_resp = self.shell('stack-abandon teststack/1')
+        self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
+
+    def test_stack_abandon_with_outputfile(self):
+        self.register_keystone_auth_fixture()
+
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        abandoned_stack = {
+            "action": "CREATE",
+            "status": "COMPLETE",
+            "name": "teststack",
+            "id": "1",
+            "resources": {
+                "foo": {
+                    "name": "foo",
+                    "resource_id": "test-res-id",
+                    "action": "CREATE",
+                    "status": "COMPLETE",
+                    "resource_data": {},
+                    "metadata": {},
+                }
+            }
+        }
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+        http.HTTPClient.json_request(
+            'DELETE',
+            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+
+        self.m.ReplayAll()
+
+        with tempfile.NamedTemporaryFile() as file_obj:
+            self.shell('stack-abandon teststack/1 -O %s' % file_obj.name)
+            result = jsonutils.loads(file_obj.read().decode())
+            self.assertEqual(abandoned_stack, result)
+
     def test_stack_adopt(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
@@ -1755,60 +1755,6 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
-    def test_stack_cancel_update(self):
-        self.register_keystone_auth_fixture()
-        expected_data = {'cancel_update': None}
-        resp = fakes.FakeHTTPResponse(
-            202,
-            'Accepted',
-            {},
-            'The request is accepted for processing.')
-        http.HTTPClient.json_request(
-            'POST', '/stacks/teststack2/actions',
-            data=expected_data
-        ).AndReturn((resp, None))
-        fakes.script_heat_list()
-
-        self.m.ReplayAll()
-
-        update_text = self.shell('stack-cancel-update teststack2')
-
-        required = [
-            'stack_name',
-            'id',
-            'teststack2',
-            '1'
-        ]
-        for r in required:
-            self.assertRegexpMatches(update_text, r)
-
-    def test_stack_check(self):
-        self.register_keystone_auth_fixture()
-        expected_data = {'check': None}
-        resp = fakes.FakeHTTPResponse(
-            202,
-            'Accepted',
-            {},
-            'The request is accepted for processing.')
-        http.HTTPClient.json_request(
-            'POST', '/stacks/teststack2/actions',
-            data=expected_data
-        ).AndReturn((resp, None))
-        fakes.script_heat_list()
-
-        self.m.ReplayAll()
-
-        check_text = self.shell('action-check teststack2')
-
-        required = [
-            'stack_name',
-            'id',
-            'teststack2',
-            '1'
-        ]
-        for r in required:
-            self.assertRegexpMatches(check_text, r)
-
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
         resp = fakes.FakeHTTPResponse(
@@ -1921,6 +1867,54 @@ class ShellTestUserPass(ShellBase):
         resp = self.shell('stack-snapshot teststack/1')
         self.assertEqual(resp_dict, jsonutils.loads(resp))
 
+    def test_snapshot_list(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"snapshots": [{
+            "id": "2",
+            "name": "snap1",
+            "status": "COMPLETE",
+            "status_reason": "",
+            "data": {},
+            "creation_time": "2014-12-05T01:25:52Z"
+        }]}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request(
+            'GET',
+            '/stacks/teststack/1/snapshots').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        list_text = self.shell('snapshot-list teststack/1')
+
+        required = [
+            'id',
+            'name',
+            'status',
+            'status_reason',
+            'data',
+            'creation_time',
+            '2',
+            'COMPLETE',
+            '{}',
+            '2014-12-05T01:25:52Z',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
     def test_snapshot_show(self):
         self.register_keystone_auth_fixture()
 
@@ -2006,53 +2000,120 @@ class ShellTestUserPass(ShellBase):
         resp = self.shell('stack-restore teststack/1 2')
         self.assertEqual("", resp)
 
-    def test_snapshot_list(self):
+
+class ShellTestActions(ShellBase):
+
+    def setUp(self):
+        super(ShellTestActions, self).setUp()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    def test_stack_cancel_update(self):
         self.register_keystone_auth_fixture()
-
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        resp_dict = {"snapshots": [{
-            "id": "2",
-            "name": "snap1",
-            "status": "COMPLETE",
-            "status_reason": "",
-            "data": {},
-            "creation_time": "2014-12-05T01:25:52Z"
-        }]}
-
+        expected_data = {'cancel_update': None}
         resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
         http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
-        http.HTTPClient.json_request(
-            'GET',
-            '/stacks/teststack/1/snapshots').AndReturn((resp, resp_dict))
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
 
         self.m.ReplayAll()
-        list_text = self.shell('snapshot-list teststack/1')
+
+        update_text = self.shell('stack-cancel-update teststack2')
 
         required = [
+            'stack_name',
             'id',
-            'name',
-            'status',
-            'status_reason',
-            'data',
-            'creation_time',
-            '2',
-            'COMPLETE',
-            '{}',
-            '2014-12-05T01:25:52Z',
+            'teststack2',
+            '1'
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegexpMatches(update_text, r)
+
+    def test_stack_check(self):
+        self.register_keystone_auth_fixture()
+        expected_data = {'check': None}
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        check_text = self.shell('action-check teststack2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(check_text, r)
+
+    def test_stack_suspend(self):
+        self.register_keystone_auth_fixture()
+        expected_data = {'suspend': None}
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        suspend_text = self.shell('action-suspend teststack2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(suspend_text, r)
+
+    def test_stack_resume(self):
+        self.register_keystone_auth_fixture()
+        expected_data = {'resume': None}
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        http.HTTPClient.json_request(
+            'POST', '/stacks/teststack2/actions',
+            data=expected_data
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        resume_text = self.shell('action-resume teststack2')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(resume_text, r)
 
 
 class ShellTestEvents(ShellBase):
