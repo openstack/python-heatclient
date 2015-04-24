@@ -50,6 +50,15 @@ def link_formatter(links):
     return '\n'.join(format_link(l) for l in links or [])
 
 
+def resource_nested_identifier(rsrc):
+    nested_link = [l for l in rsrc.links or []
+                   if l.get('rel') == 'nested']
+    if nested_link:
+        nested_href = nested_link[0].get('href')
+        nested_identifier = nested_href.split("/")[-2:]
+        return "/".join(nested_identifier)
+
+
 def json_formatter(js):
     return jsonutils.dumps(js, indent=2, ensure_ascii=False,
                            separators=(', ', ': '))

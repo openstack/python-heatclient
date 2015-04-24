@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import fixtures
+import mock
 import os
 from oslotest import mockpatch
 import re
@@ -39,6 +40,8 @@ from heatclient.common import utils
 from heatclient import exc
 import heatclient.shell
 from heatclient.tests import fakes
+from heatclient.v1 import events as hc_ev
+from heatclient.v1 import resources as hc_res
 import heatclient.v1.shell
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -2263,6 +2266,218 @@ class ShellTestEvents(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(event_list_text, r)
+
+
+class ShellTestEventsNested(ShellBase):
+    def setUp(self):
+        super(ShellTestEventsNested, self).setUp()
+        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+
+    @staticmethod
+    def _mock_resource(resource_id, nested_id=None):
+        res_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
+                              {"href": "http://heat/foo2", "rel": "resource"}],
+                    "logical_resource_id": resource_id,
+                    "physical_resource_id": resource_id,
+                    "resource_status": "CREATE_COMPLETE",
+                    "resource_status_reason": "state changed",
+                    "resource_type": "OS::Nested::Server",
+                    "updated_time": "2014-01-06T16:14:26Z"}
+        if nested_id:
+            nested_link = {"href": "http://heat/%s" % nested_id,
+                           "rel": "nested"}
+            res_info["links"].append(nested_link)
+        return hc_res.Resource(manager=None, info=res_info)
+
+    @staticmethod
+    def _mock_event(event_id, resource_id):
+        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"}],
+                   "logical_resource_id": resource_id,
+                   "physical_resource_id": resource_id,
+                   "resource_status": "CREATE_COMPLETE",
+                   "resource_status_reason": "state changed",
+                   "event_time": "2014-12-05T14:14:30Z",
+                   "id": event_id}
+        return hc_ev.Event(manager=None, info=ev_info)
+
+    def test_get_nested_ids(self):
+        def list_stub(stack_id):
+            return [self._mock_resource('aresource', 'foo3/3id')]
+        mock_client = mock.MagicMock()
+        mock_client.resources.list.side_effect = list_stub
+        ids = heatclient.v1.shell._get_nested_ids(hc=mock_client,
+                                                  stack_id='astack/123')
+        mock_client.resources.list.assert_called_once_with(
+            stack_id='astack/123')
+        self.assertEqual(['foo3/3id'], ids)
+
+    def test_get_stack_events(self):
+        def event_stub(stack_id, argfoo):
+            return [self._mock_event('event1', 'aresource')]
+        mock_client = mock.MagicMock()
+        mock_client.events.list.side_effect = event_stub
+        ev_args = {'argfoo': 123}
+        evs = heatclient.v1.shell._get_stack_events(hc=mock_client,
+                                                    stack_id='astack/123',
+                                                    event_args=ev_args)
+        mock_client.events.list.assert_called_once_with(
+            stack_id='astack/123', argfoo=123)
+        self.assertEqual(1, len(evs))
+        self.assertEqual('event1', evs[0].id)
+        self.assertEqual('astack', evs[0].stack_name)
+
+    def test_get_nested_events(self):
+        resources = {'parent': self._mock_resource('resource1', 'foo/child1'),
+                     'foo/child1': self._mock_resource('res_child1',
+                                                       'foo/child2'),
+                     'foo/child2': self._mock_resource('res_child2',
+                                                       'foo/child3'),
+                     'foo/child3': self._mock_resource('res_child3',
+                                                       'foo/END')}
+
+        def resource_list_stub(stack_id):
+            return [resources[stack_id]]
+        mock_client = mock.MagicMock()
+        mock_client.resources.list.side_effect = resource_list_stub
+
+        events = {'foo/child1': self._mock_event('event1', 'res_child1'),
+                  'foo/child2': self._mock_event('event2', 'res_child2'),
+                  'foo/child3': self._mock_event('event3', 'res_child3')}
+
+        def event_list_stub(stack_id, argfoo):
+            return [events[stack_id]]
+        mock_client.events.list.side_effect = event_list_stub
+
+        ev_args = {'argfoo': 123}
+        # Check nested_depth=1 (non recursive)..
+        evs = heatclient.v1.shell._get_nested_events(hc=mock_client,
+                                                     nested_depth=1,
+                                                     stack_id='parent',
+                                                     event_args=ev_args)
+
+        rsrc_calls = [mock.call(stack_id='parent')]
+        mock_client.resources.list.assert_has_calls(rsrc_calls)
+        ev_calls = [mock.call(stack_id='foo/child1', argfoo=123)]
+        mock_client.events.list.assert_has_calls(ev_calls)
+        self.assertEqual(1, len(evs))
+        self.assertEqual('event1', evs[0].id)
+
+        # ..and the recursive case via nested_depth=3
+        mock_client.resources.list.reset_mock()
+        mock_client.events.list.reset_mock()
+        evs = heatclient.v1.shell._get_nested_events(hc=mock_client,
+                                                     nested_depth=3,
+                                                     stack_id='parent',
+                                                     event_args=ev_args)
+
+        rsrc_calls = [mock.call(stack_id='parent'),
+                      mock.call(stack_id='foo/child1'),
+                      mock.call(stack_id='foo/child2')]
+        mock_client.resources.list.assert_has_calls(rsrc_calls)
+        ev_calls = [mock.call(stack_id='foo/child1', argfoo=123),
+                    mock.call(stack_id='foo/child2', argfoo=123),
+                    mock.call(stack_id='foo/child3', argfoo=123)]
+        mock_client.events.list.assert_has_calls(ev_calls)
+        self.assertEqual(3, len(evs))
+        self.assertEqual('event1', evs[0].id)
+        self.assertEqual('event2', evs[1].id)
+        self.assertEqual('event3', evs[2].id)
+
+    def test_shell_nested_depth_invalid_xor(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+
+        self.m.ReplayAll()
+
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'event-list {0} --resource {1} --nested-depth 5'.format(
+                stack_id, resource_name))
+        self.assertIn('--nested-depth cannot be specified with --resource',
+                      str(error))
+
+    def test_shell_nested_depth_invalid_value(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'event-list {0} --nested-depth Z'.format(
+                stack_id, resource_name))
+        self.assertIn('--nested-depth invalid value Z', str(error))
+
+    def test_shell_nested_depth_zero(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"events": [{"id": 'eventid1'},
+                                {"id": 'eventid2'}]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/events?sort_dir=asc' % (
+                stack_id)).AndReturn((resp, resp_dict))
+        self.m.ReplayAll()
+        list_text = self.shell('event-list %s --nested-depth 0' % stack_id)
+        required = ['id', 'eventid1', 'eventid2']
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_shell_nested_depth(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_id = 'nested/2'
+
+        # Stub events for parent stack
+        ev_resp_dict = {"events": [{"id": 'eventid1'},
+                                   {"id": 'eventid2'}]}
+        ev_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(ev_resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/events?sort_dir=asc' % (
+                stack_id)).AndReturn((ev_resp, ev_resp_dict))
+
+        # Stub resources for parent, including one nested
+        res_resp_dict = {"resources": [
+                         {"links": [{"href": "http://heat/foo", "rel": "self"},
+                                    {"href": "http://heat/foo2",
+                                     "rel": "resource"},
+                                    {"href": "http://heat/%s" % nested_id,
+                                     "rel": "nested"}],
+                          "resource_type": "OS::Nested::Foo"}]}
+        res_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(res_resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/resources' % (
+                stack_id)).AndReturn((res_resp, res_resp_dict))
+
+        # Stub the events for the nested stack
+        nev_resp_dict = {"events": [{"id": 'n_eventid1'},
+                                    {"id": 'n_eventid2'}]}
+        nev_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(nev_resp_dict))
+        http.HTTPClient.json_request(
+            'GET', '/stacks/%s/events?sort_dir=asc' % (
+                nested_id)).AndReturn((nev_resp, nev_resp_dict))
+
+        self.m.ReplayAll()
+        list_text = self.shell('event-list %s --nested-depth 1' % stack_id)
+        required = ['id', 'eventid1', 'eventid2', 'n_eventid1', 'n_eventid2',
+                    'stack_name', 'teststack', 'nested']
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
 
 
 class ShellTestResources(ShellBase):

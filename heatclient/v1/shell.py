@@ -870,6 +870,51 @@ def do_hook_clear(hc, args):
         clear_wildcard_hooks(stack_id, hook[:-1])
 
 
+def _get_nested_ids(hc, stack_id):
+    nested_ids = []
+    try:
+        resources = hc.resources.list(stack_id=stack_id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack not found: %s') % stack_id)
+    for r in resources:
+        nested_id = utils.resource_nested_identifier(r)
+        if nested_id:
+            nested_ids.append(nested_id)
+    return nested_ids
+
+
+def _get_nested_events(hc, nested_depth, stack_id, event_args):
+    # FIXME(shardy): this is very inefficient, we should add nested_depth to
+    # the event_list API in a future heat version, but this will be required
+    # until kilo heat is EOL.
+    nested_ids = _get_nested_ids(hc, stack_id)
+    nested_events = []
+    for n_id in nested_ids:
+        stack_events = _get_stack_events(hc, n_id, event_args)
+        if stack_events:
+            nested_events.extend(stack_events)
+        if nested_depth > 1:
+            next_depth = nested_depth - 1
+            nested_events.extend(_get_nested_events(
+                hc, next_depth, n_id, event_args))
+    return nested_events
+
+
+def _get_stack_events(hc, stack_id, event_args):
+    event_args['stack_id'] = stack_id
+    try:
+        events = hc.events.list(**event_args)
+    except exc.HTTPNotFound as ex:
+        # it could be the stack or resource that is not found
+        # just use the message that the server sent us.
+        raise exc.CommandError(str(ex))
+    else:
+        # Show which stack the event comes from (for nested events)
+        for e in events:
+            e.stack_name = stack_id.split("/")[0]
+        return events
+
+
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to show the events for.'))
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
@@ -883,29 +928,48 @@ def do_hook_clear(hc, args):
            help=_('Limit the number of events returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
            help=_('Only return events that appear after the given event ID.'))
+@utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
+           help=_('Depth of nested stacks from which to display events. '
+                  'Note this cannot be specified with --resource.'))
 def do_event_list(hc, args):
     '''List events for a stack.'''
-    fields = {'stack_id': args.id,
-              'resource_name': args.resource,
-              'limit': args.limit,
-              'marker': args.marker,
-              'filters': utils.format_parameters(args.filters),
-              'sort_dir': 'asc'}
-    try:
-        events = hc.events.list(**fields)
-    except exc.HTTPNotFound as ex:
-        # it could be the stack or resource that is not found
-        # just use the message that the server sent us.
-        raise exc.CommandError(str(ex))
+    display_fields = ['id', 'resource_status_reason',
+                      'resource_status', 'event_time']
+    event_args = {'resource_name': args.resource,
+                  'limit': args.limit,
+                  'marker': args.marker,
+                  'filters': utils.format_parameters(args.filters),
+                  'sort_dir': 'asc'}
+
+    # Specifying a resource in recursive mode makes no sense..
+    if args.nested_depth and args.resource:
+        msg = _("--nested-depth cannot be specified with --resource")
+        raise exc.CommandError(msg)
+
+    if args.nested_depth:
+        try:
+            nested_depth = int(args.nested_depth)
+        except ValueError:
+            msg = _("--nested-depth invalid value %s") % args.nested_depth
+            raise exc.CommandError(msg)
     else:
-        fields = ['id', 'resource_status_reason',
-                  'resource_status', 'event_time']
-        if len(events) >= 1:
-            if hasattr(events[0], 'resource_name'):
-                fields.insert(0, 'resource_name')
-            else:
-                fields.insert(0, 'logical_resource_id')
-        utils.print_list(events, fields, sortby_index=None)
+        nested_depth = 0
+
+    events = _get_stack_events(hc, stack_id=args.id, event_args=event_args)
+    sortby_index = None
+
+    if nested_depth > 0:
+        events.extend(_get_nested_events(hc, nested_depth,
+                                         args.id, event_args))
+        display_fields.append('stack_name')
+        sortby_index = display_fields.index('event_time')
+
+    if len(events) >= 1:
+        if hasattr(events[0], 'resource_name'):
+            display_fields.insert(0, 'resource_name')
+        else:
+            display_fields.insert(0, 'logical_resource_id')
+    utils.print_list(events, display_fields, sortby_index=sortby_index)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
