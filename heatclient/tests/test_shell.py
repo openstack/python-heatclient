@@ -2430,10 +2430,16 @@ class ShellTestEventsNested(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
+        timestamps = ("2014-01-06T16:14:00Z",  # parent eventid1
+                      "2014-01-06T16:15:00Z",  # nested n_eventid1
+                      "2014-01-06T16:16:00Z",  # nested n_eventid2
+                      "2014-01-06T16:17:00Z")  # parent eventid2
 
         # Stub events for parent stack
-        ev_resp_dict = {"events": [{"id": 'eventid1'},
-                                   {"id": 'eventid2'}]}
+        ev_resp_dict = {"events": [{"id": "eventid1",
+                                    "event_time": timestamps[0]},
+                                   {"id": "eventid2",
+                                    "event_time": timestamps[3]}]}
         ev_resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -2461,8 +2467,10 @@ class ShellTestEventsNested(ShellBase):
                 stack_id)).AndReturn((res_resp, res_resp_dict))
 
         # Stub the events for the nested stack
-        nev_resp_dict = {"events": [{"id": 'n_eventid1'},
-                                    {"id": 'n_eventid2'}]}
+        nev_resp_dict = {"events": [{"id": 'n_eventid1',
+                                     "event_time": timestamps[1]},
+                                    {"id": 'n_eventid2',
+                                     "event_time": timestamps[2]}]}
         nev_resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -2478,6 +2486,10 @@ class ShellTestEventsNested(ShellBase):
                     'stack_name', 'teststack', 'nested']
         for r in required:
             self.assertRegexpMatches(list_text, r)
+
+        # Check event time sort/ordering
+        self.assertRegexpMatches(list_text,
+                                 "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
 
 
 class ShellTestResources(ShellBase):

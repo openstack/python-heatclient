@@ -956,20 +956,25 @@ def do_event_list(hc, args):
         nested_depth = 0
 
     events = _get_stack_events(hc, stack_id=args.id, event_args=event_args)
-    sortby_index = None
-
-    if nested_depth > 0:
-        events.extend(_get_nested_events(hc, nested_depth,
-                                         args.id, event_args))
-        display_fields.append('stack_name')
-        sortby_index = display_fields.index('event_time')
 
     if len(events) >= 1:
         if hasattr(events[0], 'resource_name'):
             display_fields.insert(0, 'resource_name')
         else:
             display_fields.insert(0, 'logical_resource_id')
-    utils.print_list(events, display_fields, sortby_index=sortby_index)
+
+    if nested_depth > 0:
+        events.extend(_get_nested_events(hc, nested_depth,
+                                         args.id, event_args))
+        display_fields.append('stack_name')
+        # Because there have been multiple stacks events mangled into
+        # one list, we need to sort before passing to print_list
+        # Note we can't use the prettytable sortby_index here, because
+        # the "start" option doesn't allow post-sort slicing, which
+        # will be needed to make "--marker" work for nested_depth lists
+        events.sort(key=lambda x: x.event_time)
+
+    utils.print_list(events, display_fields, sortby_index=None)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
