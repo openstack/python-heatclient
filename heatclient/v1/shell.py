@@ -23,6 +23,7 @@ from six.moves.urllib import request
 import yaml
 
 from heatclient.common import deployment_utils
+from heatclient.common import event_utils
 from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
@@ -880,51 +881,6 @@ def do_hook_clear(hc, args):
         clear_wildcard_hooks(stack_id, hook[:-1])
 
 
-def _get_nested_ids(hc, stack_id):
-    nested_ids = []
-    try:
-        resources = hc.resources.list(stack_id=stack_id)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % stack_id)
-    for r in resources:
-        nested_id = utils.resource_nested_identifier(r)
-        if nested_id:
-            nested_ids.append(nested_id)
-    return nested_ids
-
-
-def _get_nested_events(hc, nested_depth, stack_id, event_args):
-    # FIXME(shardy): this is very inefficient, we should add nested_depth to
-    # the event_list API in a future heat version, but this will be required
-    # until kilo heat is EOL.
-    nested_ids = _get_nested_ids(hc, stack_id)
-    nested_events = []
-    for n_id in nested_ids:
-        stack_events = _get_stack_events(hc, n_id, event_args)
-        if stack_events:
-            nested_events.extend(stack_events)
-        if nested_depth > 1:
-            next_depth = nested_depth - 1
-            nested_events.extend(_get_nested_events(
-                hc, next_depth, n_id, event_args))
-    return nested_events
-
-
-def _get_stack_events(hc, stack_id, event_args):
-    event_args['stack_id'] = stack_id
-    try:
-        events = hc.events.list(**event_args)
-    except exc.HTTPNotFound as ex:
-        # it could be the stack or resource that is not found
-        # just use the message that the server sent us.
-        raise exc.CommandError(str(ex))
-    else:
-        # Show which stack the event comes from (for nested events)
-        for e in events:
-            e.stack_name = stack_id.split("/")[0]
-        return events
-
-
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to show the events for.'))
 @utils.arg('-r', '--resource', metavar='<RESOURCE>',
@@ -966,37 +922,20 @@ def do_event_list(hc, args):
         # marker/limit filtering client-side
         del (event_args['marker'])
         del (event_args['limit'])
+        # Nested list adds the stack name to the output
+        display_fields.append('stack_name')
     else:
         nested_depth = 0
 
-    events = _get_stack_events(hc, stack_id=args.id, event_args=event_args)
+    events = event_utils.get_events(
+        hc, stack_id=args.id, event_args=event_args, nested_depth=nested_depth,
+        marker=args.marker, limit=args.limit)
 
     if len(events) >= 1:
         if hasattr(events[0], 'resource_name'):
             display_fields.insert(0, 'resource_name')
         else:
             display_fields.insert(0, 'logical_resource_id')
-
-    if nested_depth > 0:
-        events.extend(_get_nested_events(hc, nested_depth,
-                                         args.id, event_args))
-        display_fields.append('stack_name')
-        # Because there have been multiple stacks events mangled into
-        # one list, we need to sort before passing to print_list
-        # Note we can't use the prettytable sortby_index here, because
-        # the "start" option doesn't allow post-sort slicing, which
-        # will be needed to make "--marker" work for nested_depth lists
-        events.sort(key=lambda x: x.event_time)
-
-        # Slice the list if marker is specified
-        if args.marker:
-            marker_index = [e.id for e in events].index(args.marker)
-            events = events[marker_index:]
-
-        # Slice the list if limit is specified
-        if args.limit:
-            limit_index = min(int(args.limit), len(events))
-            events = events[:limit_index]
 
     utils.print_list(events, display_fields, sortby_index=None)
 

@@ -1,0 +1,130 @@
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+import mock
+import testtools
+
+from heatclient.common import event_utils
+from heatclient.v1 import events as hc_ev
+from heatclient.v1 import resources as hc_res
+
+
+class ShellTestEventUtils(testtools.TestCase):
+    @staticmethod
+    def _mock_resource(resource_id, nested_id=None):
+        res_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
+                              {"href": "http://heat/foo2", "rel": "resource"}],
+                    "logical_resource_id": resource_id,
+                    "physical_resource_id": resource_id,
+                    "resource_status": "CREATE_COMPLETE",
+                    "resource_status_reason": "state changed",
+                    "resource_type": "OS::Nested::Server",
+                    "updated_time": "2014-01-06T16:14:26Z"}
+        if nested_id:
+            nested_link = {"href": "http://heat/%s" % nested_id,
+                           "rel": "nested"}
+            res_info["links"].append(nested_link)
+        return hc_res.Resource(manager=None, info=res_info)
+
+    @staticmethod
+    def _mock_event(event_id, resource_id):
+        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"}],
+                   "logical_resource_id": resource_id,
+                   "physical_resource_id": resource_id,
+                   "resource_status": "CREATE_COMPLETE",
+                   "resource_status_reason": "state changed",
+                   "event_time": "2014-12-05T14:14:30Z",
+                   "id": event_id}
+        return hc_ev.Event(manager=None, info=ev_info)
+
+    def test_get_nested_ids(self):
+        def list_stub(stack_id):
+            return [self._mock_resource('aresource', 'foo3/3id')]
+        mock_client = mock.MagicMock()
+        mock_client.resources.list.side_effect = list_stub
+        ids = event_utils._get_nested_ids(hc=mock_client,
+                                          stack_id='astack/123')
+        mock_client.resources.list.assert_called_once_with(
+            stack_id='astack/123')
+        self.assertEqual(['foo3/3id'], ids)
+
+    def test_get_stack_events(self):
+        def event_stub(stack_id, argfoo):
+            return [self._mock_event('event1', 'aresource')]
+        mock_client = mock.MagicMock()
+        mock_client.events.list.side_effect = event_stub
+        ev_args = {'argfoo': 123}
+        evs = event_utils._get_stack_events(hc=mock_client,
+                                            stack_id='astack/123',
+                                            event_args=ev_args)
+        mock_client.events.list.assert_called_once_with(
+            stack_id='astack/123', argfoo=123)
+        self.assertEqual(1, len(evs))
+        self.assertEqual('event1', evs[0].id)
+        self.assertEqual('astack', evs[0].stack_name)
+
+    def test_get_nested_events(self):
+        resources = {'parent': self._mock_resource('resource1', 'foo/child1'),
+                     'foo/child1': self._mock_resource('res_child1',
+                                                       'foo/child2'),
+                     'foo/child2': self._mock_resource('res_child2',
+                                                       'foo/child3'),
+                     'foo/child3': self._mock_resource('res_child3',
+                                                       'foo/END')}
+
+        def resource_list_stub(stack_id):
+            return [resources[stack_id]]
+        mock_client = mock.MagicMock()
+        mock_client.resources.list.side_effect = resource_list_stub
+
+        events = {'foo/child1': self._mock_event('event1', 'res_child1'),
+                  'foo/child2': self._mock_event('event2', 'res_child2'),
+                  'foo/child3': self._mock_event('event3', 'res_child3')}
+
+        def event_list_stub(stack_id, argfoo):
+            return [events[stack_id]]
+        mock_client.events.list.side_effect = event_list_stub
+
+        ev_args = {'argfoo': 123}
+        # Check nested_depth=1 (non recursive)..
+        evs = event_utils._get_nested_events(hc=mock_client,
+                                             nested_depth=1,
+                                             stack_id='parent',
+                                             event_args=ev_args)
+
+        rsrc_calls = [mock.call(stack_id='parent')]
+        mock_client.resources.list.assert_has_calls(rsrc_calls)
+        ev_calls = [mock.call(stack_id='foo/child1', argfoo=123)]
+        mock_client.events.list.assert_has_calls(ev_calls)
+        self.assertEqual(1, len(evs))
+        self.assertEqual('event1', evs[0].id)
+
+        # ..and the recursive case via nested_depth=3
+        mock_client.resources.list.reset_mock()
+        mock_client.events.list.reset_mock()
+        evs = event_utils._get_nested_events(hc=mock_client,
+                                             nested_depth=3,
+                                             stack_id='parent',
+                                             event_args=ev_args)
+
+        rsrc_calls = [mock.call(stack_id='parent'),
+                      mock.call(stack_id='foo/child1'),
+                      mock.call(stack_id='foo/child2')]
+        mock_client.resources.list.assert_has_calls(rsrc_calls)
+        ev_calls = [mock.call(stack_id='foo/child1', argfoo=123),
+                    mock.call(stack_id='foo/child2', argfoo=123),
+                    mock.call(stack_id='foo/child3', argfoo=123)]
+        mock_client.events.list.assert_has_calls(ev_calls)
+        self.assertEqual(3, len(evs))
+        self.assertEqual('event1', evs[0].id)
+        self.assertEqual('event2', evs[1].id)
+        self.assertEqual('event3', evs[2].id)
