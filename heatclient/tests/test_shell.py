@@ -2514,6 +2514,29 @@ class ShellTestEventsNested(ShellBase):
         self.assertRegexpMatches(list_text,
                                  "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
 
+    def test_shell_nested_depth_limit(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_id = 'nested/2'
+        timestamps = ("2014-01-06T16:14:00Z",  # parent p_eventid1
+                      "2014-01-06T16:15:00Z",  # nested n_eventid1
+                      "2014-01-06T16:16:00Z",  # nested n_eventid2
+                      "2014-01-06T16:17:00Z")  # parent p_eventid2
+        self._stub_event_list_response(stack_id, nested_id, timestamps)
+        self.m.ReplayAll()
+        list_text = self.shell(
+            'event-list %s --nested-depth 1 --limit 2' % stack_id)
+        required = ['id', 'p_eventid1', 'n_eventid1',
+                    'stack_name', 'teststack', 'nested']
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+        self.assertNotRegexpMatches(list_text, 'p_eventid2')
+        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+
+        self.assertRegexpMatches(list_text,
+                                 "%s.*\n.*%s.*\n" % timestamps[:2])
+
 
 class ShellTestResources(ShellBase):
 

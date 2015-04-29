@@ -963,8 +963,9 @@ def do_event_list(hc, args):
             msg = _("--nested-depth invalid value %s") % args.nested_depth
             raise exc.CommandError(msg)
         # Until the API supports recursive event listing we'll have to do the
-        # marker filtering client-side
+        # marker/limit filtering client-side
         del (event_args['marker'])
+        del (event_args['limit'])
     else:
         nested_depth = 0
 
@@ -991,6 +992,11 @@ def do_event_list(hc, args):
         if args.marker:
             marker_index = [e.id for e in events].index(args.marker)
             events = events[marker_index:]
+
+        # Slice the list if limit is specified
+        if args.limit:
+            limit_index = min(int(args.limit), len(events))
+            events = events[:limit_index]
 
     utils.print_list(events, display_fields, sortby_index=None)
 
