@@ -47,8 +47,11 @@ class ResourceTypeManager(base.BaseManager):
         resp, body = self.client.json_request('GET', url_str)
         return body
 
-    def generate_template(self, resource_type):
+    def generate_template(self, resource_type, template_type='cfn'):
         url_str = '/resource_types/%s/template' % (
                   parse.quote(encodeutils.safe_encode(resource_type), ''))
+        if template_type:
+            url_str += '?%s' % parse.urlencode(
+                {'template_type': template_type}, True)
         resp, body = self.client.json_request('GET', url_str)
         return body

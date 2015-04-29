@@ -630,12 +630,16 @@ def do_resource_type_show(hc, args):
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
            help=_('Resource type to generate a template for.'))
+@utils.arg('-t', '--template-type', metavar='<TEMPLATE_TYPE>',
+           default='cfn',
+           help=_('Template type to generate, hot or cfn.'))
 @utils.arg('-F', '--format', metavar='<FORMAT>',
            help=_("The template output format, one of: %s.")
                  % ', '.join(utils.supported_formats.keys()))
 def do_resource_type_template(hc, args):
     '''Generate a template based on a resource type.'''
-    fields = {'resource_type': args.resource_type}
+    fields = {'resource_type': args.resource_type,
+              'template_type': args.template_type}
     try:
         template = hc.resource_types.generate_template(**fields)
     except exc.HTTPNotFound:
@@ -748,6 +752,9 @@ def do_resource_show(hc, args):
 
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
            help=_('Resource type to generate a template for.'))
+@utils.arg('-t', '--template-type', metavar='<TEMPLATE_TYPE>',
+           default='cfn',
+           help=_('Template type to generate, hot or cfn.'))
 @utils.arg('-F', '--format', metavar='<FORMAT>',
            help=_("The template output format, one of: %s.")
                  % ', '.join(utils.supported_formats.keys()))
