@@ -2426,19 +2426,11 @@ class ShellTestEventsNested(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def test_shell_nested_depth(self):
-        self.register_keystone_auth_fixture()
-        stack_id = 'teststack/1'
-        nested_id = 'nested/2'
-        timestamps = ("2014-01-06T16:14:00Z",  # parent eventid1
-                      "2014-01-06T16:15:00Z",  # nested n_eventid1
-                      "2014-01-06T16:16:00Z",  # nested n_eventid2
-                      "2014-01-06T16:17:00Z")  # parent eventid2
-
+    def _stub_event_list_response(self, stack_id, nested_id, timestamps):
         # Stub events for parent stack
-        ev_resp_dict = {"events": [{"id": "eventid1",
+        ev_resp_dict = {"events": [{"id": "p_eventid1",
                                     "event_time": timestamps[0]},
-                                   {"id": "eventid2",
+                                   {"id": "p_eventid2",
                                     "event_time": timestamps[3]}]}
         ev_resp = fakes.FakeHTTPResponse(
             200,
@@ -2480,16 +2472,47 @@ class ShellTestEventsNested(ShellBase):
             'GET', '/stacks/%s/events?sort_dir=asc' % (
                 nested_id)).AndReturn((nev_resp, nev_resp_dict))
 
+    def test_shell_nested_depth(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_id = 'nested/2'
+        timestamps = ("2014-01-06T16:14:00Z",  # parent p_eventid1
+                      "2014-01-06T16:15:00Z",  # nested n_eventid1
+                      "2014-01-06T16:16:00Z",  # nested n_eventid2
+                      "2014-01-06T16:17:00Z")  # parent p_eventid2
+        self._stub_event_list_response(stack_id, nested_id, timestamps)
         self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1' % stack_id)
-        required = ['id', 'eventid1', 'eventid2', 'n_eventid1', 'n_eventid2',
-                    'stack_name', 'teststack', 'nested']
+        required = ['id', 'p_eventid1', 'p_eventid2', 'n_eventid1',
+                    'n_eventid2', 'stack_name', 'teststack', 'nested']
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
         # Check event time sort/ordering
         self.assertRegexpMatches(list_text,
                                  "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
+
+    def test_shell_nested_depth_marker(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_id = 'nested/2'
+        timestamps = ("2014-01-06T16:14:00Z",  # parent p_eventid1
+                      "2014-01-06T16:15:00Z",  # nested n_eventid1
+                      "2014-01-06T16:16:00Z",  # nested n_eventid2
+                      "2014-01-06T16:17:00Z")  # parent p_eventid2
+        self._stub_event_list_response(stack_id, nested_id, timestamps)
+        self.m.ReplayAll()
+        list_text = self.shell(
+            'event-list %s --nested-depth 1 --marker n_eventid1' % stack_id)
+        required = ['id', 'p_eventid2', 'n_eventid1', 'n_eventid2',
+                    'stack_name', 'teststack', 'nested']
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+        self.assertNotRegexpMatches(list_text, 'p_eventid1')
+
+        self.assertRegexpMatches(list_text,
+                                 "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
 
 
 class ShellTestResources(ShellBase):
