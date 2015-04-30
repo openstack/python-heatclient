@@ -16,17 +16,17 @@ import mock
 import os
 import socket
 
+
+from oslo_serialization import jsonutils
 import requests
+import six
 import testtools
 
 from heatclient.common import http
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.tests.unit import fakes
-from heatclient.tests.unit import test_shell
 from keystoneclient import adapter
-from keystoneclient.auth.identity import v2 as ks_v2_auth
-from keystoneclient import session
 from mox3 import mox
 
 
@@ -662,45 +662,184 @@ class HttpClientTest(testtools.TestCase):
         client.log_curl_request("GET", '', kwargs=kwargs)
 
 
-class SessionClientTest(test_shell.TestCase, testtools.TestCase):
+class SessionClientTest(testtools.TestCase):
     def setUp(self):
         super(SessionClientTest, self).setUp()
-        self.register_keystone_auth_fixture()
-        self.auth_session = session.Session()
-        self.auth_plugin = ks_v2_auth.Password(test_shell.V2_URL, 'xx', 'xx')
+        self.request = mock.patch.object(adapter.LegacyJsonAdapter,
+                                         'request').start()
 
-    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
-    def test_session_raw_request(self, mock_request):
-        mock_request.return_value = (fakes.FakeHTTPResponse(
-            200, 'OK', {'content-type': 'application/octet-stream'}, ''), '')
+    def test_session_simple_request(self):
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/octet-stream'},
+            '')
+        self.request.return_value = (resp, '')
 
-        client = http.SessionClient(session=self.auth_session,
-                                    auth=self.auth_plugin)
-        resp = client.request(method='GET', url='')
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual('', ''.join([x for x in resp.content]))
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+        response = client.request(method='GET', url='')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('', ''.join([x for x in response.content]))
 
-    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
-    def test_session_json_request(self, mock_request):
-        mock_request.return_value = (fakes.FakeHTTPResponse(
-            200, 'OK', {'content-type': 'application/json'}, '{}'), {})
+    def test_session_json_request(self):
+        fake = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({'some': 'body'}))
+        self.request.return_value = (fake, {})
 
-        client = http.SessionClient(session=self.auth_session,
-                                    auth=self.auth_plugin)
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
 
         resp = client.request('', 'GET')
-        body = utils.get_response_body(resp)
         self.assertEqual(200, resp.status_code)
-        self.assertEqual({}, body)
+        self.assertEqual({'some': 'body'}, resp.json())
 
-    @mock.patch.object(adapter.LegacyJsonAdapter, 'request')
-    def test_404_error_response(self, mock_request):
-        mock_request.return_value = (fakes.FakeHTTPResponse(
-            404, 'OK', {'content-type': 'application/octet-stream'}, ''), '')
+    def test_404_error_response(self):
+        fake = fakes.FakeHTTPResponse(
+            404,
+            'FAIL',
+            {'content-type': 'application/octet-stream'},
+            '')
+        self.request.return_value = (fake, '')
 
-        client = http.SessionClient(session=self.auth_session,
-                                    auth=self.auth_plugin)
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
         e = self.assertRaises(exc.HTTPNotFound,
                               client.request, '', 'GET')
         # Assert that the raised exception can be converted to string
-        self.assertIsNotNone(str(e))
+        self.assertIsNotNone(six.text_type(e))
+
+    def test_302_location(self):
+        fake1 = fakes.FakeHTTPResponse(
+            302,
+            'OK',
+            {'location': 'http://no.where/ishere'},
+            ''
+        )
+        fake2 = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({'Mount': 'Fuji'})
+        )
+        self.request.side_effect = [
+            (fake1, ''), (fake2, jsonutils.dumps({'Mount': 'Fuji'}))]
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY,
+                                    endpoint_override='http://no.where/')
+        resp = client.request('', 'GET')
+
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({'Mount': 'Fuji'}, utils.get_response_body(resp))
+
+        self.assertEqual(('', 'GET'), self.request.call_args_list[0][0])
+        self.assertEqual(('ishere', 'GET'), self.request.call_args_list[1][0])
+        for call in self.request.call_args_list:
+            self.assertEqual({'user_agent': 'python-heatclient',
+                              'raise_exc': False}, call[1])
+
+    def test_302_location_no_endpoint(self):
+        fake1 = fakes.FakeHTTPResponse(
+            302,
+            'OK',
+            {'location': 'http://no.where/ishere'},
+            ''
+        )
+        fake2 = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({'Mount': 'Fuji'})
+        )
+        self.request.side_effect = [
+            (fake1, ''), (fake2, jsonutils.dumps({'Mount': 'Fuji'}))]
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+        resp = client.request('', 'GET')
+
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({'Mount': 'Fuji'}, utils.get_response_body(resp))
+
+        self.assertEqual(('', 'GET'), self.request.call_args_list[0][0])
+        self.assertEqual(('http://no.where/ishere',
+                          'GET'), self.request.call_args_list[1][0])
+        for call in self.request.call_args_list:
+            self.assertEqual({'user_agent': 'python-heatclient',
+                              'raise_exc': False}, call[1])
+
+    def test_302_no_location(self):
+        fake = fakes.FakeHTTPResponse(
+            302,
+            'OK',
+            {},
+            ''
+        )
+        self.request.side_effect = [(fake, '')]
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+        e = self.assertRaises(exc.InvalidEndpoint,
+                              client.request, '', 'GET')
+        self.assertEqual("Location not returned with 302", six.text_type(e))
+
+    def test_300_error_response(self):
+        fake = fakes.FakeHTTPResponse(
+            300,
+            'FAIL',
+            {'content-type': 'application/octet-stream'},
+            '')
+        self.request.return_value = (fake, '')
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+        e = self.assertRaises(exc.HTTPMultipleChoices,
+                              client.request, '', 'GET')
+        # Assert that the raised exception can be converted to string
+        self.assertIsNotNone(six.text_type(e))
+
+    def test_kwargs(self):
+        fake = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            {}
+        )
+        kwargs = dict(endpoint_override='http://no.where/',
+                      data='some_data')
+
+        client = http.SessionClient(mock.ANY)
+
+        self.request.return_value = (fake, {})
+
+        resp = client.request('', 'GET', **kwargs)
+
+        self.assertEqual({'endpoint_override': 'http://no.where/',
+                          'json': 'some_data',
+                          'user_agent': 'python-heatclient',
+                          'raise_exc': False}, self.request.call_args[1])
+        self.assertEqual(200, resp.status_code)
+
+    def test_methods(self):
+        fake = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            {}
+        )
+        self.request.return_value = (fake, {})
+
+        client = http.SessionClient(mock.ANY)
+        methods = [client.get, client.put, client.post, client.patch,
+                   client.delete, client.head]
+        for method in methods:
+            resp = method('')
+            self.assertEqual(200, resp.status_code)
+
+    def test_credentials_headers(self):
+        client = http.SessionClient(mock.ANY)
+        self.assertEqual({}, client.credentials_headers())
