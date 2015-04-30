@@ -2424,9 +2424,9 @@ class ShellTestEventsNested(ShellBase):
                                  "%s.*\n.*%s.*\n" % timestamps[:2])
 
 
-class ShellTestHookPoll(ShellBase):
+class ShellTestHookFunctions(ShellBase):
     def setUp(self):
-        super(ShellTestHookPoll, self).setUp()
+        super(ShellTestHookFunctions, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _stub_stack_response(self, stack_id, action='CREATE',
@@ -2557,6 +2557,28 @@ class ShellTestHookPoll(ShellBase):
             exc.CommandError, self.shell,
             'hook-poll %s --nested-depth Z' % stack_id)
         self.assertIn('--nested-depth invalid value Z', str(error))
+
+    def test_hook_poll_clear_bad_status(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        self._stub_stack_response(stack_id, status='COMPLETE')
+        self.m.ReplayAll()
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'hook-clear %s aresource' % stack_id)
+        self.assertIn('Stack status CREATE_COMPLETE not IN_PROGRESS',
+                      str(error))
+
+    def test_hook_poll_clear_bad_action(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        self._stub_stack_response(stack_id, action='DELETE')
+        self.m.ReplayAll()
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'hook-clear %s aresource' % stack_id)
+        self.assertIn('Unexpected stack status DELETE_IN_PROGRESS',
+                      str(error))
 
 
 class ShellTestResources(ShellBase):

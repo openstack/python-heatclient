@@ -219,26 +219,22 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_clear_all_hooks(self):
+        shell._get_hook_type_via_status =\
+            mock.Mock(return_value='pre-create')
         type(self.args).hook = mock.PropertyMock(
             return_value=['bp'])
         type(self.args).pre_create = mock.PropertyMock(return_value=True)
-        type(self.args).pre_update = mock.PropertyMock(return_value=True)
         bp = mock.Mock()
         type(bp).resource_name = 'bp'
         self.client.resources.list = mock.Mock(return_value=[bp])
 
         shell.do_hook_clear(self.client, self.args)
-        self.assertEqual(2, self.client.resources.signal.call_count)
+        self.assertEqual(1, self.client.resources.signal.call_count)
         payload_pre_create = self.client.resources.signal.call_args_list[0][1]
         self.assertEqual({'unset_hook': 'pre-create'},
                          payload_pre_create['data'])
         self.assertEqual('bp', payload_pre_create['resource_name'])
         self.assertEqual('mystack', payload_pre_create['stack_id'])
-        payload_pre_update = self.client.resources.signal.call_args_list[1][1]
-        self.assertEqual({'unset_hook': 'pre-update'},
-                         payload_pre_update['data'])
-        self.assertEqual('bp', payload_pre_update['resource_name'])
-        self.assertEqual('mystack', payload_pre_update['stack_id'])
 
     def test_clear_pre_create_hooks(self):
         type(self.args).hook = mock.PropertyMock(

@@ -827,9 +827,9 @@ def do_resource_signal(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of the stack these resources belong to.'))
 @utils.arg('--pre-create', action='store_true', default=False,
-           help=_('Clear the pre-create hooks'))
+           help=_('Clear the pre-create hooks (optional)'))
 @utils.arg('--pre-update', action='store_true', default=False,
-           help=_('Clear the pre-update hooks'))
+           help=_('Clear the pre-update hooks (optional)'))
 @utils.arg('hook', metavar='<RESOURCE>', nargs='+',
            help=_('Resource names with hooks to clear. Resources '
                   'in nested stacks can be set using slash as a separator: '
@@ -838,16 +838,19 @@ def do_resource_signal(hc, args):
                   'nested_stack/an*/*_resource'))
 def do_hook_clear(hc, args):
     '''Clear hooks on a given stack.'''
-    if not (args.pre_create or args.pre_update):
-        raise exc.CommandError(
-            "You must specify at least one hook type (--pre-create, "
-            "--pre-update or both)")
+    if args.pre_create:
+        hook_type = 'pre-create'
+    elif args.pre_update:
+        hook_type = 'pre-update'
+    else:
+        hook_type = _get_hook_type_via_status(hc, args.id)
+
     for hook_string in args.hook:
         hook = [b for b in hook_string.split('/') if b]
         resource_pattern = hook[-1]
         stack_id = args.id
 
-        def clear_hook(stack_id, resource_name, hook_type):
+        def clear_hook(stack_id, resource_name):
             try:
                 hc.resources.signal(
                     stack_id=stack_id,
@@ -873,10 +876,7 @@ def do_hook_clear(hc, args):
                 for resource in hc.resources.list(stack_id):
                     res_name = resource.resource_name
                     if fnmatch.fnmatchcase(res_name, resource_pattern):
-                        if args.pre_create:
-                            clear_hook(stack_id, res_name, 'pre-create')
-                        if args.pre_update:
-                            clear_hook(stack_id, res_name, 'pre-update')
+                        clear_hook(stack_id, res_name)
 
         clear_wildcard_hooks(stack_id, hook[:-1])
 
@@ -940,6 +940,29 @@ def do_event_list(hc, args):
     utils.print_list(events, display_fields, sortby_index=None)
 
 
+def _get_hook_type_via_status(hc, stack_id):
+    # Figure out if the hook should be pre-create or pre-update based
+    # on the stack status, also sanity assertions that we're in-progress.
+    try:
+        stack = hc.stacks.get(stack_id=stack_id)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack not found: %s') % stack_id)
+    else:
+        if 'IN_PROGRESS' not in stack.stack_status:
+            raise exc.CommandError(_('Stack status %s not IN_PROGRESS') %
+                                   stack.stack_status)
+
+    if 'CREATE' in stack.stack_status:
+        hook_type = 'pre-create'
+    elif 'UPDATE' in stack.stack_status:
+        hook_type = 'pre-update'
+    else:
+        raise exc.CommandError(_('Unexpected stack status %s, '
+                                 'only create/update supported')
+                               % stack.stack_status)
+    return hook_type
+
+
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to show the pending hooks for.'))
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
@@ -969,28 +992,10 @@ def do_hook_poll(hc, args):
     else:
         nested_depth = 0
 
-    try:
-        stack = hc.stacks.get(stack_id=args.id)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % args.id)
-    else:
-        if 'IN_PROGRESS' not in stack.stack_status:
-            raise exc.CommandError(_('Stack status %s not IN_PROGRESS') %
-                                   stack.stack_status)
-
-    if 'CREATE' in stack.stack_status:
-        hook_type = 'pre-create'
-    elif 'UPDATE' in stack.stack_status:
-        hook_type = 'pre-update'
-    else:
-        raise exc.CommandError(_('Unexpected stack status %s, '
-                                 'only create/update supported')
-                               % stack.stack_action)
-
-    stack_id = args.id
+    hook_type = _get_hook_type_via_status(hc, args.id)
     event_args = {'sort_dir': 'asc'}
     hook_events = event_utils.get_hook_events(
-        hc, stack_id=stack_id, event_args=event_args,
+        hc, stack_id=args.id, event_args=event_args,
         nested_depth=nested_depth, hook_type=hook_type)
 
     if len(hook_events) >= 1:
