@@ -509,6 +509,8 @@ def do_stack_cancel_update(hc, args):
            help=_('Include soft-deleted stacks in the stack listing.'))
 @utils.arg('-n', '--show-nested', default=False, action="store_true",
            help=_('Include nested stacks in the stack listing.'))
+@utils.arg('-a', '--show-hidden', default=False, action="store_true",
+           help=_('Include hidden stacks in the stack listing.'))
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Filter parameters to apply on returned stacks. '
            'This can be specified multiple times, or once with parameters '
@@ -533,7 +535,8 @@ def do_stack_list(hc, args=None):
                   'marker': args.marker,
                   'filters': utils.format_parameters(args.filters),
                   'global_tenant': args.global_tenant,
-                  'show_deleted': args.show_deleted}
+                  'show_deleted': args.show_deleted,
+                  'show_hidden': args.show_hidden}
         if args.show_nested:
             fields.append('parent')
             kwargs['show_nested'] = True

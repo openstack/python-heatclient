@@ -3393,7 +3393,8 @@ class MockShellTestUserPass(MockShellBase):
                                ' --filters=status=COMPLETE'
                                ' --filters=status=FAILED'
                                ' --global-tenant'
-                               ' --show-deleted')
+                               ' --show-deleted'
+                               ' --show-hidden')
 
         required = [
             'stack_owner',
@@ -3415,7 +3416,8 @@ class MockShellTestUserPass(MockShellBase):
                                'status': ['COMPLETE', 'FAILED'],
                                'marker': ['fake_id'],
                                'global_tenant': ['True'],
-                               'show_deleted': ['True']}
+                               'show_deleted': ['True'],
+                               'show_hidden': ['True']}
         self.assertEqual(expected_query_dict, query_params)
 
 
