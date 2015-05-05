@@ -952,6 +952,9 @@ def do_event_list(hc, args):
         except ValueError:
             msg = _("--nested-depth invalid value %s") % args.nested_depth
             raise exc.CommandError(msg)
+        # Until the API supports recursive event listing we'll have to do the
+        # marker filtering client-side
+        del (event_args['marker'])
     else:
         nested_depth = 0
 
@@ -973,6 +976,13 @@ def do_event_list(hc, args):
         # the "start" option doesn't allow post-sort slicing, which
         # will be needed to make "--marker" work for nested_depth lists
         events.sort(key=lambda x: x.event_time)
+
+        # Slice the list if marker is specified
+        if args.marker:
+            marker_index = [e.id for e in events].index(args.marker)
+        else:
+            marker_index = 0
+        events = events[marker_index:]
 
     utils.print_list(events, display_fields, sortby_index=None)
 
