@@ -21,8 +21,8 @@ import testtools
 
 from heatclient.common import http
 from heatclient import exc
-from heatclient.tests import fakes
-from heatclient.tests import test_shell
+from heatclient.tests.unit import fakes
+from heatclient.tests.unit import test_shell
 from keystoneclient.auth.identity import v2 as ks_v2_auth
 from keystoneclient import session
 from mox3 import mox

@@ -38,7 +38,7 @@ from heatclient.common import http
 from heatclient.common import utils
 from heatclient import exc
 import heatclient.shell
-from heatclient.tests import fakes
+from heatclient.tests.unit import fakes
 import heatclient.v1.shell
 
 load_tests = testscenarios.load_tests_apply_scenarios
