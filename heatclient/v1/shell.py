@@ -980,9 +980,7 @@ def do_event_list(hc, args):
         # Slice the list if marker is specified
         if args.marker:
             marker_index = [e.id for e in events].index(args.marker)
-        else:
-            marker_index = 0
-        events = events[marker_index:]
+            events = events[marker_index:]
 
     utils.print_list(events, display_fields, sortby_index=None)
 
