@@ -2829,12 +2829,13 @@ class ShellTestResourceTypes(ShellBase):
 
         http.HTTPClient.json_request(
             'GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
+                   '?template_type=hot'
         ).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
 
         show_text = self.shell(
-            'resource-type-template -F yaml OS::Nova::KeyPair')
+            'resource-type-template -F yaml -t hot OS::Nova::KeyPair')
         required = [
             "heat_template_version: '2013-05-23'",
             "outputs: {}",
@@ -2858,6 +2859,7 @@ class ShellTestResourceTypes(ShellBase):
 
         http.HTTPClient.json_request(
             'GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
+                   '?template_type=cfn'
         ).AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()

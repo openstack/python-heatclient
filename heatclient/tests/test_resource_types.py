@@ -60,6 +60,8 @@ class ResourceTypeManagerTest(testtools.TestCase):
     def test_generate_template(self):
         key = 'resource_types'
         resource_type = 'OS::Nova::KeyPair'
-        expect = ('GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template')
+        template_type = 'cfn'
+        expect = ('GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
+                         '?template_type=cfn')
         manager = self._base_test(expect, key)
-        manager.generate_template(resource_type)
+        manager.generate_template(resource_type, template_type)
