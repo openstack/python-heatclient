@@ -517,6 +517,18 @@ def do_stack_cancel_update(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
+@utils.arg('-t', '--tags', metavar='<TAG1,TAG2...>',
+           help=_('Show stacks containing these tags, combine multiple tags '
+                  'using the boolean AND expression'))
+@utils.arg('--tags-any', metavar='<TAG1,TAG2...>',
+           help=_('Show stacks containing these tags, combine multiple tags '
+                  'using the boolean OR expression'))
+@utils.arg('--not-tags', metavar='<TAG1,TAG2...>',
+           help=_('Show stacks not containing these tags, combine multiple '
+                  'tags using the boolean AND expression'))
+@utils.arg('--not-tags-any', metavar='<TAG1,TAG2...>',
+           help=_('Show stacks not containing these tags, combine multiple '
+                  'tags using the boolean OR expression'))
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
            help=_('Limit the number of stacks returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
@@ -535,6 +547,10 @@ def do_stack_list(hc, args=None):
         kwargs = {'limit': args.limit,
                   'marker': args.marker,
                   'filters': utils.format_parameters(args.filters),
+                  'tags': args.tags,
+                  'tags_any': args.tags_any,
+                  'not_tags': args.not_tags,
+                  'not_tags_any': args.not_tags_any,
                   'global_tenant': args.global_tenant,
                   'show_deleted': args.show_deleted,
                   'show_hidden': args.show_hidden}
