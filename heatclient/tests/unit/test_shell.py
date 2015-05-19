@@ -2196,6 +2196,58 @@ class ShellTestEvents(ShellBase):
         for r in required:
             self.assertRegexpMatches(event_list_text, r)
 
+    def test_stack_event_list_log(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"events": [
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_one,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id": None,
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_IN_PROGRESS",
+                      "resource_status_reason": "state changed"},
+                     {"event_time": "2013-12-05T14:14:30Z",
+                      "id": self.event_id_two,
+                      "links": [{"href": "http://heat.example.com:8004/foo",
+                                 "rel": "self"},
+                                {"href": "http://heat.example.com:8004/foo2",
+                                 "rel": "resource"},
+                                {"href": "http://heat.example.com:8004/foo3",
+                                 "rel": "stack"}],
+                      "logical_resource_id": "aResource",
+                      "physical_resource_id":
+                      "bce15ec4-8919-4a02-8a90-680960fb3731",
+                      "resource_name": "aResource",
+                      "resource_status": "CREATE_COMPLETE",
+                      "resource_status_reason": "state changed"}]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.HTTPClient.json_request('GET',
+                                     '/stacks/%s/events?sort_dir=asc' %
+                                     stack_id).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        event_list_text = self.shell('event-list {0} --format log'.format(
+            stack_id))
+
+        expected = '14:14:30  2013-12-05  %s [aResource]: ' \
+                   'CREATE_IN_PROGRESS  state changed\n' \
+                   '14:14:30  2013-12-05  %s [aResource]: CREATE_COMPLETE  ' \
+                   'state changed\n' % (self.event_id_one, self.event_id_two)
+
+        self.assertEqual(expected, event_list_text)
+
     def test_event_show(self):
         self.register_keystone_auth_fixture()
         resp_dict = {"event":

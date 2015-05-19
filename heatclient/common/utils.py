@@ -86,6 +86,32 @@ def print_dict(d, formatters=None):
     print(pt.get_string(sortby='Property'))
 
 
+def event_log_formatter(events):
+    """Return the events in log format."""
+    event_log = []
+    log_format = _("%(event_date)s  %(event_time)s  %(event_id)s "
+                   "[%(rsrc_name)s]: %(rsrc_status)s  %(rsrc_status_reason)s")
+    for event in events:
+        event_time = getattr(event, 'event_time', '')
+        time_date = event_time.split('T')
+        try:
+            event_time = time_date[0]
+            event_date = time_date[1][:-1]
+        except IndexError:
+            event_time = event_date = ''
+
+        log = log_format % {
+            'event_date': event_date, 'event_time': event_time,
+            'event_id': getattr(event, 'id', ''),
+            'rsrc_name': getattr(event, 'resource_name', ''),
+            'rsrc_status': getattr(event, 'resource_status', ''),
+            'rsrc_status_reason': getattr(event, 'resource_status_reason', '')
+        }
+        event_log.append(log)
+
+    return "\n".join(event_log)
+
+
 def find_resource(manager, name_or_id):
     """Helper for the _find_* methods."""
     # first try to get entity as integer id

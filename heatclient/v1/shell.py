@@ -897,6 +897,9 @@ def do_hook_clear(hc, args):
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
            help=_('Depth of nested stacks from which to display events. '
                   'Note this cannot be specified with --resource.'))
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help=_('The output value format, one of: log, table'),
+           default='table')
 def do_event_list(hc, args):
     '''List events for a stack.'''
     display_fields = ['id', 'resource_status_reason',
@@ -937,7 +940,10 @@ def do_event_list(hc, args):
         else:
             display_fields.insert(0, 'logical_resource_id')
 
-    utils.print_list(events, display_fields, sortby_index=None)
+    if args.format == 'log':
+        print(utils.event_log_formatter(events))
+    else:
+        utils.print_list(events, display_fields, sortby_index=None)
 
 
 def _get_hook_type_via_status(hc, stack_id):
