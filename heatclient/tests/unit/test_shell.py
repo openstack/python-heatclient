@@ -3483,6 +3483,10 @@ class MockShellTestUserPass(MockShellBase):
                                ' --marker fake_id'
                                ' --filters=status=COMPLETE'
                                ' --filters=status=FAILED'
+                               ' --tags=tag1,tag2'
+                               ' --tags-any=tag3,tag4'
+                               ' --not-tags=tag5,tag6'
+                               ' --not-tags-any=tag7,tag8'
                                ' --global-tenant'
                                ' --show-deleted'
                                ' --show-hidden')
@@ -3506,6 +3510,10 @@ class MockShellTestUserPass(MockShellBase):
         expected_query_dict = {'limit': ['2'],
                                'status': ['COMPLETE', 'FAILED'],
                                'marker': ['fake_id'],
+                               'tags': ['tag1,tag2'],
+                               'tags_any': ['tag3,tag4'],
+                               'not_tags': ['tag5,tag6'],
+                               'not_tags_any': ['tag7,tag8'],
                                'global_tenant': ['True'],
                                'show_deleted': ['True'],
                                'show_hidden': ['True']}
