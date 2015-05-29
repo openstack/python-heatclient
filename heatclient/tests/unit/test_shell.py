@@ -1324,6 +1324,53 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(create_text, r)
 
+    def test_stack_create_with_tags(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            None)
+        expected_data = {
+            'files': {},
+            'disable_rollback': True,
+            'parameters': {'DBUsername': 'wp',
+                           'KeyName': 'heat_key',
+                           'LinuxDistribution': 'F17"',
+                           '"InstanceType': 'm1.large',
+                           'DBPassword': 'verybadpassword'},
+            'stack_name': 'teststack',
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'tags': 'tag1,tag2'}
+        http.HTTPClient.json_request(
+            'POST', '/stacks', data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        create_text = self.shell(
+            'stack-create teststack '
+            '--template-file=%s '
+            '--tags=tag1,tag2 '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
     def test_stack_abandon(self):
         self.register_keystone_auth_fixture()
 
@@ -1745,6 +1792,48 @@ class ShellTestUserPass(ShellBase):
             '--clear-parameter=DBPassword '
             '--clear-parameter=KeyPairName '
             '--clear-parameter=LinuxDistribution' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
+    def test_stack_update_with_tags(self):
+        self.register_keystone_auth_fixture()
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        template_data = open(template_file).read()
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        expected_data = {
+            'files': {},
+            'environment': {},
+            'template': jsonutils.loads(template_data),
+            'parameters': {'"KeyPairName': 'updated_key"'},
+            'disable_rollback': False,
+            'tags': 'tag1,tag2'}
+        http.HTTPClient.json_request(
+            'PATCH', '/stacks/teststack2/2',
+            data=expected_data,
+            headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        ).AndReturn((resp, None))
+        fakes.script_heat_list()
+
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--existing '
+            '--parameters="KeyPairName=updated_key" '
+            '--tags=tag1,tag2 ' % template_file)
 
         required = [
             'stack_name',

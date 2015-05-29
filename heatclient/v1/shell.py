@@ -86,6 +86,8 @@ def _authenticated_fetcher(hc):
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to create.'))
+@utils.arg('--tags', metavar='<TAG1,TAG2>',
+           help=_('A list of tags to associate with the stack.'))
 def do_stack_create(hc, args):
     '''Create the stack.'''
     tpl_files, template = template_utils.get_template_contents(
@@ -119,6 +121,8 @@ def do_stack_create(hc, args):
         'environment': env
     }
 
+    if args.tags:
+        fields['tags'] = args.tags
     timeout = args.timeout or args.create_timeout
     if timeout:
         fields['timeout_mins'] = timeout
@@ -444,6 +448,8 @@ def do_stack_show(hc, args):
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to update.'))
+@utils.arg('--tags', metavar='<TAG1,TAG2>',
+           help=_('An updated list of tags to associate with the stack.'))
 def do_stack_update(hc, args):
     '''Update the stack.'''
 
@@ -471,6 +477,8 @@ def do_stack_update(hc, args):
         'environment': env
     }
 
+    if args.tags:
+        fields['tags'] = args.tags
     if args.timeout:
         fields['timeout_mins'] = args.timeout
     if args.clear_parameter:
