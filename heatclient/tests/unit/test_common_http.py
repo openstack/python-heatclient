@@ -35,8 +35,8 @@ class HttpClientTest(testtools.TestCase):
         super(HttpClientTest, self).setUp()
         self.m = mox.Mox()
         self.m.StubOutWithMock(requests, 'request')
+        self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
-        self.addCleanup(self.m.ResetAll)
 
     def test_http_raw_request(self):
         headers = {'Content-Type': 'application/octet-stream',
@@ -57,7 +57,6 @@ class HttpClientTest(testtools.TestCase):
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual('', ''.join([x for x in resp.content]))
-        self.m.VerifyAll()
 
     def test_token_or_credentials(self):
         # Record a 200
@@ -107,7 +106,6 @@ class HttpClientTest(testtools.TestCase):
         client.auth_token = 'abcd1234'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_include_pass(self):
         # Record a 200
@@ -160,7 +158,6 @@ class HttpClientTest(testtools.TestCase):
         client.auth_token = 'abcd1234'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_not_include_pass(self):
         # Record a 200
@@ -206,7 +203,6 @@ class HttpClientTest(testtools.TestCase):
         client.region_name = 'RegionOne'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_http_json_request(self):
         # Record a 200
@@ -227,7 +223,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
-        self.m.VerifyAll()
 
     def test_http_json_request_argument_passed_to_requests(self):
         """Check that we have sent the proper arguments to requests."""
@@ -257,7 +252,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '', data='text')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
-        self.m.VerifyAll()
 
     def test_http_json_request_w_req_body(self):
         # Record a 200
@@ -279,7 +273,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '', body='test-body')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
-        self.m.VerifyAll()
 
     def test_http_json_request_non_json_resp_cont_type(self):
         # Record a 200
@@ -300,7 +293,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '', body='test-body')
         self.assertEqual(200, resp.status_code)
         self.assertIsNone(body)
-        self.m.VerifyAll()
 
     def test_http_json_request_invalid_json(self):
         # Record a 200
@@ -321,7 +313,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual('invalid-json', body)
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_delete(self):
         mock_conn = http.requests.request(
@@ -353,7 +344,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('DELETE', '')
 
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_post(self):
         mock_conn = http.requests.request(
@@ -385,7 +375,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('POST', '')
 
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_put(self):
         mock_conn = http.requests.request(
@@ -417,7 +406,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('PUT', '')
 
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_put_uppercase(self):
         mock_conn = http.requests.request(
@@ -449,7 +437,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('PUT', '')
 
         self.assertEqual(200, resp.status_code)
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_prohibited(self):
         mock_conn = http.requests.request(
@@ -467,7 +454,6 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004/foo')
         self.assertRaises(exc.InvalidEndpoint,
                           client.json_request, 'DELETE', '')
-        self.m.VerifyAll()
 
     def test_http_manual_redirect_error_without_location(self):
         mock_conn = http.requests.request(
@@ -485,7 +471,6 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004/foo')
         self.assertRaises(exc.InvalidEndpoint,
                           client.json_request, 'DELETE', '')
-        self.m.VerifyAll()
 
     def test_http_json_request_redirect(self):
         # Record the 302
@@ -518,7 +503,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
-        self.m.VerifyAll()
 
     def test_http_404_json_request(self):
         # Record a 404
@@ -538,7 +522,6 @@ class HttpClientTest(testtools.TestCase):
         e = self.assertRaises(exc.HTTPNotFound, client.json_request, 'GET', '')
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(str(e))
-        self.m.VerifyAll()
 
     def test_http_300_json_request(self):
         # Record a 300
@@ -559,7 +542,6 @@ class HttpClientTest(testtools.TestCase):
             exc.HTTPMultipleChoices, client.json_request, 'GET', '')
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(str(e))
-        self.m.VerifyAll()
 
     def test_fake_json_request(self):
         headers = {'User-Agent': 'python-heatclient'}
@@ -572,7 +554,6 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('fake://example.com:8004')
         self.assertRaises(exc.InvalidEndpoint,
                           client._http_request, "/", "GET")
-        self.m.VerifyAll()
 
     def test_debug_curl_command(self):
         self.m.StubOutWithMock(logging.Logger, 'debug')
@@ -597,8 +578,6 @@ class HttpClientTest(testtools.TestCase):
         client.log_curl_request('GET', '/bar', {'headers': headers,
                                                 'data': 'text'})
 
-        self.m.VerifyAll()
-
     def test_http_request_socket_error(self):
         headers = {'User-Agent': 'python-heatclient'}
         mock_conn = http.requests.request('GET', 'http://example.com:8004/',
@@ -610,7 +589,6 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004')
         self.assertRaises(exc.CommunicationError,
                           client._http_request, "/", "GET")
-        self.m.VerifyAll()
 
     def test_http_request_socket_timeout(self):
         headers = {'User-Agent': 'python-heatclient'}
@@ -623,7 +601,6 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004')
         self.assertRaises(exc.CommunicationError,
                           client._http_request, "/", "GET")
-        self.m.VerifyAll()
 
     def test_http_request_specify_timeout(self):
         mock_conn = http.requests.request(
@@ -644,7 +621,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
-        self.m.VerifyAll()
 
     def test_get_system_ca_file(self):
         chosen = '/etc/ssl/certs/ca-certificates.crt'
@@ -654,8 +630,6 @@ class HttpClientTest(testtools.TestCase):
 
         ca = http.get_system_ca_file()
         self.assertEqual(chosen, ca)
-
-        self.m.VerifyAll()
 
     def test_insecure_verify_cert_None(self):
         client = http.HTTPClient('https://foo', insecure=True)
@@ -684,8 +658,6 @@ class HttpClientTest(testtools.TestCase):
 
         client = http.HTTPClient('http://somewhere')
         client.log_curl_request("GET", '', kwargs=kwargs)
-
-        self.m.VerifyAll()
 
 
 class SessionClientTest(test_shell.TestCase, testtools.TestCase):

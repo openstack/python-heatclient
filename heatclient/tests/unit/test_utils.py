@@ -210,7 +210,6 @@ class TestURLFunctions(testtools.TestCase):
         super(TestURLFunctions, self).setUp()
         self.m = mock.MagicMock()
 
-        self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
 
     def test_normalise_file_path_to_url_relative(self):

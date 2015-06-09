@@ -3782,7 +3782,6 @@ class ShellTestManageService(ShellBase):
         self.m.ReplayAll()
         e = self.assertRaises(exc.HTTPException,
                               self.shell, "service-list")
-        self.m.VerifyAll()
         self.assertIn(message, str(e))
 
     def test_service_list(self):
@@ -3808,7 +3807,6 @@ class ShellTestManageService(ShellBase):
 
         self.m.ReplayAll()
         services_text = self.shell('service-list')
-        self.m.VerifyAll()
 
         required = [
             'hostname', 'binary', 'engine_id', 'host',

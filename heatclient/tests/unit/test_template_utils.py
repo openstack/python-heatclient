@@ -508,7 +508,6 @@ class TestGetTemplateContents(testtools.TestCase):
         template_utils.resolve_template_get_files(
             template, files, base_url)
         self.assertEqual({url: content}, files)
-        self.m.VerifyAll()
 
     def test_get_zip_content(self):
         filename = 'heat.zip'
@@ -1016,5 +1015,3 @@ parameters:
                          json.loads(files.get(two_url)))
         self.assertEqual(b'three contents',
                          files.get(three_url))
-
-        self.m.VerifyAll()

@@ -25,7 +25,6 @@ class ResourceManagerTest(testtools.TestCase):
         super(ResourceManagerTest, self).setUp()
         self.m = mox.Mox()
         self.addCleanup(self.m.UnsetStubs)
-        self.addCleanup(self.m.ResetAll)
 
     def _base_test(self, expect, key):
 
@@ -79,6 +78,7 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager = self._base_test(expect, key)
         manager.get(**fields)
+        self.m.VerifyAll()
 
     def test_get_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
@@ -90,6 +90,7 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager = self._base_test(expect, key)
         manager.get(**fields)
+        self.m.VerifyAll()
 
     def test_list(self):
         fields = {'stack_id': 'teststack'}
@@ -106,10 +107,6 @@ class ResourceManagerTest(testtools.TestCase):
                 return FakeResponse()
 
         manager = resources.ResourceManager(FakeClient())
-        self.m.StubOutWithMock(manager, '_resolve_stack_id')
-        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
-        self.m.ReplayAll()
-
         manager.list(**fields)
 
     def test_list_nested(self):
@@ -127,10 +124,6 @@ class ResourceManagerTest(testtools.TestCase):
                 return FakeResponse()
 
         manager = resources.ResourceManager(FakeClient())
-        self.m.StubOutWithMock(manager, '_resolve_stack_id')
-        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
-        self.m.ReplayAll()
-
         manager.list(**fields)
 
     def test_metadata(self):
@@ -143,14 +136,32 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager = self._base_test(expect, key)
         manager.metadata(**fields)
+        self.m.VerifyAll()
 
     def test_generate_template(self):
         fields = {'resource_name': 'testresource'}
         expect = ('GET', '/resource_types/testresource/template')
         key = None
 
-        manager = self._base_test(expect, key)
+        class FakeAPI(object):
+            """Fake API and ensure request url is correct."""
+
+            def get(self, *args, **kwargs):
+                assert ('GET', args[0]) == expect
+
+            def json_request(self, *args, **kwargs):
+                assert args == expect
+                ret = key and {key: []} or {}
+                return {}, {key: ret}
+
+        manager = resources.ResourceManager(FakeAPI())
+        self.m.StubOutWithMock(utils, 'get_response_body')
+        utils.get_response_body(mox.IgnoreArg()).AndReturn(
+            {key: key and {key: []} or {}})
+        self.m.ReplayAll()
+
         manager.generate_template(**fields)
+        self.m.VerifyAll()
 
     def test_signal(self):
         fields = {'stack_id': 'teststack',
@@ -163,3 +174,4 @@ class ResourceManagerTest(testtools.TestCase):
 
         manager = self._base_test(expect, key)
         manager.signal(**fields)
+        self.m.VerifyAll()

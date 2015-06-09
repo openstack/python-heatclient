@@ -25,8 +25,8 @@ class EventManagerTest(testtools.TestCase):
     def setUp(self):
         super(EventManagerTest, self).setUp()
         self.m = mox.Mox()
+        self.addCleanup(self.m.VerifyAll)
         self.addCleanup(self.m.UnsetStubs)
-        self.addCleanup(self.m.ResetAll)
 
     def test_list_event(self):
         stack_id = 'teststack',
