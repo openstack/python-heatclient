@@ -13,6 +13,7 @@
 import mock
 import testtools
 
+from heatclient.common import utils
 from heatclient.v1 import software_deployments
 
 
@@ -62,23 +63,24 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
             ('/software_deployments?server_id=%s' % server_id,),
             *call_args)
 
-    def test_metadata(self):
+    @mock.patch.object(utils, 'get_response_body')
+    def test_metadata(self, mock_utils):
         server_id = 'fc01f89f-e151-4dc5-9c28-543c0d20ed6a'
         metadata = {
             'group1': [{'foo': 'bar'}],
             'group2': [{'foo': 'bar'}, {'bar': 'baz'}],
         }
-        self.manager.client.json_request.return_value = (
-            {},
-            {'metadata': metadata})
+        self.manager.client.get.return_value = {}
+        mock_utils.return_value = {'metadata': metadata}
         result = self.manager.metadata(server_id=server_id)
         self.assertEqual(metadata, result)
-        call_args = self.manager.client.json_request.call_args
+        call_args = self.manager.client.get.call_args
         self.assertEqual(
             '/software_deployments/metadata/%s' % server_id,
-            call_args[0][1])
+            call_args[0][0])
 
-    def test_get(self):
+    @mock.patch.object(utils, 'get_response_body')
+    def test_get(self, mock_utils):
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'
@@ -99,16 +101,17 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
             'outputs': [],
             'options': []}
 
-        self.manager.client.json_request.return_value = (
-            {}, {'software_deployment': data})
+        self.manager.client.get.return_value = {}
+        mock_utils.return_value = {'software_deployment': data}
         result = self.manager.get(deployment_id=deployment_id)
         self.assertEqual(software_deployments.SoftwareDeployment(
             self.manager, data), result)
-        call_args = self.manager.client.json_request.call_args
+        call_args = self.manager.client.get.call_args
         self.assertEqual(
-            ('GET', '/software_deployments/%s' % deployment_id), *call_args)
+            ('/software_deployments/%s' % deployment_id,), *call_args)
 
-    def test_create(self):
+    @mock.patch.object(utils, 'get_response_body')
+    def test_create(self, mock_utils):
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'
@@ -122,14 +125,13 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
             'config_id': config_id}
         data = body.copy()
         data['id'] = deployment_id
-        self.manager.client.json_request.return_value = (
-            {}, {'software_deployment': data})
+        self.manager.client.post.return_value = {}
+        mock_utils.return_value = {'software_deployment': data}
         result = self.manager.create(**body)
         self.assertEqual(software_deployments.SoftwareDeployment(
             self.manager, data), result)
-        args, kwargs = self.manager.client.json_request.call_args
-        self.assertEqual('POST', args[0])
-        self.assertEqual('/software_deployments', args[1])
+        args, kwargs = self.manager.client.post.call_args
+        self.assertEqual('/software_deployments', args[0])
         self.assertEqual({'data': body}, kwargs)
 
     def test_delete(self):
@@ -139,7 +141,8 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
         self.assertEqual(
             ('/software_deployments/%s' % deployment_id,), *call_args)
 
-    def test_update(self):
+    @mock.patch.object(utils, 'get_response_body')
+    def test_update(self, mock_utils):
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'
@@ -153,12 +156,11 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
             'config_id': config_id}
         data = body.copy()
         data['id'] = deployment_id
-        self.manager.client.json_request.return_value = (
-            {}, {'software_deployment': data})
+        self.manager.client.put.return_value = {}
+        mock_utils.return_value = {'software_deployment': data}
         result = self.manager.update(deployment_id, **body)
         self.assertEqual(software_deployments.SoftwareDeployment(
             self.manager, data), result)
-        args, kwargs = self.manager.client.json_request.call_args
-        self.assertEqual('PUT', args[0])
-        self.assertEqual('/software_deployments/%s' % deployment_id, args[1])
+        args, kwargs = self.manager.client.put.call_args
+        self.assertEqual('/software_deployments/%s' % deployment_id, args[0])
         self.assertEqual({'data': body}, kwargs)

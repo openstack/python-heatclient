@@ -26,9 +26,9 @@ import requests
 import six
 from six.moves.urllib import parse
 
+from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LE
 from heatclient.openstack.common._i18n import _LW
 
 LOG = logging.getLogger(__name__)
@@ -263,15 +263,7 @@ class HTTPClient(object):
             kwargs['data'] = jsonutils.dumps(kwargs['data'])
 
         resp = self._http_request(url, method, **kwargs)
-        body = resp.content
-        if 'application/json' in resp.headers.get('content-type', ''):
-            try:
-                body = resp.json()
-            except ValueError:
-                LOG.error(_LE('Could not decode response body as JSON'))
-        else:
-            body = None
-
+        body = utils.get_response_body(resp)
         return resp, body
 
     def raw_request(self, method, url, **kwargs):

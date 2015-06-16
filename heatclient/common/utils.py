@@ -14,6 +14,7 @@
 #    under the License.
 
 import base64
+import logging
 import os
 import textwrap
 import uuid
@@ -28,7 +29,11 @@ import yaml
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LE
 from heatclient.openstack.common import cliutils
+
+LOG = logging.getLogger(__name__)
+
 
 supported_formats = {
     "json": lambda x: jsonutils.dumps(x, indent=2),
@@ -261,3 +266,15 @@ def normalise_file_path_to_url(path):
         return path
     path = os.path.abspath(path)
     return parse.urljoin('file:', request.pathname2url(path))
+
+
+def get_response_body(resp):
+    body = resp.content
+    if 'application/json' in resp.headers.get('content-type', ''):
+        try:
+            body = resp.json()
+        except ValueError:
+            LOG.error(_LE('Could not decode response body as JSON'))
+    else:
+        body = None
+    return body

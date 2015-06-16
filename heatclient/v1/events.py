@@ -17,6 +17,7 @@ from oslo_utils import encodeutils
 import six
 from six.moves.urllib import parse
 
+from heatclient.common import utils
 from heatclient.openstack.common.apiclient import base
 from heatclient.v1 import stacks
 
@@ -79,5 +80,6 @@ class EventManager(stacks.StackChildManager):
                   parse.quote(stack_id, ''),
                   parse.quote(encodeutils.safe_encode(resource_name), ''),
                   parse.quote(event_id, ''))
-        resp, body = self.client.json_request('GET', url_str)
-        return Event(self, body['event'])
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
+        return Event(self, body.get('event'))

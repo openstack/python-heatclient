@@ -12,6 +12,7 @@
 
 from six.moves.urllib import parse
 
+from heatclient.common import utils
 from heatclient.openstack.common.apiclient import base
 
 
@@ -43,30 +44,32 @@ class SoftwareDeploymentManager(base.BaseManager):
         """
         url = '/software_deployments/metadata/%s' % parse.quote(
             server_id, '')
-        resp, body = self.client.json_request('GET', url)
-        return body['metadata']
+        resp = self.client.get(url)
+        body = utils.get_response_body(resp)
+        return body.get('metadata')
 
     def get(self, deployment_id):
         """Get the details for a specific software deployment.
 
         :param deployment_id: ID of the software deployment
         """
-        resp, body = self.client.json_request(
-            'GET', '/software_deployments/%s' % deployment_id)
+        resp = self.client.get('/software_deployments/%s' % deployment_id)
+        body = utils.get_response_body(resp)
 
-        return SoftwareDeployment(self, body['software_deployment'])
+        return SoftwareDeployment(self, body.get('software_deployment'))
 
     def create(self, **kwargs):
         """Create a software deployment."""
-        resp, body = self.client.json_request(
-            'POST', '/software_deployments', data=kwargs)
-        return SoftwareDeployment(self, body['software_deployment'])
+        resp = self.client.post('/software_deployments', data=kwargs)
+        body = utils.get_response_body(resp)
+        return SoftwareDeployment(self, body.get('software_deployment'))
 
     def update(self, deployment_id, **kwargs):
         """Update a software deployment."""
-        resp, body = self.client.json_request(
-            'PUT', '/software_deployments/%s' % deployment_id, data=kwargs)
-        return SoftwareDeployment(self, body['software_deployment'])
+        resp = self.client.put('/software_deployments/%s' %
+                               deployment_id, data=kwargs)
+        body = utils.get_response_body(resp)
+        return SoftwareDeployment(self, body.get('software_deployment'))
 
     def delete(self, deployment_id):
         """Delete a software deployment."""

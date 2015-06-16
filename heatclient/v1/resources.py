@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from heatclient.common import utils
 
 from oslo_utils import encodeutils
 from six.moves.urllib import parse
@@ -58,8 +59,9 @@ class ResourceManager(stacks.StackChildManager):
         url_str = '/stacks/%s/resources/%s' % (
                   parse.quote(stack_id, ''),
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
-        resp, body = self.client.json_request('GET', url_str)
-        return Resource(self, body['resource'])
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
+        return Resource(self, body.get('resource'))
 
     def metadata(self, stack_id, resource_name):
         """Get the metadata for a specific resource.
@@ -71,8 +73,9 @@ class ResourceManager(stacks.StackChildManager):
         url_str = '/stacks/%s/resources/%s/metadata' % (
                   parse.quote(stack_id, ''),
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
-        resp, body = self.client.json_request('GET', url_str)
-        return body['metadata']
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
+        return body.get('metadata')
 
     def signal(self, stack_id, resource_name, data=None):
         """Signal a specific resource.
@@ -84,7 +87,8 @@ class ResourceManager(stacks.StackChildManager):
         url_str = '/stacks/%s/resources/%s/signal' % (
                   parse.quote(stack_id, ''),
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
-        resp, body = self.client.json_request('POST', url_str, data=data)
+        resp = self.client.post(url_str, data=data)
+        body = utils.get_response_body(resp)
         return body
 
     def generate_template(self, resource_name):
@@ -93,5 +97,6 @@ class ResourceManager(stacks.StackChildManager):
         """
         url_str = '/resource_types/%s/template' % (
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
-        resp, body = self.client.json_request('GET', url_str)
+        resp = self.client.get(url_str)
+        body = utils.get_response_body(resp)
         return body

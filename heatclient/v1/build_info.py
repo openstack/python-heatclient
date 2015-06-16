@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from heatclient.common import utils
 from heatclient.openstack.common.apiclient import base
 
 
@@ -28,5 +29,6 @@ class BuildInfoManager(base.BaseManager):
     resource_class = BuildInfo
 
     def build_info(self):
-        resp, body = self.client.json_request('GET', '/build_info')
+        resp = self.client.get('/build_info')
+        body = utils.get_response_body(resp)
         return body

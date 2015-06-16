@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from heatclient.common import utils
 from heatclient.openstack.common.apiclient import base
 
 
@@ -32,17 +33,16 @@ class SoftwareConfigManager(base.BaseManager):
 
         :param config_id: ID of the software config
         """
-        resp, body = self.client.json_request(
-            'GET', '/software_configs/%s' % config_id)
-
-        return SoftwareConfig(self, body['software_config'])
+        resp = self.client.get('/software_configs/%s' % config_id)
+        body = utils.get_response_body(resp)
+        return SoftwareConfig(self, body.get('software_config'))
 
     def create(self, **kwargs):
         """Create a software config."""
-        resp, body = self.client.json_request('POST', '/software_configs',
-                                              data=kwargs)
-
-        return SoftwareConfig(self, body['software_config'])
+        resp = self.client.post('/software_configs',
+                                data=kwargs)
+        body = utils.get_response_body(resp)
+        return SoftwareConfig(self, body.get('software_config'))
 
     def delete(self, config_id):
         """Delete a software config."""

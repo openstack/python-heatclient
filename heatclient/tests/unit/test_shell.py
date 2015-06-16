@@ -992,7 +992,8 @@ class ShellTestUserPass(ShellBase):
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
-            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2',
+             'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
         http.HTTPClient.json_request(
             'POST', '/stacks/preview', data=mox.IgnoreArg(),
@@ -1403,11 +1404,15 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
+        abandoned_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(abandoned_stack))
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
-        http.HTTPClient.json_request(
-            'DELETE',
-            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+        http.HTTPClient.raw_request(
+            'DELETE', '/stacks/teststack/1/abandon').AndReturn(abandoned_resp)
 
         self.m.ReplayAll()
         abandon_resp = self.shell('stack-abandon teststack/1')
@@ -1445,11 +1450,15 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
+        abandoned_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(abandoned_stack))
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
-        http.HTTPClient.json_request(
-            'DELETE',
-            '/stacks/teststack/1/abandon').AndReturn((resp, abandoned_stack))
+        http.HTTPClient.raw_request(
+            'DELETE', '/stacks/teststack/1/abandon').AndReturn(abandoned_resp)
 
         self.m.ReplayAll()
 
@@ -1945,8 +1954,12 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
-        http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request('GET', '/stacks/teststack/1').AndReturn(
+            (fakes.FakeHTTPResponse(
+                200,
+                'OK',
+                {'content-type': 'application/json'},
+                jsonutils.dumps(stack_dict)), stack_dict))
         http.HTTPClient.json_request(
             'POST',
             '/stacks/teststack/1/snapshots',
@@ -1975,13 +1988,18 @@ class ShellTestUserPass(ShellBase):
             "creation_time": "2014-12-05T01:25:52Z"
         }]}
 
+        stack_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
         http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+            'GET', '/stacks/teststack/1').AndReturn((stack_resp, stack_dict))
         http.HTTPClient.json_request(
             'GET',
             '/stacks/teststack/1/snapshots').AndReturn((resp, resp_dict))
@@ -2024,8 +2042,12 @@ class ShellTestUserPass(ShellBase):
             'OK',
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
-        http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+        http.HTTPClient.json_request('GET', '/stacks/teststack/1').AndReturn((
+            fakes.FakeHTTPResponse(
+                200,
+                'OK',
+                {'content-type': 'application/json'},
+                jsonutils.dumps(stack_dict)), stack_dict))
         http.HTTPClient.json_request(
             'GET',
             '/stacks/teststack/1/snapshots/2').AndReturn((resp, resp_dict))
@@ -2052,13 +2074,18 @@ class ShellTestUserPass(ShellBase):
         resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
+        second_resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
             {},
-            None)
+            jsonutils.dumps(resp_dict))
         http.HTTPClient.json_request(
             'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
-        http.HTTPClient.json_request(
+        http.HTTPClient.raw_request(
             'DELETE',
-            '/stacks/teststack/1/snapshots/2').AndReturn((resp, resp_dict))
+            '/stacks/teststack/1/snapshots/2').AndReturn(second_resp)
 
         self.m.ReplayAll()
         resp = self.shell('snapshot-delete teststack/1 2')
@@ -2074,16 +2101,21 @@ class ShellTestUserPass(ShellBase):
             "creation_time": "2012-10-25T01:58:47Z"
         }}
 
-        resp = fakes.FakeHTTPResponse(
+        stack_resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
-            {},
-            None)
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
+        no_resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({}))
         http.HTTPClient.json_request(
-            'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
+            'GET', '/stacks/teststack/1').AndReturn((stack_resp, stack_dict))
         http.HTTPClient.json_request(
             'POST',
-            '/stacks/teststack/1/snapshots/2/restore').AndReturn((resp, {}))
+            '/stacks/teststack/1/snapshots/2/restore').AndReturn((no_resp, {}))
 
         self.m.ReplayAll()
         resp = self.shell('stack-restore teststack/1 2')
