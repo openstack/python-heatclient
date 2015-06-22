@@ -2848,7 +2848,13 @@ class ShellTestResources(ShellBase):
         self.register_keystone_auth_fixture()
         resp_dict = {"resources": [{
             "resource_name": "foobar",
-            "parent_resource": "my_parent_resource",
+            "links": [{
+                "href": "http://heat.example.com:8004/foo/12/resources/foobar",
+                "rel": "self"
+            }, {
+                "href": "http://heat.example.com:8004/foo/12",
+                "rel": "stack"
+            }],
         }]}
         resp = fakes.FakeHTTPResponse(
             200,
@@ -2867,7 +2873,7 @@ class ShellTestResources(ShellBase):
 
         required = [
             'resource_name', 'foobar',
-            'parent_resource', 'my_parent_resource',
+            'stack_name', 'foo',
         ]
         for field in required:
             self.assertRegexpMatches(resource_list_text, field)

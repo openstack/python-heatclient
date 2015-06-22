@@ -36,6 +36,14 @@ class Resource(base.Resource):
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
 
+    @property
+    def stack_name(self):
+        if not hasattr(self, 'links'):
+            return
+        for l in self.links:
+            if l['rel'] == 'stack':
+                return l['href'].split('/')[-2]
+
 
 class ResourceManager(stacks.StackChildManager):
     resource_class = Resource
