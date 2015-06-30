@@ -35,7 +35,7 @@ class ManageServiceTest(testtools.TestCase):
                 return FakeResponse()
 
         manager = services.ServiceManager(FakeClient())
-        self.assertEqual(manager.list(), [])
+        self.assertEqual([], manager.list())
 
     def test_service_list_403(self):
         class FakeClient403(object):
