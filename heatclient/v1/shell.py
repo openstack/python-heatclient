@@ -24,6 +24,7 @@ import yaml
 
 from heatclient.common import deployment_utils
 from heatclient.common import event_utils
+from heatclient.common import http
 from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
@@ -41,7 +42,11 @@ def _authenticated_fetcher(hc):
     """A wrapper around the heat client object to fetch a template.
     """
     def _do(*args, **kwargs):
-        return hc.http_client.raw_request(*args, **kwargs).content
+        if isinstance(hc.http_client, http.SessionClient):
+            method, url = args
+            return hc.http_client.request(url, method, **kwargs).content
+        else:
+            return hc.http_client.raw_request(*args, **kwargs).content
 
     return _do
 

@@ -17,7 +17,7 @@ from heatclient.common import http
 from heatclient import exc
 
 
-def script_heat_list(url=None, show_nested=False):
+def script_heat_list(url=None, show_nested=False, client=http.HTTPClient):
     if url is None:
         url = '/stacks?'
 
@@ -52,7 +52,10 @@ def script_heat_list(url=None, show_nested=False):
                             'success, you',
                             {'content-type': 'application/json'},
                             jsonutils.dumps(resp_dict))
-    http.HTTPClient.json_request('GET', url).AndReturn((resp, resp_dict))
+    if client == http.SessionClient:
+        client.request(url, 'GET').AndReturn(resp)
+    else:
+        client.json_request('GET', url).AndReturn((resp, resp_dict))
 
 
 def mock_script_heat_list(show_nested=False):
@@ -90,7 +93,7 @@ def mock_script_heat_list(show_nested=False):
     return resp, resp_dict
 
 
-def script_heat_normal_error():
+def script_heat_normal_error(client=http.HTTPClient):
     resp_dict = {
         "explanation": "The resource could not be found.",
         "code": 404,
@@ -105,17 +108,23 @@ def script_heat_normal_error():
                             'The resource could not be found',
                             {'content-type': 'application/json'},
                             jsonutils.dumps(resp_dict))
-    http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
-        exc.from_response(resp))
+    if client == http.SessionClient:
+        client.request('/stacks/bad', 'GET').AndRaise(exc.from_response(resp))
+    else:
+        client.json_request('GET',
+                            '/stacks/bad').AndRaise(exc.from_response(resp))
 
 
-def script_heat_error(resp_string):
+def script_heat_error(resp_string, client=http.HTTPClient):
     resp = FakeHTTPResponse(400,
                             'The resource could not be found',
                             {'content-type': 'application/json'},
                             resp_string)
-    http.HTTPClient.json_request('GET', '/stacks/bad').AndRaise(
-        exc.from_response(resp))
+    if client == http.SessionClient:
+        client.request('/stacks/bad', 'GET').AndRaise(exc.from_response(resp))
+    else:
+        client.json_request('GET',
+                            '/stacks/bad').AndRaise(exc.from_response(resp))
 
 
 def fake_headers():
