@@ -19,7 +19,6 @@ import testtools
 
 from heatclient.common import deployment_utils
 from heatclient import exc
-from heatclient.v1 import software_configs
 from testtools import matchers
 
 
@@ -28,13 +27,13 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 def mock_sc(group=None, config=None, options=None,
             inputs=None, outputs=None):
-    return software_configs.SoftwareConfig(None, {
+    return {
         'group': group,
         'config': config,
         'options': options or {},
         'inputs': inputs or [],
         'outputs': outputs or [],
-    }, True)
+    }
 
 
 class DerivedConfigTest(testtools.TestCase):

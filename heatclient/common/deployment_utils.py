@@ -25,7 +25,7 @@ def build_derived_config_params(action, source, name, input_values,
                                 server_id, signal_transport, signal_id=None):
 
     input_values = input_values or {}
-    inputs = copy.deepcopy(source.inputs) or []
+    inputs = copy.deepcopy(source.get('inputs')) or []
 
     for inp in inputs:
         input_key = inp['name']
@@ -79,11 +79,11 @@ def build_derived_config_params(action, source, name, input_values,
             _('Unsupported signal transport %s') % signal_transport)
 
     return {
-        'group': source.group or 'Heat::Ungrouped',
-        'config': source.config or '',
-        'options': source.options,
+        'group': source.get('group') or 'Heat::Ungrouped',
+        'config': source.get('config') or '',
+        'options': source.get('options') or {},
         'inputs': inputs,
-        'outputs': source.outputs,
+        'outputs': source.get('outputs') or [],
         'name': name
     }
 

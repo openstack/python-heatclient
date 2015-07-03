@@ -1174,7 +1174,7 @@ def do_config_delete(hc, args):
                   'CREATE, UPDATE, DELETE, SUSPEND, RESUME'))
 @utils.arg('-c', '--config', metavar='<CONFIG>',
            help=_('ID of the configuration to deploy.'))
-@utils.arg('-s', '--server', metavar='<SERVER>',
+@utils.arg('-s', '--server', metavar='<SERVER>', required=True,
            help=_('ID of the server being deployed to.'))
 @utils.arg('-t', '--signal-transport',
            default='TEMP_URL_SIGNAL',
@@ -1197,10 +1197,13 @@ def do_config_delete(hc, args):
                   'deployment. This is used to apply a sort order to the '
                   'list of configurations currently deployed to the server.'))
 def do_deployment_create(hc, args):
-    try:
-        config = hc.software_configs.get(config_id=args.config)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Configuration not found: %s') % args.id)
+    config = {}
+    if args.config:
+        try:
+            config = hc.software_configs.get(config_id=args.config)
+        except exc.HTTPNotFound:
+            raise exc.CommandError(
+                _('Configuration not found: %s') % args.config)
 
     derrived_params = deployment_utils.build_derived_config_params(
         action=args.action,
