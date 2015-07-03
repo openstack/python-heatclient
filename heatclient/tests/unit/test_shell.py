@@ -3271,7 +3271,7 @@ class ShellTestResources(ShellBase):
         for field in required:
             self.assertRegexpMatches(resource_list_text, field)
 
-    def test_resource_show(self):
+    def test_resource_show_with_attrs(self):
         self.register_keystone_auth_fixture()
         resp_dict = {"resource":
                      {"description": "",
@@ -3287,7 +3287,11 @@ class ShellTestResources(ShellBase):
                       "resource_status": "CREATE_COMPLETE",
                       "resource_status_reason": "state changed",
                       "resource_type": "OS::Nova::Server",
-                      "updated_time": "2014-01-06T16:14:26Z"}}
+                      "updated_time": "2014-01-06T16:14:26Z",
+                      "creation_time": "2014-01-06T16:14:26Z",
+                      "attributes": {
+                          "attr_a": "value_of_attr_a",
+                          "attr_b": "value_of_attr_b"}}}
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -3296,7 +3300,7 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         resource_name = 'aResource'
         http.SessionClient.request(
-            '/stacks/%s/resources/%s' %
+            '/stacks/%s/resources/%s?with_attr=attr_a&with_attr=attr_b' %
             (
                 parse.quote(stack_id, ''),
                 parse.quote(encodeutils.safe_encode(
@@ -3305,8 +3309,10 @@ class ShellTestResources(ShellBase):
 
         self.m.ReplayAll()
 
-        resource_show_text = self.shell('resource-show {0} {1}'.format(
-                                        stack_id, resource_name))
+        resource_show_text = self.shell(
+            'resource-show {0} {1} --with-attr attr_a '
+            '--with-attr attr_b'.format(
+                stack_id, resource_name))
 
         required = [
             'description',
