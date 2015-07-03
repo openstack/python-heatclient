@@ -23,6 +23,7 @@ from heatclient.v1 import services
 from heatclient.v1 import software_configs
 from heatclient.v1 import software_deployments
 from heatclient.v1 import stacks
+from heatclient.v1 import template_versions
 
 
 class Client(object):
@@ -51,3 +52,5 @@ class Client(object):
         self.software_configs = software_configs.SoftwareConfigManager(
             self.http_client)
         self.services = services.ServiceManager(self.http_client)
+        self.template_versions = template_versions.TemplateVersionManager(
+            self.http_client)

@@ -1397,3 +1397,10 @@ def do_service_list(hc, args=None):
               'topic', 'updated_at', 'status']
     services = hc.services.list()
     utils.print_list(services, fields, sortby_index=1)
+
+
+def do_template_version_list(hc, args):
+    '''List the available template versions.'''
+    versions = hc.template_versions.list()
+    fields = ['version', 'type']
+    utils.print_list(versions, fields, sortby_index=1)

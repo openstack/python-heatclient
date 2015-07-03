@@ -89,3 +89,8 @@ class SimpleReadOnlyHeatClientTest(base.ClientTestBase):
 
     def test_heat_version(self):
         self.heat('', flags='--version')
+
+    def test_heat_template_version_list(self):
+        ret = self.heat('template-version-list')
+        tmpl_types = self.parser.listing(ret)
+        self.assertTableStruct(tmpl_types, ['version', 'type'])
