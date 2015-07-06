@@ -235,9 +235,8 @@ class StackChildManager(base.BaseManager):
         # We want to capture the redirect, not actually get the stack,
         # since all we want is the stacks:lookup response to get the
         # fully qualified ID, and not all users are allowed to do the
-        # redirected stacks:show, so pass follow_redirects=False
-        resp = self.client.get('/stacks/%s' % stack_id,
-                               follow_redirects=False)
+        # redirected stacks:show, so pass redirect=False
+        resp = self.client.get('/stacks/%s' % stack_id, redirect=False)
         location = resp.headers.get('location')
         path = self.client.strip_endpoint(location)
         return path[len('/stacks/'):]

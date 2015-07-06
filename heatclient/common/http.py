@@ -176,7 +176,7 @@ class HTTPClient(object):
 
         # Allow caller to specify not to follow redirects, in which case we
         # just return the redirect response.  Useful for using stacks:lookup.
-        follow_redirects = kwargs.pop('follow_redirects', True)
+        redirect = kwargs.pop('redirect', True)
 
         # Since requests does not follow the RFC when doing redirection to sent
         # back the same method on a redirect we are simply bypassing it.  For
@@ -221,8 +221,8 @@ class HTTPClient(object):
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
             # Redirected. Reissue the request to the new location,
-            # unless caller specified follow_redirects=False
-            if follow_redirects:
+            # unless caller specified redirect=False
+            if redirect:
                 location = resp.headers.get('location')
                 path = self.strip_endpoint(location)
                 resp = self._http_request(path, method, **kwargs)
@@ -300,6 +300,7 @@ class SessionClient(adapter.LegacyJsonAdapter):
     """HTTP client based on Keystone client session."""
 
     def request(self, url, method, **kwargs):
+        redirect = kwargs.get('redirect')
         kwargs.setdefault('user_agent', USER_AGENT)
 
         try:
@@ -307,16 +308,18 @@ class SessionClient(adapter.LegacyJsonAdapter):
         except KeyError:
             pass
 
-        resp, body = super(SessionClient, self).request(url, method,
-                                                        raise_exc=False,
-                                                        **kwargs)
+        resp, body = super(SessionClient, self).request(
+            url, method,
+            raise_exc=False,
+            **kwargs)
 
         if 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
-            location = resp.headers.get('location')
-            path = self.strip_endpoint(location)
-            resp = self.request(path, method, **kwargs)
+            if redirect:
+                location = resp.headers.get('location')
+                path = self.strip_endpoint(location)
+                resp = self.request(path, method, **kwargs)
         elif resp.status_code == 300:
             raise exc.from_response(resp)
 

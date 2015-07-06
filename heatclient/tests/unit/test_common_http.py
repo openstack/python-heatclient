@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -712,7 +712,7 @@ class SessionClientTest(testtools.TestCase):
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(six.text_type(e))
 
-    def test_302_location(self):
+    def test_redirect_302_location(self):
         fake1 = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -731,7 +731,7 @@ class SessionClientTest(testtools.TestCase):
         client = http.SessionClient(session=mock.ANY,
                                     auth=mock.ANY,
                                     endpoint_override='http://no.where/')
-        resp = client.request('', 'GET')
+        resp = client.request('', 'GET', redirect=True)
 
         self.assertEqual(200, resp.status_code)
         self.assertEqual({'Mount': 'Fuji'}, utils.get_response_body(resp))
@@ -740,7 +740,8 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(('ishere', 'GET'), self.request.call_args_list[1][0])
         for call in self.request.call_args_list:
             self.assertEqual({'user_agent': 'python-heatclient',
-                              'raise_exc': False}, call[1])
+                              'raise_exc': False,
+                              'redirect': True}, call[1])
 
     def test_302_location_no_endpoint(self):
         fake1 = fakes.FakeHTTPResponse(
@@ -760,7 +761,7 @@ class SessionClientTest(testtools.TestCase):
 
         client = http.SessionClient(session=mock.ANY,
                                     auth=mock.ANY)
-        resp = client.request('', 'GET')
+        resp = client.request('', 'GET', redirect=True)
 
         self.assertEqual(200, resp.status_code)
         self.assertEqual({'Mount': 'Fuji'}, utils.get_response_body(resp))
@@ -770,9 +771,10 @@ class SessionClientTest(testtools.TestCase):
                           'GET'), self.request.call_args_list[1][0])
         for call in self.request.call_args_list:
             self.assertEqual({'user_agent': 'python-heatclient',
-                              'raise_exc': False}, call[1])
+                              'raise_exc': False,
+                              'redirect': True}, call[1])
 
-    def test_302_no_location(self):
+    def test_redirect_302_no_location(self):
         fake = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -784,8 +786,22 @@ class SessionClientTest(testtools.TestCase):
         client = http.SessionClient(session=mock.ANY,
                                     auth=mock.ANY)
         e = self.assertRaises(exc.InvalidEndpoint,
-                              client.request, '', 'GET')
+                              client.request, '', 'GET', redirect=True)
         self.assertEqual("Location not returned with 302", six.text_type(e))
+
+    def test_no_redirect_302_no_location(self):
+        fake = fakes.FakeHTTPResponse(
+            302,
+            'OK',
+            {'location': 'http://no.where/ishere'},
+            ''
+        )
+        self.request.side_effect = [(fake, '')]
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+
+        self.assertEqual(fake, client.request('', 'GET'))
 
     def test_300_error_response(self):
         fake = fakes.FakeHTTPResponse(
