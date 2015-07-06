@@ -755,7 +755,7 @@ def do_resource_list(hc, args):
             fields.insert(0, 'resource_name')
 
         if args.nested_depth:
-            fields.append('parent_resource')
+            fields.append('stack_name')
 
         utils.print_list(resources, fields, sortby_index=4)
 
