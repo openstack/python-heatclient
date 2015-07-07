@@ -1226,6 +1226,17 @@ def do_deployment_create(hc, args):
     print(jsonutils.dumps(sd.to_dict(), indent=2))
 
 
+@utils.arg('-s', '--server', metavar='<SERVER>',
+           help=_('ID of the server to fetch deployments for.'))
+def do_deployment_list(hc, args):
+    '''List software deployments.'''
+    kwargs = {'server_id': args.server} if args.server else {}
+    deployments = hc.software_deployments.list(**kwargs)
+    fields = ['id', 'config_id', 'server_id', 'action', 'status',
+              'creation_time', 'status_reason']
+    utils.print_list(deployments, fields, sortby_index=5)
+
+
 @utils.arg('id', metavar='<ID>',
            help=_('ID of the deployment.'))
 def do_deployment_show(hc, args):
