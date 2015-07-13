@@ -736,11 +736,15 @@ def do_template_validate(hc, args):
            help=_('Name or ID of stack to show the resources for.'))
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
            help=_('Depth of nested stacks from which to display resources.'))
+@utils.arg('--with-detail', default=False, action="store_true",
+           help=_('Enable detail information presented for each resource'
+                  'in resources list.'))
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
     fields = {
         'stack_id': args.id,
         'nested_depth': args.nested_depth,
+        'with_detail': args.with_detail,
     }
     try:
         resources = hc.resources.list(**fields)
@@ -754,7 +758,7 @@ def do_resource_list(hc, args):
         else:
             fields.insert(0, 'resource_name')
 
-        if args.nested_depth:
+        if args.nested_depth or args.with_detail:
             fields.append('stack_name')
 
         utils.print_list(resources, fields, sortby_index=4)

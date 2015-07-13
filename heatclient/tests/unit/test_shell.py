@@ -3271,6 +3271,41 @@ class ShellTestResources(ShellBase):
         for field in required:
             self.assertRegexpMatches(resource_list_text, field)
 
+    def test_resource_list_detail(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"resources": [{
+            "resource_name": "foobar",
+            "links": [{
+                "href": "http://heat.example.com:8004/foo/12/resources/foobar",
+                "rel": "self"
+            }, {
+                "href": "http://heat.example.com:8004/foo/12",
+                "rel": "stack"
+            }],
+        }]}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        stack_id = 'teststack/1'
+        http.SessionClient.request('/stacks/%s/resources?%s' % (
+            stack_id,
+            parse.urlencode({'with_detail': True}, True)
+        ), 'GET').AndReturn(resp)
+
+        self.m.ReplayAll()
+
+        shell_cmd = 'resource-list {0} --with-detail'.format(stack_id)
+        resource_list_text = self.shell(shell_cmd)
+
+        required = [
+            'resource_name', 'foobar',
+            'stack_name', 'foo',
+        ]
+        for field in required:
+            self.assertRegexpMatches(resource_list_text, field)
+
     def test_resource_show_with_attrs(self):
         self.register_keystone_auth_fixture()
         resp_dict = {"resource":
