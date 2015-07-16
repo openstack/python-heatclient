@@ -1404,3 +1404,16 @@ def do_template_version_list(hc, args):
     versions = hc.template_versions.list()
     fields = ['version', 'type']
     utils.print_list(versions, fields, sortby_index=1)
+
+
+@utils.arg('template_version', metavar='<TEMPLATE_VERSION>',
+           help=_('Template version to get the functions for.'))
+def do_template_function_list(hc, args):
+    '''List the available functions.'''
+    try:
+        functions = hc.template_versions.get(args.template_version)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(
+            _('Template version not found: %s') % args.template_version)
+    else:
+        utils.print_list(functions, ['functions', 'description'])

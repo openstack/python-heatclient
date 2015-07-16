@@ -38,3 +38,20 @@ class TemplateVersionManagerTest(testtools.TestCase):
         versions = manager.list()
         self.assertEqual('2013-05-23', getattr(versions[0], 'version'))
         self.assertEqual('hot', getattr(versions[0], 'type'))
+
+    def test_get(self):
+        expect = ('GET', '/template_versions/heat_template_version.2015-04-30'
+                         '/functions')
+
+        class FakeResponse(object):
+            def json(self):
+                return {'template_functions': [{'function': 'get_attr'}]}
+
+        class FakeClient(object):
+            def get(self, *args, **kwargs):
+                assert ('GET', args[0]) == expect
+                return FakeResponse()
+
+        manager = template_versions.TemplateVersionManager(FakeClient())
+        functions = manager.get('heat_template_version.2015-04-30')
+        self.assertEqual('get_attr', getattr(functions[0], 'function'))

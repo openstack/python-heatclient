@@ -11,6 +11,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import encodeutils
+from six.moves.urllib import parse
+
 from heatclient.openstack.common.apiclient import base
 
 
@@ -30,3 +33,12 @@ class TemplateVersionManager(base.BaseManager):
         :rtype: list of :class:`TemplateVersion`
         """
         return self._list('/template_versions', 'template_versions')
+
+    def get(self, template_version):
+        """Get a list of functions for a specific resource_type.
+
+        :param template_version: template version to get the functions for
+        """
+        url_str = '/template_versions/%s/functions' % (
+                  parse.quote(encodeutils.safe_encode(template_version), ''))
+        return self._list(url_str, 'template_functions')
