@@ -3685,6 +3685,135 @@ class ShellTestDeployment(ShellBase):
         '''Patch os.environ to avoid required auth info.'''
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
+    def test_deploy_create(self):
+        self.register_keystone_auth_fixture()
+        self.patch(
+            'heatclient.common.deployment_utils.build_derived_config_params')
+        self.patch(
+            'heatclient.common.deployment_utils.build_signal_id')
+        resp_dict = {'software_deployment': {
+            'status': 'INPROGRESS',
+            'server_id': '700115e5-0100-4ecc-9ef7-9e05f27d8803',
+            'config_id': '18c4fc03-f897-4a1d-aaad-2b7622e60257',
+            'output_values': {
+                'deploy_stdout': '',
+                'deploy_stderr': '',
+                'deploy_status_code': 0,
+                'result': 'The result value'
+            },
+            'input_values': {},
+            'action': 'UPDATE',
+            'status_reason': 'Outputs received',
+            'id': 'abcd'
+        }}
+
+        config_dict = {'software_config': {
+            'inputs': [],
+            'group': 'script',
+            'name': 'config_name',
+            'outputs': [],
+            'options': {},
+            'config': 'the config script',
+            'id': 'defg'}}
+
+        derived_dict = {'software_config': {
+            'inputs': [],
+            'group': 'script',
+            'name': 'config_name',
+            'outputs': [],
+            'options': {},
+            'config': 'the config script',
+            'id': 'abcd'}}
+
+        deploy_data = {'action': 'UPDATE',
+                       'config_id': u'abcd',
+                       'server_id': 'inst01',
+                       'status': 'IN_PROGRESS',
+                       'tenant_id': 'asdf'}
+
+        config_string = jsonutils.dumps(config_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, config_string)
+        response = (http_resp, config_dict)
+        if self.client == http.SessionClient:
+            http.SessionClient.request(
+                '/software_configs/defg', 'GET').AndReturn(http_resp)
+        else:
+            self.client.json_request(
+                'GET', '/software_configs/defg').AndReturn(response)
+
+        derived_string = jsonutils.dumps(derived_dict)
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, derived_string)
+        response = (http_resp, derived_dict)
+        if self.client == http.SessionClient:
+            http.SessionClient.request(
+                '/software_configs', 'POST', data={}).AndReturn(http_resp)
+        else:
+            self.client.json_request(
+                'POST', '/software_configs', data={}).AndReturn(response)
+
+        resp_string = jsonutils.dumps(resp_dict)
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/software_deployments', 'POST',
+                data=deploy_data).AndReturn(http_resp)
+        else:
+            self.client.json_request(
+                'POST',
+                '/software_deployments', data=deploy_data).AndReturn(response)
+
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, derived_string)
+        response = (http_resp, derived_dict)
+        if self.client == http.SessionClient:
+            http.SessionClient.request(
+                '/software_configs', 'POST', data={}).AndReturn(http_resp)
+        else:
+            self.client.json_request(
+                'POST', '/software_configs', data={}).AndReturn(response)
+
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/software_deployments', 'POST',
+                data=deploy_data).AndReturn(http_resp)
+            self.client.request(
+                '/software_configs/defgh', 'GET').AndRaise(
+                    exc.HTTPNotFound())
+        else:
+            self.client.json_request(
+                'POST', '/software_deployments').AndReturn(response)
+            self.client.json_request(
+                'GET', '/software_configs/defgh').AndRaise(
+                    exc.HTTPNotFound())
+
+        self.m.ReplayAll()
+
+        text = self.shell('deployment-create -c defg -sinst01 xxx')
+
+        required = [
+            'status',
+            'server_id',
+            'config_id',
+            'output_values',
+            'input_values',
+            'action',
+            'status_reason',
+            'id',
+        ]
+        for r in required:
+            self.assertRegexpMatches(text, r)
+
+        text = self.shell('deployment-create -sinst01 xxx')
+        for r in required:
+            self.assertRegexpMatches(text, r)
+
+        self.assertRaises(exc.CommandError, self.shell,
+                          'deployment-create -c defgh -s inst01 yyy')
+        self.m.VerifyAll()
+
     def test_deploy_show(self):
         self.register_keystone_auth_fixture()
         resp_dict = {'software_deployment': {
