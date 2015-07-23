@@ -1150,7 +1150,7 @@ def do_config_show(hc, args):
 @utils.arg('id', metavar='<ID>', nargs='+',
            help=_('IDs of the configurations to delete.'))
 def do_config_delete(hc, args):
-    '''Delete software configurations.'''
+    '''Delete a software configuration.'''
     failure_count = 0
 
     for config_id in args.id:
@@ -1197,6 +1197,7 @@ def do_config_delete(hc, args):
                   'deployment. This is used to apply a sort order to the '
                   'list of configurations currently deployed to the server.'))
 def do_deployment_create(hc, args):
+    '''Create a software deployment.'''
     config = {}
     if args.config:
         try:
@@ -1249,7 +1250,7 @@ def do_deployment_metadata_show(hc, args):
 @utils.arg('id', metavar='<ID>', nargs='+',
            help=_('IDs of the deployments to delete.'))
 def do_deployment_delete(hc, args):
-    '''Delete software deployments.'''
+    '''Delete a software deployment.'''
     failure_count = 0
 
     for deploy_id in args.id:
@@ -1273,7 +1274,7 @@ def do_deployment_delete(hc, args):
            help=_('The output value format, one of: raw, json'),
            default='raw')
 def do_deployment_output_show(hc, args):
-    '''Show a specific stack output.'''
+    '''Show a specific deployment output.'''
     if (not args.all and args.output is None or
             args.all and args.output is not None):
         raise exc.CommandError(
