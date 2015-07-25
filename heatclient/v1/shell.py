@@ -442,11 +442,14 @@ def do_stack_show(hc, args):
            'would be the content of the file'),
            action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
-           help=_('Re-use the set of parameters of the current stack. '
+           help=_('Re-use the template, parameters and environment of the '
+           'current stack. If the template argument is omitted then the '
+           'existing template is used. If no %(env_arg)s is specified then '
+           'the existing environment is used. '
            'Parameters specified in %(arg)s will patch over the existing '
            'values in the current stack. Parameters omitted will keep '
            'the existing values.')
-           % {'arg': '--parameters'})
+           % {'arg': '--parameters', 'env_arg': '--environment-file'})
 @utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
            help=_('Remove the parameters from the set of parameters of '
            'current stack for the %(cmd)s. The default value in the '
@@ -464,7 +467,8 @@ def do_stack_update(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        _authenticated_fetcher(hc))
+        _authenticated_fetcher(hc),
+        existing=args.existing)
 
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)

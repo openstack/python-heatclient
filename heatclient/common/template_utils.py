@@ -28,7 +28,7 @@ from heatclient.openstack.common._i18n import _
 
 def get_template_contents(template_file=None, template_url=None,
                           template_object=None, object_request=None,
-                          files=None):
+                          files=None, existing=False):
 
     # Transform a bare file path to a file:// URL.
     if template_file:
@@ -41,6 +41,8 @@ def get_template_contents(template_file=None, template_url=None,
         template_url = template_object
         tpl = object_request and object_request('GET',
                                                 template_object)
+    elif existing:
+        return {}, None
     else:
         raise exc.CommandError(_('Need to specify exactly one of '
                                '%(arg1)s, %(arg2)s or %(arg3)s') %

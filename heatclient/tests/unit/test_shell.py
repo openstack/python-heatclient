@@ -2223,6 +2223,51 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
+    def test_stack_update_with_existing_template(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            202,
+            'Accepted',
+            {},
+            'The request is accepted for processing.')
+        expected_data = {
+            'files': {},
+            'environment': {},
+            'template': None,
+            'parameters': {}}
+        if self.client is http.HTTPClient:
+            headers = {'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        else:
+            headers = {}
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2/2', 'PATCH',
+                data=expected_data,
+                headers=headers
+            ).AndReturn(resp)
+        else:
+            self.client.json_request(
+                'PATCH', '/stacks/teststack2/2',
+                data=expected_data,
+                headers=headers
+            ).AndReturn((resp, None))
+        fakes.script_heat_list(client=self.client)
+
+        self.m.ReplayAll()
+
+        update_text = self.shell(
+            'stack-update teststack2/2 '
+            '--existing')
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_text, r)
+
     def test_stack_update_with_tags(self):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')

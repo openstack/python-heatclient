@@ -436,6 +436,12 @@ class TestGetTemplateContents(testtools.TestCase):
              '--template-url or --template-object'),
             str(ex))
 
+    def test_get_template_contents_file_none_existing(self):
+        files, tmpl_parsed = template_utils.get_template_contents(
+            existing=True)
+        self.assertEqual(None, tmpl_parsed)
+        self.assertEqual({}, files)
+
     def test_get_template_contents_parse_error(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
 
