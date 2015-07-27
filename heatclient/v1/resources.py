@@ -57,16 +57,21 @@ class ResourceManager(stacks.StackChildManager):
             url += '?nested_depth=%s' % nested_depth
         return self._list(url, "resources")
 
-    def get(self, stack_id, resource_name):
+    def get(self, stack_id, resource_name, with_attr=None):
         """Get the details for a specific resource.
 
         :param stack_id: ID of stack containing the resource
         :param resource_name: ID of resource to get the details for
+        :param with_attr: Attributes to show
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s' % (
                   parse.quote(stack_id, ''),
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
+        if with_attr:
+            params = {'with_attr': with_attr}
+            url_str += '?%s' % parse.urlencode(params, True)
+
         resp = self.client.get(url_str)
         body = utils.get_response_body(resp)
         return Resource(self, body.get('resource'))

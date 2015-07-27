@@ -80,6 +80,19 @@ class ResourceManagerTest(testtools.TestCase):
         manager.get(**fields)
         self.m.VerifyAll()
 
+    def test_get_with_attr(self):
+        fields = {'stack_id': 'teststack',
+                  'resource_name': 'testresource',
+                  'with_attr': ['attr_a', 'attr_b']}
+        expect = ('GET',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/testresource?with_attr=attr_a&with_attr=attr_b')
+        key = 'resource'
+
+        manager = self._base_test(expect, key)
+        manager.get(**fields)
+        self.m.VerifyAll()
+
     def test_get_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
                   'resource_name': u'\u5de5\u4f5c'}

@@ -764,10 +764,16 @@ def do_resource_list(hc, args):
            help=_('Name or ID of stack to show the resource for.'))
 @utils.arg('resource', metavar='<RESOURCE>',
            help=_('Name of the resource to show the details for.'))
+@utils.arg('-a', '--with-attr', metavar='<ATTRIBUTE>',
+           help=_('Attribute to show, it can be specified '
+                  'multiple times.'),
+           action='append')
 def do_resource_show(hc, args):
     '''Describe the resource.'''
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
+    if args.with_attr:
+        fields['with_attr'] = list(args.with_attr)
     try:
         resource = hc.resources.get(**fields)
     except exc.HTTPNotFound:
