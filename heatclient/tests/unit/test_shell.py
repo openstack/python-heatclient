@@ -3814,6 +3814,65 @@ class ShellTestDeployment(ShellBase):
                           'deployment-create -c defgh -s inst01 yyy')
         self.m.VerifyAll()
 
+    def test_deploy_list(self):
+        self.register_keystone_auth_fixture()
+
+        resp_dict = {
+            'software_deployments':
+                [{'status': 'COMPLETE',
+                  'server_id': '123',
+                  'config_id': '18c4fc03-f897-4a1d-aaad-2b7622e60257',
+                  'output_values': {
+                      'deploy_stdout': '',
+                      'deploy_stderr': '',
+                      'deploy_status_code': 0,
+                      'result': 'The result value'
+                  },
+                  'input_values': {},
+                  'action': 'CREATE',
+                  'status_reason': 'Outputs received',
+                  'id': 'defg'}, ]
+        }
+        resp_string = jsonutils.dumps(resp_dict)
+        headers = {'content-type': 'application/json'}
+        http_resp = fakes.FakeHTTPResponse(200, 'OK', headers, resp_string)
+        response = (http_resp, resp_dict)
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/software_deployments?', 'GET').AndReturn(http_resp)
+            self.client.request(
+                '/software_deployments?server_id=123',
+                'GET').AndReturn(http_resp)
+        else:
+            self.client.json_request(
+                'GET', '/software_deployments?').AndReturn(response)
+            self.client.json_request(
+                'GET',
+                '/software_deployments?server_id=123').AndReturn(response)
+
+        self.m.ReplayAll()
+
+        list_text = self.shell('deployment-list')
+
+        required = [
+            'id',
+            'config_id',
+            'server_id',
+            'action',
+            'status',
+            'creation_time',
+            'status_reason',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
+
+        list_text = self.shell('deployment-list -s 123')
+
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'parent')
+
     def test_deploy_show(self):
         self.register_keystone_auth_fixture()
         resp_dict = {'software_deployment': {
