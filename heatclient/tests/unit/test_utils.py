@@ -144,6 +144,12 @@ class ShellTest(testtools.TestCase):
         self.assertEqual(u'{\n  "Uni": "test\u2665"\n}',
                          utils.json_formatter({"Uni": u"test\u2665"}))
 
+    def test_yaml_formatter(self):
+        self.assertEqual('null\n...\n', utils.yaml_formatter(None))
+        self.assertEqual('{}\n', utils.yaml_formatter({}))
+        self.assertEqual('foo: bar\n',
+                         utils.yaml_formatter({"foo": "bar"}))
+
     def test_text_wrap_formatter(self):
         self.assertEqual('', utils.text_wrap_formatter(None))
         self.assertEqual('', utils.text_wrap_formatter(''))

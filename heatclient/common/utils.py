@@ -71,6 +71,10 @@ def json_formatter(js):
                            separators=(', ', ': '))
 
 
+def yaml_formatter(js):
+    return yaml.safe_dump(js, default_flow_style=False)
+
+
 def text_wrap_formatter(d):
     return '\n'.join(textwrap.wrap(d or '', 55))
 
