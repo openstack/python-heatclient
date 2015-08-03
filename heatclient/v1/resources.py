@@ -15,6 +15,7 @@
 from heatclient.common import utils
 
 from oslo_utils import encodeutils
+import six
 from six.moves.urllib import parse
 
 from heatclient.openstack.common.apiclient import base
@@ -48,13 +49,19 @@ class Resource(base.Resource):
 class ResourceManager(stacks.StackChildManager):
     resource_class = Resource
 
-    def list(self, stack_id, nested_depth=0):
+    def list(self, stack_id, **kwargs):
         """Get a list of resources.
         :rtype: list of :class:`Resource`
         """
+        params = {}
+
+        for key, value in six.iteritems(kwargs):
+            if value:
+                params[key] = value
         url = '/stacks/%s/resources' % stack_id
-        if nested_depth:
-            url += '?nested_depth=%s' % nested_depth
+        if params:
+            url += '?%s' % parse.urlencode(params, True)
+
         return self._list(url, "resources")
 
     def get(self, stack_id, resource_name, with_attr=None):

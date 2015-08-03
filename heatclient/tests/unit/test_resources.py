@@ -14,6 +14,7 @@
 from heatclient.common import utils
 
 from heatclient.v1 import resources
+from six.moves.urllib import parse
 
 from mox3 import mox
 import testtools
@@ -106,25 +107,27 @@ class ResourceManagerTest(testtools.TestCase):
         self.m.VerifyAll()
 
     def test_list(self):
-        fields = {'stack_id': 'teststack'}
-        expect = ('/stacks/teststack/resources')
-        key = 'resources'
-
-        class FakeResponse(object):
-            def json(self):
-                return {key: {}}
-
-        class FakeClient(object):
-            def get(self, *args, **kwargs):
-                assert args[0] == expect
-                return FakeResponse()
-
-        manager = resources.ResourceManager(FakeClient())
-        manager.list(**fields)
+        self._test_list(
+            fields={'stack_id': 'teststack'},
+            expect='/stacks/teststack/resources')
 
     def test_list_nested(self):
-        fields = {'stack_id': 'teststack', 'nested_depth': '99'}
-        expect = ('/stacks/teststack/resources?nested_depth=99')
+        self._test_list(
+            fields={'stack_id': 'teststack', 'nested_depth': '99'},
+            expect='/stacks/teststack/resources?%s' % parse.urlencode({
+                'nested_depth': 99,
+            }, True)
+        )
+
+    def test_list_detail(self):
+        self._test_list(
+            fields={'stack_id': 'teststack', 'with_detail': 'True'},
+            expect='/stacks/teststack/resources?%s' % parse.urlencode({
+                'with_detail': True,
+            }, True)
+        )
+
+    def _test_list(self, fields, expect):
         key = 'resources'
 
         class FakeResponse(object):
