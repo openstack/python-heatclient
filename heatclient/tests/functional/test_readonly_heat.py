@@ -56,7 +56,7 @@ class SimpleReadOnlyHeatClientTest(base.ClientTestBase):
         self.assertTableStruct(rsrc_types, ['resource_type'])
 
     def test_heat_resource_type_show(self):
-        rsrc_schema = self.heat('resource-type-show OS::Nova::Server')
+        rsrc_schema = self.heat('resource-type-show OS::Heat::RandomString')
         # resource-type-show returns a json resource schema
         self.assertIsInstance(json.loads(rsrc_schema), dict)
 
