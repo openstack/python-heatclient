@@ -388,33 +388,10 @@ class ShellTestNoMox(TestCase):
                           status_code=302,
                           headers=h)
 
-        resp_dict = {"events": [
-                     {"event_time": "2014-12-05T14:14:30Z",
-                      "id": eventid1,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "myDeployment",
-                      "physical_resource_id": None,
-                      "resource_name": "myDeployment",
-                      "resource_status": "CREATE_IN_PROGRESS",
-                      "resource_status_reason": "state changed"},
-                     {"event_time": "2014-12-05T14:14:30Z",
-                      "id": eventid2,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "myDeployment",
-                      "physical_resource_id": uuid.uuid4().hex,
-                      "resource_name": "myDeployment",
-                      "resource_status": "CREATE_COMPLETE",
-                      "resource_status_reason": "state changed"}]}
+        resp, resp_dict = fakes.mock_script_event_list(
+            resource_name="myDeployment", rsrc_eventid1=eventid1,
+            rsrc_eventid2=eventid2, fakehttp=False
+        )
 
         self.requests.get('http://heat.example.com/stacks/myStack%2F60f83b5e/'
                           'resources/myDeployment/events',
@@ -434,8 +411,8 @@ class ShellTestNoMox(TestCase):
             eventid2,
             'state changed',
             'CREATE_IN_PROGRESS',
-            '2014-12-05T14:14:30Z',
-            '2014-12-05T14:14:30Z',
+            '2013-12-05T14:14:31Z',
+            '2013-12-05T14:14:32Z',
         ]
 
         for r in required:
@@ -1144,6 +1121,165 @@ class ShellTestUserPass(ShellBase):
 
         for r in required:
             self.assertRegexpMatches(create_text, r)
+
+    def test_create_success_with_poll(self):
+        self.register_keystone_auth_fixture()
+
+        stack_create_resp_dict = {"stack": {
+            "id": "teststack2/2",
+            "stack_name": "teststack2",
+            "stack_status": 'CREATE_IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        stack_create_resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            jsonutils.dumps(stack_create_resp_dict))
+        if self.client == http.SessionClient:
+            headers = {}
+            self.client.request(
+                '/stacks', 'POST', data=mox.IgnoreArg(),
+                headers=headers).AndReturn(stack_create_resp)
+        else:
+            headers = {'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+            self.client.json_request(
+                'POST', '/stacks', data=mox.IgnoreArg(),
+                headers=headers
+            ).AndReturn((stack_create_resp, None))
+        fakes.script_heat_list(client=self.client)
+
+        stack_show_resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        stack_show_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_show_resp_dict))
+
+        event_list_resp, event_list_resp_dict = fakes.mock_script_event_list(
+            stack_name="teststack2")
+        stack_id = 'teststack2'
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2', 'GET').MultipleTimes().AndReturn(
+                stack_show_resp)
+            self.client.request(
+                '/stacks/%s/events?sort_dir=asc' % stack_id, 'GET'
+            ).MultipleTimes().AndReturn(event_list_resp)
+        else:
+            self.client.json_request(
+                'GET', '/stacks/teststack2').MultipleTimes().AndReturn(
+                (stack_show_resp, stack_show_resp_dict))
+            http.HTTPClient.json_request(
+                'GET', '/stacks/%s/events?sort_dir=asc' % stack_id
+            ).MultipleTimes().AndReturn((event_list_resp,
+                                         event_list_resp_dict))
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        create_text = self.shell(
+            'stack-create teststack2 '
+            '--poll 4 '
+            '--template-file=%s '
+            '--parameters="InstanceType=m1.large;DBUsername=wp;'
+            'DBPassword=verybadpassword;KeyName=heat_key;'
+            'LinuxDistribution=F17"' % template_file)
+
+        required = [
+            'id',
+            'stack_name',
+            'stack_status',
+            '2',
+            'teststack2',
+            'IN_PROGRESS',
+            '14:14:30',  '2013-12-05', '0159dccd-65e1-46e8-a094-697d20b009e5',
+            'CREATE_IN_PROGRESS', 'state changed',
+            '14:14:31', '7fecaeed-d237-4559-93a5-92d5d9111205',
+            'testresource',
+            '14:14:32', 'e953547a-18f8-40a7-8e63-4ec4f509648b',
+            'CREATE_COMPLETE',
+            '14:14:33', '8f591a36-7190-4adb-80da-00191fe22388'
+        ]
+
+        for r in required:
+            self.assertRegexpMatches(create_text, r)
+
+    def test_create_failed_with_poll(self):
+        self.register_keystone_auth_fixture()
+        stack_create_resp_dict = {"stack": {
+            "id": "teststack2/2",
+            "stack_name": "teststack2",
+            "stack_status": 'CREATE_IN_PROGRESS',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        stack_create_resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack2/2'},
+            jsonutils.dumps(stack_create_resp_dict))
+        if self.client == http.SessionClient:
+            headers = {}
+            self.client.request(
+                '/stacks', 'POST', data=mox.IgnoreArg(),
+                headers=headers).AndReturn(stack_create_resp)
+        else:
+            headers = {'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+            self.client.json_request(
+                'POST', '/stacks', data=mox.IgnoreArg(),
+                headers=headers
+            ).AndReturn((stack_create_resp, None))
+        fakes.script_heat_list(client=self.client)
+
+        stack_show_resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        stack_show_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_show_resp_dict))
+
+        event_list_resp, event_list_resp_dict = fakes.mock_script_event_list(
+            stack_name="teststack2", action="CREATE", final_state="FAILED")
+        stack_id = 'teststack2'
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2', 'GET').MultipleTimes().AndReturn(
+                stack_show_resp)
+            self.client.request(
+                '/stacks/%s/events?sort_dir=asc' % stack_id, 'GET'
+            ).MultipleTimes().AndReturn(event_list_resp)
+        else:
+            self.client.json_request(
+                'GET', '/stacks/teststack2').MultipleTimes().AndReturn(
+                (stack_show_resp, stack_show_resp_dict))
+            http.HTTPClient.json_request(
+                'GET', '/stacks/%s/events?sort_dir=asc' % stack_id
+            ).MultipleTimes().AndReturn((event_list_resp,
+                                         event_list_resp_dict))
+
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+
+        e = self.assertRaises(exc.StackFailure, self.shell,
+                              'stack-create teststack2 --poll '
+                              '--template-file=%s --parameters="InstanceType='
+                              'm1.large;DBUsername=wp;DBPassword=password;'
+                              'KeyName=heat_key;LinuxDistribution=F17' %
+                              template_file)
+        self.assertEqual("\n Stack teststack2 CREATE_FAILED \n",
+                         str(e))
 
     def test_stack_create_param_file(self):
         self.register_keystone_auth_fixture()
@@ -2598,39 +2734,11 @@ class ShellTestEvents(ShellBase):
 
     def test_event_list(self):
         self.register_keystone_auth_fixture()
-        resp_dict = {"events": [
-                     {"event_time": "2013-12-05T14:14:30Z",
-                      "id": self.event_id_one,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "aResource",
-                      "physical_resource_id": None,
-                      "resource_name": "aResource",
-                      "resource_status": "CREATE_IN_PROGRESS",
-                      "resource_status_reason": "state changed"},
-                     {"event_time": "2013-12-05T14:14:30Z",
-                      "id": self.event_id_two,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "aResource",
-                      "physical_resource_id":
-                      "bce15ec4-8919-4a02-8a90-680960fb3731",
-                      "resource_name": "aResource",
-                      "resource_status": "CREATE_COMPLETE",
-                      "resource_status_reason": "state changed"}]}
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
+        resp, resp_dict = fakes.mock_script_event_list(
+            resource_name="aResource",
+            rsrc_eventid1=self.event_id_one,
+            rsrc_eventid2=self.event_id_two
+        )
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
         http.SessionClient.request(
@@ -2656,47 +2764,20 @@ class ShellTestEvents(ShellBase):
             'state changed',
             'CREATE_IN_PROGRESS',
             'CREATE_COMPLETE',
-            '2013-12-05T14:14:30Z',
-            '2013-12-05T14:14:30Z',
+            '2013-12-05T14:14:31Z',
+            '2013-12-05T14:14:32Z',
         ]
         for r in required:
             self.assertRegexpMatches(event_list_text, r)
 
     def test_stack_event_list_log(self):
         self.register_keystone_auth_fixture()
-        resp_dict = {"events": [
-                     {"event_time": "2013-12-05T14:14:30Z",
-                      "id": self.event_id_one,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "aResource",
-                      "physical_resource_id": None,
-                      "resource_name": "aResource",
-                      "resource_status": "CREATE_IN_PROGRESS",
-                      "resource_status_reason": "state changed"},
-                     {"event_time": "2013-12-05T14:14:30Z",
-                      "id": self.event_id_two,
-                      "links": [{"href": "http://heat.example.com:8004/foo",
-                                 "rel": "self"},
-                                {"href": "http://heat.example.com:8004/foo2",
-                                 "rel": "resource"},
-                                {"href": "http://heat.example.com:8004/foo3",
-                                 "rel": "stack"}],
-                      "logical_resource_id": "aResource",
-                      "physical_resource_id":
-                      "bce15ec4-8919-4a02-8a90-680960fb3731",
-                      "resource_name": "aResource",
-                      "resource_status": "CREATE_COMPLETE",
-                      "resource_status_reason": "state changed"}]}
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
+        resp, resp_dict = fakes.mock_script_event_list(
+            resource_name="aResource",
+            rsrc_eventid1=self.event_id_one,
+            rsrc_eventid2=self.event_id_two
+        )
+
         stack_id = 'teststack/1'
         if self.client == http.SessionClient:
             self.client.request(
@@ -2713,9 +2794,9 @@ class ShellTestEvents(ShellBase):
         event_list_text = self.shell('event-list {0} --format log'.format(
             stack_id))
 
-        expected = '14:14:30  2013-12-05  %s [aResource]: ' \
+        expected = '14:14:31  2013-12-05  %s [aResource]: ' \
                    'CREATE_IN_PROGRESS  state changed\n' \
-                   '14:14:30  2013-12-05  %s [aResource]: CREATE_COMPLETE  ' \
+                   '14:14:32  2013-12-05  %s [aResource]: CREATE_COMPLETE  ' \
                    'state changed\n' % (self.event_id_one, self.event_id_two)
 
         self.assertEqual(expected, event_list_text)

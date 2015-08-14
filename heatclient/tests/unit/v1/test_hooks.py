@@ -41,6 +41,7 @@ class TestHooks(testtools.TestCase):
         type(self.args).rollback = mock.PropertyMock(return_value=None)
         type(self.args).pre_create = mock.PropertyMock(return_value=False)
         type(self.args).pre_update = mock.PropertyMock(return_value=False)
+        type(self.args).poll = mock.PropertyMock(return_value=None)
 
     def test_create_hooks_in_args(self):
         type(self.args).pre_create = mock.PropertyMock(

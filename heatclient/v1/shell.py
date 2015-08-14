@@ -20,6 +20,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import strutils
 import six
 from six.moves.urllib import request
+import time
 import yaml
 
 from heatclient.common import deployment_utils
@@ -89,6 +90,10 @@ def _authenticated_fetcher(hc):
            'This can be specified multiple times. Parameter value '
            'would be the content of the file'),
            action='append')
+@utils.arg('--poll', metavar='SECONDS', type=int, nargs='?', const=5,
+           help=_('Poll and report events until stack completes. '
+                  'Optional poll interval in seconds can be provided as '
+                  'argument, default 5.'))
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to create.'))
 @utils.arg('--tags', metavar='<TAG1,TAG2>',
@@ -134,6 +139,8 @@ def do_stack_create(hc, args):
 
     hc.stacks.create(**fields)
     do_stack_list(hc)
+    if args.poll is not None:
+        _poll_for_events(hc, args.name, 'CREATE', poll_period=args.poll)
 
 
 def hooks_to_env(env, arg_hooks, hook):
@@ -380,20 +387,7 @@ def do_action_check(hc, args):
 def do_stack_show(hc, args):
     '''Describe the stack.'''
     fields = {'stack_id': args.id}
-    try:
-        stack = hc.stacks.get(**fields)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % args.id)
-    else:
-        formatters = {
-            'description': utils.text_wrap_formatter,
-            'template_description': utils.text_wrap_formatter,
-            'stack_status_reason': utils.text_wrap_formatter,
-            'parameters': utils.json_formatter,
-            'outputs': utils.json_formatter,
-            'links': utils.link_formatter
-        }
-        utils.print_dict(stack.to_dict(), formatters=formatters)
+    _do_stack_show(hc, fields)
 
 
 @utils.arg('-f', '--template-file', metavar='<FILE>',
@@ -1442,3 +1436,55 @@ def do_template_function_list(hc, args):
             _('Template version not found: %s') % args.template_version)
     else:
         utils.print_list(functions, ['functions', 'description'])
+
+
+def _do_stack_show(hc, fields):
+    try:
+        stack = hc.stacks.get(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack not found: %s') %
+                               fields.get('stack_id'))
+    else:
+        formatters = {
+            'description': utils.text_wrap_formatter,
+            'template_description': utils.text_wrap_formatter,
+            'stack_status_reason': utils.text_wrap_formatter,
+            'parameters': utils.json_formatter,
+            'outputs': utils.json_formatter,
+            'links': utils.link_formatter
+        }
+        utils.print_dict(stack.to_dict(), formatters=formatters)
+
+
+def _poll_for_events(hc, stack_name, action, poll_period):
+    """When an action is performed on a stack, continuously poll for its
+    events and display to user as logs.
+    """
+    fields = {'stack_id': stack_name}
+    _do_stack_show(hc, fields)
+    marker = None
+    while True:
+        events = event_utils.get_events(hc, stack_id=stack_name,
+                                        event_args={'sort_dir': 'asc',
+                                                    'marker': marker})
+
+        if len(events) >= 1:
+            # set marker to last event that was received.
+            marker = getattr(events[-1], 'id', None)
+            events_log = utils.event_log_formatter(events)
+            print(events_log)
+            for event in events:
+                # check if stack event was also received
+                if getattr(event, 'resource_name', '') == stack_name:
+                    stack_status = getattr(event, 'resource_status', '')
+                    msg = _("\n Stack %(name)s %(status)s \n") % dict(
+                        name=stack_name, status=stack_status)
+                    if stack_status == '%s_COMPLETE' % action:
+                        _do_stack_show(hc, fields)
+                        print(msg)
+                        return
+                    elif stack_status == '%s_FAILED' % action:
+                        _do_stack_show(hc, fields)
+                        raise exc.StackFailure(msg)
+
+        time.sleep(poll_period)
