@@ -2402,7 +2402,6 @@ class ShellTestUserPass(ShellBase):
             "name": "snap1",
             "status": "COMPLETE",
             "status_reason": "",
-            "data": {},
             "creation_time": "2014-12-05T01:25:52Z"
         }]}
 
@@ -2439,11 +2438,9 @@ class ShellTestUserPass(ShellBase):
             'name',
             'status',
             'status_reason',
-            'data',
             'creation_time',
             '2',
             'COMPLETE',
-            '{}',
             '2014-12-05T01:25:52Z',
         ]
         for r in required:
