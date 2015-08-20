@@ -212,10 +212,20 @@ class ShellParamValidationTest(TestCase):
     scenarios = [
         ('stack-create', dict(
             command='stack-create ts -P "ab"',
+            with_tmpl=True,
             err='Malformed parameter')),
         ('stack-update', dict(
             command='stack-update ts -P "a-b"',
+            with_tmpl=True,
             err='Malformed parameter')),
+        ('stack-list-with-sort-dir', dict(
+            command='stack-list --sort-dir up',
+            with_tmpl=False,
+            err='Sorting direction must be one of')),
+        ('stack-list-with-sort-key', dict(
+            command='stack-list --sort-keys owner',
+            with_tmpl=False,
+            err='Sorting key \'owner\' not one of')),
     ]
 
     def setUp(self):
@@ -233,8 +243,12 @@ class ShellParamValidationTest(TestCase):
             'OS_AUTH_URL': BASE_URL,
         }
         self.set_fake_env(fake_env)
-        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-        cmd = '%s --template-file=%s ' % (self.command, template_file)
+        cmd = self.command
+
+        if self.with_tmpl:
+            template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+            cmd = '%s --template-file=%s ' % (self.command, template_file)
+
         self.shell_error(cmd, self.err)
 
 
@@ -4413,7 +4427,10 @@ class MockShellTestUserPass(MockShellBase):
                                ' --not-tags-any=tag7,tag8'
                                ' --global-tenant'
                                ' --show-deleted'
-                               ' --show-hidden')
+                               ' --show-hidden'
+                               ' --sort-keys=stack_name;creation_time'
+                               ' --sort-keys=updated_time'
+                               ' --sort-dir=asc')
 
         required = [
             'stack_owner',
@@ -4444,7 +4461,10 @@ class MockShellTestUserPass(MockShellBase):
                                'not_tags_any': ['tag7,tag8'],
                                'global_tenant': ['True'],
                                'show_deleted': ['True'],
-                               'show_hidden': ['True']}
+                               'show_hidden': ['True'],
+                               'sort_keys': ['stack_name', 'creation_time',
+                                             'updated_time'],
+                               'sort_dir': ['asc']}
         self.assertEqual(expected_query_dict, query_params)
 
 

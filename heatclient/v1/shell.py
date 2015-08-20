@@ -540,6 +540,16 @@ def do_stack_cancel_update(hc, args):
            help=_('Limit the number of stacks returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
            help=_('Only return stacks that appear after the given stack ID.'))
+@utils.arg('-k', '--sort-keys', metavar='<KEY1,KEY2...>',
+           help=_('List of keys for sorting the returned stacks. '
+                  'This can be specified multiple times or once with keys '
+                  'separated by semicolons. Valid sorting keys include '
+                  '"stack_name", "stack_status", "creation_time" and '
+                  '"updated_time".'),
+           action='append')
+@utils.arg('-d', '--sort-dir', metavar='[asc|desc]',
+           help=_('Sorting direction (either "asc" or "desc") for the sorting '
+                  'keys.'))
 @utils.arg('-g', '--global-tenant', action='store_true', default=False,
            help=_('Display stacks from all tenants. Operation only authorized '
                   'for users who match the policy in heat\'s policy.json.'))
@@ -549,7 +559,11 @@ def do_stack_cancel_update(hc, args):
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
     kwargs = {}
-    fields = ['id', 'stack_name', 'stack_status', 'creation_time']
+    fields = ['id', 'stack_name', 'stack_status', 'creation_time',
+              'updated_time']
+    sort_keys = ['stack_name', 'stack_status', 'creation_time',
+                 'updated_time']
+    sortby_index = 3
     if args:
         kwargs = {'limit': args.limit,
                   'marker': args.marker,
@@ -565,13 +579,36 @@ def do_stack_list(hc, args=None):
             fields.append('parent')
             kwargs['show_nested'] = True
 
+        if args.sort_keys:
+            # flatten key list first
+            keys = []
+            for k in args.sort_keys:
+                if ';' in k:
+                    keys.extend(k.split(';'))
+                else:
+                    keys.append(k)
+            # validate key list
+            for key in keys:
+                if key not in sort_keys:
+                    err = _("Sorting key '%(key)s' not one of the supported "
+                            "keys: %(keys)s") % {'key': key, "keys": sort_keys}
+                    raise exc.CommandError(err)
+            kwargs['sort_keys'] = keys
+            sortby_index = None
+
+        if args.sort_dir:
+            if args.sort_dir not in ('asc', 'desc'):
+                raise exc.CommandError(_("Sorting direction must be one of "
+                                         "'asc' and 'desc'"))
+            kwargs['sort_dir'] = args.sort_dir
+
         if args.global_tenant or args.show_owner:
             fields.insert(2, 'stack_owner')
         if args.global_tenant:
             fields.insert(2, 'project')
 
     stacks = hc.stacks.list(**kwargs)
-    utils.print_list(stacks, fields, sortby_index=3)
+    utils.print_list(stacks, fields, sortby_index=sortby_index)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
