@@ -1016,7 +1016,8 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
-    def _test_stack_preview(self, timeout=None, enable_rollback=False):
+    def _test_stack_preview(self, timeout=None, enable_rollback=False,
+                            tags=None):
         self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
@@ -1025,7 +1026,8 @@ class ShellTestUserPass(ShellBase):
             "resources": {'1': {'name': 'r1'}},
             "creation_time": "2012-10-25T01:58:47Z",
             "timeout_mins": timeout,
-            "disable_rollback": not(enable_rollback)
+            "disable_rollback": not(enable_rollback),
+            "tags": tags
         }}
         resp = fakes.FakeHTTPResponse(
             200,
@@ -1060,6 +1062,8 @@ class ShellTestUserPass(ShellBase):
             cmd += '-r '
         if timeout:
             cmd += '--timeout=%d ' % timeout
+        if tags:
+            cmd += '--tags=%s ' % tags
         preview_text = self.shell(cmd)
 
         required = [
@@ -1069,7 +1073,8 @@ class ShellTestUserPass(ShellBase):
             '1',
             'resources',
             'timeout_mins',
-            'disable_rollback'
+            'disable_rollback',
+            'tags'
         ]
 
         for r in required:
@@ -1080,6 +1085,9 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_preview_timeout(self):
         self._test_stack_preview(300, True)
+
+    def test_stack_preview_tags(self):
+        self._test_stack_preview(tags='tag1,tag2')
 
     def test_stack_create(self):
         self.register_keystone_auth_fixture()
