@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 
 Babel>=1.3
-pbr<2.0,>=1.4
+pbr<2.0,>=1.6
 argparse
 iso8601>=0.1.9
 PrettyTable<0.8,>=0.7
