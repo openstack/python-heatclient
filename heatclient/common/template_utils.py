@@ -119,7 +119,7 @@ def get_file_contents(from_data, files, base_url=None,
 
             str_url = parse.urljoin(base_url, value)
             if str_url not in files:
-                file_content = read_url_content(str_url)
+                file_content = utils.read_url_content(str_url)
                 if is_template(file_content):
                     template = get_template_contents(
                         template_url=str_url, files=files)[1]
