@@ -731,7 +731,7 @@ def do_template_validate(hc, args):
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
            help=_('Depth of nested stacks from which to display resources.'))
 @utils.arg('--with-detail', default=False, action="store_true",
-           help=_('Enable detail information presented for each resource'
+           help=_('Enable detail information presented for each resource '
                   'in resources list.'))
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
