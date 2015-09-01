@@ -85,7 +85,7 @@ def _authenticated_fetcher(hc):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
-@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
            'This can be specified multiple times. Parameter value '
            'would be the content of the file'),
@@ -250,7 +250,7 @@ def do_stack_adopt(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by semicolon.'),
            action='append')
-@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
            'This can be specified multiple times. Parameter value '
            'would be the content of the file'),
@@ -433,7 +433,7 @@ def do_stack_show(hc, args):
            'This can be specified multiple times, or once with parameters '
            'separated by a semicolon.'),
            action='append')
-@utils.arg('-Pf', '--parameter-file', metavar='<KEY=VALUE>',
+@utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
            'This can be specified multiple times. Parameter value '
            'would be the content of the file'),
