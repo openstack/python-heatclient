@@ -257,6 +257,8 @@ def do_stack_adopt(hc, args):
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to preview.'))
+@utils.arg('--tags', metavar='<TAG1,TAG2>',
+           help=_('A list of tags to associate with the stack.'))
 def do_stack_preview(hc, args):
     '''Preview the stack.'''
     tpl_files, template = template_utils.get_template_contents(
@@ -279,6 +281,9 @@ def do_stack_preview(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    if args.tags:
+        fields['tags'] = args.tags
 
     stack = hc.stacks.preview(**fields)
     formatters = {
