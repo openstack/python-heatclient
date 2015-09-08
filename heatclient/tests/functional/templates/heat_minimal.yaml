@@ -1,18 +1,16 @@
 HeatTemplateFormatVersion: '2012-12-12'
 Description: Minimal template to test validation
 Parameters:
-  InstanceImage:
-    Description: Glance image name
+  ClientName:
+    Description: Client to poll
     Type: String
-  InstanceType:
-    Description: Nova instance type
-    Type: String
-    Default: m1.small
-    AllowedValues: [m1.tiny, m1.small, m1.medium, m1.large, m1.nano, m1.xlarge, m1.micro, m1.heat]
-    ConstraintDescription: must be a valid nova instance type.
+  WaitSecs:
+    Description: Seconds to wait after an action (-1 is infinite)
+    Type: Number
+    Default: 0
 Resources:
-  InstanceResource:
-    Type: OS::Nova::Server
+  TestResource:
+    Type: OS::Heat::TestResource
     Properties:
-      flavor: {Ref: InstanceType}
-      image: {Ref: InstanceImage}
+      client_name: {Ref: ClientName}
+      wait_secs: {Ref: WaitSecs}
