@@ -428,6 +428,9 @@ def do_stack_show(hc, args):
            'Values %(false)s set rollback to disabled. '
            'Default is to use the value of existing stack to be updated.')
            % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
+@utils.arg('-y', '--dry-run', default=False, action="store_true",
+           help='Do not actually perform the stack update, but show what '
+           'would be changed')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to create the stack. '
            'This can be specified multiple times, or once with parameters '
@@ -500,6 +503,27 @@ def do_stack_update(hc, args):
     else:
         if args.enable_rollback:
             fields['disable_rollback'] = False
+
+    if args.dry_run is True:
+        resource_changes = hc.stacks.preview_update(**fields)
+
+        formatters = {
+            'resource_identity': utils.json_formatter
+        }
+
+        fields = ['state', 'resource_name', 'resource_type',
+                  'resource_identity']
+
+        for k in resource_changes.get("resource_changes", {}).keys():
+            for i in range(len(resource_changes["resource_changes"][k])):
+                resource_changes["resource_changes"][k][i]['state'] = k
+
+        utils.print_update_list(
+            sum(resource_changes["resource_changes"].values(), []),
+            fields,
+            formatters=formatters
+        )
+        return
 
     hc.stacks.update(**fields)
     do_stack_list(hc)

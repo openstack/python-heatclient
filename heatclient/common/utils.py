@@ -20,8 +20,10 @@ import textwrap
 import uuid
 
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from oslo_utils import importutils
 import prettytable
+import six
 from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
@@ -115,6 +117,32 @@ def event_log_formatter(events):
         event_log.append(log)
 
     return "\n".join(event_log)
+
+
+def print_update_list(lst, fields, formatters=None):
+    """Print the stack-update --dry-run output as a table.
+
+    This function is necessary to print the stack-update --dry-run
+    output, which contains additional information about the update.
+    """
+    formatters = formatters or {}
+    pt = prettytable.PrettyTable(fields, caching=False, print_empty=False)
+    pt.align = 'l'
+
+    for change in lst:
+        row = []
+        for field in fields:
+            if field in formatters:
+                row.append(formatters[field](change.get(field, None)))
+            else:
+                row.append(change.get(field, None))
+
+        pt.add_row(row)
+
+    if six.PY3:
+        print(encodeutils.safe_encode(pt.get_string()).decode())
+    else:
+        print(encodeutils.safe_encode(pt.get_string()))
 
 
 def find_resource(manager, name_or_id):
