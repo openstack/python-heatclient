@@ -227,7 +227,11 @@ class StackManager(base.BaseManager):
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        resp = self.client.post('/validate', data=kwargs)
+        url = '/validate'
+        if kwargs.pop('show_nested', False):
+            url += '?show_nested=True'
+
+        resp = self.client.post(url, data=kwargs)
         body = utils.get_response_body(resp)
         return body
 

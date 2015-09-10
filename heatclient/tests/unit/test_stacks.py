@@ -314,3 +314,45 @@ class StackManagerPaginationTest(testtools.TestCase):
                              results[0].stack_name)
             self.assertEqual('stack_%s' % (self.offset + last_result),
                              results[-1].stack_name)
+
+
+class StackManagerValidateTest(testtools.TestCase):
+
+    def setUp(self):
+        super(StackManagerValidateTest, self).setUp()
+
+        self.mock_response = mock.MagicMock()
+        self.mock_response.json.return_value = {'result': 'fake_response'}
+        self.mock_response.headers = {'content-type': 'application/json'}
+
+        self.mock_client = mock.MagicMock()
+        self.mock_client.post.return_value = self.mock_response
+
+        self.manager = stacks.StackManager(self.mock_client)
+
+    def test_validate_show_nested(self):
+        # Test
+        result = self.manager.validate(**{'show_nested': True})
+
+        # Verify
+        self.assertEqual(self.mock_response.json.return_value, result)
+        self.mock_client.post.assert_called_once_with(
+            '/validate?show_nested=True', data={})
+
+    def test_validate_show_nested_false(self):
+        # Test
+        result = self.manager.validate(**{'show_nested': False})
+
+        # Verify
+        self.assertEqual(self.mock_response.json.return_value, result)
+        self.mock_client.post.assert_called_once_with(
+            '/validate', data={})
+
+    def test_validate_show_nested_default(self):
+        # Test
+        result = self.manager.validate()
+
+        # Verify
+        self.assertEqual(self.mock_response.json.return_value, result)
+        self.mock_client.post.assert_called_once_with(
+            '/validate', data={})

@@ -3824,7 +3824,8 @@ class ShellTestConfig(ShellBase):
             six.StringIO('the config script'))
 
         http.SessionClient.request(
-            '/validate', 'POST', data=validate_template).AndReturn(http_resp)
+            '/validate', 'POST',
+            data=validate_template).AndReturn(http_resp)
         http.SessionClient.request(
             '/software_configs', 'POST', data=create_dict).AndReturn(http_resp)
 

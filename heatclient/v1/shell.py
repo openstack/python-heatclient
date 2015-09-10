@@ -741,6 +741,8 @@ def do_template_show(hc, args):
            action='append')
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help=_('URL to retrieve template object (e.g. from swift).'))
+@utils.arg('-n', '--show-nested', default=False, action="store_true",
+           help=_('Resolve parameters from nested templates as well.'))
 def do_template_validate(hc, args):
     '''Validate a template with parameters.'''
 
@@ -755,8 +757,11 @@ def do_template_validate(hc, args):
     fields = {
         'template': template,
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
-        'environment': env
+        'environment': env,
     }
+
+    if args.show_nested:
+        fields['show_nested'] = args.show_nested
 
     validation = hc.stacks.validate(**fields)
     print(jsonutils.dumps(validation, indent=2, ensure_ascii=False))
