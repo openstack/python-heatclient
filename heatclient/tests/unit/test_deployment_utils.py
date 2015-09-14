@@ -19,6 +19,7 @@ import testtools
 
 from heatclient.common import deployment_utils
 from heatclient import exc
+from heatclient.v1 import software_configs
 from testtools import matchers
 
 
@@ -27,13 +28,13 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 def mock_sc(group=None, config=None, options=None,
             inputs=None, outputs=None):
-    return {
+    return software_configs.SoftwareConfig(None, {
         'group': group,
         'config': config,
         'options': options or {},
         'inputs': inputs or [],
         'outputs': outputs or [],
-    }
+    }, True)
 
 
 class DerivedConfigTest(testtools.TestCase):
@@ -70,6 +71,38 @@ class DerivedConfigTest(testtools.TestCase):
                 'name': 's1',
                 'options': {},
                 'outputs': []})),
+        ('defaults_empty', dict(
+            action='UPDATE',
+            source={},
+            name='s1',
+            input_values=None,
+            server_id='1234',
+            signal_transport='NO_SIGNAL',
+            signal_id=None,
+            result={
+                'config': '',
+                'group': 'Heat::Ungrouped',
+                'inputs': [{
+                    'description': 'ID of the server being deployed to',
+                    'name': 'deploy_server_id',
+                    'type': 'String',
+                    'value': '1234'
+                }, {
+                    'description': 'Name of the current action '
+                    'being deployed',
+                    'name': 'deploy_action',
+                    'type': 'String',
+                    'value': 'UPDATE'
+                }, {
+                    'description': 'How the server should signal to '
+                    'heat with the deployment output values.',
+                    'name': 'deploy_signal_transport',
+                    'type': 'String',
+                    'value': 'NO_SIGNAL'}],
+                'name': 's1',
+                'options': {},
+                'outputs': []})),
+
         ('config_values', dict(
             action='UPDATE',
             source=mock_sc(

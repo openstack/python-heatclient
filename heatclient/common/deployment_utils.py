@@ -19,11 +19,14 @@ import uuid
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
+from heatclient.v1.software_configs import SoftwareConfig
 
 
 def build_derived_config_params(action, source, name, input_values,
                                 server_id, signal_transport, signal_id=None):
 
+    if isinstance(source, SoftwareConfig):
+        source = source.to_dict()
     input_values = input_values or {}
     inputs = copy.deepcopy(source.get('inputs')) or []
 
