@@ -100,7 +100,7 @@ def mock_script_event_list(
         action="CREATE", final_state="COMPLETE", fakehttp=True):
 
     resp_dict = {"events": [
-        {"event_time": "2013-12-05T14:14:31Z",
+        {"event_time": "2013-12-05T14:14:31",
          "id": rsrc_eventid1,
          "links": [{"href": "http://heat.example.com:8004/foo",
                     "rel": "self"},
@@ -113,7 +113,7 @@ def mock_script_event_list(
          "resource_name": resource_name if resource_name else "testresource",
          "resource_status": "%s_IN_PROGRESS" % action,
          "resource_status_reason": "state changed"},
-        {"event_time": "2013-12-05T14:14:32Z",
+        {"event_time": "2013-12-05T14:14:32",
          "id": rsrc_eventid2,
          "links": [{"href": "http://heat.example.com:8004/foo",
                "rel": "self"},
@@ -133,7 +133,7 @@ def mock_script_event_list(
         stack_event1 = "0159dccd-65e1-46e8-a094-697d20b009e5"
         stack_event2 = "8f591a36-7190-4adb-80da-00191fe22388"
         resp_dict["events"].insert(
-            0, {"event_time": "2013-12-05T14:14:30Z",
+            0, {"event_time": "2013-12-05T14:14:30",
                 "id": stack_event1,
                 "links": [{"href": "http://heat.example.com:8004/foo",
                            "rel": "self"},
@@ -147,7 +147,7 @@ def mock_script_event_list(
                 "resource_status": "%s_IN_PROGRESS" % action,
                 "resource_status_reason": "state changed"})
         resp_dict["events"].append(
-            {"event_time": "2013-12-05T14:14:33Z",
+            {"event_time": "2013-12-05T14:14:33",
              "id": stack_event2,
              "links": [{"href": "http://heat.example.com:8004/foo",
                         "rel": "self"},

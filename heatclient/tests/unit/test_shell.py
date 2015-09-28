@@ -425,8 +425,8 @@ class ShellTestNoMox(TestCase):
             eventid2,
             'state changed',
             'CREATE_IN_PROGRESS',
-            '2013-12-05T14:14:31Z',
-            '2013-12-05T14:14:32Z',
+            '2013-12-05T14:14:31',
+            '2013-12-05T14:14:32',
         ]
 
         for r in required:
@@ -2923,8 +2923,8 @@ class ShellTestEvents(ShellBase):
             'state changed',
             'CREATE_IN_PROGRESS',
             'CREATE_COMPLETE',
-            '2013-12-05T14:14:31Z',
-            '2013-12-05T14:14:32Z',
+            '2013-12-05T14:14:31',
+            '2013-12-05T14:14:32',
         ]
         for r in required:
             self.assertRegexpMatches(event_list_text, r)
@@ -2953,9 +2953,9 @@ class ShellTestEvents(ShellBase):
         event_list_text = self.shell('event-list {0} --format log'.format(
             stack_id))
 
-        expected = '14:14:31  2013-12-05  %s [aResource]: ' \
+        expected = '2013-12-05  14:14:31  %s [aResource]: ' \
                    'CREATE_IN_PROGRESS  state changed\n' \
-                   '14:14:32  2013-12-05  %s [aResource]: CREATE_COMPLETE  ' \
+                   '2013-12-05  14:14:32  %s [aResource]: CREATE_COMPLETE  ' \
                    'state changed\n' % (self.event_id_one, self.event_id_two)
 
         self.assertEqual(expected, event_list_text)

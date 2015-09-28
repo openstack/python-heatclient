@@ -102,8 +102,8 @@ def event_log_formatter(events):
         event_time = getattr(event, 'event_time', '')
         time_date = event_time.split('T')
         try:
-            event_time = time_date[0]
-            event_date = time_date[1][:-1]
+            event_date = time_date[0]
+            event_time = time_date[1]
         except IndexError:
             event_time = event_date = ''
 

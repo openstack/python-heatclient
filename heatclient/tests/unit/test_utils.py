@@ -161,6 +161,35 @@ class ShellTest(testtools.TestCase):
         self.assertEqual('one\ntwo',
                          utils.newline_list_formatter(['one', 'two']))
 
+    def test_event_log_formatter(self):
+        event1 = {'event_time': '2015-09-28T12:12:12',
+                  'id': '123456789',
+                  'resource_name': 'res_name',
+                  'resource_status': 'CREATE_IN_PROGRESS',
+                  'resource_status_reason': 'CREATE started'}
+        event2 = {'event_time': '2015-09-28T12:12:22',
+                  'id': '123456789',
+                  'resource_name': 'res_name',
+                  'resource_status': 'CREATE_COMPLETE',
+                  'resource_status_reason': 'CREATE completed'}
+        events_list = [hc_res.Resource(manager=None, info=event1),
+                       hc_res.Resource(manager=None, info=event2)]
+
+        expected = ('2015-09-28  12:12:12  123456789 [res_name]: '
+                    'CREATE_IN_PROGRESS  CREATE started\n'
+                    '2015-09-28  12:12:22  123456789 [res_name]: '
+                    'CREATE_COMPLETE  CREATE completed')
+        self.assertEqual(expected, utils.event_log_formatter(events_list))
+        self.assertEqual('', utils.event_log_formatter([]))
+
+        notime_event = {'id': '123',
+                        'resource_name': 'resname',
+                        'resource_status': 'CREATE_COMPLETE',
+                        'resource_status_reason': 'state changed'}
+        notime_event_list = [hc_res.Resource(manager=None, info=notime_event)]
+        self.assertEqual('    123 [resname]: CREATE_COMPLETE  state changed',
+                         utils.event_log_formatter(notime_event_list))
+
 
 class ShellTestParameterFiles(testtools.TestCase):
 
