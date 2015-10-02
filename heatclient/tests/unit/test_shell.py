@@ -2315,7 +2315,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
-    def test_stack_update_dry_run(self):
+    def _setup_stubs_update_dry_run(self, template_file, existing=False):
         self.register_keystone_auth_fixture()
 
         resp_dict = {"stack": {
@@ -2336,7 +2336,6 @@ class ShellTestUserPass(ShellBase):
             self.client.json_request(
                 'GET', '/stacks/teststack2/2').AndReturn((resp, resp_dict))
 
-        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
 
         replaced_res = {"resource_name": "my_res",
@@ -2375,22 +2374,50 @@ class ShellTestUserPass(ShellBase):
             'environment': {},
             'template': jsonutils.loads(template_data),
             'parameters': {'"KeyPairName': 'updated_key"'},
-            'disable_rollback': False,
-            'existing': True}
+            'disable_rollback': False}
+
+        if existing is True:
+            method = 'PATCH'
+        else:
+            method = 'PUT'
 
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack2/2/preview', 'PUT',
+                '/stacks/teststack2/2/preview', method,
                 data=expected_data, headers={}).AndReturn(resp)
         else:
             http.HTTPClient.json_request(
-                'PUT', '/stacks/teststack2/2/preview',
+                method, '/stacks/teststack2/2/preview',
                 data=expected_data,
                 headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
             ).AndReturn((resp, None))
 
         self.m.ReplayAll()
 
+    def test_stack_update_dry_run(self):
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        self._setup_stubs_update_dry_run(template_file)
+        update_preview_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--parameters="KeyPairName=updated_key" '
+            '--dry-run ' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '2',
+            'state',
+            'replaced'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_preview_text, r)
+
+    def test_stack_update_dry_run_patch(self):
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        self._setup_stubs_update_dry_run(template_file, existing=True)
         update_preview_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
