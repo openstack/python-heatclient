@@ -151,9 +151,14 @@ class StackManager(base.BaseManager):
         """Preview a stack update."""
         s = self.get(stack_id)
         headers = self.client.credentials_headers()
-        resp = self.client.put('/stacks/%s/%s/preview' %
-                               (s.stack_name, s.id),
-                               data=kwargs, headers=headers)
+        if kwargs.pop('existing', None):
+            resp = self.client.patch('/stacks/%s/%s/preview' %
+                                     (s.stack_name, s.id),
+                                     data=kwargs, headers=headers)
+        else:
+            resp = self.client.put('/stacks/%s/%s/preview' %
+                                   (s.stack_name, s.id),
+                                   data=kwargs, headers=headers)
         body = utils.get_response_body(resp)
         return body
 
