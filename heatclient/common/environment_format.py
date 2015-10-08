@@ -21,15 +21,21 @@ SECTIONS = (PARAMETER_DEFAULTS, PARAMETERS, RESOURCE_REGISTRY) = \
 
 
 def parse(env_str):
-    '''Takes a string and returns a dict containing the parsed structure.
+    """Takes a string and returns a dict containing the parsed structure.
 
     This includes determination of whether the string is using the
     YAML format.
-    '''
+    """
     try:
         env = yaml.load(env_str, Loader=template_format.yaml_loader)
-    except yaml.YAMLError as yea:
-        raise ValueError(yea)
+    except yaml.YAMLError:
+        # NOTE(prazumovsky): we need to return more informative error for
+        # user, so use SafeLoader, which return error message with template
+        # snippet where error has been occurred.
+        try:
+            env = yaml.load(env_str, Loader=yaml.SafeLoader)
+        except yaml.YAMLError as yea:
+            raise ValueError(yea)
     else:
         if env is None:
             env = {}
