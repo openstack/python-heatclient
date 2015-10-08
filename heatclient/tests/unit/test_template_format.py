@@ -11,6 +11,7 @@
 #    under the License.
 
 import mock
+import six
 import testscenarios
 import testtools
 import yaml
@@ -48,3 +49,14 @@ Resources: {}
 Outputs: {}
 '''
         self.assertRaises(ValueError, template_format.parse, yaml2)
+
+
+class DetailedYAMLParseExceptions(testtools.TestCase):
+
+    def test_parse_to_value_exception(self):
+        yaml = """not important
+but very:
+  - incorrect
+"""
+        ex = self.assertRaises(ValueError, template_format.parse, yaml)
+        self.assertIn('but very:\n            ^', six.text_type(ex))
