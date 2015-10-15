@@ -11,8 +11,12 @@
 #   under the License.
 #
 
+import copy
 import mock
 import testscenarios
+
+from openstackclient.common import exceptions as exc
+from openstackclient.common import utils
 
 from heatclient.osc.v1 import stack
 from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
@@ -81,3 +85,138 @@ class TestStackShow(TestStack):
         self.stack_client.get.assert_called_with(**{
             'stack_id': 'my_stack',
         })
+
+
+class TestStackList(TestStack):
+
+    defaults = {
+        'limit': None,
+        'marker': None,
+        'filters': {},
+        'tags': None,
+        'tags_any': None,
+        'not_tags': None,
+        'not_tags_any': None,
+        'global_tenant': False,
+        'show_deleted': False,
+        'show_hidden': False,
+    }
+
+    columns = ['ID', 'Stack Name', 'Stack Status', 'Creation Time',
+               'Updated Time']
+
+    data = {
+        'id': '1234',
+        'stack_name': 'my_stack',
+        'stack_status': 'CREATE_COMPLETE',
+        'creation_time': '2015-10-21T07:28:00Z',
+        'update_time': '2015-10-21T07:30:00Z'
+    }
+
+    def setUp(self):
+        super(TestStackList, self).setUp()
+        self.cmd = stack.ListStack(self.app, None)
+        self.stack_client.list = mock.MagicMock(return_value=[self.data])
+        utils.get_dict_properties = mock.MagicMock(return_value='')
+
+    def test_stack_list_defaults(self):
+        arglist = []
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(self.columns, columns)
+
+    def test_stack_list_nested(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['show_nested'] = True
+        cols = copy.deepcopy(self.columns)
+        cols.append('Parent')
+        arglist = ['--nested']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
+    def test_stack_list_all_projects(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['global_tenant'] = True
+        cols = copy.deepcopy(self.columns)
+        cols.insert(2, 'Project')
+        arglist = ['--all-projects']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
+    def test_stack_list_long(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['global_tenant'] = True
+        cols = copy.deepcopy(self.columns)
+        cols.insert(2, 'Stack Owner')
+        cols.insert(2, 'Project')
+        arglist = ['--long']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
+    def test_stack_list_short(self):
+        cols = ['ID', 'Stack Name', 'Stack Status']
+        arglist = ['--short']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(cols, columns)
+
+    def test_stack_list_sort(self):
+        arglist = ['--sort', 'stack_name:desc,id']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(self.columns, columns)
+
+    def test_stack_list_sort_invalid_key(self):
+        arglist = ['--sort', 'bad_key']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_stack_list_tags(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['tags'] = 'tag1,tag2'
+        arglist = ['--tags', 'tag1,tag2']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(self.columns, columns)
+
+    def test_stack_list_tags_mode(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['not_tags'] = 'tag1,tag2'
+        arglist = ['--tags', 'tag1,tag2', '--tag-mode', 'not']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(self.columns, columns)
+
+    def test_stack_list_tags_bad_mode(self):
+        arglist = ['--tags', 'tag1,tag2', '--tag-mode', 'bad_mode']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
