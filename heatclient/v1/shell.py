@@ -573,7 +573,7 @@ def do_stack_cancel_update(hc, args):
            help=_('Limit the number of stacks returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
            help=_('Only return stacks that appear after the given stack ID.'))
-@utils.arg('-k', '--sort-keys', metavar='<KEY1,KEY2...>',
+@utils.arg('-k', '--sort-keys', metavar='<KEY1;KEY2...>',
            help=_('List of keys for sorting the returned stacks. '
                   'This can be specified multiple times or once with keys '
                   'separated by semicolons. Valid sorting keys include '
