@@ -647,63 +647,71 @@ def do_stack_list(hc, args=None):
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to query.'))
 def do_output_list(hc, args):
-    '''Show available outputs.'''
+    """Show available outputs."""
     try:
-        stack = hc.stacks.get(stack_id=args.id)
+        outputs = hc.stacks.output_list(args.id)
     except exc.HTTPNotFound:
         raise exc.CommandError(_('Stack not found: %s') % args.id)
     else:
-        outputs = stack.to_dict()['outputs']
         fields = ['output_key', 'description']
         formatters = {
             'output_key': lambda x: x['output_key'],
             'description': lambda x: x['description'],
         }
 
-        utils.print_list(outputs, fields, formatters=formatters)
+        utils.print_list(outputs['outputs'], fields, formatters=formatters)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to query.'))
 @utils.arg('output', metavar='<OUTPUT NAME>', nargs='?', default=None,
            help=_('Name of an output to display.'))
+@utils.arg('-F', '--format', metavar='<FORMAT>',
+           help=_('The output value format, one of: json, raw.'),
+           default='json')
 @utils.arg('-a', '--all', default=False, action='store_true',
            help=_('Display all stack outputs.'))
-@utils.arg('-F', '--format', metavar='<FORMAT>',
-           help=_('The output value format, one of: json, raw'),
-           default='json')
+@utils.arg('-v', '--only-value', default=False, action="store_true",
+           help=_('Returns only output value in specified format.'))
 def do_output_show(hc, args):
-    '''Show a specific stack output.'''
-    if (not args.all and args.output is None or
-            args.all and args.output is not None):
-        raise exc.CommandError(
-            _('Error: either %(output)s or %(all)s argument is needed.')
-            % {'output': '<OUTPUT NAME>', 'all': '--all'})
-    try:
-        stack = hc.stacks.get(stack_id=args.id)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % args.id)
-    else:
-        if args.all:
-            print(utils.json_formatter(stack.to_dict().get('outputs', [])))
+    """Show a specific stack output."""
+    def show_output_by_key(output_key):
+        try:
+            output = hc.stacks.output_show(args.id, output_key)
+        except exc.HTTPNotFound:
+            raise exc.CommandError(_('Stack %(id)s or '
+                                     'output %(key)s not found.') % {
+                'id': args.id,
+                'key': args.output})
         else:
-            for output in stack.to_dict().get('outputs', []):
-                if output['output_key'] == args.output:
-                    if 'output_error' in output:
-                        msg = _("Error: %s") % output['output_error']
-                        raise exc.CommandError(msg)
-                    else:
-                        value = output['output_value']
-                    break
+            if 'output_error' in output['output']:
+                msg = _("Output error: %s") % output['output']['output_error']
+                raise exc.CommandError(msg)
+            if args.only_value:
+                if (args.format == 'json'
+                        or isinstance(output['output']['output_value'], dict)
+                        or isinstance(output['output']['output_value'], list)):
+                    print(
+                        utils.json_formatter(output['output']['output_value']))
+                else:
+                    print(output['output']['output_value'])
             else:
-                return
+                formatters = {
+                    'output_value': (lambda x: utils.json_formatter(x)
+                                     if args.format == 'json'
+                                     else x)
+                }
+                utils.print_dict(output['output'], formatters=formatters)
 
-            if (args.format == 'json'
-                    or isinstance(value, dict)
-                    or isinstance(value, list)):
-                print(utils.json_formatter(value))
-            else:
-                print(value)
+    if args.all:
+        try:
+            outputs = hc.stacks.output_list(args.id)
+        except exc.HTTPNotFound:
+            raise exc.CommandError(_('Stack not found: %s') % args.id)
+        for output in outputs['outputs']:
+            show_output_by_key(output['output_key'])
+    else:
+        show_output_by_key(args.output)
 
 
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',

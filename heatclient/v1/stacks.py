@@ -54,6 +54,12 @@ class Stack(base.Resource):
     def snapshot_list(self):
         return self.manager.snapshot_list(self.identifier)
 
+    def output_list(self):
+        return self.manager.output_list(self.identifier)
+
+    def output_show(self, output_key):
+        return self.manager.output_show(self.identifier, output_key)
+
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
         self._loaded = True
@@ -208,6 +214,21 @@ class StackManager(base.BaseManager):
     def snapshot_list(self, stack_id):
         stack = self.get(stack_id)
         resp = self.client.get('/stacks/%s/snapshots' % stack.identifier)
+        body = utils.get_response_body(resp)
+        return body
+
+    def output_list(self, stack_id):
+        stack = self.get(stack_id)
+        resp = self.client.get('/stacks/%s/outputs' % stack.identifier)
+        body = utils.get_response_body(resp)
+        return body
+
+    def output_show(self, stack_id, output_key):
+        stack = self.get(stack_id)
+        resp = self.client.get('/stacks/%(id)s/outputs/%(key)s' % {
+            'id': stack.identifier,
+            'key': output_key
+        })
         body = utils.get_response_body(resp)
         return body
 
