@@ -12,6 +12,7 @@ run_tests.err.log
 doc/source/api
 doc/build
 *.egg
+*.eggs
 heatclient/versioninfo
 *.egg-info
 *.log
