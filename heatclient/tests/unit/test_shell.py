@@ -4270,21 +4270,53 @@ class ShellTestDeployment(ShellBase):
     def test_deploy_delete(self):
         self.register_keystone_auth_fixture()
         headers = {'content-type': 'application/json'}
+
+        deploy_resp_dict = {'software_deployment': {
+            'config_id': 'dummy_config_id'
+        }}
+
+        deploy_resp_string = jsonutils.dumps(deploy_resp_dict)
+        deploy_http_resp = fakes.FakeHTTPResponse(200, 'OK',
+                                                  headers, deploy_resp_string)
+
         http_resp = fakes.FakeHTTPResponse(204, 'OK', headers, None)
         response = (http_resp, '')
+
+        def _get_deployment_request_except(id):
+            self.client.request('/software_deployments/%s' % id,
+                                'GET').AndRaise(exc.HTTPNotFound())
+
+        def _delete_deployment_request_except(id):
+            self.client.request('/software_deployments/%s' % id,
+                                'GET').AndReturn(deploy_http_resp)
+            self.client.request('/software_deployments/%s' % id,
+                                'DELETE').AndRaise(exc.HTTPNotFound())
+
+        def _delete_config_request_except(id):
+            self.client.request('/software_deployments/%s' % id,
+                                'GET').AndReturn(deploy_http_resp)
+            self.client.request('/software_deployments/%s' % id,
+                                'DELETE').AndReturn(http_resp)
+            self.client.request('/software_configs/dummy_config_id',
+                                'DELETE').AndRaise(exc.HTTPNotFound())
+
+        def _delete_request_success(id):
+            self.client.request('/software_deployments/%s' % id,
+                                'GET').AndReturn(deploy_http_resp)
+            self.client.request('/software_deployments/%s' % id,
+                                'DELETE').AndReturn(http_resp)
+            self.client.request('/software_configs/dummy_config_id',
+                                'DELETE').AndReturn(http_resp)
+
         if self.client == http.SessionClient:
-            self.client.request(
-                '/software_deployments/defg',
-                'DELETE').AndReturn(http_resp)
-            self.client.request(
-                '/software_deployments/qwer',
-                'DELETE').AndReturn(http_resp)
-            self.client.request(
-                '/software_deployments/defg',
-                'DELETE').AndRaise(exc.HTTPNotFound())
-            self.client.request(
-                '/software_deployments/qwer',
-                'DELETE').AndRaise(exc.HTTPNotFound())
+            _get_deployment_request_except('defg')
+            _get_deployment_request_except('qwer')
+            _delete_deployment_request_except('defg')
+            _delete_deployment_request_except('qwer')
+            _delete_config_request_except('defg')
+            _delete_config_request_except('qwer')
+            _delete_request_success('defg')
+            _delete_request_success('qwer')
         else:
             self.client.raw_request(
                 'DELETE', '/software_deployments/defg').AndReturn(response)
@@ -4299,9 +4331,20 @@ class ShellTestDeployment(ShellBase):
 
         self.m.ReplayAll()
 
-        self.assertEqual('', self.shell('deployment-delete defg qwer'))
         self.assertRaises(exc.CommandError, self.shell,
                           'deployment-delete defg qwer')
+        self.assertRaises(exc.CommandError, self.shell,
+                          'deployment-delete defg qwer')
+
+        output = self.shell('deployment-delete defg qwer')
+        self.assertRegexpMatches(output, 'Failed to delete the correlative '
+                                         'config dummy_config_id of '
+                                         'deployment defg')
+        self.assertRegexpMatches(output, 'Failed to delete the correlative '
+                                         'config dummy_config_id of '
+                                         'deployment qwer')
+
+        self.assertEqual('', self.shell('deployment-delete defg qwer'))
 
     def test_deploy_metadata(self):
         self.register_keystone_auth_fixture()

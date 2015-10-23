@@ -1363,15 +1363,28 @@ def do_deployment_metadata_show(hc, args):
 @utils.arg('id', metavar='<ID>', nargs='+',
            help=_('IDs of the deployments to delete.'))
 def do_deployment_delete(hc, args):
-    '''Delete a software deployment.'''
+    '''Delete software deployments.'''
     failure_count = 0
 
     for deploy_id in args.id:
         try:
+            sd = hc.software_deployments.get(deployment_id=deploy_id)
             hc.software_deployments.delete(deployment_id=deploy_id)
-        except exc.HTTPNotFound as e:
+        except Exception as e:
+            if isinstance(e, exc.HTTPNotFound):
+                print(_('Deployment with ID %s not found') % deploy_id)
             failure_count += 1
-            print(e)
+            continue
+
+        # just try best to delete the corresponding config
+        try:
+            config_id = getattr(sd, 'config_id')
+            hc.software_configs.delete(config_id=config_id)
+        except Exception:
+            print(_('Failed to delete the correlative config'
+                    ' %(config_id)s of deployment %(deploy_id)s') %
+                  {'config_id': config_id, 'deploy_id': deploy_id})
+
     if failure_count == len(args.id):
         raise exc.CommandError(_("Unable to delete any of the specified "
                                  "deployments."))
