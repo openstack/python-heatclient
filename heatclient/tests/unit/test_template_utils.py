@@ -352,6 +352,42 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['http://no.where/path/to/b/a.yaml'])
 
+    def test_process_multiple_environments_and_files_tracker(self):
+        # Setup
+        self.m.StubOutWithMock(request, 'urlopen')
+        env_file1 = '/home/my/dir/env1.yaml'
+
+        env1 = b'''
+        parameters:
+          "param1": "value1"
+        resource_registry:
+          "OS::Thingy1": "file:///home/b/a.yaml"
+        '''
+        request.urlopen('file://%s' % env_file1).AndReturn(
+            six.BytesIO(env1))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        request.urlopen('file:///home/b/a.yaml').AndReturn(
+            six.BytesIO(self.template_a))
+        self.m.ReplayAll()
+
+        # Test
+        env_file_list = []
+        files, env = template_utils.process_multiple_environments_and_files(
+            [env_file1], env_list_tracker=env_file_list)
+
+        # Verify
+        expected_env = {'parameters': {'param1': 'value1'},
+                        'resource_registry':
+                            {'OS::Thingy1': 'file:///home/b/a.yaml'}
+                        }
+        self.assertEqual(expected_env, env)
+
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['file:///home/b/a.yaml'])
+
+        self.assertEqual(['file:///home/my/dir/env1.yaml'], env_file_list)
+
     def test_global_files(self):
         url = 'file:///home/b/a.yaml'
         env = '''
