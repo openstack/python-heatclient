@@ -1216,6 +1216,22 @@ def do_config_create(hc, args):
     print(jsonutils.dumps(sc.to_dict(), indent=2))
 
 
+@utils.arg('-l', '--limit', metavar='<LIMIT>',
+           help=_('Limit the number of configs returned.'))
+@utils.arg('-m', '--marker', metavar='<ID>',
+           help=_('Return configs that appear after the given config ID.'))
+def do_config_list(hc, args):
+    '''List software configs.'''
+    kwargs = {}
+    if args.limit:
+        kwargs['limit'] = args.limit
+    if args.marker:
+        kwargs['marker'] = args.marker
+    scs = hc.software_configs.list(**kwargs)
+    fields = ['id', 'name', 'group', 'creation_time']
+    utils.print_list(scs, fields, sortby_index=None)
+
+
 @utils.arg('id', metavar='<ID>',
            help=_('ID of the config.'))
 @utils.arg('-c', '--config-only', default=False, action="store_true",

@@ -47,6 +47,17 @@ class SoftwareConfigManagerTest(testtools.TestCase):
         super(SoftwareConfigManagerTest, self).setUp()
         self.manager = software_configs.SoftwareConfigManager(mock.MagicMock())
 
+    def test_list(self):
+        config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
+        self.manager.client.json_request.return_value = (
+            {},
+            {'software_configs': []})
+        result = self.manager.list(limit=1, marker=config_id)
+        self.assertEqual([], result)
+        call_args = self.manager.client.get.call_args
+        self.assertEqual(
+            ('/software_configs?limit=1&marker=%s' % config_id,), *call_args)
+
     @mock.patch.object(utils, 'get_response_body')
     def test_get(self, mock_body):
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
