@@ -1834,6 +1834,37 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(adopt_text, r)
 
+    def test_stack_adopt_with_environment(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            201,
+            'Created',
+            {'location': 'http://no.where/v1/tenant_id/stacks/teststack/1'},
+            None)
+        if self.client is http.HTTPClient:
+            headers = {'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
+        else:
+            headers = {}
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks', 'POST', data=mox.IgnoreArg(),
+                headers=headers).AndReturn(resp)
+        else:
+            self.client.json_request(
+                'POST', '/stacks', data=mox.IgnoreArg(),
+                headers=headers
+            ).AndReturn((resp, None))
+
+        fakes.script_heat_list(client=self.client)
+        self.m.ReplayAll()
+
+        adopt_data_file = os.path.join(TEST_VAR_DIR, 'adopt_stack_data.json')
+        environment_file = os.path.join(TEST_VAR_DIR, 'environment.json')
+        self.shell(
+            'stack-adopt teststack '
+            '--adopt-file=%s '
+            '--environment-file=%s' % (adopt_data_file, environment_file))
+
     def test_stack_adopt_without_data(self):
         self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
