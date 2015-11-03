@@ -1,0 +1,7 @@
+heat_template_version: 2013-05-23
+
+parameters:
+  p1:
+    type: string
+  p2:
+    type: number

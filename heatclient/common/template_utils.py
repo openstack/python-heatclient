@@ -16,6 +16,7 @@
 import collections
 from oslo_serialization import jsonutils
 import six
+from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
 
@@ -24,6 +25,19 @@ from heatclient.common import template_format
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
+
+
+def process_template_path(template_path, object_request=None):
+    """Read template from template path.
+
+    Attempt to read template first as a file or url. If that is unsuccessful,
+    try again to assuming path is to a template object.
+    """
+    try:
+        return get_template_contents(template_file=template_path)
+    except error.URLError:
+        return get_template_contents(template_object=template_path,
+                                     object_request=object_request)
 
 
 def get_template_contents(template_file=None, template_url=None,
@@ -235,3 +249,27 @@ def resolve_environment_urls(resource_registry, files, env_base_url):
         res_base_url = res_dict.get('base_url', base_url)
         get_file_contents(
             res_dict, files, res_base_url, ignore_if)
+
+
+def hooks_to_env(env, arg_hooks, hook):
+    """Add hooks from args to environment's resource_registry section.
+
+    Hooks are either "resource_name" (if it's a top-level resource) or
+    "nested_stack/resource_name" (if the resource is in a nested stack).
+
+    The environment expects each hook to be associated with the resource
+    within `resource_registry/resources` using the `hooks: pre-create` format.
+    """
+    if 'resource_registry' not in env:
+        env['resource_registry'] = {}
+    if 'resources' not in env['resource_registry']:
+        env['resource_registry']['resources'] = {}
+    for hook_declaration in arg_hooks:
+        hook_path = [r for r in hook_declaration.split('/') if r]
+        resources = env['resource_registry']['resources']
+        for nested_stack in hook_path:
+            if nested_stack not in resources:
+                resources[nested_stack] = {}
+            resources = resources[nested_stack]
+        else:
+            resources['hooks'] = hook

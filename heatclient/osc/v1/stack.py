@@ -21,9 +21,146 @@ from openstackclient.common import exceptions as exc
 from openstackclient.common import parseractions
 from openstackclient.common import utils
 
+from heatclient.common import http
+from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
 from heatclient.openstack.common._i18n import _
+
+
+def _authenticated_fetcher(client):
+    def _do(*args, **kwargs):
+        if isinstance(client.http_client, http.SessionClient):
+            method, url = args
+            return client.http_client.request(url, method, **kwargs).content
+        else:
+            return client.http_client.raw_request(*args, **kwargs).content
+
+    return _do
+
+
+class CreateStack(show.ShowOne):
+    """Create a stack."""
+
+    log = logging.getLogger(__name__ + '.CreateStack')
+
+    def get_parser(self, prog_name):
+        parser = super(CreateStack, self).get_parser(prog_name)
+        parser.add_argument(
+            '-t', '--template',
+            metavar='<FILE or URL>',
+            required=True,
+            help=_('Path to the template')
+        )
+        parser.add_argument(
+            '-e', '--environment',
+            metavar='<FILE or URL>',
+            action='append',
+            help=_('Path to the environment. Can be specified multiple times')
+        )
+        parser.add_argument(
+            '--timeout',
+            metavar='<TIMEOUT>',
+            type=int,
+            help=_('Stack creating timeout in minutes')
+        )
+        parser.add_argument(
+            '--pre-create',
+            metavar='<RESOURCE>',
+            default=None,
+            action='append',
+            help=_('Name of a resource to set a pre-create hook to. Resources '
+                   'in nested stacks can be set using slash as a separator: '
+                   'nested_stack/another/my_resource. You can use wildcards '
+                   'to match multiple stacks or resources: '
+                   'nested_stack/an*/*_resource. This can be specified '
+                   'multiple times')
+        )
+        parser.add_argument(
+            '--enable-rollback',
+            action='store_true',
+            help=_('Enable rollback on create/update failure')
+        )
+        parser.add_argument(
+            '--parameter',
+            metavar='<KEY=VALUE>',
+            action='append',
+            help=_('Parameter values used to create the stack. This can be '
+                   'specified multiple times')
+        )
+        parser.add_argument(
+            '--parameter-file',
+            metavar='<KEY=FILE>',
+            action='append',
+            help=_('Parameter values from file used to create the stack. '
+                   'This can be specified multiple times. Parameter values '
+                   'would be the content of the file')
+        )
+        parser.add_argument(
+            '--wait',
+            action='store_true',
+            help=_('Wait until stack completes')
+        )
+        parser.add_argument(
+            '--tags',
+            metavar='<TAG1,TAG2...>',
+            help=_('A list of tags to associate with the stack')
+        )
+        parser.add_argument(
+            'name',
+            metavar='<STACK_NAME>',
+            help=_('Name of the stack to create')
+        )
+
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)', parsed_args)
+
+        client = self.app.client_manager.orchestration
+
+        tpl_files, template = template_utils.process_template_path(
+            parsed_args.template,
+            object_request=_authenticated_fetcher(client))
+
+        env_files, env = (
+            template_utils.process_multiple_environments_and_files(
+                env_paths=parsed_args.environment))
+
+        parameters = heat_utils.format_all_parameters(
+            parsed_args.parameter,
+            parsed_args.parameter_file,
+            parsed_args.template)
+
+        if parsed_args.pre_create:
+            template_utils.hooks_to_env(env, parsed_args.pre_create,
+                                        'pre-create')
+
+        fields = {
+            'stack_name': parsed_args.name,
+            'disable_rollback': not parsed_args.enable_rollback,
+            'parameters': parameters,
+            'template': template,
+            'files': dict(list(tpl_files.items()) + list(env_files.items())),
+            'environment': env
+        }
+
+        if parsed_args.tags:
+            fields['tags'] = parsed_args.tags
+        if parsed_args.timeout:
+            fields['timeout_mins'] = parsed_args.timeout
+
+        stack = client.stacks.create(**fields)['stack']
+        if parsed_args.wait:
+            if not utils.wait_for_status(client.stacks.get, parsed_args.name,
+                                         status_field='stack_status',
+                                         success_status='create_complete',
+                                         error_status='create_failed'):
+
+                msg = _('Stack %s failed to create.') % parsed_args.name
+                raise exc.CommandError(msg)
+
+        return _show_stack(client, stack['id'], format='table', short=True)
 
 
 class ShowStack(show.ShowOne):
@@ -48,7 +185,7 @@ class ShowStack(show.ShowOne):
                            format=parsed_args.formatter)
 
 
-def _show_stack(heat_client, stack_id, format):
+def _show_stack(heat_client, stack_id, format='', short=False):
     try:
         data = heat_client.stacks.get(stack_id=stack_id)
     except heat_exc.HTTPNotFound:
@@ -63,15 +200,21 @@ def _show_stack(heat_client, stack_id, format):
             'updated_time',
             'stack_status',
             'stack_status_reason',
-            'parameters',
-            'outputs',
-            'links',
         ]
-        exclude_columns = ('template_description',)
-        for key in data.to_dict():
-            # add remaining columns without an explicit order
-            if key not in columns and key not in exclude_columns:
-                columns.append(key)
+
+        if not short:
+            columns += [
+                'parameters',
+                'outputs',
+                'links',
+            ]
+
+            exclude_columns = ('template_description',)
+            for key in data.to_dict():
+                # add remaining columns without an explicit order
+                if key not in columns and key not in exclude_columns:
+                    columns.append(key)
+
         formatters = {}
         complex_formatter = None
         if format in 'table':

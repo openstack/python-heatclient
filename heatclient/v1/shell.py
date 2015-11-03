@@ -116,7 +116,7 @@ def do_stack_create(hc, args):
                            'arg2': '-t/--timeout'})
 
     if args.pre_create:
-        hooks_to_env(env, args.pre_create, 'pre-create')
+        template_utils.hooks_to_env(env, args.pre_create, 'pre-create')
 
     fields = {
         'stack_name': args.name,
@@ -139,32 +139,7 @@ def do_stack_create(hc, args):
     hc.stacks.create(**fields)
     do_stack_list(hc)
     if args.poll is not None:
-        _poll_for_events(hc, args.name, 'CREATE', poll_period=args.poll)
-
-
-def hooks_to_env(env, arg_hooks, hook):
-    '''Add hooks from args to environment's resource_registry section.
-
-    Hooks are either "resource_name" (if it's a top-level resource) or
-    "nested_stack/resource_name" (if the resource is in a nested stack).
-
-    The environment expects each hook to be associated with the resource
-    within `resource_registry/resources` using the `hooks: pre-create` format.
-
-    '''
-    if 'resource_registry' not in env:
-        env['resource_registry'] = {}
-    if 'resources' not in env['resource_registry']:
-        env['resource_registry']['resources'] = {}
-    for hook_declaration in arg_hooks:
-        hook_path = [r for r in hook_declaration.split('/') if r]
-        resources = env['resource_registry']['resources']
-        for nested_stack in hook_path:
-            if nested_stack not in resources:
-                resources[nested_stack] = {}
-            resources = resources[nested_stack]
-        else:
-            resources['hooks'] = hook
+        _poll_for_events(hc, args.name, 'CREATE', args.poll)
 
 
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
@@ -477,7 +452,7 @@ def do_stack_update(hc, args):
         env_paths=args.environment_file)
 
     if args.pre_update:
-        hooks_to_env(env, args.pre_update, 'pre-update')
+        template_utils.hooks_to_env(env, args.pre_update, 'pre-update')
 
     fields = {
         'stack_id': args.id,
