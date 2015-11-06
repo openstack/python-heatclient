@@ -527,6 +527,102 @@ class TestStackList(TestStack):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
 
+class TestStackDelete(TestStack):
+
+    def setUp(self):
+        super(TestStackDelete, self).setUp()
+        self.cmd = stack.DeleteStack(self.app, None)
+        self.stack_client.delete = mock.MagicMock()
+        self.stack_client.get = mock.MagicMock(
+            side_effect=heat_exc.HTTPNotFound)
+
+    def test_stack_delete(self):
+        arglist = ['stack1', 'stack2', 'stack3']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.delete.assert_any_call('stack1')
+        self.stack_client.delete.assert_any_call('stack2')
+        self.stack_client.delete.assert_any_call('stack3')
+
+    def test_stack_delete_not_found(self):
+        arglist = ['my_stack']
+        self.stack_client.delete.side_effect = heat_exc.HTTPNotFound
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_stack_delete_one_found_one_not_found(self):
+        arglist = ['stack1', 'stack2']
+        self.stack_client.delete.side_effect = [None, heat_exc.HTTPNotFound]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        error = self.assertRaises(exc.CommandError,
+                                  self.cmd.take_action, parsed_args)
+
+        self.stack_client.delete.assert_any_call('stack1')
+        self.stack_client.delete.assert_any_call('stack2')
+        self.assertEqual('Unable to delete 1 of the 2 stacks.', str(error))
+
+    def test_stack_delete_wait(self):
+        arglist = ['stack1', 'stack2', 'stack3', '--wait']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.delete.assert_any_call('stack1')
+        self.stack_client.get.assert_any_call('stack1')
+        self.stack_client.delete.assert_any_call('stack2')
+        self.stack_client.get.assert_any_call('stack2')
+        self.stack_client.delete.assert_any_call('stack3')
+        self.stack_client.get.assert_any_call('stack3')
+
+    def test_stack_delete_wait_one_pass_one_fail(self):
+        arglist = ['stack1', 'stack2', 'stack3', '--wait']
+        self.stack_client.get.side_effect = [
+            stacks.Stack(None, {'stack_status': 'DELETE_FAILED'}),
+            heat_exc.HTTPNotFound,
+            stacks.Stack(None, {'stack_status': 'DELETE_FAILED'}),
+        ]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        error = self.assertRaises(exc.CommandError,
+                                  self.cmd.take_action, parsed_args)
+
+        self.stack_client.delete.assert_any_call('stack1')
+        self.stack_client.get.assert_any_call('stack1')
+        self.stack_client.delete.assert_any_call('stack2')
+        self.stack_client.get.assert_any_call('stack2')
+        self.stack_client.delete.assert_any_call('stack3')
+        self.stack_client.get.assert_any_call('stack3')
+        self.assertEqual('Unable to delete 2 of the 3 stacks.', str(error))
+
+    @mock.patch('sys.stdin', spec=six.StringIO)
+    def test_stack_delete_prompt(self, mock_stdin):
+        arglist = ['my_stack']
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline.return_value = 'y'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        mock_stdin.readline.assert_called_with()
+        self.stack_client.delete.assert_called_with('my_stack')
+
+    @mock.patch('sys.stdin', spec=six.StringIO)
+    def test_stack_delete_prompt_no(self, mock_stdin):
+        arglist = ['my_stack']
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline.return_value = 'n'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        mock_stdin.readline.assert_called_with()
+        self.stack_client.delete.assert_not_called()
+
+
 class TestStackAdopt(TestStack):
 
     adopt_file = 'heatclient/tests/test_templates/adopt.json'
