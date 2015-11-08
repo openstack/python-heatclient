@@ -52,3 +52,28 @@ class TestListSnapshot(TestStack):
             parsed_args)
         self.assertEqual('Stack not found: my_stack',
                          str(error))
+
+
+class TestSnapshotShow(TestStack):
+    def setUp(self):
+        super(TestSnapshotShow, self).setUp()
+        self.cmd = snapshot.ShowSnapshot(self.app, None)
+
+    def test_snapshot_show(self):
+        arglist = ['my_stack', 'snapshot_id']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot_show = mock.Mock(
+            return_value={})
+        self.cmd.take_action(parsed_args)
+        self.stack_client.snapshot_show.assert_called_with(
+            'my_stack', 'snapshot_id')
+
+    def test_snapshot_not_found(self):
+        arglist = ['my_stack', 'snapshot_id']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot_show = mock.Mock(
+            side_effect=heat_exc.HTTPNotFound())
+        self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)
