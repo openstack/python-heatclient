@@ -176,3 +176,34 @@ class CreateSnapshot(show.ShowOne):
             'creation_time'
         ]
         return (columns, utils.get_dict_properties(data, columns))
+
+
+class DeleteSnapshot(command.Command):
+    """Delete stack snapshot."""
+    log = logging.getLogger(__name__ + ".DeleteSnapshot")
+
+    def get_parser(self, prog_name):
+        parser = super(DeleteSnapshot, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            help=_('Name or ID of stack')
+        )
+        parser.add_argument(
+            'snapshot',
+            metavar='<snapshot>',
+            help=_('ID of stack snapshot')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)' % parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        try:
+            heat_client.stacks.snapshot_delete(parsed_args.stack,
+                                               parsed_args.snapshot)
+        except heat_exc.HTTPNotFound:
+            raise exc.CommandError(_('Snapshot ID <%(snapshot_id)s> not found '
+                                     'for stack <%(stack_id)s>')
+                                   % {'snapshot_id': parsed_args.snapshot,
+                                      'stack_id': parsed_args.stack})

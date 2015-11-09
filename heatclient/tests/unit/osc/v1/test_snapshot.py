@@ -145,3 +145,27 @@ class TestSnapshotCreate(TestStack):
             exc.CommandError,
             self.cmd.take_action,
             parsed_args)
+
+
+class TestSnapshotDelete(TestStack):
+    def setUp(self):
+        super(TestSnapshotDelete, self).setUp()
+        self.cmd = snapshot.DeleteSnapshot(self.app, None)
+
+    def test_snapshot_delete(self):
+        arglist = ['my_stack', 'snapshot_id']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot_delete = mock.Mock()
+        self.cmd.take_action(parsed_args)
+        self.stack_client.snapshot_delete.assert_called_with(
+            'my_stack', 'snapshot_id')
+
+    def test_snapshot_delete_not_found(self):
+        arglist = ['my_stack', 'snapshot_id']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot_delete = mock.Mock(
+            side_effect=heat_exc.HTTPNotFound())
+        self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)
