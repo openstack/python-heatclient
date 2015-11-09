@@ -102,3 +102,46 @@ class TestRestoreSnapshot(TestStack):
             parsed_args)
         self.assertEqual('Stack my_stack or snapshot my_snapshot not found.',
                          str(error))
+
+
+class TestSnapshotCreate(TestStack):
+    get_response = {
+        "status": "IN_PROGRESS",
+        "name": "test_snapshot",
+        "status_reason": None,
+        "creation_time": "2015-11-09T04:35:38.534130",
+        "data": None,
+        "id": "108604fe-6d13-41b7-aa3a-79b6cf60c4ff"
+    }
+
+    def setUp(self):
+        super(TestSnapshotCreate, self).setUp()
+        self.cmd = snapshot.CreateSnapshot(self.app, None)
+
+    def test_snapshot_create(self):
+        arglist = ['my_stack', '--name', 'test_snapshot']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot = mock.Mock(
+            return_value=self.get_response)
+        self.cmd.take_action(parsed_args)
+        self.stack_client.snapshot.assert_called_with(
+            'my_stack', 'test_snapshot')
+
+    def test_snapshot_create_no_name(self):
+        arglist = ['my_stack']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot = mock.Mock(
+            return_value=self.get_response)
+        self.cmd.take_action(parsed_args)
+        self.stack_client.snapshot.assert_called_with(
+            'my_stack', None)
+
+    def test_snapshot_create_error(self):
+        arglist = ['my_stack', '--name', 'test_snapshot']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.snapshot = mock.Mock(
+            side_effect=heat_exc.HTTPNotFound)
+        self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)
