@@ -12,6 +12,7 @@
 #
 #   Copyright 2015 IBM Corp.
 
+import copy
 import mock
 import testscenarios
 
@@ -100,3 +101,112 @@ class TestEventShow(TestEvent):
         self.event_client.get = mock.MagicMock(
             side_effect=exc.HTTPNotFound(error))
         self._test_not_found(error)
+
+
+class TestEventList(TestEvent):
+
+    defaults = {
+        'stack_id': 'my_stack',
+        'resource_name': None,
+        'limit': None,
+        'marker': None,
+        'filters': {},
+    }
+
+    fields = ['resource_name', 'id', 'resource_status',
+              'resource_status_reason', 'event_time', 'physical_resource_id',
+              'logical_resource_id']
+
+    class MockEvent(object):
+
+        data = {
+            'event_time': '2015-11-13T10:02:17',
+            'id': '1234',
+            'logical_resource_id': 'resource1',
+            'physical_resource_id': '',
+            'resource_name': 'resource1',
+            'resource_status': 'CREATE_COMPLETE',
+            'resource_status_reason': 'state changed',
+            'stack_name': 'my_stack',
+        }
+
+        def __getattr__(self, key):
+            try:
+                return self.data[key]
+            except KeyError:
+                # hasattr() in python 3 expects an AttributeError to be raised
+                raise AttributeError
+
+    def setUp(self):
+        super(TestEventList, self).setUp()
+        self.cmd = event.ListEvent(self.app, None)
+        self.event = self.MockEvent()
+        self.event_client.list = mock.MagicMock(return_value=[self.event])
+        self.resource_client.list = mock.MagicMock(return_value={})
+
+    def test_event_list_defaults(self):
+        arglist = ['my_stack', '--format', 'table']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.event_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(self.fields, columns)
+
+    def test_event_list_resource_nested_depth(self):
+        arglist = ['my_stack', '--resource', 'my_resource',
+                   '--nested-depth', '3', '--format', 'table']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_event_list_logical_resource_id(self):
+        arglist = ['my_stack', '--format', 'table']
+        del self.event.data['resource_name']
+        cols = copy.deepcopy(self.fields)
+        cols.pop()
+        cols[0] = 'logical_resource_id'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.event_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(cols, columns)
+        self.event.data['resource_name'] = 'resource1'
+
+    def test_event_list_nested_depth(self):
+        arglist = ['my_stack', '--nested-depth', '3', '--format', 'table']
+        kwargs = copy.deepcopy(self.defaults)
+        del kwargs['marker']
+        del kwargs['limit']
+        cols = copy.deepcopy(self.fields)
+        cols[-1] = 'stack_name'
+        cols.append('logical_resource_id')
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.event_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
+    def test_event_list_sort(self):
+        arglist = ['my_stack', '--sort', 'resource_name:desc',
+                   '--format', 'table']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.event_client.list.assert_called_with(**self.defaults)
+        self.assertEqual(self.fields, columns)
+
+    def test_event_list_value_format(self):
+        arglist = ['my_stack']
+        expected = ('2015-11-13 10:02:17 [resource1]: CREATE_COMPLETE  '
+                    'state changed')
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.event_client.list.assert_called_with(**self.defaults)
+        self.assertEqual([], columns)
+        self.assertEqual([expected.split(' ')], data)

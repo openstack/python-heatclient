@@ -14,9 +14,11 @@
 
 import logging
 
+from cliff import lister
 from cliff import show
 from openstackclient.common import utils
 
+from heatclient.common import event_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
@@ -76,3 +78,114 @@ class ShowEvent(show.ShowOne):
 
         return columns, utils.get_item_properties(event, columns,
                                                   formatters=formatters)
+
+
+class ListEvent(lister.Lister):
+    """List events."""
+
+    log = logging.getLogger(__name__ + '.ListEvent')
+
+    @property
+    def formatter_default(self):
+        return 'value'
+
+    def get_parser(self, prog_name):
+        parser = super(ListEvent, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<NAME or ID>',
+            help=_('Name or ID of stack to show events for')
+        )
+        parser.add_argument(
+            '--resource',
+            metavar='<RESOURCE>',
+            help=_('Name of resource to show events for. Note: this cannot '
+                   'be specified with --nested-depth')
+        )
+        parser.add_argument(
+            '--filter',
+            metavar='<KEY=VALUE>',
+            action='append',
+            help=_('Filter parameters to apply on returned events')
+        )
+        parser.add_argument(
+            '--limit',
+            metavar='<LIMIT>',
+            type=int,
+            help=_('Limit the number of events returned')
+        )
+        parser.add_argument(
+            '--marker',
+            metavar='<ID>',
+            help=_('Only return events that appear after the given ID')
+        )
+        parser.add_argument(
+            '--nested-depth',
+            metavar='<DEPTH>',
+            type=int,
+            help=_('Depth of nested stacks from which to display events. '
+                   'Note: this cannot be specified with --resource')
+        )
+        parser.add_argument(
+            '--sort',
+            metavar='<KEY>[:<DIRECTION>]',
+            action='append',
+            help=_('Sort output by selected keys and directions (asc or desc) '
+                   '(default: asc). Specify multiple times to sort on '
+                   'multiple keys')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)', parsed_args)
+
+        client = self.app.client_manager.orchestration
+
+        columns = ['id', 'resource_status', 'resource_status_reason',
+                   'event_time', 'physical_resource_id']
+
+        kwargs = {
+            'resource_name': parsed_args.resource,
+            'limit': parsed_args.limit,
+            'marker': parsed_args.marker,
+            'filters': heat_utils.format_parameters(parsed_args.filter),
+        }
+
+        if parsed_args.resource and parsed_args.nested_depth:
+            msg = _('--nested-depth cannot be specified with --resource')
+            raise exc.CommandError(msg)
+
+        if parsed_args.nested_depth:
+            # Until the API supports recursive event listing we'll have to do
+            # the marker/limit filtering client-side
+            del kwargs['marker']
+            del kwargs['limit']
+            columns.append('stack_name')
+            nested_depth = parsed_args.nested_depth
+        else:
+            nested_depth = 0
+
+        events = event_utils.get_events(
+            client, stack_id=parsed_args.stack, event_args=kwargs,
+            nested_depth=nested_depth, marker=parsed_args.marker,
+            limit=parsed_args.limit)
+
+        if parsed_args.sort:
+            events = utils.sort_items(events, ','.join(parsed_args.sort))
+
+        if parsed_args.formatter == 'value':
+            events = heat_utils.event_log_formatter(events).split('\n')
+            events.reverse()
+            return [], [e.split(' ') for e in events]
+
+        if len(events):
+            if hasattr(events[0], 'resource_name'):
+                columns.insert(0, 'resource_name')
+                columns.append('logical_resource_id')
+            else:
+                columns.insert(0, 'logical_resource_id')
+
+        return (
+            columns,
+            (utils.get_item_properties(s, columns) for s in events)
+        )
