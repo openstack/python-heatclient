@@ -53,6 +53,8 @@ class TestStackCreate(TestStack):
             return_value={'stack': {'id': '1234'}})
         self.stack_client.get = mock.MagicMock(
             return_value={'stack_status': 'create_complete'})
+        self.stack_client.preview = mock.MagicMock(
+            return_value=stacks.Stack(None, {'stack': {'id', '1234'}}))
         stack._authenticated_fetcher = mock.MagicMock()
 
     def test_stack_create_defaults(self):
@@ -136,6 +138,15 @@ class TestStackCreate(TestStack):
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_stack_create_dry_run(self):
+        arglist = ['my_stack', '-t', self.template_path, '--dry-run']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.preview.assert_called_with(**self.defaults)
+        self.stack_client.create.assert_not_called()
 
 
 class TestStackUpdate(TestStack):

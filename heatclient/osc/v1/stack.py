@@ -107,6 +107,12 @@ class CreateStack(show.ShowOne):
             help=_('A list of tags to associate with the stack')
         )
         parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            help=_('Do not actually perform the stack create, but show what '
+                   'would be created')
+        )
+        parser.add_argument(
             'name',
             metavar='<STACK_NAME>',
             help=_('Name of the stack to create')
@@ -149,6 +155,30 @@ class CreateStack(show.ShowOne):
             fields['tags'] = parsed_args.tags
         if parsed_args.timeout:
             fields['timeout_mins'] = parsed_args.timeout
+
+        if parsed_args.dry_run:
+            stack = client.stacks.preview(**fields)
+
+            formatters = {
+                'description': heat_utils.text_wrap_formatter,
+                'template_description': heat_utils.text_wrap_formatter,
+                'stack_status_reason': heat_utils.text_wrap_formatter,
+                'parameters': heat_utils.json_formatter,
+                'outputs': heat_utils.json_formatter,
+                'resources': heat_utils.json_formatter,
+                'links': heat_utils.link_formatter,
+            }
+
+            columns = []
+            for key in stack.to_dict():
+                columns.append(key)
+            columns.sort()
+
+            return (
+                columns,
+                utils.get_item_properties(stack, columns,
+                                          formatters=formatters)
+            )
 
         stack = client.stacks.create(**fields)['stack']
         if parsed_args.wait:
