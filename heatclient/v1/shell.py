@@ -193,8 +193,8 @@ def hooks_to_env(env, arg_hooks, hook):
            help=_('Name of the stack to adopt.'))
 def do_stack_adopt(hc, args):
     '''Adopt a stack.'''
-    env_files, env = template_utils.process_environment_and_files(
-        env_path=args.environment_file)
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment_file)
 
     if not args.adopt_file:
         raise exc.CommandError(_('Need to specify %(arg)s') %
