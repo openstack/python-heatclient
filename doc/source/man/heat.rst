@@ -90,7 +90,7 @@ List heat-engines running status ::
     heat service-list
 
 Note: stack-adopt and stack-abandon commands are not available by default.
-Please ask your Openstack operator to enable this feature.
+Please ask your OpenStack operator to enable this feature.
 
 BUGS
 ====
