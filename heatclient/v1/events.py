@@ -43,6 +43,7 @@ class EventManager(stacks.StackChildManager):
 
     def list(self, stack_id, resource_name=None, **kwargs):
         """Get a list of events.
+
         :param stack_id: ID of stack the events belong to
         :param resource_name: Optional name of resources to filter events by
         :rtype: list of :class:`Event`

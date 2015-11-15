@@ -30,6 +30,7 @@ class TemplateVersionManager(base.BaseManager):
 
     def list(self):
         """Get a list of template versions.
+
         :rtype: list of :class:`TemplateVersion`
         """
         return self._list('/template_versions', 'template_versions')

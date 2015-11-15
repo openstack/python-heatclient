@@ -51,6 +51,7 @@ class ResourceManager(stacks.StackChildManager):
 
     def list(self, stack_id, **kwargs):
         """Get a list of resources.
+
         :rtype: list of :class:`Resource`
         """
         params = {}
@@ -112,9 +113,8 @@ class ResourceManager(stacks.StackChildManager):
         return body
 
     def generate_template(self, resource_name):
-        """DEPRECATED! Use `generate_template` of `ResourceTypeManager`
-        instead.
-        """
+        """Deprecated in favor of generate_template in ResourceTypeManager."""
+
         url_str = '/resource_types/%s/template' % (
                   parse.quote(encodeutils.safe_encode(resource_name), ''))
         resp = self.client.get(url_str)

@@ -221,8 +221,7 @@ class StackManager(base.BaseManager):
         return Stack(self, body.get('stack'))
 
     def template(self, stack_id):
-        """Get the template content for a specific stack as a parsed JSON
-        object.
+        """Get template content for a specific stack as a parsed JSON object.
 
         :param stack_id: Stack ID to get the template for
         """

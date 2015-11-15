@@ -35,6 +35,7 @@ class ResourceTypeManager(base.BaseManager):
 
     def list(self, **kwargs):
         """Get a list of resource types.
+
         :rtype: list of :class:`ResourceType`
         """
 
