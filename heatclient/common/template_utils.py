@@ -49,8 +49,7 @@ def get_template_contents(template_file=None, template_url=None,
                                {
                                    'arg1': '--template-file',
                                    'arg2': '--template-url',
-                                   'arg3': '--template-object'
-                               })
+                                   'arg3': '--template-object'})
 
     if not tpl:
         raise exc.CommandError(_('Could not fetch template from %s')

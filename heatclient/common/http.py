@@ -215,8 +215,7 @@ class HTTPClient(object):
                                        {
                                            'option': '--include-password',
                                            'var': 'HEAT_INCLUDE_PASSWORD=1',
-                                           'content': resp.content
-                                       })
+                                           'content': resp.content})
         elif 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
