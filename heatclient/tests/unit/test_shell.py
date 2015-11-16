@@ -1220,13 +1220,13 @@ class ShellTestUserPass(ShellBase):
             '2',
             'teststack2',
             'IN_PROGRESS',
-            '14:14:30',  '2013-12-05', '0159dccd-65e1-46e8-a094-697d20b009e5',
+            '14:14:30',  '2013-12-05',
             'CREATE_IN_PROGRESS', 'state changed',
-            '14:14:31', '7fecaeed-d237-4559-93a5-92d5d9111205',
+            '14:14:31',
             'testresource',
-            '14:14:32', 'e953547a-18f8-40a7-8e63-4ec4f509648b',
+            '14:14:32',
             'CREATE_COMPLETE',
-            '14:14:33', '8f591a36-7190-4adb-80da-00191fe22388'
+            '14:14:33',
         ]
 
         for r in required:
@@ -3011,10 +3011,10 @@ class ShellTestEvents(ShellBase):
         event_list_text = self.shell('event-list {0} --format log'.format(
             stack_id))
 
-        expected = '2013-12-05  14:14:31  %s [aResource]: ' \
-                   'CREATE_IN_PROGRESS  state changed\n' \
-                   '2013-12-05  14:14:32  %s [aResource]: CREATE_COMPLETE  ' \
-                   'state changed\n' % (self.event_id_one, self.event_id_two)
+        expected = ('2013-12-05 14:14:31 [aResource]: '
+                    'CREATE_IN_PROGRESS  state changed\n'
+                    '2013-12-05 14:14:32 [aResource]: CREATE_COMPLETE  '
+                    'state changed\n')
 
         self.assertEqual(expected, event_list_text)
 
