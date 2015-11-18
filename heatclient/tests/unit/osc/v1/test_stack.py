@@ -116,7 +116,8 @@ class TestStackList(TestStack):
     def setUp(self):
         super(TestStackList, self).setUp()
         self.cmd = stack.ListStack(self.app, None)
-        self.stack_client.list = mock.MagicMock(return_value=[self.data])
+        self.stack_client.list = mock.MagicMock(
+            return_value=[stacks.Stack(None, self.data)])
         utils.get_dict_properties = mock.MagicMock(return_value='')
 
     def test_stack_list_defaults(self):

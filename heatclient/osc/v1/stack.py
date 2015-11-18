@@ -226,5 +226,5 @@ def _list(client, args=None):
 
     return (
         columns,
-        (utils.get_dict_properties(s, columns) for s in data)
+        (utils.get_item_properties(s, columns) for s in data)
     )
