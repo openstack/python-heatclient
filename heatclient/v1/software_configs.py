@@ -33,6 +33,7 @@ class SoftwareConfigManager(base.BaseManager):
 
     def list(self, **kwargs):
         """Get a list of software configs.
+
         :rtype: list of :class:`SoftwareConfig`
         """
         qparams = {}

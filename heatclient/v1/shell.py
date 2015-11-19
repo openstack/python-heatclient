@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 
 def _authenticated_fetcher(hc):
-    """A wrapper around the heat client object to fetch a template.
-    """
+    """A wrapper around the heat client object to fetch a template."""
+
     def _do(*args, **kwargs):
         if isinstance(hc.http_client, http.SessionClient):
             method, url = args
@@ -1565,9 +1565,8 @@ def _do_stack_show(hc, fields):
 
 
 def _poll_for_events(hc, stack_name, action, poll_period):
-    """When an action is performed on a stack, continuously poll for its
-    events and display to user as logs.
-    """
+    """Continuously poll events and logs for performed action on stack."""
+
     fields = {'stack_id': stack_name}
     _do_stack_show(hc, fields)
     marker = None

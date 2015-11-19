@@ -26,6 +26,7 @@ class ServiceManager(base.BaseManager):
 
     def list(self):
         """Get a list of services.
+
         :rtype: list of :class:`Service`
         """
         url = '/services'

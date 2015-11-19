@@ -32,14 +32,15 @@ class SoftwareDeploymentManager(base.BaseManager):
 
     def list(self, **kwargs):
         """Get a list of software deployments.
+
         :rtype: list of :class:`SoftwareDeployment`
         """
         url = '/software_deployments?%s' % parse.urlencode(kwargs)
         return self._list(url, "software_deployments")
 
     def metadata(self, server_id):
-        """Get a grouped collection of software deployment metadata for a
-        given server.
+        """Get a collection of software deployment metadata for given server.
+
         :rtype: list of :class:`SoftwareDeployment`
         """
         url = '/software_deployments/metadata/%s' % parse.quote(
