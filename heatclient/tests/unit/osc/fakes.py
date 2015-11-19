@@ -160,7 +160,7 @@ TEST_VERSIONS = {
 }
 
 
-class FakeStdout:
+class FakeStdout(object):
     def __init__(self):
         self.content = []
 
