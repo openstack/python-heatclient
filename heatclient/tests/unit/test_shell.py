@@ -110,11 +110,11 @@ class TestCase(testtools.TestCase):
         else:
             raise self.failureException(msg)
 
-    def shell_error(self, argstr, error_match):
+    def shell_error(self, argstr, error_match, exception):
         orig = sys.stderr
         sys.stderr = six.StringIO()
         _shell = heatclient.shell.HeatShell()
-        e = self.assertRaises(Exception, _shell.main, argstr.split())
+        e = self.assertRaises(exception, _shell.main, argstr.split())
         self.assertRegexpMatches(e.__str__(), error_match)
         err = sys.stderr.getvalue()
         sys.stderr.close()
@@ -181,7 +181,7 @@ class EnvVarTest(TestCase):
         }
         fake_env[self.remove] = None
         self.set_fake_env(fake_env)
-        self.shell_error('stack-list', self.err)
+        self.shell_error('stack-list', self.err, exception=exc.CommandError)
 
 
 class EnvVarTestToken(TestCase):
@@ -204,7 +204,7 @@ class EnvVarTestToken(TestCase):
         }
         fake_env[self.remove] = None
         self.set_fake_env(fake_env)
-        self.shell_error('stack-list', self.err)
+        self.shell_error('stack-list', self.err, exception=exc.CommandError)
 
 
 class ShellParamValidationTest(TestCase):
@@ -249,7 +249,7 @@ class ShellParamValidationTest(TestCase):
             template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
             cmd = '%s --template-file=%s ' % (self.command, template_file)
 
-        self.shell_error(cmd, self.err)
+        self.shell_error(cmd, self.err, exception=exc.CommandError)
 
 
 class ShellValidationTest(TestCase):
@@ -269,7 +269,7 @@ class ShellValidationTest(TestCase):
 
         self.m.ReplayAll()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
-        self.shell_error('stack-list', failed_msg)
+        self.shell_error('stack-list', failed_msg, exception=exc.Unauthorized)
 
     def test_stack_create_validation(self):
         self.register_keystone_auth_fixture()
@@ -279,7 +279,8 @@ class ShellValidationTest(TestCase):
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"',
-            'Need to specify exactly one of')
+            'Need to specify exactly one of',
+            exception=exc.CommandError)
 
     def test_stack_create_with_paramfile_validation(self):
         self.register_keystone_auth_fixture()
@@ -290,7 +291,8 @@ class ShellValidationTest(TestCase):
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"',
-            'Need to specify exactly one of')
+            'Need to specify exactly one of',
+            exception=exc.CommandError)
 
     def test_stack_create_validation_keystone_v3(self):
         self.register_keystone_auth_fixture()
@@ -300,7 +302,9 @@ class ShellValidationTest(TestCase):
             '--parameters="InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
             'LinuxDistribution=F17"',
-            'Need to specify exactly one of')
+            'Need to specify exactly one of',
+            exception=exc.CommandError
+        )
 
 
 class ShellBase(TestCase):
@@ -389,7 +393,8 @@ class ShellTestNoMox(TestCase):
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
 
         self.shell_error('stack-create -f %s stack' % template_file,
-                         'The Parameter \(key_name\) was not provided.')
+                         'The Parameter \(key_name\) was not provided.',
+                         exception=exc.HTTPBadRequest)
 
     def test_event_list(self):
         eventid1 = uuid.uuid4().hex
@@ -1869,7 +1874,8 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
         self.m.ReplayAll()
-        self.shell_error('stack-adopt teststack ', failed_msg)
+        self.shell_error('stack-adopt teststack ', failed_msg,
+                         exception=exc.CommandError)
 
     def test_stack_update_enable_rollback(self):
         self.register_keystone_auth_fixture()
@@ -1983,7 +1989,8 @@ class ShellTestUserPass(ShellBase):
         self.shell_error('stack-update teststack2/2 '
                          '--rollback Foo '
                          '--template-file=%s' % template_file,
-                         "Unrecognized value 'Foo', acceptable values are:"
+                         "Unrecognized value 'Foo', acceptable values are:",
+                         exception=exc.CommandError
                          )
 
     def test_stack_update_rollback_default(self):
@@ -4558,13 +4565,13 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             bad_json_file.write(b"{foo:}")
             bad_json_file.flush()
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
-                             failed_msg)
+                             failed_msg, exception=exc.CommandError)
 
         with tempfile.NamedTemporaryFile() as bad_json_file:
             bad_json_file.write(b'{"foo": None}')
             bad_json_file.flush()
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
-                             failed_msg)
+                             failed_msg, exception=exc.CommandError)
 
     def test_commandline_args_passed_to_requests(self):
         """Check that we have sent the proper arguments to requests."""
