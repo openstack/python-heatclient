@@ -802,3 +802,179 @@ class TestStackTemplateShow(TestStack):
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+
+class _TestStackCheckBase(object):
+
+    stack = stacks.Stack(None, {
+        "id": '1234',
+        "stack_name": 'my_stack',
+        "creation_time": "2013-08-04T20:57:55Z",
+        "updated_time": "2013-08-04T20:57:55Z",
+        "stack_status": "CREATE_COMPLETE"
+    })
+
+    columns = ['ID', 'Stack Name', 'Stack Status', 'Creation Time',
+               'Updated Time']
+
+    def _setUp(self, cmd, action):
+        self.cmd = cmd
+        self.action = action
+        self.mock_client.stacks.get = mock.Mock(
+            return_value=self.stack)
+
+    def _test_stack_action(self):
+        arglist = ['my_stack']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, rows = self.cmd.take_action(parsed_args)
+        self.action.assert_called_once_with('my_stack')
+        self.mock_client.stacks.get.assert_called_once_with('my_stack')
+        self.assertEqual(self.columns, columns)
+        self.assertEqual(1, len(rows))
+
+    def _test_stack_action_multi(self):
+        arglist = ['my_stack1', 'my_stack2']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, rows = self.cmd.take_action(parsed_args)
+        self.assertEqual(2, self.action.call_count)
+        self.assertEqual(2, self.mock_client.stacks.get.call_count)
+        self.action.assert_called_with('my_stack2')
+        self.mock_client.stacks.get.assert_called_with('my_stack2')
+        self.assertEqual(self.columns, columns)
+        self.assertEqual(2, len(rows))
+
+    @mock.patch('openstackclient.common.utils.wait_for_status',
+                return_value=True)
+    def _test_stack_action_wait(self, mock_wait):
+        arglist = ['my_stack', '--wait']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, rows = self.cmd.take_action(parsed_args)
+        self.action.assert_called_with('my_stack')
+        self.mock_client.stacks.get.assert_called_once_with('my_stack')
+        self.assertEqual(self.columns, columns)
+        self.assertEqual(1, len(rows))
+
+    @mock.patch('openstackclient.common.utils.wait_for_status',
+                return_value=False)
+    def _test_stack_action_wait_error(self, mock_wait):
+        arglist = ['my_stack', '--wait']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        error = self.assertRaises(exc.CommandError,
+                                  self.cmd.take_action,
+                                  parsed_args)
+        self.assertEqual('Error waiting for status from stack my_stack',
+                         str(error))
+
+    def _test_stack_action_exception(self):
+        self.action.side_effect = heat_exc.HTTPNotFound
+        arglist = ['my_stack']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        error = self.assertRaises(exc.CommandError,
+                                  self.cmd.take_action,
+                                  parsed_args)
+        self.assertEqual('Stack not found: my_stack',
+                         str(error))
+
+
+class TestStackSuspend(_TestStackCheckBase, TestStack):
+
+    def setUp(self):
+        super(TestStackSuspend, self).setUp()
+        self.mock_client.actions.suspend = mock.Mock()
+        self._setUp(
+            stack.SuspendStack(self.app, None),
+            self.mock_client.actions.suspend
+        )
+
+    def test_stack_suspend(self):
+        self._test_stack_action()
+
+    def test_stack_suspend_multi(self):
+        self._test_stack_action_multi()
+
+    def test_stack_suspend_wait(self):
+        self._test_stack_action_wait()
+
+    def test_stack_suspend_wait_error(self):
+        self._test_stack_action_wait_error()
+
+    def test_stack_suspend_exception(self):
+        self._test_stack_action_exception()
+
+
+class TestStackResume(_TestStackCheckBase, TestStack):
+
+    def setUp(self):
+        super(TestStackResume, self).setUp()
+        self.mock_client.actions.resume = mock.Mock()
+        self._setUp(
+            stack.ResumeStack(self.app, None),
+            self.mock_client.actions.resume
+        )
+
+    def test_stack_resume(self):
+        self._test_stack_action()
+
+    def test_stack_resume_multi(self):
+        self._test_stack_action_multi()
+
+    def test_stack_resume_wait(self):
+        self._test_stack_action_wait()
+
+    def test_stack_resume_wait_error(self):
+        self._test_stack_action_wait_error()
+
+    def test_stack_resume_exception(self):
+        self._test_stack_action_exception()
+
+
+class TestStackUpdateCancel(_TestStackCheckBase, TestStack):
+
+    def setUp(self):
+        super(TestStackUpdateCancel, self).setUp()
+        self.mock_client.actions.cancel_update = mock.Mock()
+        self._setUp(
+            stack.UpdateCancelStack(self.app, None),
+            self.mock_client.actions.cancel_update
+        )
+
+    def test_stack_cancel_update(self):
+        self._test_stack_action()
+
+    def test_stack_cancel_update_multi(self):
+        self._test_stack_action_multi()
+
+    def test_stack_cancel_update_wait(self):
+        self._test_stack_action_wait()
+
+    def test_stack_cancel_update_wait_error(self):
+        self._test_stack_action_wait_error()
+
+    def test_stack_cancel_update_exception(self):
+        self._test_stack_action_exception()
+
+
+class TestStackCheck(_TestStackCheckBase, TestStack):
+
+    def setUp(self):
+        super(TestStackCheck, self).setUp()
+        self.mock_client.actions.check = mock.Mock()
+        self._setUp(
+            stack.CheckStack(self.app, None),
+            self.mock_client.actions.check
+        )
+
+    def test_stack_check(self):
+        self._test_stack_action()
+
+    def test_stack_check_multi(self):
+        self._test_stack_action_multi()
+
+    def test_stack_check_wait(self):
+        self._test_stack_action_wait()
+
+    def test_stack_check_wait_error(self):
+        self._test_stack_action_wait_error()
+
+    def test_stack_check_exception(self):
+        self._test_stack_action_exception()

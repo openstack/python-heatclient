@@ -835,3 +835,149 @@ class TemplateShowStack(format_utils.YamlFormat):
             raise exc.CommandError(msg)
 
         return self.dict2columns(template)
+
+
+class StackActionBase(lister.Lister):
+    """Stack actions base."""
+
+    log = logging.getLogger(__name__ + '.StackActionBase')
+
+    def _get_parser(self, prog_name, stack_help, wait_help):
+        parser = super(StackActionBase, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            nargs="+",
+            help=stack_help
+        )
+        parser.add_argument(
+            '--wait',
+            action='store_true',
+            help=wait_help
+        )
+        return parser
+
+    def _take_action(self, parsed_args, action, good_status, bad_status):
+        self.log.debug("take_action(%s)", parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        return _stack_action(
+            parsed_args,
+            heat_client,
+            action,
+            good_status,
+            bad_status
+        )
+
+
+def _stack_action(parsed_args, heat_client, action, good_status, bad_status):
+    rows = []
+    for stack in parsed_args.stack:
+        try:
+            action(stack)
+        except heat_exc.HTTPNotFound:
+            msg = _('Stack not found: %s') % stack
+            raise exc.CommandError(msg)
+
+        if parsed_args.wait:
+            if not utils.wait_for_status(heat_client.stacks.get, stack,
+                                         status_field='stack_status',
+                                         success_status=good_status,
+                                         error_status=bad_status):
+                err = _("Error waiting for status from stack %s") % stack
+                raise exc.CommandError(err)
+
+        data = heat_client.stacks.get(stack)
+        columns = [
+            'ID',
+            'Stack Name',
+            'Stack Status',
+            'Creation Time',
+            'Updated Time'
+        ]
+        rows += [utils.get_dict_properties(data.to_dict(), columns)]
+
+    return (columns, rows)
+
+
+class SuspendStack(StackActionBase):
+    """Suspend a stack."""
+
+    log = logging.getLogger(__name__ + '.SuspendStack')
+
+    def get_parser(self, prog_name):
+        return self._get_parser(
+            prog_name,
+            _('Stack(s) to suspend (name or ID)'),
+            _('Wait for suspend to complete')
+        )
+
+    def take_action(self, parsed_args):
+        return self._take_action(
+            parsed_args,
+            self.app.client_manager.orchestration.actions.suspend,
+            ['suspend_complete'],
+            ['suspend_failed']
+        )
+
+
+class ResumeStack(StackActionBase):
+    """Resume a stack."""
+
+    log = logging.getLogger(__name__ + '.ResumeStack')
+
+    def get_parser(self, prog_name):
+        return self._get_parser(
+            prog_name,
+            _('Stack(s) to resume (name or ID)'),
+            _('Wait for resume to complete')
+        )
+
+    def take_action(self, parsed_args):
+        return self._take_action(
+            parsed_args,
+            self.app.client_manager.orchestration.actions.resume,
+            ['resume_complete'],
+            ['resume_failed']
+        )
+
+
+class UpdateCancelStack(StackActionBase):
+    """Cancel update for a stack."""
+
+    log = logging.getLogger(__name__ + '.UpdateCancelStack')
+
+    def get_parser(self, prog_name):
+        return self._get_parser(
+            prog_name,
+            _('Stack(s) to cancel update (name or ID)'),
+            _('Wait for cancel update to complete')
+        )
+
+    def take_action(self, parsed_args):
+        return self._take_action(
+            parsed_args,
+            self.app.client_manager.orchestration.actions.cancel_update,
+            ['cancel_update_complete'],
+            ['cancel_update_failed']
+        )
+
+
+class CheckStack(StackActionBase):
+    """Check a stack."""
+
+    log = logging.getLogger(__name__ + '.CheckStack')
+
+    def get_parser(self, prog_name):
+        return self._get_parser(
+            prog_name,
+            _('Stack(s) to check update (name or ID)'),
+            _('Wait for check to complete')
+        )
+
+    def take_action(self, parsed_args):
+        return self._take_action(
+            parsed_args,
+            self.app.client_manager.orchestration.actions.check,
+            ['check_complete'],
+            ['check_failed']
+        )
