@@ -112,7 +112,7 @@ def get_file_contents(from_data, files, base_url=None,
             get_file_contents(value, files, base_url, ignore_if, recurse_if)
 
     if isinstance(from_data, dict):
-        for key, value in iter(from_data.items()):
+        for key, value in six.iteritems(from_data):
             if ignore_if and ignore_if(key, value):
                 continue
 
@@ -218,7 +218,7 @@ def resolve_environment_urls(resource_registry, files, env_base_url):
 
     get_file_contents(rr, files, base_url, ignore_if)
 
-    for res_name, res_dict in iter(rr.get('resources', {}).items()):
+    for res_name, res_dict in six.iteritems(rr.get('resources', {})):
         res_base_url = res_dict.get('base_url', base_url)
         get_file_contents(
             res_dict, files, res_base_url, ignore_if)
