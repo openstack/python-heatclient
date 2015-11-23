@@ -33,6 +33,7 @@ class FakeOrchestrationv1Client(object):
         self.build_info = fakes.FakeResource(None, {})
         self.software_deployments = fakes.FakeResource(None, {})
         self.software_configs = fakes.FakeResource(None, {})
+        self.template_versions = fakes.FakeResource(None, {})
 
 
 class TestOrchestrationv1(utils.TestCommand):
