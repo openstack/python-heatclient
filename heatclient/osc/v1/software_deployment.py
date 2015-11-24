@@ -16,7 +16,10 @@
 import logging
 
 from cliff import command
+from cliff import lister
+
 from openstackclient.common import exceptions as exc
+from openstackclient.common import utils
 
 from heatclient import exc as heat_exc
 from heatclient.openstack.common._i18n import _
@@ -69,3 +72,43 @@ class DeleteDeployment(command.Command):
                                      '%(total)s deployments.') %
                                    {'count': failure_count,
                                    'total': len(parsed_args.id)})
+
+
+class ListDeployment(lister.Lister):
+    """List software deployments."""
+
+    log = logging.getLogger(__name__ + '.ListDeployment')
+
+    def get_parser(self, prog_name):
+        parser = super(ListDeployment, self).get_parser(prog_name)
+        parser.add_argument(
+            '--server',
+            metavar='<SERVER>',
+            help=_('ID of the server to fetch deployments for')
+        )
+        parser.add_argument(
+            '--long',
+            action='store_true',
+            help=_('List more fields in output')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+        return _list_deployment(heat_client, args=parsed_args)
+
+
+def _list_deployment(heat_client, args=None):
+    kwargs = {'server_id': args.server} if args.server else {}
+    columns = ['id', 'config_id', 'server_id', 'action', 'status']
+    if args.long:
+        columns.append('creation_time')
+        columns.append('status_reason')
+
+    deployments = heat_client.software_deployments.list(**kwargs)
+    return (
+        columns,
+        (utils.get_item_properties(s, columns) for s in deployments)
+    )
