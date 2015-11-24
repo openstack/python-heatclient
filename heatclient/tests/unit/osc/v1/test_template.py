@@ -14,6 +14,7 @@
 
 import mock
 
+from heatclient import exc
 from heatclient.osc.v1 import template
 from heatclient.tests.unit.osc.v1 import fakes
 from heatclient.v1 import template_versions
@@ -47,3 +48,35 @@ class TestTemplateVersionList(TestTemplate):
 
         self.assertEqual(['version', 'type'], columns)
         self.assertEqual([('HOT123', 'hot'), ('CFN456', 'cfn')], list(data))
+
+
+class TestTemplateFunctionList(TestTemplate):
+
+    defaults = [
+        {'functions': 'func1', 'description': 'Function 1'},
+        {'functions': 'func2', 'description': 'Function 2'}
+    ]
+
+    def setUp(self):
+        super(TestTemplateFunctionList, self).setUp()
+        tv1 = template_versions.TemplateVersion(None, self.defaults[0])
+        tv2 = template_versions.TemplateVersion(None, self.defaults[1])
+        self.template_versions.get = mock.MagicMock(return_value=[tv1, tv2])
+        self.cmd = template.FunctionList(self.app, None)
+
+    def test_function_list(self):
+        arglist = ['version1']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.assertEqual(['functions', 'description'], columns)
+        self.assertEqual([('func1', 'Function 1'), ('func2', 'Function 2')],
+                         list(data))
+
+    def test_function_list_not_found(self):
+        arglist = ['bad_version']
+        self.template_versions.get.side_effect = exc.HTTPNotFound
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
