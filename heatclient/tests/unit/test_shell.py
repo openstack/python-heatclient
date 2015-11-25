@@ -1225,7 +1225,7 @@ class ShellTestUserPass(ShellBase):
             '2',
             'teststack2',
             'IN_PROGRESS',
-            '14:14:30',  '2013-12-05',
+            '14:14:30', '2013-12-05',
             'CREATE_IN_PROGRESS', 'state changed',
             '14:14:31',
             'testresource',

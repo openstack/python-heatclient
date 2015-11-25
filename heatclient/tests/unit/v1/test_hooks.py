@@ -129,7 +129,7 @@ class TestHooks(testtools.TestCase):
                 }
             },
         }
-        self.assertEqual(expected_hooks,  actual_hooks)
+        self.assertEqual(expected_hooks, actual_hooks)
 
     def test_update_hooks_in_args(self):
         type(self.args).pre_update = mock.PropertyMock(
