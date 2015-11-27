@@ -805,32 +805,92 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def _output_fake_response(self):
+    def _output_fake_response(self, output_key):
 
-        resp_dict = {"stack": {
+        outputs = [
+            {
+                "output_value": "value1",
+                "output_key": "output1",
+                "description": "test output 1",
+            },
+            {
+                "output_value": ["output", "value", "2"],
+                "output_key": "output2",
+                "description": "test output 2",
+            },
+            {
+                "output_value": u"test\u2665",
+                "output_key": "output_uni",
+                "description": "test output unicode",
+            },
+        ]
+
+        stack_dict = {"stack": {
             "id": "1",
             "stack_name": "teststack",
             "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z",
-            "outputs": [
-                {
-                    "output_value": "value1",
-                    "output_key": "output1",
-                    "description": "test output 1",
-                },
-                {
-                    "output_value": ["output", "value", "2"],
-                    "output_key": "output2",
-                    "description": "test output 2",
-                },
-                {
-                    "output_value": u"test\u2665",
-                    "output_key": "output_uni",
-                    "description": "test output unicode",
-                },
-            ],
             "creation_time": "2012-10-25T01:58:47Z"
         }}
+
+        stack_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
+
+        def find_output(key):
+            for out in outputs:
+                if out['output_key'] == key:
+                    return {'output': out}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(find_output(output_key)))
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack/1',
+                'GET').AndReturn(stack_resp)
+            self.client.request(
+                '/stacks/teststack/1/outputs/%s' % output_key,
+                'GET').AndReturn(resp)
+        else:
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
+                                                         stack_dict))
+            self.client.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs/%s' % output_key).AndReturn(
+                    (resp, find_output(output_key)))
+
+        self.m.ReplayAll()
+
+    def _error_output_fake_response(self, output_key):
+
+        resp_dict = {
+            "output": {
+                "output_value": "null",
+                "output_key": "output1",
+                "description": "test output 1",
+                "output_error": "The Referenced Attribute (0 PublicIP) "
+                                "is incorrect."
+            }
+        }
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        stack_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
 
         resp = fakes.FakeHTTPResponse(
             200,
@@ -840,102 +900,21 @@ class ShellTestUserPass(ShellBase):
 
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1', 'GET').MultipleTimes().AndReturn(
-                    resp)
-        else:
-            self.client.json_request(
-                'GET', '/stacks/teststack/1').MultipleTimes().AndReturn(
-                    (resp, resp_dict))
-
-        self.m.ReplayAll()
-
-    def _error_output_fake_response(self):
-
-        resp_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z",
-            "outputs": [
-                {
-                    "output_value": "null",
-                    "output_key": "output1",
-                    "description": "test output 1",
-                    "output_error": "The Referenced Attribute (0 PublicIP) "
-                                    "is incorrect."
-                },
-            ],
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
-
-        if self.client == http.SessionClient:
+                '/stacks/teststack/1',
+                'GET').AndReturn(stack_resp)
             self.client.request(
-                '/stacks/teststack/1', 'GET').AndReturn(resp)
+                '/stacks/teststack/1/outputs/%s' % output_key,
+                'GET').AndReturn(resp)
         else:
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
+                                                         stack_dict))
             self.client.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
+                'GET',
+                '/stacks/teststack/1/outputs/%s' % output_key).AndReturn(
+                (resp, resp_dict))
 
         self.m.ReplayAll()
-
-    def test_output_list(self):
-        self.register_keystone_auth_fixture()
-        self._output_fake_response()
-        list_text = self.shell('output-list teststack/1')
-        for r in ['output1', 'output2', 'output_uni']:
-            self.assertRegexpMatches(list_text, r)
-
-    def test_output_show(self):
-        self.register_keystone_auth_fixture()
-
-        self._output_fake_response()
-        list_text = self.shell('output-show teststack/1 output1')
-        self.assertEqual('"value1"\n', list_text)
-
-        list_text = self.shell('output-show  -F raw teststack/1 output1')
-        self.assertEqual('value1\n', list_text)
-
-        list_text = self.shell('output-show  -F raw teststack/1 output2')
-        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
-                         list_text)
-
-        list_text = self.shell('output-show  -F json teststack/1 output2')
-        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
-                         list_text)
-
-    def test_output_show_unicode(self):
-        self.register_keystone_auth_fixture()
-        self._output_fake_response()
-        list_text = self.shell('output-show teststack/1 output_uni')
-        self.assertEqual(u'"test\u2665"\n', list_text)
-
-    def test_output_show_all(self):
-        self.register_keystone_auth_fixture()
-        self._output_fake_response()
-        list_text = self.shell('output-show teststack/1 --all')
-        for r in ['output1', 'value1', 'output2', 'test output unicode']:
-            self.assertRegexpMatches(list_text, r)
-
-    def test_output_show_missing_arg(self):
-        self.register_keystone_auth_fixture()
-        error = self.assertRaises(
-            exc.CommandError, self.shell, 'output-show teststack/1')
-        self.assertIn('either <OUTPUT NAME> or --all argument is needed.',
-                      str(error))
-
-    def test_output_show_error(self):
-        self.register_keystone_auth_fixture()
-        self._error_output_fake_response()
-        error = self.assertRaises(
-            exc.CommandError, self.shell,
-            'output-show teststack/1 output1')
-        self.assertIn('The Referenced Attribute (0 PublicIP) is incorrect.',
-                      str(error))
 
     def test_template_show_cfn(self):
         self.register_keystone_auth_fixture()
@@ -2799,6 +2778,297 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
         resp = self.shell('stack-restore teststack/1 2')
         self.assertEqual("", resp)
+
+    def test_output_list(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"outputs": [{
+            "output_key": "key",
+            "description": "description"
+        },
+            {
+                "output_key": "key1",
+                "description": "description1"
+            }]}
+
+        stack_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack/1',
+                'GET').AndReturn(stack_resp)
+            self.client.request(
+                '/stacks/teststack/1/outputs',
+                'GET').AndReturn(resp)
+        else:
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
+                                                         stack_dict))
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        list_text = self.shell('output-list teststack/1')
+
+        required = [
+            'output_key',
+            'description',
+            'key',
+            'description',
+            'key1',
+            'description1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show_all(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {'outputs': [
+            {
+                'output_key': 'key',
+                'description': 'description'
+            }
+        ]}
+
+        resp_dict1 = {"output": {
+            "output_key": "key",
+            "output_value": "value",
+            'description': 'description'
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+
+        resp1 = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict1))
+
+        if self.client == http.SessionClient:
+            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
+                fakes.FakeHTTPResponse(
+                    200,
+                    'OK',
+                    {'content-type': 'application/json'},
+                    jsonutils.dumps(stack_dict)))
+            self.client.request(
+                '/stacks/teststack/1/outputs',
+                'GET').AndReturn(resp)
+            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
+                fakes.FakeHTTPResponse(
+                    200,
+                    'OK',
+                    {'content-type': 'application/json'},
+                    jsonutils.dumps(stack_dict)))
+            self.client.request(
+                '/stacks/teststack/1/outputs/key',
+                'GET').AndReturn(resp1)
+        else:
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((
+                    fakes.FakeHTTPResponse(
+                        200,
+                        'OK',
+                        {'content-type': 'application/json'},
+                        jsonutils.dumps(stack_dict)), stack_dict))
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs').AndReturn((resp, resp_dict))
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((
+                    fakes.FakeHTTPResponse(
+                        200,
+                        'OK',
+                        {'content-type': 'application/json'},
+                        jsonutils.dumps(stack_dict)), stack_dict))
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs/key').AndReturn((resp1,
+                                                              resp_dict1))
+
+        self.m.ReplayAll()
+        list_text = self.shell('output-show teststack/1 key --all')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'key',
+            'value',
+            'description',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show(self):
+        self.register_keystone_auth_fixture()
+
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        resp_dict = {"output": {
+            "output_key": "key",
+            "output_value": "value",
+            'description': 'description'
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        if self.client == http.SessionClient:
+            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
+                fakes.FakeHTTPResponse(
+                    200,
+                    'OK',
+                    {'content-type': 'application/json'},
+                    jsonutils.dumps(stack_dict)))
+            self.client.request(
+                '/stacks/teststack/1/outputs/key',
+                'GET').AndReturn(resp)
+        else:
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((
+                    fakes.FakeHTTPResponse(
+                        200,
+                        'OK',
+                        {'content-type': 'application/json'},
+                        jsonutils.dumps(stack_dict)), stack_dict))
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs/key').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        resp = self.shell('output-show teststack/1 key')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'key',
+            'value',
+            'description',
+        ]
+        for r in required:
+            self.assertRegexpMatches(resp, r)
+
+    def test_output_show_output1(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output1')
+        list_text = self.shell('output-show teststack/1 output1')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'output1',
+            'value1',
+            'test output 1',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show_output1_only_value(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output1')
+        list_text = self.shell('output-show -v -F raw teststack/1 output1')
+        self.assertEqual('value1\n', list_text)
+
+    def test_output_show_output2_raw_only_value(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F raw -v teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
+
+    def test_output_show_output2_raw(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F raw teststack/1 output2')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'output2',
+            "[u'output', u'value', u'2']",
+            'test output 2',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show_output2_json_only_value(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F json -v teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
+
+    def test_output_show_output2_json(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F json teststack/1 output2')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'output2',
+            '[\n    "output", \n    "value", \n    "2"\n  ]'
+            'test output 2',
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
+    def test_output_show_unicode_output_only_value(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output_uni')
+        list_text = self.shell('output-show -v teststack/1 output_uni')
+        self.assertEqual(u'"test\u2665"\n', list_text)
+
+    def test_output_show_error(self):
+        self.register_keystone_auth_fixture()
+        self._error_output_fake_response('output1')
+        error = self.assertRaises(
+            exc.CommandError, self.shell,
+            'output-show teststack/1 output1')
+        self.assertIn('The Referenced Attribute (0 PublicIP) is incorrect.',
+                      six.text_type(error))
 
 
 class ShellTestActions(ShellBase):
