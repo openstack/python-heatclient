@@ -39,13 +39,16 @@ Base utilities to build API operation managers and objects on top of.
 
 import abc
 import copy
+import logging
 
 from oslo_utils import strutils
 import six
 from six.moves.urllib import parse
 
-from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _, _LW
 from heatclient.openstack.common.apiclient import exceptions
+
+LOG = logging.getLogger(__name__)
 
 
 def getid(obj):
@@ -518,9 +521,18 @@ class Resource(object):
         # two resources of different types are not equal
         if not isinstance(other, self.__class__):
             return False
-        if hasattr(self, 'id') and hasattr(other, 'id'):
-            return self.id == other.id
+        LOG.warning(_LW("Two objects are equal when all of the attributes are "
+                        "equal, if you want to identify whether two objects "
+                        "are same one with same id, please use is_same_obj() "
+                        "function."))
         return self._info == other._info
+
+    def is_same_obj(self, other):
+        """Identify the two objects are same one with same id."""
+        if isinstance(other, self.__class__):
+            if hasattr(self, 'id') and hasattr(other, 'id'):
+                return self.id == other.id
+        return False
 
     def is_loaded(self):
         return self._loaded
