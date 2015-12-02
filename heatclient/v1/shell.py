@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import fnmatch
 import logging
 
 from oslo_serialization import jsonutils
@@ -25,13 +24,13 @@ import yaml
 
 from heatclient.common import deployment_utils
 from heatclient.common import event_utils
+from heatclient.common import hook_utils
 from heatclient.common import http
 from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
 
 from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LE
 from heatclient.openstack.common._i18n import _LW
 
 import heatclient.exc as exc
@@ -993,42 +992,15 @@ def do_hook_clear(hc, args):
     elif args.pre_update:
         hook_type = 'pre-update'
     else:
-        hook_type = _get_hook_type_via_status(hc, args.id)
+        hook_type = hook_utils.get_hook_type_via_status(hc, args.id)
 
     for hook_string in args.hook:
         hook = [b for b in hook_string.split('/') if b]
         resource_pattern = hook[-1]
         stack_id = args.id
 
-        def clear_hook(stack_id, resource_name):
-            try:
-                hc.resources.signal(
-                    stack_id=stack_id,
-                    resource_name=resource_name,
-                    data={'unset_hook': hook_type})
-            except exc.HTTPNotFound:
-                logger.error(
-                    _LE("Stack %(stack)s or resource %(resource)s not found"),
-                    {'resource': resource_name, 'stack': stack_id})
-
-        def clear_wildcard_hooks(stack_id, stack_patterns):
-            if stack_patterns:
-                for resource in hc.resources.list(stack_id):
-                    res_name = resource.resource_name
-                    if fnmatch.fnmatchcase(res_name, stack_patterns[0]):
-                        nested_stack = hc.resources.get(
-                            stack_id=stack_id,
-                            resource_name=res_name)
-                        clear_wildcard_hooks(
-                            nested_stack.physical_resource_id,
-                            stack_patterns[1:])
-            else:
-                for resource in hc.resources.list(stack_id):
-                    res_name = resource.resource_name
-                    if fnmatch.fnmatchcase(res_name, resource_pattern):
-                        clear_hook(stack_id, res_name)
-
-        clear_wildcard_hooks(stack_id, hook[:-1])
+        hook_utils.clear_wildcard_hooks(hc, stack_id, hook[:-1],
+                                        hook_type, resource_pattern)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -1096,29 +1068,6 @@ def do_event_list(hc, args):
         utils.print_list(events, display_fields, sortby_index=None)
 
 
-def _get_hook_type_via_status(hc, stack_id):
-    # Figure out if the hook should be pre-create or pre-update based
-    # on the stack status, also sanity assertions that we're in-progress.
-    try:
-        stack = hc.stacks.get(stack_id=stack_id)
-    except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % stack_id)
-    else:
-        if 'IN_PROGRESS' not in stack.stack_status:
-            raise exc.CommandError(_('Stack status %s not IN_PROGRESS') %
-                                   stack.stack_status)
-
-    if 'CREATE' in stack.stack_status:
-        hook_type = 'pre-create'
-    elif 'UPDATE' in stack.stack_status:
-        hook_type = 'pre-update'
-    else:
-        raise exc.CommandError(_('Unexpected stack status %s, '
-                                 'only create/update supported')
-                               % stack.stack_status)
-    return hook_type
-
-
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to show the pending hooks for.'))
 @utils.arg('-n', '--nested-depth', metavar='<DEPTH>',
@@ -1148,7 +1097,7 @@ def do_hook_poll(hc, args):
     else:
         nested_depth = 0
 
-    hook_type = _get_hook_type_via_status(hc, args.id)
+    hook_type = hook_utils.get_hook_type_via_status(hc, args.id)
     event_args = {'sort_dir': 'asc'}
     hook_events = event_utils.get_hook_events(
         hc, stack_id=args.id, event_args=event_args,

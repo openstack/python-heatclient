@@ -16,6 +16,8 @@ import testtools
 
 import heatclient.v1.shell as shell
 
+from heatclient.common import hook_utils
+
 
 class TestHooks(testtools.TestCase):
     def setUp(self):
@@ -220,7 +222,8 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_clear_all_hooks(self):
-        shell._get_hook_type_via_status = mock.Mock(return_value='pre-create')
+        hook_utils.get_hook_type_via_status = mock.Mock(
+            return_value='pre-create')
         type(self.args).hook = mock.PropertyMock(
             return_value=['bp'])
         type(self.args).pre_create = mock.PropertyMock(return_value=True)

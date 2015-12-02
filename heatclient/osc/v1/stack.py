@@ -26,7 +26,9 @@ from oslo_serialization import jsonutils
 import six
 from six.moves.urllib import request
 
+from heatclient.common import event_utils
 from heatclient.common import format_utils
+from heatclient.common import hook_utils
 from heatclient.common import http
 from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
@@ -1060,3 +1062,134 @@ class CheckStack(StackActionBase):
             ['check_complete'],
             ['check_failed']
         )
+
+
+class StackHookPoll(lister.Lister):
+    '''List resources with pending hook for a stack.'''
+
+    log = logging.getLogger(__name__ + '.StackHookPoll')
+
+    def get_parser(self, prog_name):
+        parser = super(StackHookPoll, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            help=_('Stack to display (name or ID)')
+        )
+        parser.add_argument(
+            '--nested-depth',
+            metavar='<nested-depth>',
+            help=_('Depth of nested stacks from which to display hooks')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        return _hook_poll(
+            parsed_args,
+            heat_client
+        )
+
+
+def _hook_poll(args, heat_client):
+    """List resources with pending hook for a stack."""
+
+    # There are a few steps to determining if a stack has pending hooks
+    # 1. The stack is IN_PROGRESS status (otherwise, by definition no hooks
+    #    can be pending
+    # 2. There is an event for a resource associated with hitting a hook
+    # 3. There is not an event associated with clearing the hook in step(2)
+    #
+    # So, essentially, this ends up being a specially filtered type of event
+    # listing, because all hook status is exposed via events.  In future
+    # we might consider exposing some more efficient interface via the API
+    # to reduce the expense of this brute-force polling approach
+    columns = ['ID', 'Resource Status Reason', 'Resource Status', 'Event Time']
+
+    if args.nested_depth:
+        try:
+            nested_depth = int(args.nested_depth)
+        except ValueError:
+            msg = _("--nested-depth invalid value %s") % args.nested_depth
+            raise exc.CommandError(msg)
+        columns.append('Stack Name')
+    else:
+        nested_depth = 0
+
+    hook_type = hook_utils.get_hook_type_via_status(heat_client, args.stack)
+    event_args = {'sort_dir': 'asc'}
+    hook_events = event_utils.get_hook_events(
+        heat_client, stack_id=args.stack, event_args=event_args,
+        nested_depth=nested_depth, hook_type=hook_type)
+
+    if len(hook_events) >= 1:
+        if hasattr(hook_events[0], 'resource_name'):
+            columns.insert(0, 'Resource Name')
+        else:
+            columns.insert(0, 'Logical Resource ID')
+
+    rows = (utils.get_item_properties(h, columns) for h in hook_events)
+    return (columns, rows)
+
+
+class StackHookClear(command.Command):
+    """Clear resource hooks on a given stack."""
+
+    log = logging.getLogger(__name__ + '.StackHookClear')
+
+    def get_parser(self, prog_name):
+        parser = super(StackHookClear, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            help=_('Stack to display (name or ID)')
+        )
+        parser.add_argument(
+            '--pre-create',
+            action='store_true',
+            help=_('Clear the pre-create hooks')
+        )
+        parser.add_argument(
+            '--pre-update',
+            action='store_true',
+            help=_('Clear the pre-update hooks')
+        )
+        parser.add_argument(
+            'hook',
+            metavar='<resource>',
+            nargs='+',
+            help=_('Resource names with hooks to clear. Resources '
+                   'in nested stacks can be set using slash as a separator: '
+                   'nested_stack/another/my_resource. You can use wildcards '
+                   'to match multiple stacks or resources: '
+                   'nested_stack/an*/*_resource')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        return _hook_clear(
+            parsed_args,
+            heat_client
+        )
+
+
+def _hook_clear(args, heat_client):
+    """Clear resource hooks on a given stack."""
+    if args.pre_create:
+        hook_type = 'pre-create'
+    elif args.pre_update:
+        hook_type = 'pre-update'
+    else:
+        hook_type = hook_utils.get_hook_type_via_status(heat_client,
+                                                        args.stack)
+
+    for hook_string in args.hook:
+        hook = [b for b in hook_string.split('/') if b]
+        resource_pattern = hook[-1]
+        stack_id = args.stack
+
+        hook_utils.clear_wildcard_hooks(heat_client, stack_id, hook[:-1],
+                                        hook_type, resource_pattern)
