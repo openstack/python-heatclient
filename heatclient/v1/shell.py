@@ -113,8 +113,7 @@ def do_stack_create(hc, args):
                            'please use %(arg2)s instead'),
                        {
                            'arg1': '-c/--create-timeout',
-                           'arg2': '-t/--timeout'
-                       })
+                           'arg2': '-t/--timeout'})
 
     if args.pre_create:
         hooks_to_env(env, args.pre_create, 'pre-create')
@@ -208,8 +207,7 @@ def do_stack_adopt(hc, args):
                            'please use %(arg2)s instead'),
                        {
                            'arg1': '-c/--create-timeout',
-                           'arg2': '-t/--timeout'
-                       })
+                           'arg2': '-t/--timeout'})
 
     fields = {
         'stack_name': args.name,

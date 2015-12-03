@@ -80,8 +80,7 @@ class HTTPMultipleChoices(HTTPException):
                 {
                     'name': self.__class__.__name__,
                     'code': self.code,
-                    'details': self.details
-                })
+                    'details': self.details})
 
 
 class BadRequest(HTTPException):

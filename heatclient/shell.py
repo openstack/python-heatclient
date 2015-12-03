@@ -137,8 +137,7 @@ class HeatShell(object):
                                     '%(arg)s. Defaults to %(value)s.') %
                                   {
                                       'arg': '--os-tenant-id',
-                                      'value': 'env[OS_PROJECT_ID]'
-                                  }))
+                                      'value': 'env[OS_PROJECT_ID]'}))
 
         parser.add_argument('--os_project_id',
                             help=argparse.SUPPRESS)
@@ -150,8 +149,7 @@ class HeatShell(object):
                                     '%(arg)s. Defaults to %(value)s.') %
                                   {
                                       'arg': '--os-tenant-name',
-                                      'value': 'env[OS_PROJECT_NAME]'
-                                  }))
+                                      'value': 'env[OS_PROJECT_NAME]'}))
 
         parser.add_argument('--os_project_name',
                             help=argparse.SUPPRESS)
