@@ -72,8 +72,8 @@ def _authenticated_fetcher(hc):
            help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
-           help=_('Stack creation timeout in minutes.'
-           '  DEPRECATED use %(arg)s instead.')
+           help=_('Stack creation timeout in minutes. '
+                  'DEPRECATED use %(arg)s instead.')
            % {'arg': '--timeout'})
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
@@ -82,13 +82,13 @@ def _authenticated_fetcher(hc):
            help=_('Enable rollback on create/update failure.'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to create the stack. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon.'),
            action='append')
 @utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
-           'This can be specified multiple times. Parameter value '
-           'would be the content of the file'),
+                  'This can be specified multiple times. Parameter value '
+                  'would be the content of the file'),
            action='append')
 @utils.arg('--poll', metavar='SECONDS', type=int, nargs='?', const=5,
            help=_('Poll and report events until stack completes. '
@@ -174,8 +174,8 @@ def hooks_to_env(env, arg_hooks, hook):
            action='append')
 @utils.arg('-c', '--create-timeout', metavar='<TIMEOUT>',
            type=int,
-           help=_('Stack creation timeout in minutes.'
-           '  DEPRECATED use %(arg)s instead.')
+           help=_('Stack creation timeout in minutes. '
+                  'DEPRECATED use %(arg)s instead.')
            % {'arg': '--timeout'})
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
@@ -185,9 +185,9 @@ def hooks_to_env(env, arg_hooks, hook):
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help=_('Enable rollback on create/update failure.'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
-           help=_('Parameter values used to create the stack. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.'),
+           help=_('Parameter values used to create the stack. This can be '
+                  'specified multiple times, or once with parameters '
+                  'separated by a semicolon.'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to adopt.'))
@@ -239,21 +239,21 @@ def do_stack_adopt(hc, args):
 @utils.arg('-o', '--template-object', metavar='<URL>',
            help=_('URL to retrieve template object (e.g. from swift)'))
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>', type=int,
-           help=_('Stack creation timeout in minutes. This is only used during'
-           'validation in preview.'))
+           help=_('Stack creation timeout in minutes. This is only used '
+                  'during validation in preview.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help=_('Enable rollback on failure. This option is not used during'
-           'preview and exists only for symmetry with %(cmd)s.')
+           help=_('Enable rollback on failure. This option is not used during '
+                  'preview and exists only for symmetry with %(cmd)s.')
            % {'cmd': 'stack-create'})
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to preview the stack. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by semicolon.'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by semicolon.'),
            action='append')
 @utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
-           'This can be specified multiple times. Parameter value '
-           'would be the content of the file'),
+                  'This can be specified multiple times. Parameter value '
+                  'would be the content of the file'),
            action='append')
 @utils.arg('name', metavar='<STACK_NAME>',
            help=_('Name of the stack to preview.'))
@@ -319,8 +319,8 @@ def do_stack_delete(hc, args):
 
 @utils.arg('-O', '--output-file', metavar='<FILE>',
            help=_('file to output abandon result. '
-           'If the option is specified, the result will be'
-           ' output into <FILE>.'))
+                  'If the option is specified, the result will be '
+                  'output into <FILE>.'))
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to abandon.'))
 def do_stack_abandon(hc, args):
@@ -418,42 +418,44 @@ def do_stack_show(hc, args):
            help=_('Stack update timeout in minutes.'))
 @utils.arg('-r', '--enable-rollback', default=False, action="store_true",
            help=_('DEPRECATED! Use %(arg)s argument instead. '
-           'Enable rollback on stack update failure. '
-           'NOTE: default behavior is now to use the rollback value '
-           'of existing stack.')
+                  'Enable rollback on stack update failure. '
+                  'NOTE: default behavior is now to use the rollback value '
+                  'of existing stack.')
            % {'arg': '--rollback'})
 @utils.arg('--rollback', default=None, metavar='<VALUE>',
            help=_('Set rollback on update failure. '
-           'Values %(true)s  set rollback to enabled. '
-           'Values %(false)s set rollback to disabled. '
-           'Default is to use the value of existing stack to be updated.')
+                  'Values %(true)s  set rollback to enabled. '
+                  'Values %(false)s set rollback to disabled. '
+                  'Default is to use the value of existing stack to be '
+                  'updated.')
            % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-y', '--dry-run', default=False, action="store_true",
            help='Do not actually perform the stack update, but show what '
            'would be changed')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to create the stack. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon.'),
            action='append')
 @utils.arg('-Pf', '--parameter-file', metavar='<KEY=FILE>',
            help=_('Parameter values from file used to create the stack. '
-           'This can be specified multiple times. Parameter value '
-           'would be the content of the file'),
+                  'This can be specified multiple times. Parameter value '
+                  'would be the content of the file'),
            action='append')
 @utils.arg('-x', '--existing', default=False, action="store_true",
            help=_('Re-use the template, parameters and environment of the '
-           'current stack. If the template argument is omitted then the '
-           'existing template is used. If no %(env_arg)s is specified then '
-           'the existing environment is used. '
-           'Parameters specified in %(arg)s will patch over the existing '
-           'values in the current stack. Parameters omitted will keep '
-           'the existing values.')
+                  'current stack. If the template argument is omitted then '
+                  'the existing template is used. If no %(env_arg)s is '
+                  'specified then the existing environment is used. '
+                  'Parameters specified in %(arg)s will patch over the '
+                  'existing values in the current stack. Parameters omitted '
+                  'will keep the existing values.')
            % {'arg': '--parameters', 'env_arg': '--environment-file'})
 @utils.arg('-c', '--clear-parameter', metavar='<PARAMETER>',
            help=_('Remove the parameters from the set of parameters of '
-           'current stack for the %(cmd)s. The default value in the '
-           'template will be used. This can be specified multiple times.')
+                  'current stack for the %(cmd)s. The default value in the '
+                  'template will be used. This can be specified multiple '
+                  'times.')
            % {'cmd': 'stack-update'},
            action='append')
 @utils.arg('id', metavar='<NAME or ID>',
@@ -554,8 +556,8 @@ def do_stack_cancel_update(hc, args):
            help=_('Include hidden stacks in the stack listing.'))
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Filter parameters to apply on returned stacks. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon.'),
            action='append')
 @utils.arg('-t', '--tags', metavar='<TAG1,TAG2...>',
            help=_('Show stacks containing these tags, combine multiple tags '
@@ -716,9 +718,9 @@ def do_output_show(hc, args):
 
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Filter parameters to apply on returned resource types. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon. It can be any of name, version and '
-           'support_status'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon. It can be any of '
+                  'name, version and support_status'),
            action='append')
 def do_resource_type_list(hc, args):
     '''List the available resource types.'''
@@ -1010,8 +1012,8 @@ def do_hook_clear(hc, args):
            help=_('Name of the resource to filter events by.'))
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Filter parameters to apply on returned events. '
-           'This can be specified multiple times, or once with parameters '
-           'separated by a semicolon.'),
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon.'),
            action='append')
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
            help=_('Limit the number of events returned.'))
@@ -1176,7 +1178,7 @@ def do_event_show(hc, args):
 
 @utils.arg('-f', '--definition-file', metavar='<FILE or URL>',
            help=_('Path to JSON/YAML containing map defining '
-           '<inputs>, <outputs>, and <options>.'))
+                  '<inputs>, <outputs>, and <options>.'))
 @utils.arg('-c', '--config-file', metavar='<FILE or URL>',
            help=_('Path to configuration script/data.'))
 @utils.arg('-g', '--group', metavar='<GROUP_NAME>', default='Heat::Ungrouped',
@@ -1389,8 +1391,8 @@ def do_deployment_delete(hc, args):
             config_id = getattr(sd, 'config_id')
             hc.software_configs.delete(config_id=config_id)
         except Exception:
-            print(_('Failed to delete the correlative config'
-                    ' %(config_id)s of deployment %(deploy_id)s') %
+            print(_('Failed to delete the correlative config '
+                    '%(config_id)s of deployment %(deploy_id)s') %
                   {'config_id': config_id, 'deploy_id': deploy_id})
 
     if failure_count == len(args.id):

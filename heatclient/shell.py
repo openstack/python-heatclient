@@ -49,19 +49,19 @@ class HeatShell(object):
         # they should be provided by python-keystoneclient. We will need to
         # refactor this code once this functionality is avaible in
         # python-keystoneclient.
-        parser.add_argument('-k', '--insecure',
-                            default=False,
-                            action='store_true',
-                            help=_('Explicitly allow heatclient to perform '
-                            '\"insecure SSL\" (https) requests. The server\'s '
-                            'certificate will not be verified against any '
-                            'certificate authorities. This option should '
-                            'be used with caution.'))
+        parser.add_argument(
+            '-k', '--insecure', default=False, action='store_true',
+            help=_('Explicitly allow heatclient to perform '
+                   '\"insecure SSL\" (https) requests. '
+                   'The server\'s certificate will not be verified '
+                   'against any certificate authorities. '
+                   'This option should be used with caution.'))
 
-        parser.add_argument('--os-cert',
-                            help=_('Path of certificate file to use in SSL '
-                            'connection. This file can optionally be '
-                            'prepended with the private key.'))
+        parser.add_argument(
+            '--os-cert',
+            help=_('Path of certificate file to use in SSL connection. '
+                   'This file can optionally be prepended with '
+                   'the private key.'))
 
         # for backward compatibility only
         parser.add_argument('--cert-file',
@@ -71,8 +71,9 @@ class HeatShell(object):
 
         parser.add_argument('--os-key',
                             help=_('Path of client key to use in SSL '
-                            'connection. This option is not necessary '
-                            'if your key is prepended to your cert file.'))
+                                   'connection. This option is not necessary '
+                                   'if your key is prepended to your cert '
+                                   'file.'))
 
         parser.add_argument('--key-file',
                             dest='os_key',
@@ -84,9 +85,9 @@ class HeatShell(object):
                             dest='os_cacert',
                             default=utils.env('OS_CACERT'),
                             help=_('Path of CA TLS certificate(s) used to '
-                            'verify the remote server\'s certificate. '
-                            'Without this option glance looks for the '
-                            'default system CA certificates.'))
+                                   'verify the remote server\'s certificate. '
+                                   'Without this option glance looks for the '
+                                   'default system CA certificates.'))
 
         parser.add_argument('--ca-file',
                             dest='os_cacert',
@@ -290,7 +291,7 @@ class HeatShell(object):
                             default=utils.env('OS_NO_CLIENT_AUTH'),
                             action='store_true',
                             help=(_("Do not contact keystone for a token. "
-                                   "Defaults to %(value)s.") %
+                                    "Defaults to %(value)s.") %
                                   {'value': 'env[OS_NO_CLIENT_AUTH]'}))
 
         parser.add_argument('--heat-url',
@@ -334,17 +335,17 @@ class HeatShell(object):
         self._append_global_identity_args(parser)
 
         if osprofiler_profiler:
-            parser.add_argument('--profile',
-                                metavar='HMAC_KEY',
-                                help=_('HMAC key to use for encrypting '
-                                'context data for performance profiling of '
-                                'operation. This key should be the value of '
-                                'HMAC key configured in osprofiler middleware '
-                                'in heat, it is specified in the paste '
-                                'configuration (/etc/heat/api-paste.ini). '
-                                'Without the key, profiling will not be '
-                                'triggered even if osprofiler is enabled '
-                                'on server side.'))
+            parser.add_argument(
+                '--profile',
+                metavar='HMAC_KEY',
+                help=_('HMAC key to use for encrypting context data '
+                       'for performance profiling of operation. '
+                       'This key should be the value of HMAC key '
+                       'configured in osprofiler middleware in heat, '
+                       'it is specified in the paste configuration '
+                       '(/etc/heat/api-paste.ini). Without the key, '
+                       'profiling will not be triggered '
+                       'even if osprofiler is enabled on server side.'))
         return parser
 
     def get_subcommand_parser(self, version):
@@ -546,23 +547,23 @@ class HeatShell(object):
             return 0
 
         if not args.os_username and not args.os_auth_token:
-            raise exc.CommandError(_("You must provide a username via"
-                                   " either --os-username or env[OS_USERNAME]"
-                                   " or a token via --os-auth-token or"
-                                   " env[OS_AUTH_TOKEN]"))
+            raise exc.CommandError(_("You must provide a username via either "
+                                     "--os-username or env[OS_USERNAME] "
+                                     "or a token via --os-auth-token or "
+                                     "env[OS_AUTH_TOKEN]"))
 
         if not args.os_password and not args.os_auth_token:
-            raise exc.CommandError(_("You must provide a password via"
-                                   " either --os-password or env[OS_PASSWORD]"
-                                   " or a token via --os-auth-token or"
-                                   " env[OS_AUTH_TOKEN]"))
+            raise exc.CommandError(_("You must provide a password via either "
+                                     "--os-password or env[OS_PASSWORD] "
+                                     "or a token via --os-auth-token or "
+                                     "env[OS_AUTH_TOKEN]"))
 
         if args.os_no_client_auth:
             if not args.heat_url:
-                raise exc.CommandError(_("If you specify --os-no-client-auth"
-                                       " you must also specify a Heat API URL"
-                                       " via either --heat-url or"
-                                       " env[HEAT_URL]"))
+                raise exc.CommandError(_("If you specify --os-no-client-auth "
+                                         "you must also specify a Heat API "
+                                         "URL via either --heat-url or "
+                                         "env[HEAT_URL]"))
         else:
             # Tenant/project name or ID is needed to make keystoneclient
             # retrieve a service catalog, it's not required if
@@ -570,20 +571,18 @@ class HeatShell(object):
 
             if not (args.os_tenant_id or args.os_tenant_name or
                     args.os_project_id or args.os_project_name):
-                raise exc.CommandError(_("You must provide a tenant id via"
-                                       " either --os-tenant-id or"
-                                       " env[OS_TENANT_ID] or a tenant name"
-                                       " via either --os-tenant-name or"
-                                       " env[OS_TENANT_NAME] or a project id"
-                                       " via either --os-project-id or"
-                                       " env[OS_PROJECT_ID] or a project"
-                                       " name via either --os-project-name or"
-                                       " env[OS_PROJECT_NAME]"))
+                raise exc.CommandError(
+                    _("You must provide a tenant id via either "
+                      "--os-tenant-id or env[OS_TENANT_ID] or a tenant name "
+                      "via either --os-tenant-name or env[OS_TENANT_NAME] "
+                      "or a project id via either --os-project-id or "
+                      "env[OS_PROJECT_ID] or a project name via "
+                      "either --os-project-name or env[OS_PROJECT_NAME]"))
 
             if not args.os_auth_url:
-                raise exc.CommandError(_("You must provide an auth url via"
-                                       " either --os-auth-url or via"
-                                       " env[OS_AUTH_URL]"))
+                raise exc.CommandError(_("You must provide an auth url via "
+                                         "either --os-auth-url or via "
+                                         "env[OS_AUTH_URL]"))
 
         kwargs = {
             'insecure': args.insecure,
