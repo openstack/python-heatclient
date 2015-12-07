@@ -19,6 +19,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import strutils
 import six
 from six.moves.urllib import request
+import sys
 import yaml
 
 from heatclient.common import deployment_utils
@@ -30,6 +31,7 @@ from heatclient.common import template_utils
 from heatclient.common import utils
 
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LI
 from heatclient.openstack.common._i18n import _LW
 
 import heatclient.exc as exc
@@ -293,9 +295,29 @@ def do_stack_preview(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>', nargs='+',
            help=_('Name or ID of stack(s) to delete.'))
+@utils.arg('-y', '--yes', default=False, action="store_true",
+           help=_('Skip yes/no prompt (assume yes).'))
 def do_stack_delete(hc, args):
     '''Delete the stack(s).'''
     failure_count = 0
+
+    try:
+        if not args.yes and sys.stdin.isatty():
+            sys.stdout.write(
+                _("Are you sure you want to delete this stack(s) [y/N]? "))
+            prompt_response = sys.stdin.readline().lower()
+            if not prompt_response.startswith('y'):
+                logger.info(_LI(
+                    'User did not confirm stack delete so taking no action.'))
+                return
+    except KeyboardInterrupt:  # ctrl-c
+        logger.info(_LI(
+            'User did not confirm stack delete (ctrl-c) so taking no action.'))
+        return
+    except EOFError:  # ctrl-d
+        logger.info(_LI(
+            'User did not confirm stack delete (ctrl-d) so taking no action.'))
+        return
 
     for sid in args.id:
         fields = {'stack_id': sid}

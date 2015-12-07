@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import fixtures
+import mock
 import os
 from oslotest import mockpatch
 import requests
@@ -2460,6 +2461,89 @@ class ShellTestUserPass(ShellBase):
         ]
         for r in required:
             self.assertRegexpMatches(update_preview_text, r)
+
+    # the main thing this @mock.patch is doing here is keeping
+    # sys.stdin untouched for later tests
+    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    def test_stack_delete_prompt_with_tty(self, ms):
+        self.register_keystone_auth_fixture()
+        mock_stdin = mock.Mock()
+        mock_stdin.isatty = mock.Mock()
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline = mock.Mock()
+        mock_stdin.readline.return_value = 'n'
+        sys.stdin = mock_stdin
+
+        resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {},
+            None)
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2/2', 'DELETE').AndReturn(resp)
+        else:
+            self.client.raw_request(
+                'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
+        fakes.script_heat_list(client=self.client)
+
+        self.m.ReplayAll()
+
+        delete_text = self.shell('stack-delete teststack2/2')
+        self.assertRegexpMatches(
+            delete_text, "Are you sure you want to delete this stack")
+        self.assertNotRegexpMatches(delete_text, "teststack")
+        self.m.ReplayAll()
+
+        mock_stdin.readline.return_value = 'Y'
+        delete_text = self.shell('stack-delete teststack2/2')
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(delete_text, r)
+
+    # the main thing this @mock.patch is doing here is keeping
+    # sys.stdin untouched for later tests
+    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    def test_stack_delete_prompt_with_tty_y(self, ms):
+        self.register_keystone_auth_fixture()
+        mock_stdin = mock.Mock()
+        mock_stdin.isatty = mock.Mock()
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline = mock.Mock()
+        mock_stdin.readline.return_value = ''
+        sys.stdin = mock_stdin
+
+        resp = fakes.FakeHTTPResponse(
+            204,
+            'No Content',
+            {},
+            None)
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack2/2', 'DELETE').AndReturn(resp)
+        else:
+            self.client.raw_request(
+                'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
+        fakes.script_heat_list(client=self.client)
+
+        self.m.ReplayAll()
+        # -y from the shell should skip the n/y prompt
+        delete_text = self.shell('stack-delete -y teststack2/2')
+        self.assertNotRegexpMatches(
+            delete_text, "Are you sure you want to delete this stack")
+        required = [
+            'stack_name',
+            'id',
+            'teststack',
+            '1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(delete_text, r)
 
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
