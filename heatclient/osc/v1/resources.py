@@ -13,16 +13,20 @@
 
 """Orchestration v1 Stack action implementations"""
 
+from cliff import command
 import logging
 import six
+from six.moves.urllib import request
 
 from cliff import lister
 from cliff import show
 from openstackclient.common import exceptions as exc
 from openstackclient.common import utils
 from openstackclient.i18n import _
+from oslo_serialization import jsonutils
 
 from heatclient.common import format_utils
+from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
 
 
@@ -161,10 +165,78 @@ def _resource_metadata(heat_client, args):
     try:
         metadata = heat_client.resources.metadata(**fields)
     except heat_exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack or resource not found: '
-                                 '%(stack)s %(resource)s') %
+        raise exc.CommandError(_('Stack %(stack)s or resource %(resource)s '
+                                 'not found.') %
                                {'stack': args.stack,
                                 'resource': args.resource})
+
     data = list(six.itervalues(metadata))
     columns = list(six.iterkeys(metadata))
     return columns, data
+
+
+class ResourceSignal(command.Command):
+    """Signal a resource with optional data."""
+
+    log = logging.getLogger(__name__ + ".ResourceSignal")
+
+    def get_parser(self, prog_name):
+        parser = super(ResourceSignal, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<STACK>',
+            help=_('Name or ID of stack the resource belongs to'),
+        )
+        parser.add_argument(
+            'resource',
+            metavar='<RESOURCE>',
+            help=_('Name of the resoure to signal'),
+        )
+        parser.add_argument(
+            '--data',
+            metavar='<DATA>',
+            help=_('JSON Data to send to the signal handler')
+        )
+        parser.add_argument(
+            '--data-file',
+            metavar='<DATA_FILE>',
+            help=_('File containing JSON data to send to the signal handler')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+        return _resource_signal(heat_client, parsed_args)
+
+
+def _resource_signal(heat_client, args):
+    fields = {'stack_id': args.stack,
+              'resource_name': args.resource}
+    data = args.data
+    data_file = args.data_file
+    if data and data_file:
+        raise exc.CommandError(_('Should only specify one of data or '
+                                 'data-file'))
+
+    if data_file:
+        data_url = heat_utils.normalise_file_path_to_url(data_file)
+        data = request.urlopen(data_url).read()
+
+    if data:
+        try:
+            data = jsonutils.loads(data)
+        except ValueError as ex:
+            raise exc.CommandError(_('Data should be in JSON format: %s') % ex)
+        if not isinstance(data, dict):
+            raise exc.CommandError(_('Data should be a JSON dict'))
+
+        fields['data'] = data
+    try:
+        heat_client.resources.signal(**fields)
+    except heat_exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack %(stack)s or resource %(resource)s '
+                                 'not found.') %
+                               {'stack': args.stack,
+                                'resource': args.resource})
