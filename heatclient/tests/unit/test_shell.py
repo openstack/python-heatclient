@@ -2317,7 +2317,8 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(update_text, r)
 
-    def _setup_stubs_update_dry_run(self, template_file, existing=False):
+    def _setup_stubs_update_dry_run(self, template_file, existing=False,
+                                    show_nested=False):
         self.register_keystone_auth_fixture()
 
         template_data = open(template_file).read()
@@ -2365,13 +2366,17 @@ class ShellTestUserPass(ShellBase):
         else:
             method = 'PUT'
 
+        if show_nested:
+            path = '/stacks/teststack2/2/preview?show_nested=True'
+        else:
+            path = '/stacks/teststack2/2/preview'
+
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack2/2/preview', method,
-                data=expected_data, headers={}).AndReturn(resp)
+                path, method, data=expected_data, headers={}).AndReturn(resp)
         else:
             http.HTTPClient.json_request(
-                method, '/stacks/teststack2/2/preview',
+                method, path,
                 data=expected_data,
                 headers={'X-Auth-Key': 'password', 'X-Auth-User': 'username'}
             ).AndReturn((resp, None))
@@ -2385,6 +2390,28 @@ class ShellTestUserPass(ShellBase):
             'stack-update teststack2/2 '
             '--template-file=%s '
             '--enable-rollback '
+            '--parameters="KeyPairName=updated_key" '
+            '--dry-run ' % template_file)
+
+        required = [
+            'stack_name',
+            'id',
+            'teststack2',
+            '2',
+            'state',
+            'replaced'
+        ]
+        for r in required:
+            self.assertRegexpMatches(update_preview_text, r)
+
+    def test_stack_update_dry_run_show_nested(self):
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        self._setup_stubs_update_dry_run(template_file, show_nested=True)
+        update_preview_text = self.shell(
+            'stack-update teststack2/2 '
+            '--template-file=%s '
+            '--enable-rollback '
+            '--show-nested '
             '--parameters="KeyPairName=updated_key" '
             '--dry-run ' % template_file)
 
