@@ -115,7 +115,15 @@ class ResourceManagerTest(testtools.TestCase):
         self._test_list(
             fields={'stack_id': 'teststack', 'nested_depth': '99'},
             expect='/stacks/teststack/resources?%s' % parse.urlencode({
-                'nested_depth': 99,
+                'nested_depth': 99
+            }, True)
+        )
+
+    def test_list_filtering(self):
+        self._test_list(
+            fields={'stack_id': 'teststack', 'filters': {'name': 'rsc_1'}},
+            expect='/stacks/teststack/resources?%s' % parse.urlencode({
+                'name': 'rsc_1'
             }, True)
         )
 

@@ -56,9 +56,14 @@ class ResourceManager(stacks.StackChildManager):
         """
         params = {}
 
+        if 'filters' in kwargs:
+            filters = kwargs.pop('filters')
+            params.update(filters)
+
         for key, value in six.iteritems(kwargs):
             if value:
                 params[key] = value
+
         url = '/stacks/%s/resources' % stack_id
         if params:
             url += '?%s' % parse.urlencode(params, True)
