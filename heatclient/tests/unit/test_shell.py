@@ -2619,6 +2619,64 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    def test_output_list_api_400_error(self):
+        self.register_keystone_auth_fixture()
+        outputs = [{
+            "output_key": "key",
+            "description": "description"
+        },
+            {
+                "output_key": "key1",
+                "description": "description1"
+            }]
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z",
+            "outputs": outputs
+        }}
+
+        stack_resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(stack_dict))
+        resp = fakes.FakeHTTPResponse(
+            404,
+            'Not Found',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({}))
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack/1/outputs',
+                'GET').AndRaise(exc.from_response(resp))
+            self.client.request(
+                '/stacks/teststack/1',
+                'GET').AndReturn(stack_resp)
+        else:
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs').AndRaise(
+                    exc.from_response(resp))
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
+                                                         stack_dict))
+
+        self.m.ReplayAll()
+        list_text = self.shell('output-list teststack/1')
+
+        required = [
+            'output_key',
+            'description',
+            'key',
+            'description',
+            'key1',
+            'description1'
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
     def test_output_show_all(self):
         self.register_keystone_auth_fixture()
 
@@ -2698,6 +2756,62 @@ class ShellTestUserPass(ShellBase):
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs/key').AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+        resp = self.shell('output-show teststack/1 key')
+        required = [
+            'output_key',
+            'output_value',
+            'description',
+            'key',
+            'value',
+            'description',
+        ]
+        for r in required:
+            self.assertRegexpMatches(resp, r)
+
+    def test_output_show_api_400_error(self):
+        self.register_keystone_auth_fixture()
+        output = {
+            "output_key": "key",
+            "output_value": "value",
+            'description': 'description'
+        }
+        stack_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z",
+            'outputs': [output]
+        }}
+
+        resp = fakes.FakeHTTPResponse(
+            404,
+            'Internal Error',
+            {'content-type': 'application/json'},
+            jsonutils.dumps({}))
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack/1/outputs/key',
+                'GET').AndRaise(exc.from_response(resp))
+            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
+                fakes.FakeHTTPResponse(
+                    200,
+                    'OK',
+                    {'content-type': 'application/json'},
+                    jsonutils.dumps(stack_dict)))
+        else:
+            http.HTTPClient.json_request(
+                'GET',
+                '/stacks/teststack/1/outputs/key').AndRaise(
+                    exc.from_response(resp))
+            http.HTTPClient.json_request(
+                'GET', '/stacks/teststack/1').AndReturn((
+                    fakes.FakeHTTPResponse(
+                        200,
+                        'OK',
+                        {'content-type': 'application/json'},
+                        jsonutils.dumps(stack_dict)), stack_dict))
 
         self.m.ReplayAll()
         resp = self.shell('output-show teststack/1 key')
