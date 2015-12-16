@@ -14,7 +14,6 @@
 import fixtures
 import os
 from oslotest import mockpatch
-import re
 import requests
 import six
 from six.moves.urllib import parse
@@ -89,26 +88,6 @@ class TestCase(testtools.TestCase):
         for key in client_env:
             self.useFixture(
                 fixtures.EnvironmentVariable(key, fake_env.get(key)))
-
-    # required for testing with Python 2.6
-    def assertRegexpMatches(self, text, expected_regexp, msg=None):
-        """Fail the test unless the text matches the regular expression."""
-        if isinstance(expected_regexp, six.string_types):
-            expected_regexp = re.compile(expected_regexp)
-        if not expected_regexp.search(text):
-            msg = msg or "Regexp didn't match"
-            msg = '%s: %r not found in %r' % (
-                msg, expected_regexp.pattern, text)
-            raise self.failureException(msg)
-
-    # required for testing with Python 2.6
-    def assertNotRegexpMatches(self, text, expected_regexp, msg=None):
-        try:
-            self.assertRegexpMatches(text, expected_regexp, msg)
-        except self.failureException:
-            pass
-        else:
-            raise self.failureException(msg)
 
     def shell_error(self, argstr, error_match, exception):
         orig = sys.stderr
