@@ -439,7 +439,7 @@ class TestGetTemplateContents(testtools.TestCase):
     def test_get_template_contents_file_none_existing(self):
         files, tmpl_parsed = template_utils.get_template_contents(
             existing=True)
-        self.assertEqual(None, tmpl_parsed)
+        self.assertIsNone(tmpl_parsed)
         self.assertEqual({}, files)
 
     def test_get_template_contents_parse_error(self):
