@@ -87,7 +87,27 @@ class Stack(base.Resource):
         return '%s/%s' % (self.stack_name, self.id)
 
 
-class StackManager(base.BaseManager):
+class StackChildManager(base.BaseManager):
+    @property
+    def api(self):
+        return self.client
+
+    def _resolve_stack_id(self, stack_id):
+        # if the id already has a slash in it,
+        # then it is already {stack_name}/{stack_id}
+        if stack_id.find('/') > 0:
+            return stack_id
+        # We want to capture the redirect, not actually get the stack,
+        # since all we want is the stacks:lookup response to get the
+        # fully qualified ID, and not all users are allowed to do the
+        # redirected stacks:show, so pass redirect=False
+        resp = self.client.get('/stacks/%s' % stack_id, redirect=False)
+        location = resp.headers.get('location')
+        path = self.client.strip_endpoint(location)
+        return path[len('/stacks/'):]
+
+
+class StackManager(StackChildManager):
     resource_class = Stack
 
     def list(self, **kwargs):
@@ -155,15 +175,15 @@ class StackManager(base.BaseManager):
 
     def preview_update(self, stack_id, **kwargs):
         """Preview a stack update."""
-        s = self.get(stack_id)
+        stack_identifier = self._resolve_stack_id(stack_id)
         headers = self.client.credentials_headers()
         if kwargs.pop('existing', None):
-            resp = self.client.patch('/stacks/%s/%s/preview' %
-                                     (s.stack_name, s.id),
+            resp = self.client.patch('/stacks/%s/preview' %
+                                     stack_identifier,
                                      data=kwargs, headers=headers)
         else:
-            resp = self.client.put('/stacks/%s/%s/preview' %
-                                   (s.stack_name, s.id),
+            resp = self.client.put('/stacks/%s/preview' %
+                                   stack_identifier,
                                    data=kwargs, headers=headers)
         body = utils.get_response_body(resp)
         return body
@@ -174,59 +194,59 @@ class StackManager(base.BaseManager):
 
     def abandon(self, stack_id):
         """Abandon a stack."""
-        stack = self.get(stack_id)
-        resp = self.client.delete('/stacks/%s/abandon' % stack.identifier)
+        stack_identifier = self._resolve_stack_id(stack_id)
+        resp = self.client.delete('/stacks/%s/abandon' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def snapshot(self, stack_id, name=None):
         """Snapshot a stack."""
-        stack = self.get(stack_id)
+        stack_identifier = self._resolve_stack_id(stack_id)
         data = {}
         if name:
             data['name'] = name
-        resp = self.client.post('/stacks/%s/snapshots' % stack.identifier,
+        resp = self.client.post('/stacks/%s/snapshots' % stack_identifier,
                                 data=data)
         body = utils.get_response_body(resp)
         return body
 
     def snapshot_show(self, stack_id, snapshot_id):
-        stack = self.get(stack_id)
-        resp = self.client.get('/stacks/%s/snapshots/%s' % (stack.identifier,
+        stack_identifier = self._resolve_stack_id(stack_id)
+        resp = self.client.get('/stacks/%s/snapshots/%s' % (stack_identifier,
                                                             snapshot_id))
         body = utils.get_response_body(resp)
         return body
 
     def snapshot_delete(self, stack_id, snapshot_id):
-        stack = self.get(stack_id)
+        stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.delete('/stacks/%s/snapshots/%s' %
-                                  (stack.identifier, snapshot_id))
+                                  (stack_identifier, snapshot_id))
         body = utils.get_response_body(resp)
         return body
 
     def restore(self, stack_id, snapshot_id):
-        stack = self.get(stack_id)
+        stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.post('/stacks/%s/snapshots/%s/restore' %
-                                (stack.identifier, snapshot_id))
+                                (stack_identifier, snapshot_id))
         body = utils.get_response_body(resp)
         return body
 
     def snapshot_list(self, stack_id):
-        stack = self.get(stack_id)
-        resp = self.client.get('/stacks/%s/snapshots' % stack.identifier)
+        stack_identifier = self._resolve_stack_id(stack_id)
+        resp = self.client.get('/stacks/%s/snapshots' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def output_list(self, stack_id):
-        stack = self.get(stack_id)
-        resp = self.client.get('/stacks/%s/outputs' % stack.identifier)
+        stack_identifier = self._resolve_stack_id(stack_id)
+        resp = self.client.get('/stacks/%s/outputs' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def output_show(self, stack_id, output_key):
-        stack = self.get(stack_id)
+        stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%(id)s/outputs/%(key)s' % {
-            'id': stack.identifier,
+            'id': stack_identifier,
             'key': output_key
         })
         body = utils.get_response_body(resp)
@@ -259,23 +279,3 @@ class StackManager(base.BaseManager):
         resp = self.client.post(url, data=kwargs)
         body = utils.get_response_body(resp)
         return body
-
-
-class StackChildManager(base.BaseManager):
-    @property
-    def api(self):
-        return self.client
-
-    def _resolve_stack_id(self, stack_id):
-        # if the id already has a slash in it,
-        # then it is already {stack_name}/{stack_id}
-        if stack_id.find('/') > 0:
-            return stack_id
-        # We want to capture the redirect, not actually get the stack,
-        # since all we want is the stacks:lookup response to get the
-        # fully qualified ID, and not all users are allowed to do the
-        # redirected stacks:show, so pass redirect=False
-        resp = self.client.get('/stacks/%s' % stack_id, redirect=False)
-        location = resp.headers.get('location')
-        path = self.client.strip_endpoint(location)
-        return path[len('/stacks/'):]

@@ -825,19 +825,6 @@ class ShellTestUserPass(ShellBase):
             },
         ]
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        stack_resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
-
         def find_output(key):
             for out in outputs:
                 if out['output_key'] == key:
@@ -851,15 +838,9 @@ class ShellTestUserPass(ShellBase):
 
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1',
-                'GET').AndReturn(stack_resp)
-            self.client.request(
                 '/stacks/teststack/1/outputs/%s' % output_key,
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
-                                                         stack_dict))
             self.client.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs/%s' % output_key).AndReturn(
@@ -879,19 +860,6 @@ class ShellTestUserPass(ShellBase):
             }
         }
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        stack_resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
-
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -900,15 +868,9 @@ class ShellTestUserPass(ShellBase):
 
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1',
-                'GET').AndReturn(stack_resp)
-            self.client.request(
                 '/stacks/teststack/1/outputs/%s' % output_key,
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
-                                                         stack_dict))
             self.client.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs/%s' % output_key).AndReturn(
@@ -1668,13 +1630,6 @@ class ShellTestUserPass(ShellBase):
     def test_stack_abandon(self):
         self.register_keystone_auth_fixture()
 
-        resp_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         abandoned_stack = {
             "action": "CREATE",
             "status": "COMPLETE",
@@ -1692,11 +1647,6 @@ class ShellTestUserPass(ShellBase):
             }
         }
 
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
         abandoned_resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1704,13 +1654,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(abandoned_stack))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1', 'GET').AndReturn(resp)
-            self.client.request(
                 '/stacks/teststack/1/abandon',
                 'DELETE').AndReturn(abandoned_resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
             http.HTTPClient.raw_request(
                 'DELETE', '/stacks/teststack/1/abandon').AndReturn(
                     abandoned_resp)
@@ -1722,13 +1668,6 @@ class ShellTestUserPass(ShellBase):
     def test_stack_abandon_with_outputfile(self):
         self.register_keystone_auth_fixture()
 
-        resp_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         abandoned_stack = {
             "action": "CREATE",
             "status": "COMPLETE",
@@ -1746,11 +1685,6 @@ class ShellTestUserPass(ShellBase):
             }
         }
 
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
         abandoned_resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -1758,13 +1692,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(abandoned_stack))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1', 'GET').AndReturn(resp)
-            self.client.request(
                 '/stacks/teststack/1/abandon',
                 'DELETE').AndReturn(abandoned_resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((resp, resp_dict))
             http.HTTPClient.raw_request(
                 'DELETE', '/stacks/teststack/1/abandon').AndReturn(
                     abandoned_resp)
@@ -2335,24 +2265,6 @@ class ShellTestUserPass(ShellBase):
     def _setup_stubs_update_dry_run(self, template_file, existing=False):
         self.register_keystone_auth_fixture()
 
-        resp_dict = {"stack": {
-            "id": "2",
-            "stack_name": "teststack2",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-        resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(resp_dict))
-        if self.client == http.SessionClient:
-            self.client.request(
-                '/stacks/teststack2/2', 'GET').AndReturn(resp)
-        else:
-            self.client.json_request(
-                'GET', '/stacks/teststack2/2').AndReturn((resp, resp_dict))
-
         template_data = open(template_file).read()
 
         replaced_res = {"resource_name": "my_res",
@@ -2548,13 +2460,6 @@ class ShellTestUserPass(ShellBase):
     def test_stack_snapshot(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"snapshot": {
             "id": "1",
             "creation_time": "2012-10-25T01:58:47Z"
@@ -2566,24 +2471,11 @@ class ShellTestUserPass(ShellBase):
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
-            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
-                fakes.FakeHTTPResponse(
-                    200,
-                    'OK',
-                    {'content-type': 'application/json'},
-                    jsonutils.dumps(stack_dict)))
             self.client.request(
                 '/stacks/teststack/1/snapshots',
                 'POST',
                 data={}).AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn(
-                    (fakes.FakeHTTPResponse(
-                        200,
-                        'OK',
-                        {'content-type': 'application/json'},
-                        jsonutils.dumps(stack_dict)), stack_dict))
             http.HTTPClient.json_request(
                 'POST',
                 '/stacks/teststack/1/snapshots',
@@ -2596,13 +2488,6 @@ class ShellTestUserPass(ShellBase):
     def test_snapshot_list(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"snapshots": [{
             "id": "2",
             "name": "snap1",
@@ -2611,11 +2496,6 @@ class ShellTestUserPass(ShellBase):
             "creation_time": "2014-12-05T01:25:52Z"
         }]}
 
-        stack_resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -2623,15 +2503,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1',
-                'GET').AndReturn(stack_resp)
-            self.client.request(
                 '/stacks/teststack/1/snapshots',
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
-                                                         stack_dict))
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/snapshots').AndReturn((resp, resp_dict))
@@ -2655,13 +2529,6 @@ class ShellTestUserPass(ShellBase):
     def test_snapshot_show(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"snapshot": {
             "id": "2",
             "creation_time": "2012-10-25T01:58:47Z"
@@ -2673,23 +2540,10 @@ class ShellTestUserPass(ShellBase):
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
-            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
-                fakes.FakeHTTPResponse(
-                    200,
-                    'OK',
-                    {'content-type': 'application/json'},
-                    jsonutils.dumps(stack_dict)))
             self.client.request(
                 '/stacks/teststack/1/snapshots/2',
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((
-                    fakes.FakeHTTPResponse(
-                        200,
-                        'OK',
-                        {'content-type': 'application/json'},
-                        jsonutils.dumps(stack_dict)), stack_dict))
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/snapshots/2').AndReturn((resp, resp_dict))
@@ -2701,23 +2555,11 @@ class ShellTestUserPass(ShellBase):
     def test_snapshot_delete(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"snapshot": {
             "id": "2",
             "creation_time": "2012-10-25T01:58:47Z"
         }}
 
-        resp = fakes.FakeHTTPResponse(
-            204,
-            'No Content',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
         second_resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
@@ -2725,13 +2567,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1', 'GET').AndReturn(resp)
-            self.client.request(
                 '/stacks/teststack/1/snapshots/2',
                 'DELETE').AndReturn(second_resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((resp, stack_dict))
             http.HTTPClient.raw_request(
                 'DELETE',
                 '/stacks/teststack/1/snapshots/2').AndReturn(second_resp)
@@ -2743,18 +2581,6 @@ class ShellTestUserPass(ShellBase):
     def test_stack_restore(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
-        stack_resp = fakes.FakeHTTPResponse(
-            204,
-            'No Content',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
         no_resp = fakes.FakeHTTPResponse(
             204,
             'No Content',
@@ -2762,14 +2588,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps({}))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1', 'GET').AndReturn(stack_resp)
-            self.client.request(
                 '/stacks/teststack/1/snapshots/2/restore',
                 'POST').AndReturn(no_resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
-                                                         stack_dict))
             http.HTTPClient.json_request(
                 'POST',
                 '/stacks/teststack/1/snapshots/2/restore').AndReturn((no_resp,
@@ -2782,13 +2603,6 @@ class ShellTestUserPass(ShellBase):
     def test_output_list(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"outputs": [{
             "output_key": "key",
             "description": "description"
@@ -2798,11 +2612,6 @@ class ShellTestUserPass(ShellBase):
                 "description": "description1"
             }]}
 
-        stack_resp = fakes.FakeHTTPResponse(
-            200,
-            'OK',
-            {'content-type': 'application/json'},
-            jsonutils.dumps(stack_dict))
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -2810,15 +2619,9 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack/1',
-                'GET').AndReturn(stack_resp)
-            self.client.request(
                 '/stacks/teststack/1/outputs',
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((stack_resp,
-                                                         stack_dict))
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs').AndReturn((resp, resp_dict))
@@ -2839,13 +2642,6 @@ class ShellTestUserPass(ShellBase):
 
     def test_output_show_all(self):
         self.register_keystone_auth_fixture()
-
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
 
         resp_dict = {'outputs': [
             {
@@ -2873,42 +2669,16 @@ class ShellTestUserPass(ShellBase):
             jsonutils.dumps(resp_dict1))
 
         if self.client == http.SessionClient:
-            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
-                fakes.FakeHTTPResponse(
-                    200,
-                    'OK',
-                    {'content-type': 'application/json'},
-                    jsonutils.dumps(stack_dict)))
             self.client.request(
                 '/stacks/teststack/1/outputs',
                 'GET').AndReturn(resp)
-            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
-                fakes.FakeHTTPResponse(
-                    200,
-                    'OK',
-                    {'content-type': 'application/json'},
-                    jsonutils.dumps(stack_dict)))
             self.client.request(
                 '/stacks/teststack/1/outputs/key',
                 'GET').AndReturn(resp1)
         else:
             http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((
-                    fakes.FakeHTTPResponse(
-                        200,
-                        'OK',
-                        {'content-type': 'application/json'},
-                        jsonutils.dumps(stack_dict)), stack_dict))
-            http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs').AndReturn((resp, resp_dict))
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((
-                    fakes.FakeHTTPResponse(
-                        200,
-                        'OK',
-                        {'content-type': 'application/json'},
-                        jsonutils.dumps(stack_dict)), stack_dict))
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs/key').AndReturn((resp1,
@@ -2930,13 +2700,6 @@ class ShellTestUserPass(ShellBase):
     def test_output_show(self):
         self.register_keystone_auth_fixture()
 
-        stack_dict = {"stack": {
-            "id": "1",
-            "stack_name": "teststack",
-            "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
-        }}
-
         resp_dict = {"output": {
             "output_key": "key",
             "output_value": "value",
@@ -2949,23 +2712,10 @@ class ShellTestUserPass(ShellBase):
             {'content-type': 'application/json'},
             jsonutils.dumps(resp_dict))
         if self.client == http.SessionClient:
-            self.client.request('/stacks/teststack/1', 'GET').AndReturn(
-                fakes.FakeHTTPResponse(
-                    200,
-                    'OK',
-                    {'content-type': 'application/json'},
-                    jsonutils.dumps(stack_dict)))
             self.client.request(
                 '/stacks/teststack/1/outputs/key',
                 'GET').AndReturn(resp)
         else:
-            http.HTTPClient.json_request(
-                'GET', '/stacks/teststack/1').AndReturn((
-                    fakes.FakeHTTPResponse(
-                        200,
-                        'OK',
-                        {'content-type': 'application/json'},
-                        jsonutils.dumps(stack_dict)), stack_dict))
             http.HTTPClient.json_request(
                 'GET',
                 '/stacks/teststack/1/outputs/key').AndReturn((resp, resp_dict))
