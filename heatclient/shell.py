@@ -28,7 +28,7 @@ import six.moves.urllib.parse as urlparse
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import discover
-from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
+from keystoneclient import exceptions as ks_exc
 from keystoneclient import session as kssession
 
 import heatclient
