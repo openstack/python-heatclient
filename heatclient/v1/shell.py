@@ -651,15 +651,18 @@ def do_output_list(hc, args):
     try:
         outputs = hc.stacks.output_list(args.id)
     except exc.HTTPNotFound:
-        raise exc.CommandError(_('Stack not found: %s') % args.id)
-    else:
-        fields = ['output_key', 'description']
-        formatters = {
-            'output_key': lambda x: x['output_key'],
-            'description': lambda x: x['description'],
-        }
+        try:
+            outputs = hc.stacks.get(args.id).to_dict()
+        except exc.HTTPNotFound:
+            raise exc.CommandError(_('Stack not found: %s') % args.id)
 
-        utils.print_list(outputs['outputs'], fields, formatters=formatters)
+    fields = ['output_key', 'description']
+    formatters = {
+        'output_key': lambda x: x['output_key'],
+        'description': lambda x: x['description'],
+    }
+
+    utils.print_list(outputs['outputs'], fields, formatters=formatters)
 
 
 @utils.arg('id', metavar='<NAME or ID>',
@@ -675,43 +678,64 @@ def do_output_list(hc, args):
            help=_('Returns only output value in specified format.'))
 def do_output_show(hc, args):
     """Show a specific stack output."""
-    def show_output_by_key(output_key):
+    def resolve_output(output_key):
         try:
             output = hc.stacks.output_show(args.id, output_key)
         except exc.HTTPNotFound:
-            raise exc.CommandError(_('Stack %(id)s or '
-                                     'output %(key)s not found.') % {
-                'id': args.id,
-                'key': args.output})
-        else:
-            if 'output_error' in output['output']:
-                msg = _("Output error: %s") % output['output']['output_error']
-                raise exc.CommandError(msg)
-            if args.only_value:
-                if (args.format == 'json'
-                        or isinstance(output['output']['output_value'], dict)
-                        or isinstance(output['output']['output_value'], list)):
-                    print(
-                        utils.json_formatter(output['output']['output_value']))
-                else:
-                    print(output['output']['output_value'])
+            try:
+                output = None
+                stack = hc.stacks.get(args.id).to_dict()
+                for o in stack.get('outputs', []):
+                    if o['output_key'] == output_key:
+                        output = {'output': o}
+                        break
+                if output is None:
+                    raise exc.CommandError(_('Output %(key)s not found.') % {
+                        'key': args.output})
+            except exc.HTTPNotFound:
+                raise exc.CommandError(
+                    _('Stack %(id)s or output %(key)s not found.') % {
+                        'id': args.id,
+                        'key': args.output})
+        return output
+
+    def show_output(output):
+        if 'output_error' in output['output']:
+            msg = _("Output error: %s") % output['output']['output_error']
+            raise exc.CommandError(msg)
+        if args.only_value:
+            if (args.format == 'json'
+                    or isinstance(output['output']['output_value'], dict)
+                    or isinstance(output['output']['output_value'], list)):
+                print(
+                    utils.json_formatter(output['output']['output_value']))
             else:
-                formatters = {
-                    'output_value': (lambda x: utils.json_formatter(x)
-                                     if args.format == 'json'
-                                     else x)
-                }
-                utils.print_dict(output['output'], formatters=formatters)
+                print(output['output']['output_value'])
+        else:
+            formatters = {
+                'output_value': (lambda x: utils.json_formatter(x)
+                                 if args.format == 'json'
+                                 else x)
+            }
+            utils.print_dict(output['output'], formatters=formatters)
 
     if args.all:
         try:
             outputs = hc.stacks.output_list(args.id)
+            resolved = False
         except exc.HTTPNotFound:
-            raise exc.CommandError(_('Stack not found: %s') % args.id)
+            try:
+                outputs = hc.stacks.get(args.id).to_dict()
+                resolved = True
+            except exc.HTTPNotFound:
+                raise exc.CommandError(_('Stack not found: %s') % args.id)
         for output in outputs['outputs']:
-            show_output_by_key(output['output_key'])
+            if resolved:
+                show_output({'output': output})
+            else:
+                show_output(resolve_output(output['output_key']))
     else:
-        show_output_by_key(args.output)
+        show_output(resolve_output(args.output))
 
 
 @utils.arg('-f', '--filters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
