@@ -27,17 +27,19 @@ from heatclient import exc
 from heatclient.openstack.common._i18n import _
 
 
-def process_template_path(template_path, object_request=None):
+def process_template_path(template_path, object_request=None, existing=False):
     """Read template from template path.
 
     Attempt to read template first as a file or url. If that is unsuccessful,
     try again to assuming path is to a template object.
     """
     try:
-        return get_template_contents(template_file=template_path)
+        return get_template_contents(template_file=template_path,
+                                     existing=existing)
     except error.URLError:
         return get_template_contents(template_object=template_path,
-                                     object_request=object_request)
+                                     object_request=object_request,
+                                     existing=existing)
 
 
 def get_template_contents(template_file=None, template_url=None,

@@ -13,6 +13,7 @@
 
 import copy
 import mock
+import six
 import testscenarios
 
 from openstackclient.common import exceptions as exc
@@ -131,6 +132,179 @@ class TestStackCreate(TestStack):
     @mock.patch('openstackclient.common.utils.wait_for_status',
                 return_value=False)
     def test_stack_create_wait_fail(self, mock_wait):
+        arglist = ['my_stack', '-t', self.template_path, '--wait']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+
+class TestStackUpdate(TestStack):
+
+    template_path = 'heatclient/tests/test_templates/empty.yaml'
+
+    defaults = {
+        'stack_id': 'my_stack',
+        'environment': {},
+        'existing': False,
+        'files': {},
+        'template': {'heat_template_version': '2013-05-23'},
+        'parameters': {},
+    }
+
+    def setUp(self):
+        super(TestStackUpdate, self).setUp()
+        self.cmd = stack.UpdateStack(self.app, None)
+        self.stack_client.update = mock.MagicMock(
+            return_value={'stack': {'id': '1234'}})
+        self.stack_client.preview_update = mock.MagicMock(
+            return_value={'resource_changes': {'added': [],
+                                               'deleted': [],
+                                               'replaced': [],
+                                               'unchanged': [],
+                                               'updated': []}})
+        self.stack_client.get = mock.MagicMock(
+            return_value={'stack_status': 'create_complete'})
+        stack._authenticated_fetcher = mock.MagicMock()
+
+    def test_stack_update_defaults(self):
+        arglist = ['my_stack', '-t', self.template_path]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**self.defaults)
+
+    def test_stack_update_rollback_enabled(self):
+        arglist = ['my_stack', '-t', self.template_path, '--rollback',
+                   'enabled']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['disable_rollback'] = False
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_rollback_disabled(self):
+        arglist = ['my_stack', '-t', self.template_path, '--rollback',
+                   'disabled']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['disable_rollback'] = True
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_rollback_keep(self):
+        arglist = ['my_stack', '-t', self.template_path, '--rollback',
+                   'keep']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.assertNotIn('disable_rollback', self.defaults)
+        self.stack_client.update.assert_called_with(**self.defaults)
+
+    def test_stack_update_rollback_invalid(self):
+        arglist = ['my_stack', '-t', self.template_path, '--rollback', 'foo']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['disable_rollback'] = False
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        ex = self.assertRaises(exc.CommandError, self.cmd.take_action,
+                               parsed_args)
+        self.assertEqual("--rollback invalid value: foo", six.text_type(ex))
+
+    def test_stack_update_parameters(self):
+        template_path = ('/'.join(self.template_path.split('/')[:-1]) +
+                         '/parameters.yaml')
+        arglist = ['my_stack', '-t', template_path, '--parameter', 'p1=a',
+                   '--parameter', 'p2=6']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['parameters'] = {'p1': 'a', 'p2': '6'}
+        kwargs['template']['parameters'] = {'p1': {'type': 'string'},
+                                            'p2': {'type': 'number'}}
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_clear_parameters(self):
+        arglist = ['my_stack', '-t', self.template_path, '--clear-parameter',
+                   'a']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['clear_parameters'] = ['a']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_tags(self):
+        arglist = ['my_stack', '-t', self.template_path, '--tags', 'tag1,tag2']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['tags'] = 'tag1,tag2'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_timeout(self):
+        arglist = ['my_stack', '-t', self.template_path, '--timeout', '60']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['timeout_mins'] = 60
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_pre_update(self):
+        arglist = ['my_stack', '-t', self.template_path, '--pre-update', 'a']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['environment'] = {
+            'resource_registry': {'resources': {'a': {'hooks': 'pre-update'}}}
+        }
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_existing(self):
+        arglist = ['my_stack', '-t', self.template_path, '--existing']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['existing'] = True
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
+    def test_stack_update_dry_run(self):
+        arglist = ['my_stack', '-t', self.template_path, '--dry-run']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.preview_update.assert_called_with(**self.defaults)
+        self.stack_client.update.assert_not_called()
+
+    def test_stack_update_wait(self):
+        arglist = ['my_stack', '-t', self.template_path, '--wait']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**self.defaults)
+        self.stack_client.get.assert_called_with(**{'stack_id': 'my_stack'})
+
+    @mock.patch('openstackclient.common.utils.wait_for_status',
+                return_value=False)
+    def test_stack_update_wait_fail(self, mock_wait):
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
