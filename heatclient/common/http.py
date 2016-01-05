@@ -209,13 +209,7 @@ class HTTPClient(object):
         if not ('X-Auth-Key' in kwargs['headers']) and (
                 resp.status_code == 401 or
                 (resp.status_code == 500 and "(HTTP 401)" in resp.content)):
-            raise exc.HTTPUnauthorized(_("Authentication failed. Please try"
-                                         " again with option %(option)s or "
-                                         "export %(var)s\n%(content)s") %
-                                       {
-                                           'option': '--include-password',
-                                           'var': 'HEAT_INCLUDE_PASSWORD=1',
-                                           'content': resp.content})
+            raise exc.HTTPUnauthorized("Authentication failed")
         elif 400 <= resp.status_code < 600:
             raise exc.from_response(resp)
         elif resp.status_code in (301, 302, 305):
