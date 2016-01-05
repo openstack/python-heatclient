@@ -16,8 +16,11 @@ from heatclient.openstack.common._i18n import _
 import yaml
 
 
-SECTIONS = (PARAMETER_DEFAULTS, PARAMETERS, RESOURCE_REGISTRY) = \
-           ('parameter_defaults', 'parameters', 'resource_registry')
+SECTIONS = (
+    PARAMETER_DEFAULTS, PARAMETERS, RESOURCE_REGISTRY, EVENT_SINKS
+) = (
+    'parameter_defaults', 'parameters', 'resource_registry', 'event_sinks'
+)
 
 
 def parse(env_str):
