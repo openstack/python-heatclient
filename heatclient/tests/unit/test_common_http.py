@@ -181,7 +181,7 @@ class HttpClientTest(testtools.TestCase):
         client = http.HTTPClient('http://example.com:8004')
         e = self.assertRaises(exc.HTTPUnauthorized,
                               client.raw_request, 'GET', '')
-        self.assertIn('include-password', str(e))
+        self.assertIn('Authentication failed', str(e))
 
     def test_region_name(self):
         # Record a 200
