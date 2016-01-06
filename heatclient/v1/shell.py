@@ -816,8 +816,13 @@ def do_template_show(hc, args):
            help=_('URL to retrieve template object (e.g. from swift).'))
 @utils.arg('-n', '--show-nested', default=False, action="store_true",
            help=_('Resolve parameters from nested templates as well.'))
+@utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
+           help=_('Parameter values for the template. '
+                  'This can be specified multiple times, or once with '
+                  'parameters separated by a semicolon.'),
+           action='append')
 def do_template_validate(hc, args):
-    '''Validate a template with parameters.'''
+    """Validate a template with parameters."""
 
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
@@ -829,6 +834,7 @@ def do_template_validate(hc, args):
         env_paths=args.environment_file)
     fields = {
         'template': template,
+        'parameters': utils.format_parameters(args.parameters),
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env,
     }
