@@ -187,14 +187,19 @@ def deep_update(old, new):
 
 
 def process_multiple_environments_and_files(env_paths=None, template=None,
-                                            template_url=None):
+                                            template_url=None,
+                                            env_path_is_object=None,
+                                            object_request=None):
+
     merged_files = {}
     merged_env = {}
 
     if env_paths:
         for env_path in env_paths:
             files, env = process_environment_and_files(env_path, template,
-                                                       template_url)
+                                                       template_url,
+                                                       env_path_is_object,
+                                                       object_request)
 
             # 'files' looks like {"filename1": contents, "filename2": contents}
             # so a simple update is enough for merging
@@ -208,11 +213,24 @@ def process_multiple_environments_and_files(env_paths=None, template=None,
 
 
 def process_environment_and_files(env_path=None, template=None,
-                                  template_url=None):
+                                  template_url=None, env_path_is_object=None,
+                                  object_request=None):
     files = {}
     env = {}
 
-    if env_path:
+    is_object = env_path_is_object and env_path_is_object(env_path)
+
+    if is_object:
+        raw_env = object_request and object_request('GET', env_path)
+        env = environment_format.parse(raw_env)
+        env_base_url = utils.base_url_for_url(env_path)
+
+        resolve_environment_urls(
+            env.get('resource_registry'),
+            files,
+            env_base_url, is_object=True, object_request=object_request)
+
+    elif env_path:
         env_url = utils.normalise_file_path_to_url(env_path)
         env_base_url = utils.base_url_for_url(env_url)
         raw_env = request.urlopen(env_url).read()
@@ -226,7 +244,8 @@ def process_environment_and_files(env_path=None, template=None,
     return files, env
 
 
-def resolve_environment_urls(resource_registry, files, env_base_url):
+def resolve_environment_urls(resource_registry, files, env_base_url,
+                             is_object=False, object_request=None):
     if resource_registry is None:
         return
 
@@ -245,12 +264,14 @@ def resolve_environment_urls(resource_registry, files, env_base_url):
         if key == 'hooks':
             return True
 
-    get_file_contents(rr, files, base_url, ignore_if)
+    get_file_contents(rr, files, base_url, ignore_if,
+                      is_object=is_object, object_request=object_request)
 
     for res_name, res_dict in six.iteritems(rr.get('resources', {})):
         res_base_url = res_dict.get('base_url', base_url)
         get_file_contents(
-            res_dict, files, res_base_url, ignore_if)
+            res_dict, files, res_base_url, ignore_if,
+            is_object=is_object, object_request=object_request)
 
 
 def hooks_to_env(env, arg_hooks, hook):
