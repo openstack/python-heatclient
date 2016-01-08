@@ -493,6 +493,33 @@ class TestGetTemplateContents(testtools.TestCase):
         self.assertEqual({}, files)
         self.assertTrue(self.object_requested)
 
+    def test_get_nested_stack_template_contents_object(self):
+        tmpl = ('{"heat_template_version": "2016-04-08",'
+                '"resources": {'
+                '"FooBar": {'
+                '"type": "foo/bar.yaml"}}}')
+        url = 'http://no.where/path/to/a.yaml'
+        self.m.ReplayAll()
+
+        self.object_requested = False
+
+        def object_request(method, object_url):
+            self.object_requested = True
+            self.assertEqual('GET', method)
+            self.assertTrue(object_url.startswith("http://no.where/path/to/"))
+            if object_url == url:
+                return tmpl
+            else:
+                return '{"heat_template_version": "2016-04-08"}'
+
+        files, tmpl_parsed = template_utils.get_template_contents(
+            template_object=url,
+            object_request=object_request)
+
+        self.assertEqual(files['http://no.where/path/to/foo/bar.yaml'],
+                         '{"heat_template_version": "2016-04-08"}')
+        self.assertTrue(self.object_requested)
+
     def check_non_utf8_content(self, filename, content):
         base_url = 'file:///tmp'
         url = '%s/%s' % (base_url, filename)
