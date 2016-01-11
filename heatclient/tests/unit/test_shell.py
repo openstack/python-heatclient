@@ -955,6 +955,42 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(show_text, r)
 
+    def test_template_validate(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"heat_template_version": "2013-05-23",
+                     "parameters": {},
+                     "resources": {},
+                     "outputs": {}}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        if self.client == http.SessionClient:
+            self.client.request('/validate',
+                                'POST',
+                                data=mox.IgnoreArg()
+                                ).AndReturn(resp)
+        else:
+            self.client.json_request('POST',
+                                     '/validate',
+                                     data=mox.IgnoreArg()
+                                     ).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
+        cmd = 'template-validate -f %s -P foo=bar' % template_file
+        show_text = self.shell(cmd)
+        required = [
+            'heat_template_version',
+            'outputs',
+            'parameters',
+            'resources'
+        ]
+        for r in required:
+            self.assertRegexpMatches(show_text, r)
+
     def _test_stack_preview(self, timeout=None, enable_rollback=False,
                             tags=None):
         self.register_keystone_auth_fixture()
