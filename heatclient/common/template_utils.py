@@ -30,6 +30,7 @@ def get_template_contents(template_file=None, template_url=None,
                           template_object=None, object_request=None,
                           files=None, existing=False):
 
+    is_object = False
     # Transform a bare file path to a file:// URL.
     if template_file:
         template_url = utils.normalise_file_path_to_url(template_file)
@@ -38,6 +39,7 @@ def get_template_contents(template_file=None, template_url=None,
         tpl = request.urlopen(template_url).read()
 
     elif template_object:
+        is_object = True
         template_url = template_object
         tpl = object_request and object_request('GET',
                                                 template_object)
@@ -66,11 +68,13 @@ def get_template_contents(template_file=None, template_url=None,
     tmpl_base_url = utils.base_url_for_url(template_url)
     if files is None:
         files = {}
-    resolve_template_get_files(template, files, tmpl_base_url)
+    resolve_template_get_files(template, files, tmpl_base_url, is_object,
+                               object_request)
     return files, template
 
 
-def resolve_template_get_files(template, files, template_base_url):
+def resolve_template_get_files(template, files, template_base_url,
+                               is_object=False, object_request=None):
 
     def ignore_if(key, value):
         if key != 'get_file' and key != 'type':
@@ -86,7 +90,7 @@ def resolve_template_get_files(template, files, template_base_url):
         return isinstance(value, (dict, list))
 
     get_file_contents(template, files, template_base_url,
-                      ignore_if, recurse_if)
+                      ignore_if, recurse_if, is_object, object_request)
 
 
 def is_template(file_content):
@@ -100,7 +104,8 @@ def is_template(file_content):
 
 
 def get_file_contents(from_data, files, base_url=None,
-                      ignore_if=None, recurse_if=None):
+                      ignore_if=None, recurse_if=None,
+                      is_object=False, object_request=None):
 
     if recurse_if and recurse_if(from_data):
         if isinstance(from_data, dict):
@@ -108,7 +113,8 @@ def get_file_contents(from_data, files, base_url=None,
         else:
             recurse_data = from_data
         for value in recurse_data:
-            get_file_contents(value, files, base_url, ignore_if, recurse_if)
+            get_file_contents(value, files, base_url, ignore_if, recurse_if,
+                              is_object, object_request)
 
     if isinstance(from_data, dict):
         for key, value in six.iteritems(from_data):
@@ -120,10 +126,18 @@ def get_file_contents(from_data, files, base_url=None,
 
             str_url = parse.urljoin(base_url, value)
             if str_url not in files:
-                file_content = utils.read_url_content(str_url)
+                if is_object and object_request:
+                    file_content = object_request('GET', str_url)
+                else:
+                    file_content = utils.read_url_content(str_url)
                 if is_template(file_content):
-                    template = get_template_contents(
-                        template_url=str_url, files=files)[1]
+                    if is_object:
+                        template = get_template_contents(
+                            template_object=str_url, files=files,
+                            object_request=object_request)[1]
+                    else:
+                        template = get_template_contents(
+                            template_url=str_url, files=files)[1]
                     file_content = jsonutils.dumps(template)
                 files[str_url] = file_content
             # replace the data value with the normalised absolute URL
