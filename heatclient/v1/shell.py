@@ -387,9 +387,12 @@ def do_action_check(hc, args):
 
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to describe.'))
+@utils.arg('--no-resolve-outputs', action="store_true",
+           help='Do not resolve outputs of the stack.')
 def do_stack_show(hc, args):
     '''Describe the stack.'''
-    fields = {'stack_id': args.id}
+    fields = {'stack_id': args.id,
+              'resolve_outputs': not args.no_resolve_outputs}
     _do_stack_show(hc, fields)
 
 

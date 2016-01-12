@@ -252,12 +252,17 @@ class StackManager(StackChildManager):
         body = utils.get_response_body(resp)
         return body
 
-    def get(self, stack_id):
+    def get(self, stack_id, resolve_outputs=True):
         """Get the metadata for a specific stack.
 
         :param stack_id: Stack ID to lookup
+        :param resolve_outputs: If True, then outputs for this
+               stack will be resolved
         """
-        resp = self.client.get('/stacks/%s' % stack_id)
+        kwargs = {}
+        if not resolve_outputs:
+            kwargs['params'] = {"resolve_outputs": False}
+        resp = self.client.get('/stacks/%s' % stack_id, **kwargs)
         body = utils.get_response_body(resp)
         return Stack(self, body.get('stack'))
 
