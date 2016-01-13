@@ -47,7 +47,7 @@ class HeatShell(object):
         # FIXME(gyee): these are global identity (Keystone) arguments which
         # should be consistent and shared by all service clients. Therefore,
         # they should be provided by python-keystoneclient. We will need to
-        # refactor this code once this functionality is avaible in
+        # refactor this code once this functionality is available in
         # python-keystoneclient.
         parser.add_argument(
             '-k', '--insecure', default=False, action='store_true',
