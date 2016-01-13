@@ -77,3 +77,28 @@ class TestSnapshotShow(TestStack):
             exc.CommandError,
             self.cmd.take_action,
             parsed_args)
+
+
+class TestRestoreSnapshot(TestStack):
+    def setUp(self):
+        super(TestRestoreSnapshot, self).setUp()
+        self.cmd = snapshot.RestoreSnapshot(self.app, None)
+        self.stack_client.restore = mock.Mock()
+
+    def test_snapshot_restore(self):
+        arglist = ['my_stack', 'my_snapshot']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+        self.stack_client.restore.assert_called_with(
+            snapshot_id='my_snapshot', stack_id='my_stack')
+
+    def test_snapshot_restore_error(self):
+        self.stack_client.restore.side_effect = heat_exc.HTTPNotFound()
+        arglist = ['my_stack', 'my_snapshot']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        error = self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)
+        self.assertEqual('Stack my_stack or snapshot my_snapshot not found.',
+                         str(error))
