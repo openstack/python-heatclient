@@ -784,6 +784,46 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
+    def test_stack_show_without_outputs(self):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"stack": {
+            "id": "1",
+            "stack_name": "teststack",
+            "stack_status": 'CREATE_COMPLETE',
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            jsonutils.dumps(resp_dict))
+        params = {'resolve_outputs': False}
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack/1',
+                'GET', params=params).AndReturn(resp)
+        else:
+            self.client.json_request(
+                'GET', '/stacks/teststack/1', params=params
+            ).AndReturn((resp, resp_dict))
+
+        self.m.ReplayAll()
+
+        list_text = self.shell(
+            'stack-show teststack/1 --no-resolve-outputs')
+
+        required = [
+            'id',
+            'stack_name',
+            'stack_status',
+            'creation_time',
+            'teststack',
+            'CREATE_COMPLETE',
+            '2012-10-25T01:58:47Z'
+        ]
+        for r in required:
+            self.assertRegexpMatches(list_text, r)
+
     def _output_fake_response(self, output_key):
 
         outputs = [
