@@ -99,7 +99,7 @@ class CreateStack(show.ShowOne):
         parser.add_argument(
             '--wait',
             action='store_true',
-            help=_('Wait until stack completes')
+            help=_('Wait until stack goes to CREATE_COMPLETE or CREATE_FAILED')
         )
         parser.add_argument(
             '--tags',
