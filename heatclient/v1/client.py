@@ -46,9 +46,9 @@ class Client(object):
         self.events = events.EventManager(self.http_client)
         self.actions = actions.ActionManager(self.http_client)
         self.build_info = build_info.BuildInfoManager(self.http_client)
-        self.software_deployments = \
+        self.software_deployments = (
             software_deployments.SoftwareDeploymentManager(
-                self.http_client)
+                self.http_client))
         self.software_configs = software_configs.SoftwareConfigManager(
             self.http_client)
         self.services = services.ServiceManager(self.http_client)
