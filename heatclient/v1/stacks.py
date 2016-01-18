@@ -60,6 +60,9 @@ class Stack(base.Resource):
     def output_show(self, output_key):
         return self.manager.output_show(self.identifier, output_key)
 
+    def environment(self):
+        return self.manager.environment(self.identifier)
+
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
         self._loaded = True
@@ -271,6 +274,16 @@ class StackManager(StackChildManager):
         :param stack_id: Stack ID to get the template for
         """
         resp = self.client.get('/stacks/%s/template' % stack_id)
+        body = utils.get_response_body(resp)
+        return body
+
+    def environment(self, stack_id):
+        """Returns the environment for an existing stack.
+
+        :param stack_id: identifies the stack
+        :return:
+        """
+        resp = self.client.get('/stacks/%s/environment' % stack_id)
         body = utils.get_response_body(resp)
         return body
 

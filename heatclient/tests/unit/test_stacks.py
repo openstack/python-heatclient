@@ -150,6 +150,12 @@ class StackOperationsTest(testtools.TestCase):
         manager.output_show.assert_called_once_with('the_stack/abcd1234',
                                                     'out123')
 
+    def test_environment_show(self):
+        manager = mock.MagicMock()
+        stack = mock_stack(manager, 'env_stack', 'env1')
+        stack.environment()
+        manager.environment.assert_called_once_with('env_stack/env1')
+
 
 class StackManagerNoPaginationTest(testtools.TestCase):
 
