@@ -1308,3 +1308,63 @@ class TestStackHookClear(TestStack):
             data={'unset_hook': 'pre-delete'},
             resource_name='resource',
             stack_id='my_stack')
+
+
+class TestEnvironmentStackShow(TestStack):
+
+    SAMPLE_ENV = {
+        'parameters': {'p1': 'v1'},
+        'resource_registry': {'r1': 't1'}
+    }
+
+    def setUp(self):
+        super(TestEnvironmentStackShow, self).setUp()
+        self.cmd = stack.EnvironmentShowStack(self.app, None)
+
+    def test_stack_environment_show(self):
+        # Setup
+        self.stack_client.environment = mock.MagicMock(
+            return_value=self.SAMPLE_ENV
+        )
+
+        # Test
+        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
+        columns, outputs = self.cmd.take_action(parsed_args)
+
+        # Verify
+        self.assertEqual(['parameters', 'resource_registry'], columns)
+        self.assertEqual({'p1': 'v1'}, outputs[0])
+
+    def test_stack_environment_show_no_parameters(self):
+        # Setup
+        sample_env = copy.deepcopy(self.SAMPLE_ENV)
+        sample_env.pop('parameters')
+
+        self.stack_client.environment = mock.MagicMock(
+            return_value=sample_env
+        )
+
+        # Test
+        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
+        columns, outputs = self.cmd.take_action(parsed_args)
+
+        # Verify
+        self.assertEqual(['resource_registry'], columns)
+        self.assertEqual({'r1': 't1'}, outputs[0])
+
+    def test_stack_environment_show_no_registry(self):
+        # Setup
+        sample_env = copy.deepcopy(self.SAMPLE_ENV)
+        sample_env.pop('resource_registry')
+
+        self.stack_client.environment = mock.MagicMock(
+            return_value=sample_env
+        )
+
+        # Test
+        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
+        columns, outputs = self.cmd.take_action(parsed_args)
+
+        # Verify
+        self.assertEqual(['parameters'], columns)
+        self.assertEqual({'p1': 'v1'}, outputs[0])
