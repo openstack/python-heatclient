@@ -16,7 +16,9 @@
 import logging
 
 from cliff import command
+from cliff import lister
 from openstackclient.common import exceptions as exc
+from openstackclient.common import utils
 
 from heatclient import exc as heat_exc
 from heatclient.openstack.common._i18n import _
@@ -62,3 +64,40 @@ def _delete_config(heat_client, args):
                                  '%(total)s software configs.') %
                                {'count': failure_count,
                                 'total': len(args.id)})
+
+
+class ListConfig(lister.Lister):
+    """List software configs"""
+
+    log = logging.getLogger(__name__ + ".ListConfig")
+
+    def get_parser(self, prog_name):
+        parser = super(ListConfig, self).get_parser(prog_name)
+        parser.add_argument(
+            '--limit',
+            metavar='<LIMIT>',
+            help=_('Limit the number of configs returned')
+        )
+        parser.add_argument(
+            '--marker',
+            metavar='<ID>',
+            help=_('Return configs that appear after the given config ID')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        return _list_config(heat_client, parsed_args)
+
+
+def _list_config(heat_client, args):
+    kwargs = {}
+    if args.limit:
+        kwargs['limit'] = args.limit
+    if args.marker:
+        kwargs['marker'] = args.marker
+    scs = heat_client.software_configs.list(**kwargs)
+
+    columns = ['id', 'name', 'group', 'creation_time']
+    return (columns, (utils.get_item_properties(s, columns) for s in scs))
