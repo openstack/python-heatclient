@@ -313,6 +313,45 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual({}, env)
         self.assertEqual({}, files)
 
+    def test_process_multiple_environments_and_files_from_object(self):
+
+        env_object = 'http://no.where/path/to/env.yaml'
+        env1 = b'''
+        parameters:
+          "param1": "value1"
+        resource_registry:
+          "OS::Thingy1": "b/a.yaml"
+        '''
+
+        self.m.ReplayAll()
+
+        self.object_requested = False
+
+        def env_path_is_object(object_url):
+            return True
+
+        def object_request(method, object_url):
+            self.object_requested = True
+            self.assertEqual('GET', method)
+            self.assertTrue(object_url.startswith("http://no.where/path/to/"))
+            if object_url == env_object:
+                return env1
+            else:
+                return self.template_a
+
+        files, env = template_utils.process_multiple_environments_and_files(
+            env_paths=[env_object], env_path_is_object=env_path_is_object,
+            object_request=object_request)
+        self.assertEqual(
+            {
+                'resource_registry': {
+                    'OS::Thingy1': 'http://no.where/path/to/b/a.yaml'},
+                'parameters': {'param1': 'value1'}
+            },
+            env)
+        self.assertEqual(self.template_a.decode('utf-8'),
+                         files['http://no.where/path/to/b/a.yaml'])
+
     def test_global_files(self):
         url = 'file:///home/b/a.yaml'
         env = '''
