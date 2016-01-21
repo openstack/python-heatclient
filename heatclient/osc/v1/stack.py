@@ -419,6 +419,7 @@ def _show_stack(heat_client, stack_id, format='', short=False):
             formatters['parameters'] = complex_formatter
             formatters['outputs'] = complex_formatter
             formatters['links'] = complex_formatter
+            formatters['tags'] = complex_formatter
 
         return columns, utils.get_item_properties(data, columns,
                                                   formatters=formatters)
