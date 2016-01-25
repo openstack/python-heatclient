@@ -52,6 +52,28 @@ class ShellEnvironmentTest(testtools.TestCase):
         if url:
             self.assertEqual(content.decode('utf-8'), files[url])
 
+    def test_ignore_env_keys(self):
+        self.m.StubOutWithMock(request, 'urlopen')
+        env_file = '/home/my/dir/env.yaml'
+        env = b'''
+        resource_registry:
+          resources:
+            bar:
+              hooks: pre_create
+              restricted_actions: replace
+        '''
+        request.urlopen('file://%s' % env_file).AndReturn(
+            six.BytesIO(env))
+        self.m.ReplayAll()
+        _, env_dict = template_utils.process_environment_and_files(
+            env_file)
+        self.assertEqual(
+            {u'resource_registry': {u'resources': {
+                u'bar': {u'hooks': u'pre_create',
+                         u'restricted_actions': u'replace'}}}},
+            env_dict)
+        self.m.VerifyAll()
+
     def test_process_environment_file(self):
 
         self.m.StubOutWithMock(request, 'urlopen')
