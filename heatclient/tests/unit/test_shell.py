@@ -754,7 +754,8 @@ class ShellTestUserPass(ShellBase):
             "id": "1",
             "stack_name": "teststack",
             "stack_status": 'CREATE_COMPLETE',
-            "creation_time": "2012-10-25T01:58:47Z"
+            "creation_time": "2012-10-25T01:58:47Z",
+            "tags": [u'tag1', u'tag2']
         }}
         resp = fakes.FakeHTTPResponse(
             200,
@@ -777,9 +778,11 @@ class ShellTestUserPass(ShellBase):
             'stack_name',
             'stack_status',
             'creation_time',
+            'tags',
             'teststack',
             'CREATE_COMPLETE',
-            '2012-10-25T01:58:47Z'
+            '2012-10-25T01:58:47Z',
+            "['tag1', 'tag2']",
         ]
         for r in required:
             self.assertRegexpMatches(list_text, r)

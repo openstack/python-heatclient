@@ -1575,7 +1575,8 @@ def _do_stack_show(hc, fields):
             'stack_status_reason': utils.text_wrap_formatter,
             'parameters': utils.json_formatter,
             'outputs': utils.json_formatter,
-            'links': utils.link_formatter
+            'links': utils.link_formatter,
+            'tags': utils.json_formatter
         }
         utils.print_dict(stack.to_dict(), formatters=formatters)
 
