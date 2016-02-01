@@ -284,9 +284,11 @@ def do_stack_delete(hc, args):
         except exc.HTTPNotFound as e:
             failure_count += 1
             print(e)
-    if failure_count == len(args.id):
-        raise exc.CommandError(_("Unable to delete any of the specified "
-                               "stacks."))
+    if failure_count:
+        raise exc.CommandError(_("Unable to delete %(count)d of the %(total)d "
+                               "stacks.") %
+                               {'count': failure_count,
+                                'total': len(args.id)})
     do_stack_list(hc)
 
 
@@ -1266,20 +1268,22 @@ def do_config_show(hc, args):
 
 
 @utils.arg('id', metavar='<ID>', nargs='+',
-           help=_('IDs of the configurations to delete.'))
+           help=_('ID of the configuration(s) to delete.'))
 def do_config_delete(hc, args):
-    '''Delete a software configuration.'''
+    '''Delete the software configuration(s).'''
     failure_count = 0
 
     for config_id in args.id:
         try:
             hc.software_configs.delete(config_id=config_id)
-        except exc.HTTPNotFound as e:
+        except exc.HTTPNotFound:
             failure_count += 1
-            print(e)
-    if failure_count == len(args.id):
-        raise exc.CommandError(_("Unable to delete any of the specified "
-                                 "configs."))
+            print(_('Software config with ID %s not found') % config_id)
+    if failure_count:
+        raise exc.CommandError(_("Unable to delete %(count)d of the %(total)d "
+                               "configs.") %
+                               {'count': failure_count,
+                                'total': len(args.id)})
 
 
 @utils.arg('-i', '--input-value', metavar='<KEY=VALUE>',
@@ -1377,9 +1381,9 @@ def do_deployment_metadata_show(hc, args):
 
 
 @utils.arg('id', metavar='<ID>', nargs='+',
-           help=_('IDs of the deployments to delete.'))
+           help=_('ID of the deployment(s) to delete.'))
 def do_deployment_delete(hc, args):
-    '''Delete software deployments.'''
+    '''Delete the software deployment(s).'''
     failure_count = 0
 
     for deploy_id in args.id:
@@ -1401,9 +1405,10 @@ def do_deployment_delete(hc, args):
                     '%(config_id)s of deployment %(deploy_id)s') %
                   {'config_id': config_id, 'deploy_id': deploy_id})
 
-    if failure_count == len(args.id):
-        raise exc.CommandError(_("Unable to delete any of the specified "
-                                 "deployments."))
+    if failure_count:
+        raise exc.CommandError(_("Unable to delete %(count)d of the %(total)d "
+                                 "deployments.") %
+                               {'count': failure_count, 'total': len(args.id)})
 
 
 @utils.arg('id', metavar='<ID>',

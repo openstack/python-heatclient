@@ -2461,28 +2461,46 @@ class ShellTestUserPass(ShellBase):
             None)
         if self.client == http.SessionClient:
             self.client.request(
-                '/stacks/teststack1/1', 'DELETE').AndReturn(resp)
+                '/stacks/teststack/1', 'DELETE').AndReturn(resp)
             self.client.request(
                 '/stacks/teststack2/2', 'DELETE').AndReturn(resp)
         else:
             self.client.raw_request(
-                'DELETE', '/stacks/teststack1/1').AndReturn((resp, None))
+                'DELETE', '/stacks/teststack/1').AndReturn((resp, None))
             self.client.raw_request(
                 'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
         fakes.script_heat_list(client=self.client)
 
         self.m.ReplayAll()
 
-        delete_text = self.shell('stack-delete teststack1/1 teststack2/2')
+        delete_text = self.shell('stack-delete teststack/1 teststack2/2')
 
         required = [
             'stack_name',
             'id',
             'teststack',
-            '1'
+            '1',
+            'teststack2',
+            '2'
         ]
         for r in required:
             self.assertRegexpMatches(delete_text, r)
+
+    def test_stack_delete_failed(self):
+        self.register_keystone_auth_fixture()
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack1/1', 'DELETE').AndRaise(exc.HTTPNotFound())
+        else:
+            http.HTTPClient.raw_request(
+                'DELETE',
+                '/stacks/teststack1/1').AndRaise(exc.HTTPNotFound())
+        self.m.ReplayAll()
+        error = self.assertRaises(
+            exc.CommandError, self.shell, 'stack-delete teststack1/1')
+        self.assertIn('Unable to delete 1 of the 1 stacks.',
+                      str(error))
 
     def test_build_info(self):
         self.register_keystone_auth_fixture()
@@ -4209,8 +4227,11 @@ class ShellTestConfig(ShellBase):
         self.m.ReplayAll()
 
         self.assertEqual('', self.shell('config-delete abcd qwer'))
-        self.assertRaises(
+
+        error = self.assertRaises(
             exc.CommandError, self.shell, 'config-delete abcd qwer')
+        self.assertIn('Unable to delete 2 of the 2 configs.',
+                      str(error))
 
 
 class ShellTestDeployment(ShellBase):
@@ -4530,11 +4551,14 @@ class ShellTestDeployment(ShellBase):
 
         self.m.ReplayAll()
 
-        self.assertRaises(exc.CommandError, self.shell,
-                          'deployment-delete defg qwer')
-        self.assertRaises(exc.CommandError, self.shell,
-                          'deployment-delete defg qwer')
-
+        error = self.assertRaises(
+            exc.CommandError, self.shell, 'deployment-delete defg qwer')
+        self.assertIn('Unable to delete 2 of the 2 deployments.',
+                      str(error))
+        error2 = self.assertRaises(
+            exc.CommandError, self.shell, 'deployment-delete defg qwer')
+        self.assertIn('Unable to delete 2 of the 2 deployments.',
+                      str(error2))
         output = self.shell('deployment-delete defg qwer')
         self.assertRegexpMatches(output, 'Failed to delete the correlative '
                                          'config dummy_config_id of '
