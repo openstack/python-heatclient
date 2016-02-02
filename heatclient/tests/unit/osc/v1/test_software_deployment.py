@@ -383,3 +383,18 @@ class TestDeploymentShow(TestDeployment):
             exc.CommandError,
             self.cmd.take_action,
             parsed_args)
+
+
+class TestDeploymentMetadataShow(TestDeployment):
+
+    def setUp(self):
+        super(TestDeploymentMetadataShow, self).setUp()
+        self.cmd = software_deployment.ShowMetadataDeployment(self.app, None)
+        self.sd_client.metadata = mock.Mock(return_value={})
+
+    def test_deployment_show_metadata(self):
+        arglist = ['ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+        self.sd_client.metadata.assert_called_with(
+            server_id='ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5')

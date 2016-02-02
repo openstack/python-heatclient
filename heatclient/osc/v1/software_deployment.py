@@ -14,6 +14,7 @@
 """Orchestration v1 Software Deployment action implementations"""
 
 import logging
+from oslo_serialization import jsonutils
 
 from cliff import command
 from cliff import lister
@@ -263,3 +264,25 @@ class ShowDeployment(show.ShowOne):
             if parsed_args.long:
                 columns.append('output_values')
             return columns, utils.get_item_properties(data, columns)
+
+
+class ShowMetadataDeployment(command.Command):
+    """Get deployment configuration metadata for the specified server."""
+
+    log = logging.getLogger(__name__ + '.ShowMetadataDeployment')
+
+    def get_parser(self, prog_name):
+        parser = super(ShowMetadataDeployment, self).get_parser(prog_name)
+        parser.add_argument(
+            'server',
+            metavar='<server>',
+            help=_('ID of the server to fetch deployments for')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        md = heat_client.software_deployments.metadata(
+            server_id=parsed_args.server)
+        print(jsonutils.dumps(md, indent=2))
