@@ -444,8 +444,8 @@ class TestGetTemplateContents(testtools.TestCase):
 
     def test_get_template_contents_file(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
-            tmpl = b'{"AWSTemplateFormatVersion" : "2010-09-09",' \
-                   b' "foo": "bar"}'
+            tmpl = (b'{"AWSTemplateFormatVersion" : "2010-09-09",'
+                    b' "foo": "bar"}')
             tmpl_file.write(tmpl)
             tmpl_file.flush()
 

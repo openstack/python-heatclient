@@ -198,8 +198,8 @@ class ShellTestParameterFiles(testtools.TestCase):
         tmpl_file = '/opt/stack/template.yaml'
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         utils.read_url_content = mock.MagicMock()
-        utils.read_url_content.return_value = 'DBUsername=wp\n' \
-                                              'DBPassword=verybadpassword'
+        utils.read_url_content.return_value = ('DBUsername=wp\n'
+                                               'DBPassword=verybadpassword')
 
         p = utils.format_parameter_file([
             'env_file1=test_file1'], tmpl_file)
@@ -210,8 +210,8 @@ class ShellTestParameterFiles(testtools.TestCase):
         tmpl_file = None
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         utils.read_url_content = mock.MagicMock()
-        utils.read_url_content.return_value = 'DBUsername=wp\n' \
-                                              'DBPassword=verybadpassword'
+        utils.read_url_content.return_value = ('DBUsername=wp\n'
+                                               'DBPassword=verybadpassword')
         p = utils.format_parameter_file([
             'env_file1=test_file1'], tmpl_file)
         self.assertEqual({'env_file1': contents
@@ -222,8 +222,8 @@ class ShellTestParameterFiles(testtools.TestCase):
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         params = ['KeyName=heat_key;UpstreamDNS=8.8.8.8']
         utils.read_url_content = mock.MagicMock()
-        utils.read_url_content.return_value = 'DBUsername=wp\n' \
-                                              'DBPassword=verybadpassword'
+        utils.read_url_content.return_value = ('DBUsername=wp\n'
+                                               'DBPassword=verybadpassword')
         p = utils.format_all_parameters(params, [
             'env_file1=test_file1'], template_file=tmpl_file)
         self.assertEqual({'KeyName': 'heat_key',

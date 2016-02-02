@@ -161,12 +161,13 @@ def find_resource(manager, name_or_id):
     try:
         return manager.find(name=name_or_id)
     except exc.NotFound:
-        msg = _("No %(name)s with a name or ID of "
-                "'%(name_or_id)s' exists.") % \
-            {
+        msg = (
+            _("No %(name)s with a name or ID of "
+              "'%(name_or_id)s' exists.")
+            % {
                 'name': manager.resource_class.__name__.lower(),
                 'name_or_id': name_or_id
-            }
+            })
         raise exc.CommandError(msg)
 
 
