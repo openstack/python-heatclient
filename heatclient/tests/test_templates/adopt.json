@@ -1,0 +1,32 @@
+{
+    'files': {},
+    'status': 'COMPLETE',
+    'name': 'my_stack',
+    'tags': None,
+    'stack_user_project_id': '123456',
+    'environment': {},
+    'template': {
+        'heat_template_version': '2016-04-08',
+        'resources': {
+            'thing': {
+                'type': 'OS::Heat::TestResource'
+            }
+        }
+    },
+    'action': 'CREATE',
+    'project_id': '56789',
+    'id': '2468',
+    'resources': {
+        'thing': {
+            'status': 'COMPLETE',
+            'name': 'thing',
+            'resource_data': {
+                'value': 'test_string',
+            },
+            'resource_id': 'my_stack-thing-1234',
+            'action': 'CREATE',
+            'type': 'OS::Heat::TestResource',
+            'metadata': {}
+        }
+    }
+}
