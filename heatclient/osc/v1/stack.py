@@ -20,6 +20,7 @@ from cliff import show
 from openstackclient.common import exceptions as exc
 from openstackclient.common import parseractions
 from openstackclient.common import utils
+from six.moves.urllib import request
 
 from heatclient.common import http
 from heatclient.common import template_utils
@@ -566,3 +567,88 @@ def _list(client, args=None):
         columns,
         (utils.get_item_properties(s, columns) for s in data)
     )
+
+
+class AdoptStack(show.ShowOne):
+    """Adopt a stack."""
+
+    log = logging.getLogger(__name__ + '.AdoptStack')
+
+    def get_parser(self, prog_name):
+        parser = super(AdoptStack, self).get_parser(prog_name)
+        parser.add_argument(
+            'name',
+            metavar='<STACK_NAME>',
+            help=_('Name of the stack to adopt')
+        )
+        parser.add_argument(
+            '-e', '--environment',
+            metavar='<FILE or URL>',
+            action='append',
+            help=_('Path to the environment. Can be specified multiple times')
+        )
+        parser.add_argument(
+            '--timeout',
+            metavar='<TIMEOUT>',
+            type=int,
+            help=_('Stack creation timeout in minutes')
+        )
+        parser.add_argument(
+            '--adopt-file',
+            metavar='<FILE or URL>',
+            required=True,
+            help=_('Path to adopt stack data file')
+        )
+        parser.add_argument(
+            '--enable-rollback',
+            action='store_true',
+            help=_('Enable rollback on create/update failure')
+        )
+        parser.add_argument(
+            '--parameter',
+            metavar='<KEY=VALUE>',
+            action='append',
+            help=_('Parameter values used to create the stack. Can be '
+                   'specified multiple times')
+        )
+        parser.add_argument(
+            '--wait',
+            action='store_true',
+            help=_('Wait until stack adopt completes')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)', parsed_args)
+
+        client = self.app.client_manager.orchestration
+
+        env_files, env = (
+            template_utils.process_multiple_environments_and_files(
+                env_paths=parsed_args.environment))
+
+        adopt_url = heat_utils.normalise_file_path_to_url(
+            parsed_args.adopt_file)
+        adopt_data = request.urlopen(adopt_url).read().decode('utf-8')
+
+        fields = {
+            'stack_name': parsed_args.name,
+            'disable_rollback': not parsed_args.enable_rollback,
+            'adopt_stack_data': adopt_data,
+            'parameters': heat_utils.format_parameters(parsed_args.parameter),
+            'files': dict(list(env_files.items())),
+            'environment': env,
+            'timeout': parsed_args.timeout
+        }
+
+        stack = client.stacks.create(**fields)['stack']
+
+        if parsed_args.wait:
+            if not utils.wait_for_status(client.stacks.get, parsed_args.name,
+                                         status_field='stack_status',
+                                         success_status='create_complete',
+                                         error_status=['create_failed']):
+                msg = _('Stack %s failed to create.') % parsed_args.name
+                raise exc.CommandError(msg)
+
+        return _show_stack(client, stack['id'], format='table', short=True)

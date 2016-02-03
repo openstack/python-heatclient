@@ -520,3 +520,68 @@ class TestStackList(TestStack):
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+
+class TestStackAdopt(TestStack):
+
+    adopt_file = 'heatclient/tests/test_templates/adopt.json'
+
+    with open(adopt_file, 'r') as f:
+        adopt_data = f.read()
+
+    defaults = {
+        'stack_name': 'my_stack',
+        'disable_rollback': True,
+        'adopt_stack_data': adopt_data,
+        'parameters': {},
+        'files': {},
+        'environment': {},
+        'timeout': None
+    }
+
+    def setUp(self):
+        super(TestStackAdopt, self).setUp()
+        self.cmd = stack.AdoptStack(self.app, None)
+        self.stack_client.create = mock.MagicMock(
+            return_value={'stack': {'id': '1234'}})
+
+    def test_stack_adopt_defaults(self):
+        arglist = ['my_stack', '--adopt-file', self.adopt_file]
+        cols = ['id', 'stack_name', 'description', 'creation_time',
+                'updated_time', 'stack_status', 'stack_status_reason']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.create.assert_called_with(**self.defaults)
+        self.assertEqual(cols, columns)
+
+    def test_stack_adopt_enable_rollback(self):
+        arglist = ['my_stack', '--adopt-file', self.adopt_file,
+                   '--enable-rollback']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['disable_rollback'] = False
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.create.assert_called_with(**kwargs)
+
+    def test_stack_adopt_wait(self):
+        arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
+        self.stack_client.get = mock.MagicMock(return_value=(
+            stacks.Stack(None, {'stack_status': 'CREATE_COMPLETE'})))
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.create.assert_called_with(**self.defaults)
+        self.stack_client.get.assert_called_with(**{'stack_id': '1234'})
+
+    def test_stack_adopt_wait_fail(self):
+        arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
+        self.stack_client.get = mock.MagicMock(return_value=(
+            stacks.Stack(None, {'stack_status': 'CREATE_FAILED'})))
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
