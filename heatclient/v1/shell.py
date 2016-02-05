@@ -410,6 +410,8 @@ def do_stack_show(hc, args):
 @utils.arg('-y', '--dry-run', default=False, action="store_true",
            help='Do not actually perform the stack update, but show what '
            'would be changed')
+@utils.arg('-n', '--show-nested', default=False, action="store_true",
+           help='Show nested stacks when performing --dry-run')
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to create the stack. '
                   'This can be specified multiple times, or once with '
@@ -489,6 +491,9 @@ def do_stack_update(hc, args):
             fields['disable_rollback'] = False
 
     if args.dry_run is True:
+        if args.show_nested:
+            fields['show_nested'] = args.show_nested
+
         resource_changes = hc.stacks.preview_update(**fields)
 
         formatters = {

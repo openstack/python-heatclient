@@ -177,14 +177,13 @@ class StackManager(StackChildManager):
         """Preview a stack update."""
         stack_identifier = self._resolve_stack_id(stack_id)
         headers = self.client.credentials_headers()
+        path = '/stacks/%s/preview' % stack_identifier
+        if kwargs.pop('show_nested', False):
+            path += '?show_nested=True'
         if kwargs.pop('existing', None):
-            resp = self.client.patch('/stacks/%s/preview' %
-                                     stack_identifier,
-                                     data=kwargs, headers=headers)
+            resp = self.client.patch(path, data=kwargs, headers=headers)
         else:
-            resp = self.client.put('/stacks/%s/preview' %
-                                   stack_identifier,
-                                   data=kwargs, headers=headers)
+            resp = self.client.put(path, data=kwargs, headers=headers)
         body = utils.get_response_body(resp)
         return body
 
