@@ -4032,6 +4032,87 @@ class ShellTestResources(ShellBase):
                     stack_id, resource_name, data_file.name))
             self.assertEqual("", text)
 
+    def test_resource_mark_unhealthy(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.SessionClient.request(
+            '/stacks/%s/resources/%s' %
+            (
+                parse.quote(stack_id, ''),
+                parse.quote(encodeutils.safe_encode(
+                    resource_name), '')
+            ),
+            'PATCH',
+            data={'mark_unhealthy': True,
+                  'resource_status_reason': 'Any'}).AndReturn(resp)
+
+        self.m.ReplayAll()
+
+        text = self.shell(
+            'resource-mark-unhealthy {0} {1} Any'.format(
+                stack_id, resource_name))
+        self.assertEqual("", text)
+
+    def test_resource_mark_unhealthy_reset(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.SessionClient.request(
+            '/stacks/%s/resources/%s' %
+            (
+                parse.quote(stack_id, ''),
+                parse.quote(encodeutils.safe_encode(
+                    resource_name), '')
+            ),
+            'PATCH',
+            data={'mark_unhealthy': False,
+                  'resource_status_reason': 'Any'}).AndReturn(resp)
+
+        self.m.ReplayAll()
+
+        text = self.shell(
+            'resource-mark-unhealthy --reset {0} {1} Any'.format(
+                stack_id, resource_name))
+        self.assertEqual("", text)
+
+    def test_resource_mark_unhealthy_no_reason(self):
+        self.register_keystone_auth_fixture()
+        resp = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {},
+            '')
+        stack_id = 'teststack/1'
+        resource_name = 'aResource'
+        http.SessionClient.request(
+            '/stacks/%s/resources/%s' %
+            (
+                parse.quote(stack_id, ''),
+                parse.quote(encodeutils.safe_encode(
+                    resource_name), '')
+            ),
+            'PATCH',
+            data={'mark_unhealthy': True,
+                  'resource_status_reason': ''}).AndReturn(resp)
+
+        self.m.ReplayAll()
+
+        text = self.shell(
+            'resource-mark-unhealthy {0} {1}'.format(
+                stack_id, resource_name))
+        self.assertEqual("", text)
+
 
 class ShellTestResourceTypes(ShellBase):
     def setUp(self):

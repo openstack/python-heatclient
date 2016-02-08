@@ -192,6 +192,20 @@ class ResourceManagerTest(testtools.TestCase):
         manager.signal(**fields)
         self.m.VerifyAll()
 
+    def test_mark_unhealthy(self):
+        fields = {'stack_id': 'teststack',
+                  'resource_name': 'testresource',
+                  'mark_unhealthy': 'True',
+                  'resource_status_reason': 'Anything'}
+        expect = ('PATCH',
+                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/testresource')
+        key = 'mark_unhealthy'
+
+        manager = self._base_test(expect, key)
+        manager.mark_unhealthy(**fields)
+        self.m.VerifyAll()
+
 
 class ResourceStackNameTest(testtools.TestCase):
 
