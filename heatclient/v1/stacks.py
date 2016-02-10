@@ -276,10 +276,23 @@ class StackManager(StackChildManager):
 
     def validate(self, **kwargs):
         """Validate a stack template."""
-        url = '/validate'
-        if kwargs.pop('show_nested', False):
-            url += '?show_nested=True'
 
-        resp = self.client.post(url, data=kwargs)
+        url = '/validate'
+
+        params = {}
+        if kwargs.pop('show_nested', False):
+            params['show_nested'] = True
+
+        ignore_errors = kwargs.pop('ignore_errors', None)
+        if ignore_errors:
+            params['ignore_errors'] = ignore_errors
+
+        args = {}
+        if kwargs:
+            args['data'] = kwargs
+        if params:
+            args['params'] = params
+
+        resp = self.client.post(url, **args)
         body = utils.get_response_body(resp)
         return body

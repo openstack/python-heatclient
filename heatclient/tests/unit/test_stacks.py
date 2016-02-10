@@ -350,7 +350,7 @@ class StackManagerValidateTest(testtools.TestCase):
         # Verify
         self.assertEqual(self.mock_response.json.return_value, result)
         self.mock_client.post.assert_called_once_with(
-            '/validate?show_nested=True', data={})
+            '/validate', params={'show_nested': True})
 
     def test_validate_show_nested_false(self):
         # Test
@@ -359,7 +359,7 @@ class StackManagerValidateTest(testtools.TestCase):
         # Verify
         self.assertEqual(self.mock_response.json.return_value, result)
         self.mock_client.post.assert_called_once_with(
-            '/validate', data={})
+            '/validate')
 
     def test_validate_show_nested_default(self):
         # Test
@@ -368,4 +368,9 @@ class StackManagerValidateTest(testtools.TestCase):
         # Verify
         self.assertEqual(self.mock_response.json.return_value, result)
         self.mock_client.post.assert_called_once_with(
-            '/validate', data={})
+            '/validate')
+
+    def test_validate_ignore_errors(self):
+        self.manager.validate(ignore_errors='99001,99002')
+        self.mock_client.post.assert_called_once_with(
+            '/validate', params={'ignore_errors': '99001,99002'})

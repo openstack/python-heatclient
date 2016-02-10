@@ -806,6 +806,8 @@ def do_template_show(hc, args):
                   'This can be specified multiple times, or once with '
                   'parameters separated by a semicolon.'),
            action='append')
+@utils.arg('-I', '--ignore-errors', metavar='<ERR1,ERR2...>',
+           help=_('List of heat errors to ignore.'))
 def do_template_validate(hc, args):
     """Validate a template with parameters."""
 
@@ -823,6 +825,9 @@ def do_template_validate(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env,
     }
+
+    if args.ignore_errors:
+        fields['ignore_errors'] = args.ignore_errors
 
     if args.show_nested:
         fields['show_nested'] = args.show_nested
