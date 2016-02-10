@@ -728,3 +728,32 @@ class TestStackOutputShow(TestStack):
         self.assertEqual('Stack my_stack or output output3 not found.',
                          str(error))
         self.stack_client.output_show.assert_called_with('my_stack', 'output3')
+
+
+class TestStackOutputList(TestStack):
+
+    response = {'outputs': [{'output_key': 'key1', 'description': 'desc1'},
+                            {'output_key': 'key2', 'description': 'desc2'}]}
+
+    def setUp(self):
+        super(TestStackOutputList, self).setUp()
+        self.cmd = stack.OutputListStack(self.app, None)
+
+    def test_stack_output_list(self):
+        arglist = ['my_stack']
+        self.stack_client.output_list.return_value = self.response
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.assertEqual(['output_key', 'description'], columns)
+        self.stack_client.output_list.assert_called_with('my_stack')
+
+    def test_stack_output_list_not_found(self):
+        arglist = ['my_stack']
+        self.stack_client.output_list.side_effect = heat_exc.HTTPNotFound
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        error = self.assertRaises(exc.CommandError,
+                                  self.cmd.take_action, parsed_args)
+        self.assertEqual('Stack not found: my_stack', str(error))
