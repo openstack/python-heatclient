@@ -4,7 +4,7 @@
 
 Babel>=1.3 # BSD
 pbr>=1.6 # Apache-2.0
-cliff>=1.15.0 # Apache-2.0
+cliff!=1.16.0,>=1.15.0 # Apache-2.0
 iso8601>=0.1.9 # MIT
 PrettyTable<0.8,>=0.7 # BSD
 oslo.i18n>=2.1.0 # Apache-2.0
