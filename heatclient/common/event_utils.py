@@ -130,17 +130,26 @@ def _get_stack_events(hc, stack_id, event_args):
         return events
 
 
-def poll_for_events(hc, stack_name, action, poll_period):
+def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None):
     """Continuously poll events and logs for performed action on stack."""
 
-    marker = None
-    stop_status = ('%s_FAILED' % action, '%s_COMPLETE' % action)
+    if action:
+        stop_status = ('%s_FAILED' % action, '%s_COMPLETE' % action)
+        stop_check = lambda a: a in stop_status
+    else:
+        stop_check = lambda a: a.endswith('_COMPLETE') or a.endswith('_FAILED')
+
+    no_event_polls = 0
+    msg_template = _("\n Stack %(name)s %(status)s \n")
     while True:
         events = get_events(hc, stack_id=stack_name,
                             event_args={'sort_dir': 'asc',
                                         'marker': marker})
 
-        if len(events) >= 1:
+        if len(events) == 0:
+            no_event_polls += 1
+        else:
+            no_event_polls = 0
             # set marker to last event that was received.
             marker = getattr(events[-1], 'id', None)
             events_log = utils.event_log_formatter(events)
@@ -150,9 +159,20 @@ def poll_for_events(hc, stack_name, action, poll_period):
                 # check if stack event was also received
                 if getattr(event, 'resource_name', '') == stack_name:
                     stack_status = getattr(event, 'resource_status', '')
-                    msg = _("\n Stack %(name)s %(status)s \n") % dict(
+                    msg = msg_template % dict(
                         name=stack_name, status=stack_status)
-                    if stack_status in stop_status:
+                    if stop_check(stack_status):
                         return stack_status, msg
+
+        if no_event_polls >= 2:
+            # after 2 polls with no events, fall back to a stack get
+            stack = hc.stacks.get(stack_name)
+            stack_status = stack.stack_status
+            msg = msg_template % dict(
+                name=stack_name, status=stack_status)
+            if stop_check(stack_status):
+                return stack_status, msg
+            # go back to event polling again
+            no_event_polls = 0
 
         time.sleep(poll_period)
