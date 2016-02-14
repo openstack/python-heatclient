@@ -191,12 +191,9 @@ class CreateStack(show.ShowOne):
 
         stack = client.stacks.create(**fields)['stack']
         if parsed_args.wait:
-            if not utils.wait_for_status(client.stacks.get, parsed_args.name,
-                                         status_field='stack_status',
-                                         success_status='create_complete',
-                                         error_status='create_failed'):
-
-                msg = _('Stack %s failed to create.') % parsed_args.name
+            stack_status, msg = event_utils.poll_for_events(
+                client, parsed_args.name, action='CREATE')
+            if stack_status == 'CREATE_FAILED':
                 raise exc.CommandError(msg)
 
         return _show_stack(client, stack['id'], format='table', short=True)
