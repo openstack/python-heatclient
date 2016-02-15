@@ -684,10 +684,13 @@ class TestStackAdopt(TestStack):
 
         self.stack_client.create.assert_called_with(**kwargs)
 
-    def test_stack_adopt_wait(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('ADOPT_COMPLETE',
+                              'Stack my_stack ADOPT_COMPLETE'))
+    def test_stack_adopt_wait(self, mock_poll):
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
         self.stack_client.get = mock.MagicMock(return_value=(
-            stacks.Stack(None, {'stack_status': 'CREATE_COMPLETE'})))
+            stacks.Stack(None, {'stack_status': 'ADOPT_COMPLETE'})))
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.cmd.take_action(parsed_args)
@@ -695,10 +698,13 @@ class TestStackAdopt(TestStack):
         self.stack_client.create.assert_called_with(**self.defaults)
         self.stack_client.get.assert_called_with(**{'stack_id': '1234'})
 
-    def test_stack_adopt_wait_fail(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('ADOPT_FAILED',
+                              'Stack my_stack ADOPT_FAILED'))
+    def test_stack_adopt_wait_fail(self, mock_poll):
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
         self.stack_client.get = mock.MagicMock(return_value=(
-            stacks.Stack(None, {'stack_status': 'CREATE_FAILED'})))
+            stacks.Stack(None, {'stack_status': 'ADOPT_FAILED'})))
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
