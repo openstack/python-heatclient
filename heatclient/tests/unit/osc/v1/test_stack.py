@@ -935,11 +935,12 @@ class _TestStackCheckBase(object):
     columns = ['ID', 'Stack Name', 'Stack Status', 'Creation Time',
                'Updated Time']
 
-    def _setUp(self, cmd, action):
+    def _setUp(self, cmd, action, action_name=None):
         self.cmd = cmd
         self.action = action
         self.mock_client.stacks.get = mock.Mock(
             return_value=self.stack)
+        self.action_name = action_name
 
     def _test_stack_action(self, get_call_count=1):
         arglist = ['my_stack']
@@ -964,10 +965,14 @@ class _TestStackCheckBase(object):
         self.assertEqual(self.columns, columns)
         self.assertEqual(2, len(rows))
 
-    @mock.patch('openstackclient.common.utils.wait_for_status',
-                return_value=True)
-    def _test_stack_action_wait(self, mock_wait):
+    @mock.patch('heatclient.common.event_utils.poll_for_events')
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def _test_stack_action_wait(self, ge, mock_poll):
         arglist = ['my_stack', '--wait']
+        mock_poll.return_value = (
+            '%s_COMPLETE' % self.action_name,
+            'Stack my_stack %s_COMPLETE' % self.action_name
+        )
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
         self.action.assert_called_with('my_stack')
@@ -975,10 +980,14 @@ class _TestStackCheckBase(object):
         self.assertEqual(self.columns, columns)
         self.assertEqual(1, len(rows))
 
-    @mock.patch('openstackclient.common.utils.wait_for_status',
-                return_value=False)
-    def _test_stack_action_wait_error(self, mock_wait):
+    @mock.patch('heatclient.common.event_utils.poll_for_events')
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def _test_stack_action_wait_error(self, ge, mock_poll):
         arglist = ['my_stack', '--wait']
+        mock_poll.return_value = (
+            '%s_FAILED' % self.action_name,
+            'Error waiting for status from stack my_stack'
+        )
         parsed_args = self.check_parser(self.cmd, arglist, [])
         error = self.assertRaises(exc.CommandError,
                                   self.cmd.take_action,
@@ -1004,7 +1013,8 @@ class TestStackSuspend(_TestStackCheckBase, TestStack):
         self.mock_client.actions.suspend = mock.Mock()
         self._setUp(
             stack.SuspendStack(self.app, None),
-            self.mock_client.actions.suspend
+            self.mock_client.actions.suspend,
+            'SUSPEND'
         )
 
     def test_stack_suspend(self):
@@ -1030,7 +1040,8 @@ class TestStackResume(_TestStackCheckBase, TestStack):
         self.mock_client.actions.resume = mock.Mock()
         self._setUp(
             stack.ResumeStack(self.app, None),
-            self.mock_client.actions.resume
+            self.mock_client.actions.resume,
+            'RESUME'
         )
 
     def test_stack_resume(self):
@@ -1064,7 +1075,8 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
         self.mock_client.actions.cancel_update = mock.Mock()
         self._setUp(
             stack.CancelStack(self.app, None),
-            self.mock_client.actions.cancel_update
+            self.mock_client.actions.cancel_update,
+            'ROLLBACK'
         )
         self.mock_client.stacks.get = mock.Mock(
             return_value=self.stack_update_in_progress)
@@ -1102,7 +1114,8 @@ class TestStackCheck(_TestStackCheckBase, TestStack):
         self.mock_client.actions.check = mock.Mock()
         self._setUp(
             stack.CheckStack(self.app, None),
-            self.mock_client.actions.check
+            self.mock_client.actions.check,
+            'CHECK'
         )
 
     def test_stack_check(self):

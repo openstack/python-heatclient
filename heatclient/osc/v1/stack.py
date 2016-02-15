@@ -940,19 +940,18 @@ class StackActionBase(lister.Lister):
         )
         return parser
 
-    def _take_action(self, parsed_args, action, good_status, bad_status):
+    def _take_action(self, parsed_args, action, action_name=None):
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _stacks_action(
             parsed_args,
             heat_client,
             action,
-            good_status,
-            bad_status
+            action_name
         )
 
 
-def _stacks_action(parsed_args, heat_client, action, good_status, bad_status):
+def _stacks_action(parsed_args, heat_client, action, action_name=None):
     rows = []
     columns = [
         'ID',
@@ -963,13 +962,20 @@ def _stacks_action(parsed_args, heat_client, action, good_status, bad_status):
     ]
     for stack in parsed_args.stack:
         data = _stack_action(stack, parsed_args, heat_client, action,
-                             good_status, bad_status)
+                             action_name)
         rows += [utils.get_dict_properties(data.to_dict(), columns)]
     return (columns, rows)
 
 
-def _stack_action(stack, parsed_args, heat_client, action,
-                  good_status, bad_status):
+def _stack_action(stack, parsed_args, heat_client, action, action_name=None):
+    if parsed_args.wait:
+        # find the last event to use as the marker
+        events = event_utils.get_events(heat_client,
+                                        stack_id=stack,
+                                        event_args={'sort_dir': 'desc',
+                                                    'limit': 1})
+        marker = events[0].id if events else None
+
     try:
         action(stack)
     except heat_exc.HTTPNotFound:
@@ -977,12 +983,15 @@ def _stack_action(stack, parsed_args, heat_client, action,
         raise exc.CommandError(msg)
 
     if parsed_args.wait:
-        if not utils.wait_for_status(heat_client.stacks.get, stack,
-                                     status_field='stack_status',
-                                     success_status=good_status,
-                                     error_status=bad_status):
-            err = _("Error waiting for status from stack %s") % stack
-            raise exc.CommandError(err)
+        s = heat_client.stacks.get(stack)
+        stack_status, msg = event_utils.poll_for_events(
+            heat_client, s.stack_name, action=action_name, marker=marker)
+        if action_name:
+            if stack_status == '%s_FAILED' % action_name:
+                raise exc.CommandError(msg)
+        else:
+            if stack_status.endswith('_FAILED'):
+                raise exc.CommandError(msg)
 
     return heat_client.stacks.get(stack)
 
@@ -1003,8 +1012,7 @@ class SuspendStack(StackActionBase):
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.suspend,
-            ['suspend_complete'],
-            ['suspend_failed']
+            'SUSPEND'
         )
 
 
@@ -1024,8 +1032,7 @@ class ResumeStack(StackActionBase):
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.resume,
-            ['resume_complete'],
-            ['resume_failed']
+            'RESUME'
         )
 
 
@@ -1045,8 +1052,7 @@ class CheckStack(StackActionBase):
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.check,
-            ['check_complete'],
-            ['check_failed']
+            'CHECK'
         )
 
 
@@ -1090,9 +1096,7 @@ class CancelStack(StackActionBase):
                     stack,
                     parsed_args,
                     heat_client,
-                    heat_client.actions.cancel_update,
-                    ['cancel_update_complete'],
-                    ['cancel_update_failed']
+                    heat_client.actions.cancel_update
                 )
                 rows += [utils.get_dict_properties(data.to_dict(), columns)]
             else:
