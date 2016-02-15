@@ -188,6 +188,17 @@ class ShellTest(testtools.TestCase):
         self.assertEqual(expected, utils.event_log_formatter(events_list))
         self.assertEqual('', utils.event_log_formatter([]))
 
+    def test_wait_for_delete(self):
+        def status_f(id):
+            raise exc.HTTPNotFound
+
+        def bad_status_f(id):
+            return {'status': 'failed'}
+
+        self.assertTrue(utils.wait_for_delete(status_f, 123))
+        self.assertFalse(utils.wait_for_delete(status_f, 123, timeout=0))
+        self.assertFalse(utils.wait_for_delete(bad_status_f, 123))
+
 
 class ShellTestParameterFiles(testtools.TestCase):
 

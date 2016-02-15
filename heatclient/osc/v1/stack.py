@@ -14,7 +14,9 @@
 """Orchestration v1 Stack action implementations"""
 
 import logging
+import sys
 
+from cliff import command
 from cliff import lister
 from cliff import show
 from openstackclient.common import exceptions as exc
@@ -30,6 +32,7 @@ from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
 from heatclient.openstack.common._i18n import _
+from heatclient.openstack.common._i18n import _LI
 
 
 def _authenticated_fetcher(client):
@@ -505,7 +508,6 @@ class ListStack(lister.Lister):
             help=_('List additional fields in output, this is implied by '
                    '--all-projects')
         )
-
         return parser
 
     def take_action(self, parsed_args):
@@ -570,6 +572,83 @@ def _list(client, args=None):
         columns,
         (utils.get_item_properties(s, columns) for s in data)
     )
+
+
+class DeleteStack(command.Command):
+    """Delete stack(s)."""
+
+    log = logging.getLogger(__name__ + ".DeleteStack")
+
+    def get_parser(self, prog_name):
+        parser = super(DeleteStack, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            nargs='+',
+            help=_('Stack(s) to delete (name or ID)')
+        )
+        parser.add_argument(
+            '--yes',
+            action='store_true',
+            help=_('Skip yes/no prompt (assume yes)')
+        )
+        parser.add_argument(
+            '--wait',
+            action='store_true',
+            help=_('Wait for stack delete to complete')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+
+        try:
+            if not parsed_args.yes and sys.stdin.isatty():
+                sys.stdout.write(
+                    _("Are you sure you want to delete this stack(s) [y/N]? "))
+                prompt_response = sys.stdin.readline().lower()
+                if not prompt_response.startswith('y'):
+                    self.log.info(_LI('User did not confirm stack delete so '
+                                      'taking no action.'))
+                    return
+        except KeyboardInterrupt:  # ctrl-c
+            self.log.info(_LI('User did not confirm stack delete '
+                              '(ctrl-c) so taking no action.'))
+            return
+        except EOFError:  # ctrl-d
+            self.log.info(_LI('User did not confirm stack delete '
+                              '(ctrl-d) so taking no action.'))
+            return
+
+        failure_count = 0
+        stacks_waiting = []
+        for sid in parsed_args.stack:
+            try:
+                heat_client.stacks.delete(sid)
+                stacks_waiting.append(sid)
+            except heat_exc.HTTPNotFound:
+                failure_count += 1
+                print(_('Stack not found: %s') % sid)
+
+        if parsed_args.wait:
+            for sid in stacks_waiting:
+                def status_f(id):
+                    return heat_client.stacks.get(id).to_dict()
+
+                # TODO(jonesbr): switch to use openstack client wait_for_delete
+                # when version 2.1.0 is adopted.
+                if not heat_utils.wait_for_delete(status_f,
+                                                  sid,
+                                                  status_field='stack_status'):
+                    failure_count += 1
+                    print(_('Stack failed to delete: %s') % sid)
+
+        if failure_count:
+            msg = (_('Unable to delete %(count)d of the %(total)d stacks.') %
+                   {'count': failure_count, 'total': len(parsed_args.stack)})
+            raise exc.CommandError(msg)
 
 
 class AdoptStack(show.ShowOne):
