@@ -365,7 +365,7 @@ class UpdateStack(show.ShowOne):
 
 
 class ShowStack(show.ShowOne):
-    """Show stack details"""
+    """Show stack details."""
 
     log = logging.getLogger(__name__ + ".ShowStack")
 
