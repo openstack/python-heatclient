@@ -177,6 +177,9 @@ def do_stack_adopt(hc, args):
     adopt_url = utils.normalise_file_path_to_url(args.adopt_file)
     adopt_data = request.urlopen(adopt_url).read()
 
+    if not len(adopt_data):
+        raise exc.CommandError('Invalid adopt-file, no data!')
+
     if args.create_timeout:
         logger.warning(_LW('%(arg1)s is deprecated, '
                            'please use %(arg2)s instead'),

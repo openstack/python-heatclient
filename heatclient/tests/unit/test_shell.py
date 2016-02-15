@@ -1844,6 +1844,16 @@ class ShellTestUserPass(ShellBase):
         self.shell_error('stack-adopt teststack ', failed_msg,
                          exception=exc.CommandError)
 
+    def test_stack_adopt_empty_data_file(self):
+        failed_msg = 'Invalid adopt-file, no data!'
+        self.register_keystone_auth_fixture()
+        self.m.ReplayAll()
+        with tempfile.NamedTemporaryFile() as file_obj:
+            self.shell_error(
+                'stack-adopt teststack '
+                '--adopt-file=%s ' % (file_obj.name),
+                failed_msg, exception=exc.CommandError)
+
     def test_stack_update_enable_rollback(self):
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
