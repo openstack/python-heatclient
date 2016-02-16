@@ -13,6 +13,7 @@
 #   Copyright 2015 IBM Corp.
 
 import logging
+import time
 
 from cliff import lister
 from cliff import show
@@ -134,6 +135,11 @@ class ListEvent(lister.Lister):
                    '(default: asc). Specify multiple times to sort on '
                    'multiple keys')
         )
+        parser.add_argument(
+            '--follow',
+            action='store_true',
+            help=_('Print events until process is halted')
+        )
         return parser
 
     def take_action(self, parsed_args):
@@ -149,6 +155,7 @@ class ListEvent(lister.Lister):
             'limit': parsed_args.limit,
             'marker': parsed_args.marker,
             'filters': heat_utils.format_parameters(parsed_args.filter),
+            'sort_dir': 'asc'
         }
 
         if parsed_args.resource and parsed_args.nested_depth:
@@ -165,6 +172,31 @@ class ListEvent(lister.Lister):
         else:
             nested_depth = 0
 
+        if parsed_args.follow:
+            if parsed_args.formatter != 'value':
+                msg = _('--follow can only be specified with --format value')
+                raise exc.CommandError(msg)
+
+            marker = parsed_args.marker
+            try:
+                while True:
+                    kwargs['marker'] = marker
+                    events = event_utils.get_events(
+                        client,
+                        stack_id=parsed_args.stack,
+                        event_args=kwargs,
+                        nested_depth=nested_depth,
+                        marker=marker)
+                    if events:
+                        marker = getattr(events[-1], 'id', None)
+                        events_log = heat_utils.event_log_formatter(events)
+                        self.app.stdout.write(events_log)
+                        self.app.stdout.write('\n')
+                    time.sleep(5)
+                    # this loop never exits
+            except (KeyboardInterrupt, EOFError):  # ctrl-c, ctrl-d
+                return [], []
+
         events = event_utils.get_events(
             client, stack_id=parsed_args.stack, event_args=kwargs,
             nested_depth=nested_depth, marker=parsed_args.marker,
@@ -175,7 +207,6 @@ class ListEvent(lister.Lister):
 
         if parsed_args.formatter == 'value':
             events = heat_utils.event_log_formatter(events).split('\n')
-            events.reverse()
             return [], [e.split(' ') for e in events]
 
         if len(events):

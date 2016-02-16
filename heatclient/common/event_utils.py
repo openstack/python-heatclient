@@ -75,8 +75,11 @@ def get_events(hc, stack_id, event_args, nested_depth=0,
 
         # Slice the list if marker is specified
         if marker:
-            marker_index = [e.id for e in events].index(marker)
-            events = events[marker_index:]
+            try:
+                marker_index = [e.id for e in events].index(marker)
+                events = events[marker_index:]
+            except ValueError:
+                pass
 
         # Slice the list if limit is specified
         if limit:

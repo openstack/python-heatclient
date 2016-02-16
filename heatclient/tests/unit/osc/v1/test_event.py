@@ -111,6 +111,7 @@ class TestEventList(TestEvent):
         'limit': None,
         'marker': None,
         'filters': {},
+        'sort_dir': 'asc'
     }
 
     fields = ['resource_name', 'id', 'resource_status',
@@ -198,6 +199,31 @@ class TestEventList(TestEvent):
 
         self.event_client.list.assert_called_with(**self.defaults)
         self.assertEqual(self.fields, columns)
+
+    @mock.patch('time.sleep')
+    def test_event_list_follow(self, sleep):
+        sleep.side_effect = [None, KeyboardInterrupt()]
+        arglist = ['--follow', 'my_stack']
+        expected = (
+            '2015-11-13 10:02:17 [resource1]: '
+            'CREATE_COMPLETE  state changed\n'
+            '2015-11-13 10:02:17 [resource1]: '
+            'CREATE_COMPLETE  state changed\n'
+        )
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        defaults_with_marker = dict(self.defaults)
+        defaults_with_marker['marker'] = '1234'
+
+        self.event_client.list.assert_has_calls([
+            mock.call(**self.defaults),
+            mock.call(**defaults_with_marker)
+        ])
+        self.assertEqual([], columns)
+        self.assertEqual([], data)
+        self.assertEqual(expected, self.fake_stdout.make_string())
 
     def test_event_list_value_format(self):
         arglist = ['my_stack']
