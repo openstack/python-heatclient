@@ -16,6 +16,7 @@
 import logging
 import six
 
+from cliff import command
 from cliff import lister
 from openstackclient.common import exceptions as exc
 from openstackclient.common import utils
@@ -97,3 +98,39 @@ class ShowSnapshot(format_utils.YamlFormat):
         rows = list(six.itervalues(data))
         columns = list(six.iterkeys(data))
         return columns, rows
+
+
+class RestoreSnapshot(command.Command):
+    """Restore stack snapshot"""
+
+    log = logging.getLogger(__name__ + ".RestoreSnapshot")
+
+    def get_parser(self, prog_name):
+        parser = super(RestoreSnapshot, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            help=_('Name or ID of stack containing the snapshot')
+        )
+        parser.add_argument(
+            'snapshot',
+            metavar='<snapshot>',
+            help=_('ID of the snapshot to restore')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)' % parsed_args)
+        heat_client = self.app.client_manager.orchestration
+        return self._restore_snapshot(heat_client, parsed_args)
+
+    def _restore_snapshot(self, heat_client, parsed_args):
+        fields = {'stack_id': parsed_args.stack,
+                  'snapshot_id': parsed_args.snapshot}
+        try:
+            heat_client.stacks.restore(**fields)
+        except heat_exc.HTTPNotFound:
+            raise exc.CommandError(_('Stack %(stack)s or '
+                                     'snapshot %(snapshot)s not found.') %
+                                   {'stack': parsed_args.stack,
+                                    'snapshot': parsed_args.snapshot})
