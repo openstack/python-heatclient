@@ -17,6 +17,7 @@ import logging
 
 from cliff import command
 from cliff import lister
+from cliff import show
 
 from openstackclient.common import exceptions as exc
 from openstackclient.common import utils
@@ -112,3 +113,48 @@ def _list_deployment(heat_client, args=None):
         columns,
         (utils.get_item_properties(s, columns) for s in deployments)
     )
+
+
+class ShowDeployment(show.ShowOne):
+    """Show SoftwareDeployment Details."""
+
+    log = logging.getLogger(__name__ + ".ShowSoftwareDeployment")
+
+    def get_parser(self, prog_name):
+        parser = super(ShowDeployment, self).get_parser(prog_name)
+        parser.add_argument(
+            'id',
+            metavar='<id>',
+            help=_('ID of the deployment')
+        )
+        parser.add_argument(
+            '--long',
+            action='store_true',
+            help=_('Show more fields in output')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+        try:
+            data = heat_client.software_deployments.get(
+                deployment_id=parsed_args.id)
+        except heat_exc.HTTPNotFound:
+            raise exc.CommandError(_('Software Deployment not found: %s') % id)
+        else:
+            columns = [
+                'id',
+                'server_id',
+                'config_id',
+                'creation_time',
+                'updated_time',
+                'status',
+                'status_reason',
+                'input_values',
+                'action',
+            ]
+            if parsed_args.long:
+                columns.append('output_values')
+            return columns, utils.get_item_properties(data, columns)
