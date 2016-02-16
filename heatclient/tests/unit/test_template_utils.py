@@ -825,10 +825,10 @@ parameters:
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
 
-        self.assertEqual(yaml.load(self.foo_template.decode('utf-8')),
+        self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get('file:///home/my/dir/foo.yaml')))
         self.assertEqual(
-            yaml.load(self.egg_template.decode('utf-8')),
+            yaml.safe_load(self.egg_template.decode('utf-8')),
             json.loads(files.get('file:///home/my/dir/spam/egg.yaml')))
 
         self.assertEqual({
@@ -907,7 +907,7 @@ parameters:
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
 
-        self.assertEqual(yaml.load(self.bar_template.decode('utf-8')),
+        self.assertEqual(yaml.safe_load(self.bar_template.decode('utf-8')),
                          json.loads(files.get('file:///home/my/dir/bar.yaml')))
 
         self.assertEqual({
@@ -1061,7 +1061,7 @@ parameters:
             }
         }, json.loads(files.get(template_url)))
 
-        self.assertEqual(yaml.load(self.foo_template.decode('utf-8')),
+        self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get(foo_url)))
         self.assertEqual({
             u'heat_template_version': u'2013-05-23',
@@ -1081,9 +1081,9 @@ parameters:
         }, json.loads(files.get(egg_url)))
         self.assertEqual(b'ham contents',
                          files.get(ham_url))
-        self.assertEqual(yaml.load(self.foo_template.decode('utf-8')),
+        self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get(one_url)))
-        self.assertEqual(yaml.load(self.foo_template.decode('utf-8')),
+        self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get(two_url)))
         self.assertEqual(b'three contents',
                          files.get(three_url))
