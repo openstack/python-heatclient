@@ -45,6 +45,8 @@ def parse(tmpl_str):
     This includes determination of whether the string is using the
     JSON or YAML format.
     """
+    # strip any whitespace before the check
+    tmpl_str = tmpl_str.strip()
     if tmpl_str.startswith('{'):
         tpl = json.loads(tmpl_str)
     else:
