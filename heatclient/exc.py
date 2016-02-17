@@ -13,6 +13,7 @@
 import sys
 
 from oslo_serialization import jsonutils
+from oslo_utils import reflection
 
 from heatclient.openstack.common._i18n import _
 
@@ -78,9 +79,9 @@ class HTTPMultipleChoices(HTTPException):
                          "available.")
         return (_("%(name)s (HTTP %(code)s) %(details)s") %
                 {
-                    'name': self.__class__.__name__,
-                    'code': self.code,
-                    'details': self.details})
+                'name': reflection.get_class_name(self, fully_qualified=False),
+                'code': self.code,
+                'details': self.details})
 
 
 class BadRequest(HTTPException):
