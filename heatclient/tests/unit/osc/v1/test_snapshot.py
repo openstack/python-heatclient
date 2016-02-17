@@ -11,8 +11,6 @@
 #   under the License.
 #
 
-import mock
-
 from openstackclient.common import exceptions as exc
 
 from heatclient import exc as heat_exc
@@ -31,9 +29,7 @@ class TestListSnapshot(TestStack):
     def setUp(self):
         super(TestListSnapshot, self).setUp()
         self.cmd = snapshot.ListSnapshot(self.app, None)
-        self.stack_client.snapshot_list = mock.Mock(
-            return_value={'snapshots': []}
-        )
+        self.stack_client.snapshot_list.return_value = {'snapshots': []}
 
     def test_snapshot_list(self):
         arglist = ['my_stack']
@@ -62,8 +58,7 @@ class TestSnapshotShow(TestStack):
     def test_snapshot_show(self):
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot_show = mock.Mock(
-            return_value={})
+        self.stack_client.snapshot_show.return_value = {}
         self.cmd.take_action(parsed_args)
         self.stack_client.snapshot_show.assert_called_with(
             'my_stack', 'snapshot_id')
@@ -71,8 +66,7 @@ class TestSnapshotShow(TestStack):
     def test_snapshot_not_found(self):
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot_show = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound())
+        self.stack_client.snapshot_show.side_effect = heat_exc.HTTPNotFound()
         self.assertRaises(
             exc.CommandError,
             self.cmd.take_action,
@@ -83,7 +77,6 @@ class TestRestoreSnapshot(TestStack):
     def setUp(self):
         super(TestRestoreSnapshot, self).setUp()
         self.cmd = snapshot.RestoreSnapshot(self.app, None)
-        self.stack_client.restore = mock.Mock()
 
     def test_snapshot_restore(self):
         arglist = ['my_stack', 'my_snapshot']
@@ -121,8 +114,7 @@ class TestSnapshotCreate(TestStack):
     def test_snapshot_create(self):
         arglist = ['my_stack', '--name', 'test_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot = mock.Mock(
-            return_value=self.get_response)
+        self.stack_client.snapshot.return_value = self.get_response
         self.cmd.take_action(parsed_args)
         self.stack_client.snapshot.assert_called_with(
             'my_stack', 'test_snapshot')
@@ -130,8 +122,7 @@ class TestSnapshotCreate(TestStack):
     def test_snapshot_create_no_name(self):
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot = mock.Mock(
-            return_value=self.get_response)
+        self.stack_client.snapshot.return_value = self.get_response
         self.cmd.take_action(parsed_args)
         self.stack_client.snapshot.assert_called_with(
             'my_stack', None)
@@ -139,8 +130,7 @@ class TestSnapshotCreate(TestStack):
     def test_snapshot_create_error(self):
         arglist = ['my_stack', '--name', 'test_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound)
+        self.stack_client.snapshot.side_effect = heat_exc.HTTPNotFound
         self.assertRaises(
             exc.CommandError,
             self.cmd.take_action,
@@ -155,7 +145,6 @@ class TestSnapshotDelete(TestStack):
     def test_snapshot_delete(self):
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot_delete = mock.Mock()
         self.cmd.take_action(parsed_args)
         self.stack_client.snapshot_delete.assert_called_with(
             'my_stack', 'snapshot_id')
@@ -163,8 +152,7 @@ class TestSnapshotDelete(TestStack):
     def test_snapshot_delete_not_found(self):
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.snapshot_delete = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound())
+        self.stack_client.snapshot_delete.side_effect = heat_exc.HTTPNotFound()
         self.assertRaises(
             exc.CommandError,
             self.cmd.take_action,

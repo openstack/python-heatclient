@@ -17,6 +17,7 @@
 import os
 
 import fixtures
+import mock
 import sys
 import testtools
 
@@ -76,8 +77,10 @@ class TestCommand(TestCase):
         super(TestCommand, self).setUp()
         # Build up a fake app
         self.fake_stdout = fakes.FakeStdout()
-        self.app = fakes.FakeApp(self.fake_stdout)
-        self.app.client_manager = fakes.FakeClientManager()
+        self.app = mock.MagicMock()
+        self.app.stdout = self.fake_stdout
+        self.app.stdin = sys.stdin
+        self.app.stderr = sys.stderr
 
     def check_parser(self, cmd, args, verify_args):
         cmd_parser = cmd.get_parser('check_parser')

@@ -11,8 +11,6 @@
 #   under the License.
 #
 
-import mock
-
 from openstackclient.common import exceptions as exc
 
 from heatclient import exc as heat_exc
@@ -32,10 +30,8 @@ class TestResourceTypeShow(TestResourceType):
     def setUp(self):
         super(TestResourceTypeShow, self).setUp()
         self.cmd = resource_type.ResourceTypeShow(self.app, None)
-        self.mock_client.resource_types.get = mock.Mock(
-            return_value={})
-        self.mock_client.resource_types.generate_template = mock.Mock(
-            return_value={})
+        self.mock_client.resource_types.get.return_value = {}
+        self.mock_client.resource_types.generate_template.return_value = {}
 
     def test_resourcetype_show(self):
         arglist = ['OS::Heat::None']
@@ -55,16 +51,15 @@ class TestResourceTypeShow(TestResourceType):
     def test_resourcetype_show_error_get(self):
         arglist = ['OS::Heat::None']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.mock_client.resource_types.get = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound)
+        self.mock_client.resource_types.get.side_effect = heat_exc.HTTPNotFound
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resourcetype_show_error_template(self):
         arglist = ['OS::Heat::None',
                    '--template-type', 'hot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.mock_client.resource_types.generate_template = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound)
+        self.mock_client.resource_types.generate_template.side_effect = \
+            heat_exc.HTTPNotFound
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resourcetype_show_template_hot(self):
@@ -119,8 +114,7 @@ class TestTypeList(TestResourceType):
     def setUp(self):
         super(TestTypeList, self).setUp()
         self.cmd = resource_type.ResourceTypeList(self.app, None)
-        self.mock_client.resource_types.list = mock.Mock(
-            return_value=self.list_response)
+        self.mock_client.resource_types.list.return_value = self.list_response
 
     def test_resourcetype_list(self):
         arglist = []

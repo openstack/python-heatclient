@@ -110,12 +110,12 @@ class TestDeploymentCreate(TestDeployment):
     def setUp(self):
         super(TestDeploymentCreate, self).setUp()
         self.cmd = software_deployment.CreateDeployment(self.app, None)
-        self.config_client.create = mock.MagicMock(return_value=(
-            software_configs.SoftwareConfig(None, self.config)))
-        self.config_client.get = mock.MagicMock(return_value=(
-            software_configs.SoftwareConfig(None, self.config)))
-        self.sd_client.create = mock.MagicMock(return_value=(
-            software_deployments.SoftwareDeployment(None, self.deployment)))
+        self.config_client.create.return_value = \
+            software_configs.SoftwareConfig(None, self.config)
+        self.config_client.get.return_value = \
+            software_configs.SoftwareConfig(None, self.config)
+        self.sd_client.create.return_value = \
+            software_deployments.SoftwareDeployment(None, self.deployment)
 
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
@@ -226,8 +226,6 @@ class TestDeploymentDelete(TestDeployment):
     def test_deployment_delete_success(self):
         arglist = ['test_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock()
-        self.sd_client.delete = mock.Mock()
         self.cmd.take_action(parsed_args)
         self.sd_client.delete.assert_called_with(
             deployment_id='test_deployment')
@@ -235,8 +233,6 @@ class TestDeploymentDelete(TestDeployment):
     def test_deployment_delete_multiple(self):
         arglist = ['test_deployment', 'test_deployment2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock()
-        self.sd_client.delete = mock.Mock()
         self.cmd.take_action(parsed_args)
         self.sd_client.delete.assert_has_calls(
             [mock.call(deployment_id='test_deployment'),
@@ -245,7 +241,6 @@ class TestDeploymentDelete(TestDeployment):
     def test_deployment_delete_not_found(self):
         arglist = ['test_deployment', 'test_deployment2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.delete = mock.Mock()
         self.sd_client.delete.side_effect = heat_exc.HTTPNotFound()
         error = self.assertRaises(
             exc.CommandError, self.cmd.take_action, parsed_args)
@@ -254,12 +249,8 @@ class TestDeploymentDelete(TestDeployment):
     def test_deployment_config_delete_failed(self):
         arglist = ['test_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.config_client.delete = mock.Mock()
         self.config_client.delete.side_effect = heat_exc.HTTPNotFound()
-        error = self.assertRaises(
-            exc.CommandError, self.cmd.take_action, parsed_args)
-        self.assertEqual("Unable to delete 1 of the 1 deployments.",
-                         str(error))
+        self.assertIsNone(self.cmd.take_action(parsed_args))
 
 
 class TestDeploymentList(TestDeployment):
@@ -350,9 +341,9 @@ class TestDeploymentShow(TestDeployment):
                 'updated_time', 'status', 'status_reason',
                 'input_values', 'action']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock(
-            return_value=software_deployments.SoftwareDeployment(
-                None, self.get_response))
+        self.sd_client.get.return_value = \
+            software_deployments.SoftwareDeployment(
+                None, self.get_response)
         columns, data = self.cmd.take_action(parsed_args)
         self.sd_client.get.assert_called_with(**{
             'deployment_id': 'my_deployment',
@@ -365,9 +356,9 @@ class TestDeploymentShow(TestDeployment):
                 'updated_time', 'status', 'status_reason',
                 'input_values', 'action', 'output_values']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock(
-            return_value=software_deployments.SoftwareDeployment(
-                None, self.get_response))
+        self.sd_client.get.return_value = \
+            software_deployments.SoftwareDeployment(
+                None, self.get_response)
         columns, data = self.cmd.take_action(parsed_args)
         self.sd_client.get.assert_called_once_with(**{
             'deployment_id': 'my_deployment',
@@ -377,7 +368,6 @@ class TestDeploymentShow(TestDeployment):
     def test_deployment_not_found(self):
         arglist = ['my_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock()
         self.sd_client.get.side_effect = heat_exc.HTTPNotFound()
         self.assertRaises(
             exc.CommandError,
@@ -390,7 +380,7 @@ class TestDeploymentMetadataShow(TestDeployment):
     def setUp(self):
         super(TestDeploymentMetadataShow, self).setUp()
         self.cmd = software_deployment.ShowMetadataDeployment(self.app, None)
-        self.sd_client.metadata = mock.Mock(return_value={})
+        self.sd_client.metadata.return_value = {}
 
     def test_deployment_show_metadata(self):
         arglist = ['ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5']
@@ -422,9 +412,9 @@ class TestDeploymentOutputShow(TestDeployment):
     def test_deployment_output_show(self):
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all', '--long']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock(
-            return_value=software_deployments.SoftwareDeployment(
-                None, self.get_response))
+        self.sd_client.get.return_value = \
+            software_deployments.SoftwareDeployment(
+                None, self.get_response)
         self.cmd.take_action(parsed_args)
         self.sd_client.get.assert_called_with(**{
             'deployment_id': '85c3a507-351b-4b28-a7d8-531c8d53f4e6'
@@ -433,7 +423,6 @@ class TestDeploymentOutputShow(TestDeployment):
     def test_deployment_output_show_invalid(self):
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock()
         error = self.assertRaises(
             exc.CommandError,
             self.cmd.take_action,
@@ -444,7 +433,6 @@ class TestDeploymentOutputShow(TestDeployment):
     def test_deployment_output_show_not_found(self):
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.sd_client.get = mock.Mock()
         self.sd_client.get.side_effect = heat_exc.HTTPNotFound()
         self.assertRaises(
             exc.CommandError,

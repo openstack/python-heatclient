@@ -11,8 +11,6 @@
 #   under the License.
 #
 
-import mock
-
 from heatclient.osc.v1 import service as osc_service
 from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 
@@ -54,8 +52,7 @@ class TestServiceList(orchestration_fakes.TestOrchestrationv1):
         super(TestServiceList, self).setUp()
         self.cmd = osc_service.ListService(self.app, None)
         self.mock_client = self.app.client_manager.orchestration
-        self.mock_client.services.list = mock.Mock(
-            return_value=self.response)
+        self.mock_client.services.list.return_value = self.response
 
     def test_service_list(self):
         arglist = []

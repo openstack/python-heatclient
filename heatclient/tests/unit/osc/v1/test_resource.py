@@ -51,8 +51,8 @@ class TestStackResourceShow(TestResource):
     def setUp(self):
         super(TestStackResourceShow, self).setUp()
         self.cmd = resource.ResourceShow(self.app, None)
-        self.resource_client.get = mock.MagicMock(
-            return_value=v1_resources.Resource(None, self.response))
+        self.resource_client.get.return_value = v1_resources.Resource(
+            None, self.response)
 
     def test_resource_show(self):
         arglist = ['my_stack', 'my_resource']
@@ -119,8 +119,8 @@ class TestStackResourceList(TestResource):
     def setUp(self):
         super(TestStackResourceList, self).setUp()
         self.cmd = resource.ResourceList(self.app, None)
-        self.resource_client.list = mock.MagicMock(
-            return_value=[v1_resources.Resource(None, self.response)])
+        self.resource_client.list.return_value = [
+            v1_resources.Resource(None, self.response)]
 
     def test_resource_list(self):
         arglist = ['my_stack']
@@ -220,7 +220,7 @@ class TestResourceMetadata(TestResource):
     def setUp(self):
         super(TestResourceMetadata, self).setUp()
         self.cmd = resource.ResourceMetadata(self.app, None)
-        self.resource_client.metadata = mock.Mock(return_value={})
+        self.resource_client.metadata.return_value = {}
 
     def test_resource_metadata(self):
         arglist = ['my_stack', 'my_resource']
@@ -243,8 +243,7 @@ class TestResourceMetadata(TestResource):
     def test_resource_metadata_error(self):
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.resource_client.metadata = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound)
+        self.resource_client.metadata.side_effect = heat_exc.HTTPNotFound
         error = self.assertRaises(exc.CommandError,
                                   self.cmd.take_action,
                                   parsed_args)
@@ -257,7 +256,6 @@ class TestResourceSignal(TestResource):
     def setUp(self):
         super(TestResourceSignal, self).setUp()
         self.cmd = resource.ResourceSignal(self.app, None)
-        self.resource_client.signal = mock.Mock()
 
     def test_resource_signal(self):
         arglist = ['my_stack', 'my_resource']
@@ -271,8 +269,7 @@ class TestResourceSignal(TestResource):
     def test_resource_signal_error(self):
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.resource_client.signal = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound)
+        self.resource_client.signal.side_effect = heat_exc.HTTPNotFound
         error = self.assertRaises(exc.CommandError,
                                   self.cmd.take_action,
                                   parsed_args)

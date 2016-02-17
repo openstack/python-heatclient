@@ -61,10 +61,7 @@ class TestEventShow(TestEvent):
     def test_event_show(self):
         arglist = ['--format', self.format, 'my_stack', 'my_resource', '1234']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.stack_client.get = mock.MagicMock()
-        self.resource_client.get = mock.MagicMock()
-        self.event_client.get = mock.MagicMock(
-            return_value=events.Event(None, self.response))
+        self.event_client.get.return_value = events.Event(None, self.response)
 
         self.cmd.take_action(parsed_args)
 
@@ -83,23 +80,17 @@ class TestEventShow(TestEvent):
 
     def test_event_show_stack_not_found(self):
         error = 'Stack not found'
-        self.stack_client.get = mock.MagicMock(
-            side_effect=exc.HTTPNotFound(error))
+        self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
 
     def test_event_show_resource_not_found(self):
         error = 'Resource not found'
-        self.stack_client.get = mock.MagicMock()
-        self.resource_client.get = mock.MagicMock(
-            side_effect=exc.HTTPNotFound(error))
+        self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
 
     def test_event_show_event_not_found(self):
         error = 'Event not found'
-        self.stack_client.get = mock.MagicMock()
-        self.resource_client.get = mock.MagicMock()
-        self.event_client.get = mock.MagicMock(
-            side_effect=exc.HTTPNotFound(error))
+        self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
 
 
@@ -142,8 +133,8 @@ class TestEventList(TestEvent):
         super(TestEventList, self).setUp()
         self.cmd = event.ListEvent(self.app, None)
         self.event = self.MockEvent()
-        self.event_client.list = mock.MagicMock(return_value=[self.event])
-        self.resource_client.list = mock.MagicMock(return_value={})
+        self.event_client.list.return_value = [self.event]
+        self.resource_client.list.return_value = {}
 
     def test_event_list_defaults(self):
         arglist = ['my_stack', '--format', 'table']

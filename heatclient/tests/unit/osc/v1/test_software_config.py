@@ -33,8 +33,7 @@ class TestDeleteConfig(TestConfig):
     def setUp(self):
         super(TestDeleteConfig, self).setUp()
         self.cmd = software_config.DeleteConfig(self.app, None)
-        self.mock_delete = mock.Mock()
-        self.mock_client.software_configs.delete = self.mock_delete
+        self.mock_delete = self.mock_client.software_configs.delete
 
     def test_config_delete(self):
         arglist = ['id_123']
@@ -71,8 +70,8 @@ class TestListConfig(TestConfig):
     def setUp(self):
         super(TestListConfig, self).setUp()
         self.cmd = software_config.ListConfig(self.app, None)
-        self.mock_client.software_configs.list = mock.Mock(
-            return_value=[software_configs.SoftwareConfig(None, {})])
+        self.mock_client.software_configs.list.return_value = [
+            software_configs.SoftwareConfig(None, {})]
 
     def test_config_list(self):
         arglist = []
@@ -99,9 +98,8 @@ class TestCreateConfig(TestConfig):
     def setUp(self):
         super(TestCreateConfig, self).setUp()
         self.cmd = software_config.CreateConfig(self.app, None)
-        self.mock_client.stacks.validate = mock.Mock()
-        self.mock_client.software_configs.create = mock.Mock(
-            return_value=software_configs.SoftwareConfig(None, {}))
+        self.mock_client.software_configs.create.return_value = \
+            software_configs.SoftwareConfig(None, {})
 
     def test_config_create(self):
         properties = {
@@ -239,9 +237,8 @@ class TestConfigShow(TestConfig):
     def setUp(self):
         super(TestConfigShow, self).setUp()
         self.cmd = software_config.ShowConfig(self.app, None)
-        self.mock_client.software_configs.get = mock.Mock(
-            return_value=software_configs.SoftwareConfig(None,
-                                                         self.response))
+        self.mock_client.software_configs.get.return_value = \
+            software_configs.SoftwareConfig(None, self.response)
 
     def test_config_show(self):
         arglist = ['96dfee3f-27b7-42ae-a03e-966226871ae6']
@@ -266,8 +263,8 @@ class TestConfigShow(TestConfig):
     def test_config_show_not_found(self):
         arglist = ['96dfee3f-27b7-42ae-a03e-966226871ae6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-        self.mock_client.software_configs.get = mock.Mock(
-            side_effect=heat_exc.HTTPNotFound())
+        self.mock_client.software_configs.get.side_effect = \
+            heat_exc.HTTPNotFound()
         self.assertRaises(
             exc.CommandError,
             self.cmd.take_action,

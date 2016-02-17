@@ -38,7 +38,7 @@ class TestTemplateVersionList(TestTemplate):
         super(TestTemplateVersionList, self).setUp()
         tv1 = template_versions.TemplateVersion(None, self.defaults[0])
         tv2 = template_versions.TemplateVersion(None, self.defaults[1])
-        self.template_versions.list = mock.MagicMock(return_value=[tv1, tv2])
+        self.template_versions.list.return_value = [tv1, tv2]
         self.cmd = template.VersionList(self.app, None)
 
     def test_version_list(self):
@@ -61,7 +61,7 @@ class TestTemplateFunctionList(TestTemplate):
         super(TestTemplateFunctionList, self).setUp()
         tv1 = template_versions.TemplateVersion(None, self.defaults[0])
         tv2 = template_versions.TemplateVersion(None, self.defaults[1])
-        self.template_versions.get = mock.MagicMock(return_value=[tv1, tv2])
+        self.template_versions.get.return_value = [tv1, tv2]
         self.cmd = template.FunctionList(self.app, None)
 
     def test_function_list(self):
