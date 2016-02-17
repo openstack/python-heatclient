@@ -2856,7 +2856,7 @@ class ShellTestUserPass(ShellBase):
                                                               resp_dict1))
 
         self.m.ReplayAll()
-        list_text = self.shell('output-show teststack/1 key --all')
+        list_text = self.shell('output-show --with-detail teststack/1 --all')
         required = [
             'output_key',
             'output_value',
@@ -2892,7 +2892,7 @@ class ShellTestUserPass(ShellBase):
                 '/stacks/teststack/1/outputs/key').AndReturn((resp, resp_dict))
 
         self.m.ReplayAll()
-        resp = self.shell('output-show teststack/1 key')
+        resp = self.shell('output-show --with-detail teststack/1 key')
         required = [
             'output_key',
             'output_value',
@@ -2948,7 +2948,7 @@ class ShellTestUserPass(ShellBase):
                         jsonutils.dumps(stack_dict)), stack_dict))
 
         self.m.ReplayAll()
-        resp = self.shell('output-show teststack/1 key')
+        resp = self.shell('output-show --with-detail teststack/1 key')
         required = [
             'output_key',
             'output_value',
@@ -2960,11 +2960,11 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(resp, r)
 
-    def test_output_show_output1(self):
+    def test_output_show_output1_with_detail(self):
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output1')
-        list_text = self.shell('output-show teststack/1 output1')
+        list_text = self.shell('output-show teststack/1 output1 --with-detail')
         required = [
             'output_key',
             'output_value',
@@ -2976,26 +2976,27 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def test_output_show_output1_only_value(self):
+    def test_output_show_output1(self):
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output1')
-        list_text = self.shell('output-show -v -F raw teststack/1 output1')
+        list_text = self.shell('output-show -F raw teststack/1 output1')
         self.assertEqual('value1\n', list_text)
-
-    def test_output_show_output2_raw_only_value(self):
-        self.register_keystone_auth_fixture()
-
-        self._output_fake_response('output2')
-        list_text = self.shell('output-show -F raw -v teststack/1 output2')
-        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
-                         list_text)
 
     def test_output_show_output2_raw(self):
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
         list_text = self.shell('output-show -F raw teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
+
+    def test_output_show_output2_raw_with_detail(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F raw --with-detail '
+                               'teststack/1 output2')
         required = [
             'output_key',
             'output_value',
@@ -3007,19 +3008,20 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def test_output_show_output2_json_only_value(self):
-        self.register_keystone_auth_fixture()
-
-        self._output_fake_response('output2')
-        list_text = self.shell('output-show -F json -v teststack/1 output2')
-        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
-                         list_text)
-
     def test_output_show_output2_json(self):
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
         list_text = self.shell('output-show -F json teststack/1 output2')
+        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
+                         list_text)
+
+    def test_output_show_output2_json_with_detail(self):
+        self.register_keystone_auth_fixture()
+
+        self._output_fake_response('output2')
+        list_text = self.shell('output-show -F json --with-detail '
+                               'teststack/1 output2')
         required = [
             'output_key',
             'output_value',
@@ -3031,11 +3033,11 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(list_text, r)
 
-    def test_output_show_unicode_output_only_value(self):
+    def test_output_show_unicode_output(self):
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output_uni')
-        list_text = self.shell('output-show -v teststack/1 output_uni')
+        list_text = self.shell('output-show teststack/1 output_uni')
         self.assertEqual(u'"test\u2665"\n', list_text)
 
     def test_output_show_error(self):

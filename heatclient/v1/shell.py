@@ -662,8 +662,9 @@ def do_output_list(hc, args):
            default='json')
 @utils.arg('-a', '--all', default=False, action='store_true',
            help=_('Display all stack outputs.'))
-@utils.arg('-v', '--only-value', default=False, action="store_true",
-           help=_('Returns only output value in specified format.'))
+@utils.arg('--with-detail', default=False, action="store_true",
+           help=_('Enable detail information presented, like '
+                  'key and description.'))
 def do_output_show(hc, args):
     """Show a specific stack output."""
     def resolve_output(output_key):
@@ -691,7 +692,14 @@ def do_output_show(hc, args):
         if 'output_error' in output['output']:
             msg = _("Output error: %s") % output['output']['output_error']
             raise exc.CommandError(msg)
-        if args.only_value:
+        if args.with_detail:
+            formatters = {
+                'output_value': (lambda x: utils.json_formatter(x)
+                                 if args.format == 'json'
+                                 else x)
+            }
+            utils.print_dict(output['output'], formatters=formatters)
+        else:
             if (args.format == 'json'
                     or isinstance(output['output']['output_value'], dict)
                     or isinstance(output['output']['output_value'], list)):
@@ -699,15 +707,11 @@ def do_output_show(hc, args):
                     utils.json_formatter(output['output']['output_value']))
             else:
                 print(output['output']['output_value'])
-        else:
-            formatters = {
-                'output_value': (lambda x: utils.json_formatter(x)
-                                 if args.format == 'json'
-                                 else x)
-            }
-            utils.print_dict(output['output'], formatters=formatters)
 
     if args.all:
+        if args.output:
+            raise exc.CommandError(
+                _("Can't specify an output name and the --all flag"))
         try:
             outputs = hc.stacks.output_list(args.id)
             resolved = False
