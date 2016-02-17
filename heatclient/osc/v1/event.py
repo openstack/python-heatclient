@@ -33,17 +33,17 @@ class ShowEvent(show.ShowOne):
         parser = super(ShowEvent, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to show events for')
         )
         parser.add_argument(
             'resource',
-            metavar='<RESOURCE>',
+            metavar='<resource>',
             help=_('Name of the resource event belongs to')
         )
         parser.add_argument(
             'event',
-            metavar='<EVENT>',
+            metavar='<event>',
             help=_('ID of event to display details for')
         )
 
@@ -93,42 +93,42 @@ class ListEvent(lister.Lister):
         parser = super(ListEvent, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to show events for')
         )
         parser.add_argument(
             '--resource',
-            metavar='<RESOURCE>',
+            metavar='<resource>',
             help=_('Name of resource to show events for. Note: this cannot '
                    'be specified with --nested-depth')
         )
         parser.add_argument(
             '--filter',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             action='append',
             help=_('Filter parameters to apply on returned events')
         )
         parser.add_argument(
             '--limit',
-            metavar='<LIMIT>',
+            metavar='<limit>',
             type=int,
             help=_('Limit the number of events returned')
         )
         parser.add_argument(
             '--marker',
-            metavar='<ID>',
+            metavar='<id>',
             help=_('Only return events that appear after the given ID')
         )
         parser.add_argument(
             '--nested-depth',
-            metavar='<DEPTH>',
+            metavar='<depth>',
             type=int,
             help=_('Depth of nested stacks from which to display events. '
                    'Note: this cannot be specified with --resource')
         )
         parser.add_argument(
             '--sort',
-            metavar='<KEY>[:<DIRECTION>]',
+            metavar='<key>[:<direction>]',
             action='append',
             help=_('Sort output by selected keys and directions (asc or desc) '
                    '(default: asc). Specify multiple times to sort on '

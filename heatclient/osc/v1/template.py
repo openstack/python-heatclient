@@ -49,7 +49,7 @@ class FunctionList(lister.Lister):
         parser = super(FunctionList, self).get_parser(prog_name)
         parser.add_argument(
             'template_version',
-            metavar='<TEMPLATE_VERSION>',
+            metavar='<template-version>',
             help=_('Template version to get the functions for')
         )
 

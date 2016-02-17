@@ -93,7 +93,7 @@ class ResourceList(lister.Lister):
         )
         parser.add_argument(
             '-n', '--nested-depth',
-            metavar='<DEPTH>',
+            metavar='<nested-depth>',
             type=int,
             help=_('Depth of nested stacks from which to display resources')
         )
@@ -152,12 +152,12 @@ class ResourceMetadata(format_utils.JsonFormat):
         parser = super(ResourceMetadata, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<STACK>',
+            metavar='<stack>',
             help=_('Stack to display (name or ID)'),
         )
         parser.add_argument(
             'resource',
-            metavar='<RESOURCE>',
+            metavar='<resource>',
             help=_('Name of the resource to show the metadata for'))
         return parser
 
@@ -193,22 +193,22 @@ class ResourceSignal(command.Command):
         parser = super(ResourceSignal, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<STACK>',
+            metavar='<stack>',
             help=_('Name or ID of stack the resource belongs to'),
         )
         parser.add_argument(
             'resource',
-            metavar='<RESOURCE>',
+            metavar='<resource>',
             help=_('Name of the resoure to signal'),
         )
         parser.add_argument(
             '--data',
-            metavar='<DATA>',
+            metavar='<data>',
             help=_('JSON Data to send to the signal handler')
         )
         parser.add_argument(
             '--data-file',
-            metavar='<DATA_FILE>',
+            metavar='<data-file>',
             help=_('File containing JSON data to send to the signal handler')
         )
         return parser
