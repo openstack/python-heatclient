@@ -97,8 +97,16 @@ class ResourceList(lister.Lister):
             type=int,
             help=_('Depth of nested stacks from which to display resources')
         )
-        # TODO(jonesbr):
-        # Add --filter once https://review.openstack.org/#/c/257864/ is merged
+
+        parser.add_argument(
+            '--filter',
+            metavar='<key=value>',
+            action='append',
+            help=_('Filter parameters to apply on returned resources based on '
+                   'their name, status, type, action, id and '
+                   'physcial_resource_id')
+        )
+
         return parser
 
     def take_action(self, parsed_args):
@@ -109,6 +117,7 @@ class ResourceList(lister.Lister):
         fields = {
             'nested_depth': parsed_args.nested_depth,
             'with_detail': parsed_args.long,
+            'filters': heat_utils.format_parameters(parsed_args.filter),
         }
 
         try:

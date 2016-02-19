@@ -17,7 +17,7 @@ import mock
 from openstackclient.common import exceptions as exc
 
 from heatclient import exc as heat_exc
-from heatclient.osc.v1 import resources
+from heatclient.osc.v1 import resource
 from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 from heatclient.v1 import resources as v1_resources
 
@@ -50,7 +50,7 @@ class TestStackResourceShow(TestResource):
 
     def setUp(self):
         super(TestStackResourceShow, self).setUp()
-        self.cmd = resources.ResourceShow(self.app, None)
+        self.cmd = resource.ResourceShow(self.app, None)
         self.resource_client.get = mock.MagicMock(
             return_value=v1_resources.Resource(None, self.response))
 
@@ -118,7 +118,7 @@ class TestStackResourceList(TestResource):
 
     def setUp(self):
         super(TestStackResourceList, self).setUp()
-        self.cmd = resources.ResourceList(self.app, None)
+        self.cmd = resource.ResourceList(self.app, None)
         self.resource_client.list = mock.MagicMock(
             return_value=[v1_resources.Resource(None, self.response)])
 
@@ -129,7 +129,10 @@ class TestStackResourceList(TestResource):
         columns, data = self.cmd.take_action(parsed_args)
 
         self.resource_client.list.assert_called_with(
-            'my_stack', with_detail=False, nested_depth=None)
+            'my_stack',
+            filters={},
+            with_detail=False,
+            nested_depth=None)
         self.assertEqual(self.columns, columns)
         self.assertEqual(tuple(self.data), list(data)[0])
 
@@ -151,7 +154,10 @@ class TestStackResourceList(TestResource):
         columns, data = self.cmd.take_action(parsed_args)
 
         self.resource_client.list.assert_called_with(
-            'my_stack', with_detail=True, nested_depth=None)
+            'my_stack',
+            filters={},
+            with_detail=True,
+            nested_depth=None)
         self.assertEqual(cols, columns)
         self.assertEqual(tuple(out), list(data)[0])
 
@@ -166,7 +172,10 @@ class TestStackResourceList(TestResource):
         columns, data = self.cmd.take_action(parsed_args)
 
         self.resource_client.list.assert_called_with(
-            'my_stack', with_detail=False, nested_depth=3)
+            'my_stack',
+            filters={},
+            with_detail=False,
+            nested_depth=3)
         self.assertEqual(cols, columns)
         self.assertEqual(tuple(out), list(data)[0])
 
@@ -185,15 +194,32 @@ class TestStackResourceList(TestResource):
         columns, data = self.cmd.take_action(parsed_args)
 
         self.resource_client.list.assert_called_with(
-            'my_stack', with_detail=False, nested_depth=None)
+            'my_stack',
+            filters={},
+            with_detail=False,
+            nested_depth=None)
         self.assertEqual(cols, columns)
+
+    def test_resource_list_filter(self):
+        arglist = ['my_stack', '--filter', 'name=my_resource']
+        out = copy.deepcopy(self.data)
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.resource_client.list.assert_called_with(
+            'my_stack',
+            filters=dict(name='my_resource'),
+            with_detail=False,
+            nested_depth=None)
+        self.assertEqual(tuple(out), list(data)[0])
 
 
 class TestResourceMetadata(TestResource):
 
     def setUp(self):
         super(TestResourceMetadata, self).setUp()
-        self.cmd = resources.ResourceMetadata(self.app, None)
+        self.cmd = resource.ResourceMetadata(self.app, None)
         self.resource_client.metadata = mock.Mock(return_value={})
 
     def test_resource_metadata(self):
@@ -230,7 +256,7 @@ class TestResourceSignal(TestResource):
 
     def setUp(self):
         super(TestResourceSignal, self).setUp()
-        self.cmd = resources.ResourceSignal(self.app, None)
+        self.cmd = resource.ResourceSignal(self.app, None)
         self.resource_client.signal = mock.Mock()
 
     def test_resource_signal(self):
