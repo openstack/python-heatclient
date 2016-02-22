@@ -850,12 +850,19 @@ def do_template_validate(hc, args):
 @utils.arg('--with-detail', default=False, action="store_true",
            help=_('Enable detail information presented for each resource '
                   'in resources list.'))
+@utils.arg('-f', '--filter', metavar='<KEY=VALUE>',
+           help=_('Filter parameters to apply on returned resources based on'
+                  ' their name, status, type, action, id and'
+                  ' physcial_resource_id. This can be specified multiple'
+                  ' times.'),
+           action='append')
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
     fields = {
         'stack_id': args.id,
         'nested_depth': args.nested_depth,
         'with_detail': args.with_detail,
+        'filters': utils.format_parameters(args.filter)
     }
     try:
         resources = hc.resources.list(**fields)
