@@ -569,6 +569,13 @@ class TestStackDelete(TestStack):
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
+    def test_stack_delete_forbidden(self):
+        arglist = ['my_stack']
+        self.stack_client.delete.side_effect = heat_exc.Forbidden
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
     def test_stack_delete_one_found_one_not_found(self):
         arglist = ['stack1', 'stack2']
         self.stack_client.delete.side_effect = [None, heat_exc.HTTPNotFound]

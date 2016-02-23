@@ -2607,7 +2607,7 @@ class ShellTestUserPass(ShellBase):
         for r in required:
             self.assertRegexpMatches(delete_text, r)
 
-    def test_stack_delete_failed(self):
+    def test_stack_delete_failed_on_notfound(self):
         self.register_keystone_auth_fixture()
 
         if self.client == http.SessionClient:
@@ -2617,6 +2617,22 @@ class ShellTestUserPass(ShellBase):
             http.HTTPClient.raw_request(
                 'DELETE',
                 '/stacks/teststack1/1').AndRaise(exc.HTTPNotFound())
+        self.m.ReplayAll()
+        error = self.assertRaises(
+            exc.CommandError, self.shell, 'stack-delete teststack1/1')
+        self.assertIn('Unable to delete 1 of the 1 stacks.',
+                      str(error))
+
+    def test_stack_delete_failed_on_forbidden(self):
+        self.register_keystone_auth_fixture()
+
+        if self.client == http.SessionClient:
+            self.client.request(
+                '/stacks/teststack1/1', 'DELETE').AndRaise(exc.Forbidden())
+        else:
+            http.HTTPClient.raw_request(
+                'DELETE',
+                '/stacks/teststack1/1').AndRaise(exc.Forbidden())
         self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell, 'stack-delete teststack1/1')

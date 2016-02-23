@@ -323,7 +323,7 @@ def do_stack_delete(hc, args):
         fields = {'stack_id': sid}
         try:
             hc.stacks.delete(**fields)
-        except exc.HTTPNotFound as e:
+        except (exc.HTTPNotFound, exc.Forbidden) as e:
             failure_count += 1
             print(e)
     if failure_count:

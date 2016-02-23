@@ -653,6 +653,9 @@ class DeleteStack(command.Command):
             except heat_exc.HTTPNotFound:
                 failure_count += 1
                 print(_('Stack not found: %s') % sid)
+            except heat_exc.Forbidden:
+                failure_count += 1
+                print(_('Forbidden: %s') % sid)
 
         if parsed_args.wait:
             for sid, marker in stacks_waiting:
