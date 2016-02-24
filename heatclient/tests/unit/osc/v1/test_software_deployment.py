@@ -398,3 +398,55 @@ class TestDeploymentMetadataShow(TestDeployment):
         self.cmd.take_action(parsed_args)
         self.sd_client.metadata.assert_called_with(
             server_id='ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5')
+
+
+class TestDeploymentOutputShow(TestDeployment):
+
+    get_response = {
+        "status": "IN_PROGRESS",
+        "server_id": "ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5",
+        "config_id": "3d5ec2a8-7004-43b6-a7f6-542bdbe9d434",
+        "output_values": None,
+        "input_values": None,
+        "action": "CREATE",
+        "status_reason": "Deploy data available",
+        "id": "06e87bcc-33a2-4bce-aebd-533e698282d3",
+        "creation_time": "2015-01-31T15:12:36Z",
+        "updated_time": "2015-01-31T15:18:21Z"
+    }
+
+    def setUp(self):
+        super(TestDeploymentOutputShow, self).setUp()
+        self.cmd = software_deployment.ShowOutputDeployment(self.app, None)
+
+    def test_deployment_output_show(self):
+        arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all', '--long']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.sd_client.get = mock.Mock(
+            return_value=software_deployments.SoftwareDeployment(
+                None, self.get_response))
+        self.cmd.take_action(parsed_args)
+        self.sd_client.get.assert_called_with(**{
+            'deployment_id': '85c3a507-351b-4b28-a7d8-531c8d53f4e6'
+            })
+
+    def test_deployment_output_show_invalid(self):
+        arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.sd_client.get = mock.Mock()
+        error = self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)
+        self.assertIn('either <output-name> or --all argument is needed',
+                      str(error))
+
+    def test_deployment_output_show_not_found(self):
+        arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.sd_client.get = mock.Mock()
+        self.sd_client.get.side_effect = heat_exc.HTTPNotFound()
+        self.assertRaises(
+            exc.CommandError,
+            self.cmd.take_action,
+            parsed_args)

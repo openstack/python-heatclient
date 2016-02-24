@@ -140,8 +140,8 @@ class DeleteDeployment(command.Command):
     def get_parser(self, prog_name):
         parser = super(DeleteDeployment, self).get_parser(prog_name)
         parser.add_argument(
-            'id',
-            metavar='<ID>',
+            'deployment',
+            metavar='<deployment>',
             nargs='+',
             help=_('ID of the deployment(s) to delete.')
         )
@@ -152,7 +152,7 @@ class DeleteDeployment(command.Command):
         hc = self.app.client_manager.orchestration
         failure_count = 0
 
-        for deploy_id in parsed_args.id:
+        for deploy_id in parsed_args.deployment:
             try:
                 sd = hc.software_deployments.get(deployment_id=deploy_id)
                 hc.software_deployments.delete(
@@ -178,7 +178,7 @@ class DeleteDeployment(command.Command):
             raise exc.CommandError(_('Unable to delete %(count)s of the '
                                      '%(total)s deployments.') %
                                    {'count': failure_count,
-                                   'total': len(parsed_args.id)})
+                                   'total': len(parsed_args.deployment)})
 
 
 class ListDeployment(lister.Lister):
@@ -229,8 +229,8 @@ class ShowDeployment(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(ShowDeployment, self).get_parser(prog_name)
         parser.add_argument(
-            'id',
-            metavar='<id>',
+            'deployment',
+            metavar='<deployment>',
             help=_('ID of the deployment')
         )
         parser.add_argument(
@@ -246,7 +246,7 @@ class ShowDeployment(show.ShowOne):
         heat_client = self.app.client_manager.orchestration
         try:
             data = heat_client.software_deployments.get(
-                deployment_id=parsed_args.id)
+                deployment_id=parsed_args.deployment)
         except heat_exc.HTTPNotFound:
             raise exc.CommandError(_('Software Deployment not found: %s') % id)
         else:
@@ -286,3 +286,71 @@ class ShowMetadataDeployment(command.Command):
         md = heat_client.software_deployments.metadata(
             server_id=parsed_args.server)
         print(jsonutils.dumps(md, indent=2))
+
+
+class ShowOutputDeployment(command.Command):
+    """Show a specific deployment output."""
+
+    log = logging.getLogger(__name__ + '.ShowOutputDeployment')
+
+    def get_parser(self, prog_name):
+        parser = super(ShowOutputDeployment, self).get_parser(prog_name)
+        parser.add_argument(
+            'deployment',
+            metavar='<deployment>',
+            help=_('ID of deployment to show the output for')
+        )
+        parser.add_argument(
+            'output',
+            metavar='<output-name>',
+            nargs='?',
+            default=None,
+            help=_('Name of an output to display')
+        )
+        parser.add_argument(
+            '--all',
+            default=False,
+            action='store_true',
+            help=_('Display all deployment outputs')
+        )
+        parser.add_argument(
+            '--long',
+            action='store_true',
+            default=False,
+            help='Show full deployment logs in output',
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+        if (not parsed_args.all and parsed_args.output is None or
+                parsed_args.all and parsed_args.output is not None):
+            raise exc.CommandError(
+                _('Error: either %(output)s or %(all)s argument is needed.')
+                % {'output': '<output-name>', 'all': '--all'})
+        try:
+            sd = heat_client.software_deployments.get(
+                deployment_id=parsed_args.deployment)
+        except heat_exc.HTTPNotFound:
+            raise exc.CommandError(_('Deployment not found: %s')
+                                   % parsed_args.deployment)
+        outputs = sd.output_values
+        if outputs:
+            if parsed_args.all:
+                print('output_values:\n')
+                for k in outputs.keys():
+                    format_utils.print_software_deployment_output(
+                        data=outputs, name=k, long=parsed_args.long)
+            else:
+                if parsed_args.output not in outputs:
+                    msg = (_('Output %(output)s does not exist in deployment'
+                             ' %(deployment)s')
+                           % {'output': parsed_args.output,
+                              'deployment': parsed_args.deployment})
+                    raise exc.CommandError(msg)
+                else:
+                    print('output_value:\n')
+                    format_utils.print_software_deployment_output(
+                        data=outputs, name=parsed_args.output)
