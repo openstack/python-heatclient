@@ -261,7 +261,7 @@ def resolve_environment_urls(resource_registry, files, env_base_url,
             # Built in providers like: "X::Compute::Server"
             # don't need downloading.
             return True
-        if key == 'hooks':
+        if key in ['hooks', 'restricted_actions']:
             return True
 
     get_file_contents(rr, files, base_url, ignore_if,
