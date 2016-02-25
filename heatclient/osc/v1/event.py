@@ -15,6 +15,7 @@
 import logging
 import time
 
+from cliff.formatters import base
 from cliff import lister
 from cliff import show
 from openstackclient.common import utils
@@ -88,7 +89,11 @@ class ListEvent(lister.Lister):
 
     @property
     def formatter_default(self):
-        return 'value'
+        return 'log'
+
+    @property
+    def formatter_namespace(self):
+        return 'heatclient.event.formatter.list'
 
     def get_parser(self, prog_name):
         parser = super(ListEvent, self).get_parser(prog_name)
@@ -173,8 +178,8 @@ class ListEvent(lister.Lister):
             nested_depth = 0
 
         if parsed_args.follow:
-            if parsed_args.formatter != 'value':
-                msg = _('--follow can only be specified with --format value')
+            if parsed_args.formatter != 'log':
+                msg = _('--follow can only be specified with --format log')
                 raise exc.CommandError(msg)
 
             marker = parsed_args.marker
@@ -205,9 +210,8 @@ class ListEvent(lister.Lister):
         if parsed_args.sort:
             events = utils.sort_items(events, ','.join(parsed_args.sort))
 
-        if parsed_args.formatter == 'value':
-            events = heat_utils.event_log_formatter(events).split('\n')
-            return [], [e.split(' ') for e in events]
+        if parsed_args.formatter == 'log':
+            return [], events
 
         if len(events):
             if hasattr(events[0], 'resource_name'):
@@ -220,3 +224,14 @@ class ListEvent(lister.Lister):
             columns,
             (utils.get_item_properties(s, columns) for s in events)
         )
+
+
+class LogFormatter(base.ListFormatter):
+    """A formatter which prints event objects in a log style"""
+
+    def add_argument_group(self, parser):
+        pass
+
+    def emit_list(self, column_names, data, stdout, parsed_args):
+        stdout.write(heat_utils.event_log_formatter(data))
+        stdout.write('\n')

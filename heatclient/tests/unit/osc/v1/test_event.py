@@ -225,14 +225,13 @@ class TestEventList(TestEvent):
         self.assertEqual([], data)
         self.assertEqual(expected, self.fake_stdout.make_string())
 
-    def test_event_list_value_format(self):
+    def test_event_list_log_format(self):
         arglist = ['my_stack']
         expected = ('2015-11-13 10:02:17 [resource1]: CREATE_COMPLETE  '
-                    'state changed')
+                    'state changed\n')
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
-        columns, data = self.cmd.take_action(parsed_args)
+        self.cmd.run(parsed_args)
 
         self.event_client.list.assert_called_with(**self.defaults)
-        self.assertEqual([], columns)
-        self.assertEqual([expected.split(' ')], data)
+        self.assertEqual(expected, self.fake_stdout.make_string())
