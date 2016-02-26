@@ -921,21 +921,24 @@ class _TestStackCheckBase(object):
         self.mock_client.stacks.get = mock.Mock(
             return_value=self.stack)
 
-    def _test_stack_action(self):
+    def _test_stack_action(self, get_call_count=1):
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
         self.action.assert_called_once_with('my_stack')
-        self.mock_client.stacks.get.assert_called_once_with('my_stack')
+        self.mock_client.stacks.get.assert_called_with('my_stack')
+        self.assertEqual(get_call_count,
+                         self.mock_client.stacks.get.call_count)
         self.assertEqual(self.columns, columns)
         self.assertEqual(1, len(rows))
 
-    def _test_stack_action_multi(self):
+    def _test_stack_action_multi(self, get_call_count=2):
         arglist = ['my_stack1', 'my_stack2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
         self.assertEqual(2, self.action.call_count)
-        self.assertEqual(2, self.mock_client.stacks.get.call_count)
+        self.assertEqual(get_call_count,
+                         self.mock_client.stacks.get.call_count)
         self.action.assert_called_with('my_stack2')
         self.mock_client.stacks.get.assert_called_with('my_stack2')
         self.assertEqual(self.columns, columns)
@@ -948,7 +951,7 @@ class _TestStackCheckBase(object):
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
         self.action.assert_called_with('my_stack')
-        self.mock_client.stacks.get.assert_called_once_with('my_stack')
+        self.mock_client.stacks.get.assert_called_with('my_stack')
         self.assertEqual(self.columns, columns)
         self.assertEqual(1, len(rows))
 
@@ -1026,30 +1029,50 @@ class TestStackResume(_TestStackCheckBase, TestStack):
         self._test_stack_action_exception()
 
 
-class TestStackUpdateCancel(_TestStackCheckBase, TestStack):
+class TestStackCancel(_TestStackCheckBase, TestStack):
+
+    stack_update_in_progress = stacks.Stack(None, {
+        "id": '1234',
+        "stack_name": 'my_stack',
+        "creation_time": "2013-08-04T20:57:55Z",
+        "updated_time": "2013-08-04T20:57:55Z",
+        "stack_status": "UPDATE_IN_PROGRESS"
+    })
 
     def setUp(self):
-        super(TestStackUpdateCancel, self).setUp()
+        super(TestStackCancel, self).setUp()
         self.mock_client.actions.cancel_update = mock.Mock()
         self._setUp(
-            stack.UpdateCancelStack(self.app, None),
+            stack.CancelStack(self.app, None),
             self.mock_client.actions.cancel_update
         )
+        self.mock_client.stacks.get = mock.Mock(
+            return_value=self.stack_update_in_progress)
 
-    def test_stack_cancel_update(self):
-        self._test_stack_action()
+    def test_stack_cancel(self):
+        self._test_stack_action(2)
 
-    def test_stack_cancel_update_multi(self):
-        self._test_stack_action_multi()
+    def test_stack_cancel_multi(self):
+        self._test_stack_action_multi(4)
 
-    def test_stack_cancel_update_wait(self):
+    def test_stack_cancel_wait(self):
         self._test_stack_action_wait()
 
-    def test_stack_cancel_update_wait_error(self):
+    def test_stack_cancel_wait_error(self):
         self._test_stack_action_wait_error()
 
-    def test_stack_cancel_update_exception(self):
+    def test_stack_cancel_exception(self):
         self._test_stack_action_exception()
+
+    def test_stack_cancel_unsupported_state(self):
+        self.mock_client.stacks.get = mock.Mock(
+            return_value=self.stack)
+        error = self.assertRaises(exc.CommandError,
+                                  self._test_stack_action,
+                                  2)
+        self.assertEqual('Stack my_stack with status \'create_complete\' '
+                         'not in cancelable state',
+                         str(error))
 
 
 class TestStackCheck(_TestStackCheckBase, TestStack):
