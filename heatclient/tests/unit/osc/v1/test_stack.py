@@ -129,7 +129,10 @@ class TestStackCreate(TestStack):
 
         self.stack_client.create.assert_called_with(**kwargs)
 
-    def test_stack_create_wait(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('CREATE_COMPLETE',
+                              'Stack my_stack CREATE_COMPLETE'))
+    def test_stack_create_wait(self, mock_poll):
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -138,8 +141,9 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**self.defaults)
         self.stack_client.get.assert_called_with(**{'stack_id': '1234'})
 
-    @mock.patch('openstackclient.common.utils.wait_for_status',
-                return_value=False)
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('CREATE_FAILED',
+                              'Stack my_stack CREATE_FAILED'))
     def test_stack_create_wait_fail(self, mock_wait):
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
