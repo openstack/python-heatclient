@@ -40,6 +40,3 @@ class ClientTestBase(base.ClientTestBase):
 
     def heat(self, *args, **kwargs):
         return self.clients.heat(*args, **kwargs)
-
-    def openstack(self, *args, **kwargs):
-        return self.clients.openstack(*args, **kwargs)
