@@ -1009,6 +1009,28 @@ def do_resource_signal(hc, args):
 
 
 @utils.arg('id', metavar='<NAME or ID>',
+           help=_('Name or ID of stack the resource belongs to.'))
+@utils.arg('resource', metavar='<RESOURCE>',
+           help=_('Name of the resource.'))
+@utils.arg('reason', default="", nargs='?',
+           help=_('Reason for state change.'))
+@utils.arg('--reset', default=False, action="store_true",
+           help=_('Set the resource as healthy.'))
+def do_resource_mark_unhealthy(hc, args):
+    '''Set resource's health.'''
+    fields = {'stack_id': args.id,
+              'resource_name': args.resource,
+              'mark_unhealthy': not args.reset,
+              'resource_status_reason': args.reason}
+    try:
+        hc.resources.mark_unhealthy(**fields)
+    except exc.HTTPNotFound:
+        raise exc.CommandError(_('Stack or resource not found: '
+                                 '%(id)s %(resource)s') %
+                               {'id': args.id, 'resource': args.resource})
+
+
+@utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of the stack these resources belong to.'))
 @utils.arg('--pre-create', action='store_true', default=False,
            help=_('Clear the pre-create hooks (optional)'))

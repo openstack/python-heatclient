@@ -117,6 +117,27 @@ class ResourceManager(stacks.StackChildManager):
         body = utils.get_response_body(resp)
         return body
 
+    def mark_unhealthy(self, stack_id, resource_name,
+                       mark_unhealthy, resource_status_reason):
+        """Mark a resource as healthy or unhealthy.
+
+        :param stack_id: ID of stack containing the resource
+        :param resource_name: ID of resource
+        :param mark_unhealthy: Mark resource unhealthy if set to True
+        :param resource_status_reason: Reason for resource status change.
+        """
+        stack_id = self._resolve_stack_id(stack_id)
+        url_str = '/stacks/%s/resources/%s' % (
+                  parse.quote(stack_id, ''),
+                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+        resp = self.client.patch(
+            url_str,
+            data={"mark_unhealthy": mark_unhealthy,
+                  "resource_status_reason": resource_status_reason})
+
+        body = utils.get_response_body(resp)
+        return body
+
     def generate_template(self, resource_name):
         """Deprecated in favor of generate_template in ResourceTypeManager."""
 
