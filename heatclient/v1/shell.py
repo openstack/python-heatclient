@@ -103,8 +103,9 @@ def do_stack_create(hc, args):
         args.template_url,
         args.template_object,
         _authenticated_fetcher(hc))
+    env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment_file)
+        env_paths=args.environment_file, env_list_tracker=env_files_list)
 
     if args.create_timeout:
         logger.warning(_LW('%(arg1)s is deprecated, '
@@ -127,6 +128,10 @@ def do_stack_create(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    # If one or more environments is found, pass the listing to the server
+    if env_files_list:
+        fields['environment_files'] = env_files_list
 
     if args.tags:
         fields['tags'] = args.tags
@@ -249,8 +254,9 @@ def do_stack_preview(hc, args):
         args.template_url,
         args.template_object,
         _authenticated_fetcher(hc))
+    env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment_file)
+        env_paths=args.environment_file, env_list_tracker=env_files_list)
 
     fields = {
         'stack_name': args.name,
@@ -264,6 +270,10 @@ def do_stack_preview(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    # If one or more environments is found, pass the listing to the server
+    if env_files_list:
+        fields['environment_files'] = env_files_list
 
     if args.tags:
         fields['tags'] = args.tags
@@ -461,9 +471,9 @@ def do_stack_update(hc, args):
         args.template_object,
         _authenticated_fetcher(hc),
         existing=args.existing)
-
+    env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment_file)
+        env_paths=args.environment_file, env_list_tracker=env_files_list)
 
     if args.pre_update:
         template_utils.hooks_to_env(env, args.pre_update, 'pre-update')
@@ -479,6 +489,10 @@ def do_stack_update(hc, args):
         'files': dict(list(tpl_files.items()) + list(env_files.items())),
         'environment': env
     }
+
+    # If one or more environments is found, pass the listing to the server
+    if env_files_list:
+        fields['environment_files'] = env_files_list
 
     if args.tags:
         fields['tags'] = args.tags
@@ -831,8 +845,10 @@ def do_template_validate(hc, args):
         args.template_object,
         _authenticated_fetcher(hc))
 
+    env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment_file)
+        env_paths=args.environment_file, env_list_tracker=env_files_list)
+
     fields = {
         'template': template,
         'parameters': utils.format_parameters(args.parameters),
@@ -842,6 +858,10 @@ def do_template_validate(hc, args):
 
     if args.ignore_errors:
         fields['ignore_errors'] = args.ignore_errors
+
+    # If one or more environments is found, pass the listing to the server
+    if env_files_list:
+        fields['environment_files'] = env_files_list
 
     if args.show_nested:
         fields['show_nested'] = args.show_nested
