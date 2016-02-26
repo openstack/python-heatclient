@@ -349,14 +349,21 @@ class UpdateStack(show.ShowOne):
 
             return columns, data
 
-        client.stacks.update(**fields)
         if parsed_args.wait:
-            if not utils.wait_for_status(client.stacks.get, parsed_args.stack,
-                                         status_field='stack_status',
-                                         success_status='update_complete',
-                                         error_status='update_failed'):
+            # find the last event to use as the marker
+            events = event_utils.get_events(client,
+                                            stack_id=parsed_args.stack,
+                                            event_args={'sort_dir': 'desc',
+                                                        'limit': 1})
+            marker = events[0].id if events else None
 
-                msg = _('Stack %s failed to update.') % parsed_args.stack
+        client.stacks.update(**fields)
+
+        if parsed_args.wait:
+            stack = client.stacks.get(parsed_args.stack)
+            stack_status, msg = event_utils.poll_for_events(
+                client, stack.stack_name, action='UPDATE', marker=marker)
+            if stack_status == 'UPDATE_FAILED':
                 raise exc.CommandError(msg)
 
         return _show_stack(client, parsed_args.stack, format='table',

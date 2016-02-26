@@ -315,20 +315,30 @@ class TestStackUpdate(TestStack):
         self.stack_client.preview_update.assert_called_with(**self.defaults)
         self.stack_client.update.assert_not_called()
 
-    def test_stack_update_wait(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('UPDATE_COMPLETE',
+                              'Stack my_stack UPDATE_COMPLETE'))
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def test_stack_update_wait(self, ge, mock_poll):
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.get.return_value = mock.MagicMock(
+            stack_name='my_stack')
 
         self.cmd.take_action(parsed_args)
 
         self.stack_client.update.assert_called_with(**self.defaults)
         self.stack_client.get.assert_called_with(**{'stack_id': 'my_stack'})
 
-    @mock.patch('openstackclient.common.utils.wait_for_status',
-                return_value=False)
-    def test_stack_update_wait_fail(self, mock_wait):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('UPDATE_FAILED',
+                              'Stack my_stack UPDATE_FAILED'))
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def test_stack_update_wait_fail(self, ge, mock_poll):
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.stack_client.get.return_value = mock.MagicMock(
+            stack_name='my_stack')
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
