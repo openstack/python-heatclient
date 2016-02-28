@@ -39,8 +39,8 @@ class DeleteConfig(command.Command):
     def get_parser(self, prog_name):
         parser = super(DeleteConfig, self).get_parser(prog_name)
         parser.add_argument(
-            'id',
-            metavar='<ID>',
+            'config',
+            metavar='<config>',
             nargs='+',
             help=_('IDs of the software configs to delete')
         )
@@ -56,7 +56,7 @@ class DeleteConfig(command.Command):
 def _delete_config(heat_client, args):
     failure_count = 0
 
-    for config_id in args.id:
+    for config_id in args.config:
         try:
             heat_client.software_configs.delete(
                 config_id=config_id)
@@ -70,7 +70,7 @@ def _delete_config(heat_client, args):
         raise exc.CommandError(_('Unable to delete %(count)s of the '
                                  '%(total)s software configs.') %
                                {'count': failure_count,
-                                'total': len(args.id)})
+                                'total': len(args.config)})
 
 
 class ListConfig(lister.Lister):
@@ -82,12 +82,12 @@ class ListConfig(lister.Lister):
         parser = super(ListConfig, self).get_parser(prog_name)
         parser.add_argument(
             '--limit',
-            metavar='<LIMIT>',
+            metavar='<limit>',
             help=_('Limit the number of configs returned')
         )
         parser.add_argument(
             '--marker',
-            metavar='<ID>',
+            metavar='<id>',
             help=_('Return configs that appear after the given config ID')
         )
         return parser
@@ -119,23 +119,23 @@ class CreateConfig(format_utils.JsonFormat):
         parser = super(CreateConfig, self).get_parser(prog_name)
         parser.add_argument(
             'name',
-            metavar='<CONFIG_NAME>',
+            metavar='<config-name>',
             help=_('Name of the software config to create')
         )
         parser.add_argument(
             '--config-file',
-            metavar='<FILE or URL>',
+            metavar='<config-file>',
             help=_('Path to JSON/YAML containing map defining '
                    '<inputs>, <outputs>, and <options>')
         )
         parser.add_argument(
             '--definition-file',
-            metavar='<FILE or URL>',
+            metavar='<destination-file>',
             help=_('Path to software config script/data')
         )
         parser.add_argument(
             '--group',
-            metavar='<GROUP_NAME>',
+            metavar='<group>',
             default='Heat::Ungrouped',
             help=_('Group name of tool expected by the software config')
         )
@@ -196,8 +196,8 @@ class ShowConfig(format_utils.YamlFormat):
     def get_parser(self, prog_name):
         parser = super(ShowConfig, self).get_parser(prog_name)
         parser.add_argument(
-            'id',
-            metavar='<ID>',
+            'config',
+            metavar='<config>',
             help=_('ID of the config')
         )
         parser.add_argument(
@@ -211,7 +211,7 @@ class ShowConfig(format_utils.YamlFormat):
     def take_action(self, parsed_args):
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
-        return _show_config(heat_client, config_id=parsed_args.id,
+        return _show_config(heat_client, config_id=parsed_args.config,
                             config_only=parsed_args.config_only)
 
 

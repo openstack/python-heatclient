@@ -39,21 +39,21 @@ class CreateDeployment(format_utils.YamlFormat):
         parser = super(CreateDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'name',
-            metavar='<DEPLOYMENT_NAME>',
+            metavar='<deployment-name>',
             help=_('Name of the derived config associated with this '
                    'deployment. This is used to apply a sort order to the '
                    'list of configurations currently deployed to the server.')
         )
         parser.add_argument(
             '--input-value',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             action='append',
             help=_('Input value to set on the deployment. This can be '
                    'specified multiple times.')
         )
         parser.add_argument(
             '--action',
-            metavar='<ACTION>',
+            metavar='<action>',
             default='UPDATE',
             help=_('Name of an action for this deployment. This can be a '
                    'custom action, or one of CREATE, UPDATE, DELETE, SUSPEND, '
@@ -61,18 +61,18 @@ class CreateDeployment(format_utils.YamlFormat):
         )
         parser.add_argument(
             '--config',
-            metavar='<CONFIG>',
+            metavar='<config>',
             help=_('ID of the configuration to deploy')
         )
         parser.add_argument(
             '--server',
-            metavar='<SERVER>',
+            metavar='<server>',
             required=True,
             help=_('ID of the server being deployed to')
         )
         parser.add_argument(
             '--signal-transport',
-            metavar='<TRANSPORT>',
+            metavar='<signal-transport>',
             default='TEMP_URL_SIGNAL',
             help=_('How the server should signal to heat with the deployment '
                    'output values. TEMP_URL_SIGNAL will create a Swift '
@@ -84,13 +84,14 @@ class CreateDeployment(format_utils.YamlFormat):
         )
         parser.add_argument(
             '--container',
-            metavar='<CONTAINER_NAME>',
+            metavar='<container>',
             help=_('Optional name of container to store TEMP_URL_SIGNAL '
                    'objects in. If not specified a container will be created '
                    'with a name derived from the DEPLOY_NAME')
         )
         parser.add_argument(
             '--timeout',
+            metavar='<timeout>',
             type=int,
             default=60,
             help=_('Deployment timeout in minutes')
@@ -190,7 +191,7 @@ class ListDeployment(lister.Lister):
         parser = super(ListDeployment, self).get_parser(prog_name)
         parser.add_argument(
             '--server',
-            metavar='<SERVER>',
+            metavar='<server>',
             help=_('ID of the server to fetch deployments for')
         )
         parser.add_argument(

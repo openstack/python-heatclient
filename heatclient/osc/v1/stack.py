@@ -57,25 +57,25 @@ class CreateStack(show.ShowOne):
         parser = super(CreateStack, self).get_parser(prog_name)
         parser.add_argument(
             '-t', '--template',
-            metavar='<FILE or URL>',
+            metavar='<template>',
             required=True,
             help=_('Path to the template')
         )
         parser.add_argument(
             '-e', '--environment',
-            metavar='<FILE or URL>',
+            metavar='<environment>',
             action='append',
             help=_('Path to the environment. Can be specified multiple times')
         )
         parser.add_argument(
             '--timeout',
-            metavar='<TIMEOUT>',
+            metavar='<timeout>',
             type=int,
             help=_('Stack creating timeout in minutes')
         )
         parser.add_argument(
             '--pre-create',
-            metavar='<RESOURCE>',
+            metavar='<resource>',
             default=None,
             action='append',
             help=_('Name of a resource to set a pre-create hook to. Resources '
@@ -92,14 +92,14 @@ class CreateStack(show.ShowOne):
         )
         parser.add_argument(
             '--parameter',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             action='append',
             help=_('Parameter values used to create the stack. This can be '
                    'specified multiple times')
         )
         parser.add_argument(
             '--parameter-file',
-            metavar='<KEY=FILE>',
+            metavar='<key=file>',
             action='append',
             help=_('Parameter values from file used to create the stack. '
                    'This can be specified multiple times. Parameter values '
@@ -112,7 +112,7 @@ class CreateStack(show.ShowOne):
         )
         parser.add_argument(
             '--tags',
-            metavar='<TAG1,TAG2...>',
+            metavar='<tag1,tag2...>',
             help=_('A list of tags to associate with the stack')
         )
         parser.add_argument(
@@ -123,7 +123,7 @@ class CreateStack(show.ShowOne):
         )
         parser.add_argument(
             'name',
-            metavar='<STACK_NAME>',
+            metavar='<stack-name>',
             help=_('Name of the stack to create')
         )
 
@@ -207,16 +207,16 @@ class UpdateStack(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(UpdateStack, self).get_parser(prog_name)
         parser.add_argument(
-            '-t', '--template', metavar='<FILE or URL>',
+            '-t', '--template', metavar='<template>',
             help=_('Path to the template')
         )
         parser.add_argument(
-            '-e', '--environment', metavar='<FILE or URL>',
+            '-e', '--environment', metavar='<environment>',
             action='append',
             help=_('Path to the environment. Can be specified multiple times')
         )
         parser.add_argument(
-            '--pre-update', metavar='<RESOURCE>', action='append',
+            '--pre-update', metavar='<resource>', action='append',
             help=_('Name of a resource to set a pre-update hook to. Resources '
                    'in nested stacks can be set using slash as a separator: '
                    'nested_stack/another/my_resource. You can use wildcards '
@@ -225,11 +225,11 @@ class UpdateStack(show.ShowOne):
                    'multiple times')
         )
         parser.add_argument(
-            '--timeout', metavar='<TIMEOUT>', type=int,
+            '--timeout', metavar='<timeout>', type=int,
             help=_('Stack update timeout in minutes')
         )
         parser.add_argument(
-            '--rollback', metavar='<VALUE>',
+            '--rollback', metavar='<value>',
             help=_('Set rollback on update failure. '
                    'Value "enabled" sets rollback to enabled. '
                    'Value "disabled" sets rollback to disabled. '
@@ -242,13 +242,13 @@ class UpdateStack(show.ShowOne):
                    'would be changed')
         )
         parser.add_argument(
-            '--parameter', metavar='<KEY=VALUE>',
+            '--parameter', metavar='<key=value>',
             help=_('Parameter values used to create the stack. '
                    'This can be specified multiple times'),
             action='append'
         )
         parser.add_argument(
-            '--parameter-file', metavar='<KEY=FILE>',
+            '--parameter-file', metavar='<key=file>',
             help=_('Parameter values from file used to create the stack. '
                    'This can be specified multiple times. Parameter value '
                    'would be the content of the file'),
@@ -266,7 +266,7 @@ class UpdateStack(show.ShowOne):
                        'arg': '--parameter', 'env_arg': '--environment'}
         )
         parser.add_argument(
-            '--clear-parameter', metavar='<PARAMETER>',
+            '--clear-parameter', metavar='<parameter>',
             help=_('Remove the parameters from the set of parameters of '
                    'current stack for the %(cmd)s. The default value in the '
                    'template will be used. This can be specified multiple '
@@ -274,11 +274,11 @@ class UpdateStack(show.ShowOne):
             action='append'
         )
         parser.add_argument(
-            'stack', metavar='<STACK>',
+            'stack', metavar='<stack>',
             help=_('Name or ID of stack to update')
         )
         parser.add_argument(
-            '--tags', metavar='<TAG1,TAG2>',
+            '--tags', metavar='<tag1,tag2...>',
             help=_('An updated list of tags to associate with the stack')
         )
         parser.add_argument(
@@ -463,37 +463,37 @@ class ListStack(lister.Lister):
         parser.add_argument(
             '--property',
             dest='properties',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             help=_('Filter properties to apply on returned stacks (repeat to '
                    'filter on multiple properties)'),
             action=parseractions.KeyValueAction
         )
         parser.add_argument(
             '--tags',
-            metavar='<TAG1,TAG2...>',
+            metavar='<tag1,tag2...>',
             help=_('List of tags to filter by. Can be combined with '
                    '--tag-mode to specify how to filter tags')
         )
         parser.add_argument(
             '--tag-mode',
-            metavar='<MODE>',
+            metavar='<mode>',
             help=_('Method of filtering tags. Must be one of "any", "not", '
                    'or "not-any". If not specified, multiple tags will be '
                    'combined with the boolean AND expression')
         )
         parser.add_argument(
             '--limit',
-            metavar='<LIMIT>',
+            metavar='<limit>',
             help=_('The number of stacks returned')
         )
         parser.add_argument(
             '--marker',
-            metavar='<ID>',
+            metavar='<id>',
             help=_('Only return stacks that appear after the given ID')
         )
         parser.add_argument(
             '--sort',
-            metavar='<KEY>[:<DIRECTION>]',
+            metavar='<key>[:<direction>]',
             help=_('Sort output by selected keys and directions (asc or desc) '
                    '(default: asc). Specify multiple times to sort on '
                    'multiple properties')
@@ -666,24 +666,24 @@ class AdoptStack(show.ShowOne):
         parser = super(AdoptStack, self).get_parser(prog_name)
         parser.add_argument(
             'name',
-            metavar='<STACK_NAME>',
+            metavar='<stack-name>',
             help=_('Name of the stack to adopt')
         )
         parser.add_argument(
             '-e', '--environment',
-            metavar='<FILE or URL>',
+            metavar='<environment>',
             action='append',
             help=_('Path to the environment. Can be specified multiple times')
         )
         parser.add_argument(
             '--timeout',
-            metavar='<TIMEOUT>',
+            metavar='<timeout>',
             type=int,
             help=_('Stack creation timeout in minutes')
         )
         parser.add_argument(
             '--adopt-file',
-            metavar='<FILE or URL>',
+            metavar='<adopt-file>',
             required=True,
             help=_('Path to adopt stack data file')
         )
@@ -694,7 +694,7 @@ class AdoptStack(show.ShowOne):
         )
         parser.add_argument(
             '--parameter',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             action='append',
             help=_('Parameter values used to create the stack. Can be '
                    'specified multiple times')
@@ -749,12 +749,12 @@ class AbandonStack(format_utils.JsonFormat):
         parser = super(AbandonStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to abandon')
         )
         parser.add_argument(
             '--output-file',
-            metavar='<FILE>',
+            metavar='<output-file>',
             help=_('File to output abandon results')
         )
 
@@ -793,12 +793,12 @@ class OutputShowStack(show.ShowOne):
         parser = super(OutputShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to query')
         )
         parser.add_argument(
             'output',
-            metavar='<OUTPUT NAME>',
+            metavar='<output>',
             nargs='?',
             default=None,
             help=_('Name of an output to display')
@@ -868,7 +868,7 @@ class OutputListStack(lister.Lister):
         parser = super(OutputListStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to query')
         )
         return parser
@@ -901,7 +901,7 @@ class TemplateShowStack(format_utils.YamlFormat):
         parser = super(TemplateShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
-            metavar='<NAME or ID>',
+            metavar='<stack>',
             help=_('Name or ID of stack to query')
         )
         return parser

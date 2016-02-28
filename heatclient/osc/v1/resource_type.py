@@ -34,12 +34,12 @@ class ResourceTypeShow(format_utils.YamlFormat):
                        self).get_parser(prog_name)
         parser.add_argument(
             'resource_type',
-            metavar='<RESOURCE_TYPE>',
+            metavar='<resource-type>',
             help=_('Resource type to show details for'),
         )
         parser.add_argument(
             '--template-type',
-            metavar='<TEMPLATE_TYPE>',
+            metavar='<template-type>',
             help=_('Optional template type to generate, hot or cfn')
         )
         return parser
@@ -84,7 +84,7 @@ class ResourceTypeList(lister.Lister):
         parser.add_argument(
             '--filter',
             dest='filter',
-            metavar='<KEY=VALUE>',
+            metavar='<key=value>',
             help=_('Filter parameters to apply on returned resource types. '
                    'This can be specified multiple times. It can be any of '
                    'name, version or support_status'),
