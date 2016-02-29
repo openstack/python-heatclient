@@ -92,21 +92,16 @@ abcde
         self.assertEqual(expected, self.app.stdout.make_string())
 
     def test_indent_and_truncate(self):
-        self.assertEqual(
-            None,
-            format_utils.indent_and_truncate(None))
-        self.assertEqual(
-            None,
-            format_utils.indent_and_truncate(None, truncate=True))
+        self.assertIsNone(format_utils.indent_and_truncate(None))
+        self.assertIsNone(format_utils.indent_and_truncate(None,
+                                                           truncate=True))
         self.assertEqual(
             '',
             format_utils.indent_and_truncate(''))
         self.assertEqual(
             'one',
             format_utils.indent_and_truncate('one'))
-        self.assertEqual(
-            None,
-            format_utils.indent_and_truncate(None, spaces=2))
+        self.assertIsNone(format_utils.indent_and_truncate(None, spaces=2))
         self.assertEqual(
             '',
             format_utils.indent_and_truncate('', spaces=2))

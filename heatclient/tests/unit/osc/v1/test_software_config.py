@@ -260,8 +260,8 @@ class TestConfigShow(TestConfig):
         self.mock_client.software_configs.get.assert_called_with(**{
             'config_id': '96dfee3f-27b7-42ae-a03e-966226871ae6',
         })
-        self.assertEqual(None, columns)
-        self.assertEqual(None, data)
+        self.assertIsNone(columns)
+        self.assertIsNone(data)
 
     def test_config_show_not_found(self):
         arglist = ['96dfee3f-27b7-42ae-a03e-966226871ae6']
