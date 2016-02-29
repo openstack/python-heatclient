@@ -631,25 +631,39 @@ class DeleteStack(command.Command):
         failure_count = 0
         stacks_waiting = []
         for sid in parsed_args.stack:
+            marker = None
+            if parsed_args.wait:
+                try:
+                    # find the last event to use as the marker
+                    events = event_utils.get_events(heat_client,
+                                                    stack_id=sid,
+                                                    event_args={
+                                                        'sort_dir': 'desc',
+                                                        'limit': 1})
+                    if events:
+                        marker = events[0].id
+                except heat_exc.CommandError as ex:
+                    failure_count += 1
+                    print(ex)
+                    continue
+
             try:
                 heat_client.stacks.delete(sid)
-                stacks_waiting.append(sid)
+                stacks_waiting.append((sid, marker))
             except heat_exc.HTTPNotFound:
                 failure_count += 1
                 print(_('Stack not found: %s') % sid)
 
         if parsed_args.wait:
-            for sid in stacks_waiting:
-                def status_f(id):
-                    return heat_client.stacks.get(id).to_dict()
-
-                # TODO(jonesbr): switch to use openstack client wait_for_delete
-                # when version 2.1.0 is adopted.
-                if not heat_utils.wait_for_delete(status_f,
-                                                  sid,
-                                                  status_field='stack_status'):
+            for sid, marker in stacks_waiting:
+                try:
+                    stack_status, msg = event_utils.poll_for_events(
+                        heat_client, sid, action='DELETE', marker=marker)
+                except heat_exc.CommandError:
+                    continue
+                if stack_status == 'DELETE_FAILED':
                     failure_count += 1
-                    print(_('Stack failed to delete: %s') % sid)
+                    print(msg)
 
         if failure_count:
             msg = (_('Unable to delete %(count)d of the %(total)d stacks.') %

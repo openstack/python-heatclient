@@ -581,38 +581,35 @@ class TestStackDelete(TestStack):
         self.stack_client.delete.assert_any_call('stack2')
         self.assertEqual('Unable to delete 1 of the 2 stacks.', str(error))
 
-    def test_stack_delete_wait(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events',
+                return_value=('DELETE_COMPLETE',
+                              'Stack my_stack DELETE_COMPLETE'))
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def test_stack_delete_wait(self, mock_get_event, mock_poll, ):
         arglist = ['stack1', 'stack2', 'stack3', '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
-
         self.cmd.take_action(parsed_args)
-
         self.stack_client.delete.assert_any_call('stack1')
-        self.stack_client.get.assert_any_call('stack1')
         self.stack_client.delete.assert_any_call('stack2')
-        self.stack_client.get.assert_any_call('stack2')
         self.stack_client.delete.assert_any_call('stack3')
-        self.stack_client.get.assert_any_call('stack3')
 
-    def test_stack_delete_wait_one_pass_one_fail(self):
+    @mock.patch('heatclient.common.event_utils.poll_for_events')
+    @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
+    def test_stack_delete_wait_fail(self, mock_get_event, mock_poll):
+        mock_poll.side_effect = [['DELETE_COMPLETE',
+                                  'Stack my_stack DELETE_COMPLETE'],
+                                 ['DELETE_FAILED',
+                                  'Stack my_stack DELETE_FAILED'],
+                                 ['DELETE_COMPLETE',
+                                  'Stack my_stack DELETE_COMPLETE']]
         arglist = ['stack1', 'stack2', 'stack3', '--wait']
-        self.stack_client.get.side_effect = [
-            stacks.Stack(None, {'stack_status': 'DELETE_FAILED'}),
-            heat_exc.HTTPNotFound,
-            stacks.Stack(None, {'stack_status': 'DELETE_FAILED'}),
-        ]
         parsed_args = self.check_parser(self.cmd, arglist, [])
-
         error = self.assertRaises(exc.CommandError,
                                   self.cmd.take_action, parsed_args)
-
         self.stack_client.delete.assert_any_call('stack1')
-        self.stack_client.get.assert_any_call('stack1')
         self.stack_client.delete.assert_any_call('stack2')
-        self.stack_client.get.assert_any_call('stack2')
         self.stack_client.delete.assert_any_call('stack3')
-        self.stack_client.get.assert_any_call('stack3')
-        self.assertEqual('Unable to delete 2 of the 3 stacks.', str(error))
+        self.assertEqual('Unable to delete 1 of the 3 stacks.', str(error))
 
     @mock.patch('sys.stdin', spec=six.StringIO)
     def test_stack_delete_prompt(self, mock_stdin):

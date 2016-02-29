@@ -17,7 +17,6 @@ import base64
 import logging
 import os
 import textwrap
-import time
 import uuid
 
 from oslo_serialization import jsonutils
@@ -114,30 +113,6 @@ def event_log_formatter(events):
         event_log.append(log)
 
     return "\n".join(event_log)
-
-
-def wait_for_delete(status_f,
-                    res_id,
-                    status_field='status',
-                    sleep_time=5,
-                    timeout=300):
-    """Wait for resource deletion."""
-
-    total_time = 0
-    while total_time < timeout:
-        try:
-            res = status_f(res_id)
-        except exc.HTTPNotFound:
-            return True
-
-        status = res.get(status_field, '').lower()
-        if 'failed' in status:
-            return False
-
-        time.sleep(sleep_time)
-        total_time += sleep_time
-
-    return False
 
 
 def print_update_list(lst, fields, formatters=None):
