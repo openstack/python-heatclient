@@ -1,0 +1,204 @@
+{
+    "resources": [
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7/resources/rg1",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7",
+                    "rel": "stack"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53/07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39",
+                    "rel": "nested"
+                }
+            ],
+            "logical_resource_id": "rg1",
+            "physical_resource_id": "07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39",
+            "required_by": [],
+            "resource_name": "rg1",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::ResourceGroup",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53/07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39/resources/1",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53/07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39",
+                    "rel": "stack"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c/105a252b-17d7-4bda-b47c-ad33ef113ce2",
+                    "rel": "nested"
+                }
+            ],
+            "logical_resource_id": "1",
+            "parent_resource": "rg1",
+            "physical_resource_id": "105a252b-17d7-4bda-b47c-ad33ef113ce2",
+            "required_by": [],
+            "resource_name": "1",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::ResourceGroup",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c/105a252b-17d7-4bda-b47c-ad33ef113ce2/resources/1",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c/105a252b-17d7-4bda-b47c-ad33ef113ce2",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "1",
+            "parent_resource": "1",
+            "physical_resource_id": "dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c-1-uiq2mqi3wxvi",
+            "required_by": [],
+            "resource_name": "1",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c/105a252b-17d7-4bda-b47c-ad33ef113ce2/resources/0",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c/105a252b-17d7-4bda-b47c-ad33ef113ce2",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "0",
+            "parent_resource": "1",
+            "physical_resource_id": "dot_test-rg1-fhwpldmwgi53-1-omdjadmwtu2c-0-3x7zr6jblmev",
+            "required_by": [],
+            "resource_name": "0",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53/07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39/resources/0",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53/07e7dd08-efe9-4f52-a5c0-9dc29d9ccd39",
+                    "rel": "stack"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij/62a26d5f-73d6-43f1-946d-0a7c1b93f761",
+                    "rel": "nested"
+                }
+            ],
+            "logical_resource_id": "0",
+            "parent_resource": "rg1",
+            "physical_resource_id": "62a26d5f-73d6-43f1-946d-0a7c1b93f761",
+            "required_by": [],
+            "resource_name": "0",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::ResourceGroup",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij/62a26d5f-73d6-43f1-946d-0a7c1b93f761/resources/1",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij/62a26d5f-73d6-43f1-946d-0a7c1b93f761",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "1",
+            "parent_resource": "0",
+            "physical_resource_id": "dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij-1-kww7wmvmoawr",
+            "required_by": [],
+            "resource_name": "1",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij/62a26d5f-73d6-43f1-946d-0a7c1b93f761/resources/0",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij/62a26d5f-73d6-43f1-946d-0a7c1b93f761",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "0",
+            "parent_resource": "0",
+            "physical_resource_id": "dot_test-rg1-fhwpldmwgi53-0-fbof4yqwgqij-0-4xpmeguv6zt4",
+            "required_by": [],
+            "resource_name": "0",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7/resources/random2",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "random2",
+            "physical_resource_id": "dot_test-random2-23dvgoy3niw2",
+            "required_by": [],
+            "resource_name": "random2",
+            "resource_status": "CREATE_COMPLETE",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        },
+        {
+            "links": [
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7/resources/random1",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://192.0.2.1:8004/v1/e00f891d1aec4e6194b9164dd71c68f1/stacks/dot_test/cea9d5e4-03b9-42ed-9d2a-c7cea6cd75d7",
+                    "rel": "stack"
+                }
+            ],
+            "logical_resource_id": "random1",
+            "physical_resource_id": "dot_test-random1-naw5hspxwnef",
+            "required_by": [
+                "random2"
+            ],
+            "resource_name": "random1",
+            "resource_status": "CREATE_FAILED",
+            "resource_status_reason": "state changed",
+            "resource_type": "OS::Heat::RandomString",
+            "updated_time": "2016-05-26T02:51:13Z"
+        }
+    ]
+}
