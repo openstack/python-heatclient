@@ -31,6 +31,7 @@ class FakeOrchestrationv1Client(object):
         self.events = fakes.FakeResource(None, {})
         self.actions = fakes.FakeResource(None, {})
         self.build_info = fakes.FakeResource(None, {})
+        self.services = fakes.FakeResource(None, {})
         self.software_deployments = fakes.FakeResource(None, {})
         self.software_configs = fakes.FakeResource(None, {})
         self.template_versions = fakes.FakeResource(None, {})
