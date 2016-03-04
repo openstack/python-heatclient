@@ -13,10 +13,16 @@
 #   Copyright 2015 IBM Corp.
 
 import logging
+import six
+
 
 from cliff import lister
 from openstackclient.common import utils
 
+from heatclient.common import format_utils
+from heatclient.common import http
+from heatclient.common import template_utils
+from heatclient.common import utils as heat_utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
 
@@ -72,3 +78,80 @@ class FunctionList(lister.Lister):
             fields,
             (utils.get_item_properties(s, fields) for s in functions)
         )
+
+
+class Validate(format_utils.YamlFormat):
+    """Validate a template"""
+
+    log = logging.getLogger(__name__ + ".Validate")
+
+    def get_parser(self, prog_name):
+        parser = super(Validate, self).get_parser(prog_name)
+        parser.add_argument(
+            '-t', '--template',
+            metavar='<template>',
+            required=True,
+            help=_('Path to the template')
+        )
+        parser.add_argument(
+            '-e', '--environment',
+            metavar='<environment>',
+            action='append',
+            help=_('Path to the environment. Can be specified multiple times')
+        )
+        parser.add_argument(
+            '--show-nested',
+            action='store_true',
+            help=_('Resolve parameters from nested templates as well')
+        )
+        parser.add_argument(
+            '--parameter',
+            metavar='<key=value>',
+            action='append',
+            help=_('Parameter values used to create the stack. This can be '
+                   'specified multiple times')
+        )
+        parser.add_argument(
+            '--ignore-errors',
+            metavar='<error1,error2,...>',
+            help=_('List of heat errors to ignore')
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug("take_action(%s)", parsed_args)
+
+        heat_client = self.app.client_manager.orchestration
+        return _validate(heat_client, parsed_args)
+
+
+def _validate(heat_client, args):
+    tpl_files, template = template_utils.process_template_path(
+        args.template,
+        object_request=http.authenticated_fetcher(heat_client))
+
+    env_files_list = []
+    env_files, env = template_utils.process_multiple_environments_and_files(
+        env_paths=args.environment, env_list_tracker=env_files_list)
+
+    fields = {
+        'template': template,
+        'parameters': heat_utils.format_parameters(args.parameter),
+        'files': dict(list(tpl_files.items()) + list(env_files.items())),
+        'environment': env,
+    }
+
+    if args.ignore_errors:
+        fields['ignore_errors'] = args.ignore_errors
+
+    # If one or more environments is found, pass the listing to the server
+    if env_files_list:
+        fields['environment_files'] = env_files_list
+
+    if args.show_nested:
+        fields['show_nested'] = args.show_nested
+
+    validation = heat_client.stacks.validate(**fields)
+    data = list(six.itervalues(validation))
+    columns = list(six.iterkeys(validation))
+    return columns, data

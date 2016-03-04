@@ -39,6 +39,19 @@ SENSITIVE_HEADERS = ('X-Auth-Token',)
 osprofiler_web = importutils.try_import("osprofiler.web")
 
 
+def authenticated_fetcher(hc):
+    """A wrapper around the heat client object to fetch a template."""
+
+    def _do(*args, **kwargs):
+        if isinstance(hc.http_client, SessionClient):
+            method, url = args
+            return hc.http_client.request(url, method, **kwargs).content
+        else:
+            return hc.http_client.raw_request(*args, **kwargs).content
+
+    return _do
+
+
 def get_system_ca_file():
     """Return path to system default CA file."""
     # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,

@@ -62,7 +62,6 @@ class TestStackCreate(TestStack):
             return_value={'stack_status': 'create_complete'})
         self.stack_client.preview = mock.MagicMock(
             return_value=stacks.Stack(None, {'stack': {'id', '1234'}}))
-        stack._authenticated_fetcher = mock.MagicMock()
 
     def test_stack_create_defaults(self):
         arglist = ['my_stack', '-t', self.template_path]
@@ -186,7 +185,6 @@ class TestStackUpdate(TestStack):
                                                'updated': []}})
         self.stack_client.get = mock.MagicMock(
             return_value={'stack_status': 'create_complete'})
-        stack._authenticated_fetcher = mock.MagicMock()
 
     def test_stack_update_defaults(self):
         arglist = ['my_stack', '-t', self.template_path]

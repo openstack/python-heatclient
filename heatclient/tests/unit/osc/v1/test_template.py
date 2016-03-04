@@ -80,3 +80,76 @@ class TestTemplateFunctionList(TestTemplate):
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+
+class TestTemplateValidate(TestTemplate):
+
+    template_path = 'heatclient/tests/test_templates/empty.yaml'
+    env_path = 'heatclient/tests/unit/var/environment.json'
+
+    defaults = {
+        'environment': {},
+        'files': {},
+        'parameters': {},
+        'template': {'heat_template_version': '2013-05-23'}
+    }
+
+    def setUp(self):
+        super(TestTemplateValidate, self).setUp()
+        self.stack_client = self.app.client_manager.orchestration.stacks
+        self.stack_client.validate = mock.MagicMock(return_value={})
+        self.cmd = template.Validate(self.app, None)
+
+    def test_validate(self):
+        arglist = ['-t', self.template_path]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.validate.assert_called_once_with(**self.defaults)
+        self.assertEqual([], columns)
+        self.assertEqual([], data)
+
+    def test_validate_env(self):
+        arglist = ['-t', self.template_path, '-e', self.env_path]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.assertEqual(1, self.stack_client.validate.call_count)
+        args = self.stack_client.validate.call_args[1]
+        self.assertEqual(args.get('environment'), {'parameters': {}})
+        self.assertTrue(self.env_path in args.get('environment_files')[0])
+        self.assertEqual([], columns)
+        self.assertEqual([], data)
+
+    def test_validate_nested(self):
+        arglist = ['-t', self.template_path, '--show-nested']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, data = self.cmd.take_action(parsed_args)
+        args = dict(self.defaults)
+        args['show_nested'] = True
+        self.stack_client.validate.assert_called_once_with(**args)
+        self.assertEqual([], columns)
+        self.assertEqual([], data)
+
+    def test_validate_parameter(self):
+        arglist = ['-t', self.template_path,
+                   '--parameter', 'key1=value1',
+                   '--parameter', 'key2=value2']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, data = self.cmd.take_action(parsed_args)
+        args = dict(self.defaults)
+        args['parameters'] = {'key1': 'value1', 'key2': 'value2'}
+        self.stack_client.validate.assert_called_once_with(**args)
+        self.assertEqual([], columns)
+        self.assertEqual([], data)
+
+    def test_validate_ignore_errors(self):
+        arglist = ['-t', self.template_path,
+                   '--ignore-errors', 'err1,err2']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, data = self.cmd.take_action(parsed_args)
+        args = dict(self.defaults)
+        args['ignore_errors'] = 'err1,err2'
+        self.stack_client.validate.assert_called_once_with(**args)
+        self.assertEqual([], columns)
+        self.assertEqual([], data)

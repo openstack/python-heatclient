@@ -39,19 +39,6 @@ import heatclient.exc as exc
 logger = logging.getLogger(__name__)
 
 
-def _authenticated_fetcher(hc):
-    """A wrapper around the heat client object to fetch a template."""
-
-    def _do(*args, **kwargs):
-        if isinstance(hc.http_client, http.SessionClient):
-            method, url = args
-            return hc.http_client.request(url, method, **kwargs).content
-        else:
-            return hc.http_client.raw_request(*args, **kwargs).content
-
-    return _do
-
-
 def show_deprecated(deprecated, recommended):
     logger.warning(_LW('"%(old)s" is deprecated, '
                        'please use "%(new)s" instead'),
@@ -114,7 +101,7 @@ def do_stack_create(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        _authenticated_fetcher(hc))
+        http.authenticated_fetcher(hc))
     env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file, env_list_tracker=env_files_list)
@@ -269,7 +256,7 @@ def do_stack_preview(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        _authenticated_fetcher(hc))
+        http.authenticated_fetcher(hc))
     env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file, env_list_tracker=env_files_list)
@@ -518,7 +505,7 @@ def do_stack_update(hc, args):
         args.template_file,
         args.template_url,
         args.template_object,
-        _authenticated_fetcher(hc),
+        http.authenticated_fetcher(hc),
         existing=args.existing)
     env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
@@ -906,12 +893,14 @@ def do_template_show(hc, args):
            help=_('List of heat errors to ignore.'))
 def do_template_validate(hc, args):
     """Validate a template with parameters."""
+    show_deprecated('heat template-validate',
+                    'openstack orchestration template validate')
 
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
         args.template_url,
         args.template_object,
-        _authenticated_fetcher(hc))
+        http.authenticated_fetcher(hc))
 
     env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
