@@ -26,11 +26,10 @@ import testtools
 import uuid
 import yaml
 
+from keystoneauth1 import fixture as keystone_fixture
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from requests_mock.contrib import fixture as rm_fixture
-
-from keystoneclient import fixture as keystone_fixture
 
 from mox3 import mox
 
