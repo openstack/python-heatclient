@@ -79,6 +79,7 @@ class TestCase(testtools.TestCase):
         # variable is set.
         self.useFixture(fixtures.EnvironmentVariable('http_proxy'))
         self.useFixture(fixtures.EnvironmentVariable('https_proxy'))
+        self.patch('heatclient.v1.shell.show_deprecated')
 
     def set_fake_env(self, fake_env):
         client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
