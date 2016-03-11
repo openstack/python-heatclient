@@ -20,6 +20,24 @@ Once you have done so, you can use the API like so::
   >>> from heatclient.client import Client
   >>> heat = Client('1', endpoint=heat_url, token=auth_token)
 
+Alternatively, you can create a client instance using the keystoneauth session API::
+
+  >>> from keystoneauth1 import session
+  >>> from keystoneauth1.identity import v3
+  >>> from heatclient import client
+  >>> password = v3.PasswordMethod(username=USERNAME,
+  ...                              password=PASSWORD,
+  ...                              user_domain_name=DEFAULT)
+  >>> auth = v3.Auth(auth_url=AUTH_URL, auth_methods=[password],
+  ...                project_id=PROJECT_ID)
+  >>> sess = session.Session(auth=auth)
+  >>> heat = client.Client('1', endpoint=heat_url, session=sess)
+  >>> heat.stacks.list()
+
+For more information on keystoneauth API, see `Using Sessions`_.
+
+.. _Using Sessions: http://docs.openstack.org/developer/keystoneauth/using-sessions.html
+
 Reference
 ---------
 
