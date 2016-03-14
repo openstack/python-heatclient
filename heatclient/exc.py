@@ -45,7 +45,7 @@ class HTTPException(BaseException):
     """Base exception for all HTTP-derived exceptions."""
     code = 'N/A'
 
-    def __init__(self, message=None):
+    def __init__(self, message=None, code=None):
         super(HTTPException, self).__init__(message)
         try:
             self.error = jsonutils.loads(message)
@@ -60,6 +60,8 @@ class HTTPException(BaseException):
         except Exception:
             self.error = {'error':
                           {'message': self.message or self.__class__.__doc__}}
+        if self.code == "N/A" and code is not None:
+            self.code = code
 
     def __str__(self):
         message = self.error['error'].get('message', 'Internal Error')
@@ -179,7 +181,7 @@ for obj_name in dir(sys.modules[__name__]):
 def from_response(response):
     """Return an instance of an HTTPException based on requests response."""
     cls = _code_map.get(response.status_code, HTTPException)
-    return cls(response.content)
+    return cls(response.content, response.status_code)
 
 
 class NoTokenLookupException(Exception):

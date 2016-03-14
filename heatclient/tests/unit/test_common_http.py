@@ -818,6 +818,22 @@ class SessionClientTest(testtools.TestCase):
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(six.text_type(e))
 
+    def test_504_error_response(self):
+        # for 504 we don't have specific exception type
+        fake = fakes.FakeHTTPResponse(
+            504,
+            'FAIL',
+            {'content-type': 'application/octet-stream'},
+            '')
+        self.request.return_value = (fake, '')
+
+        client = http.SessionClient(session=mock.ANY,
+                                    auth=mock.ANY)
+        e = self.assertRaises(exc.HTTPException,
+                              client.request, '', 'GET')
+
+        self.assertEqual(504, e.code)
+
     def test_kwargs(self):
         fake = fakes.FakeHTTPResponse(
             200,
