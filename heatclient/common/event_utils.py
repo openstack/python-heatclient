@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sys
 import time
 
 from heatclient.common import utils
@@ -133,7 +134,8 @@ def _get_stack_events(hc, stack_id, event_args):
         return events
 
 
-def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None):
+def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
+                    out=None):
     """Continuously poll events and logs for performed action on stack."""
 
     if action:
@@ -144,6 +146,8 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None):
 
     no_event_polls = 0
     msg_template = _("\n Stack %(name)s %(status)s \n")
+    if not out:
+        out = sys.stdout
     while True:
         events = get_events(hc, stack_id=stack_name,
                             event_args={'sort_dir': 'asc',
@@ -156,7 +160,8 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None):
             # set marker to last event that was received.
             marker = getattr(events[-1], 'id', None)
             events_log = utils.event_log_formatter(events)
-            print(events_log)
+            out.write(events_log)
+            out.write('\n')
 
             for event in events:
                 # check if stack event was also received
