@@ -52,6 +52,14 @@ def _authenticated_fetcher(hc):
     return _do
 
 
+def show_deprecated(deprecated, recommended):
+    logger.warning(_LW('"%(old)s" is deprecated, '
+                       'please use "%(new)s" instead'),
+                   {'old': deprecated,
+                    'new': recommended}
+                   )
+
+
 @utils.arg('-f', '--template-file', metavar='<FILE>',
            help=_('Path to the template.'))
 @utils.arg('-e', '--environment-file', metavar='<FILE or URL>',
@@ -100,6 +108,8 @@ def _authenticated_fetcher(hc):
            help=_('A list of tags to associate with the stack.'))
 def do_stack_create(hc, args):
     '''Create the stack.'''
+    show_deprecated('heat stack-create', 'openstack stack create')
+
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
         args.template_url,
@@ -181,6 +191,8 @@ def do_stack_create(hc, args):
            help=_('Name of the stack to adopt.'))
 def do_stack_adopt(hc, args):
     '''Adopt a stack.'''
+    show_deprecated('heat stack-adopt', 'openstack stack adopt')
+
     env_files, env = template_utils.process_multiple_environments_and_files(
         env_paths=args.environment_file)
 
@@ -251,6 +263,8 @@ def do_stack_adopt(hc, args):
            help=_('A list of tags to associate with the stack.'))
 def do_stack_preview(hc, args):
     '''Preview the stack.'''
+    show_deprecated('heat stack-preview', 'openstack stack update --dry-run')
+
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
         args.template_url,
@@ -299,6 +313,8 @@ def do_stack_preview(hc, args):
            help=_('Skip yes/no prompt (assume yes).'))
 def do_stack_delete(hc, args):
     '''Delete the stack(s).'''
+    show_deprecated('heat stack-delete', 'openstack stack delete')
+
     failure_count = 0
 
     try:
@@ -347,6 +363,8 @@ def do_stack_abandon(hc, args):
     any of the underlying resources. Prints an adoptable JSON representation
     of the stack to stdout or a file on success.
     '''
+    show_deprecated('heat stack-abandon', 'openstack stack abandon')
+
     fields = {'stack_id': args.id}
     try:
         stack = hc.stacks.abandon(**fields)
@@ -369,6 +387,8 @@ def do_stack_abandon(hc, args):
            help=_('Name or ID of stack to suspend.'))
 def do_action_suspend(hc, args):
     '''Suspend the stack.'''
+    show_deprecated('heat action-suspend', 'openstack stack suspend')
+
     fields = {'stack_id': args.id}
     try:
         hc.actions.suspend(**fields)
@@ -382,6 +402,8 @@ def do_action_suspend(hc, args):
            help=_('Name or ID of stack to resume.'))
 def do_action_resume(hc, args):
     '''Resume the stack.'''
+    show_deprecated('heat action-resume', 'openstack stack resume')
+
     fields = {'stack_id': args.id}
     try:
         hc.actions.resume(**fields)
@@ -395,6 +417,8 @@ def do_action_resume(hc, args):
            help=_('Name or ID of stack to check.'))
 def do_action_check(hc, args):
     '''Check that stack resources are in expected states.'''
+    show_deprecated('heat action-check', 'openstack stack check')
+
     fields = {'stack_id': args.id}
     try:
         hc.actions.check(**fields)
@@ -410,6 +434,8 @@ def do_action_check(hc, args):
            help='Do not resolve outputs of the stack.')
 def do_stack_show(hc, args):
     '''Describe the stack.'''
+    show_deprecated('heat stack-show', 'openstack stack show')
+
     fields = {'stack_id': args.id,
               'resolve_outputs': not args.no_resolve_outputs}
     _do_stack_show(hc, fields)
@@ -486,6 +512,7 @@ def do_stack_show(hc, args):
            help=_('An updated list of tags to associate with the stack.'))
 def do_stack_update(hc, args):
     '''Update the stack.'''
+    show_deprecated('heat stack-update', 'openstack stack update')
 
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
@@ -568,6 +595,8 @@ def do_stack_update(hc, args):
            help=_('Name or ID of stack to cancel update for.'))
 def do_stack_cancel_update(hc, args):
     '''Cancel currently running update of the stack.'''
+    show_deprecated('heat stack-cancel-update', 'openstack stack cancel')
+
     fields = {'stack_id': args.id}
     try:
         hc.actions.cancel_update(**fields)
@@ -622,6 +651,8 @@ def do_stack_cancel_update(hc, args):
                   'enabled when using %(arg)s.') % {'arg': '--global-tenant'})
 def do_stack_list(hc, args=None):
     '''List the user's stacks.'''
+    show_deprecated('heat stack-list', 'openstack stack list')
+
     kwargs = {}
     fields = ['id', 'stack_name', 'stack_status', 'creation_time',
               'updated_time']
@@ -679,6 +710,8 @@ def do_stack_list(hc, args=None):
            help=_('Name or ID of stack to query.'))
 def do_output_list(hc, args):
     """Show available outputs."""
+    show_deprecated('heat output-list', 'openstack stack output list')
+
     try:
         outputs = hc.stacks.output_list(args.id)
     except exc.HTTPNotFound:
@@ -710,6 +743,8 @@ def do_output_list(hc, args):
                   'key and description.'))
 def do_output_show(hc, args):
     """Show a specific stack output."""
+    show_deprecated('heat output-show', 'openstack stack output show')
+
     def resolve_output(output_key):
         try:
             output = hc.stacks.output_show(args.id, output_key)
@@ -781,6 +816,9 @@ def do_output_show(hc, args):
            action='append')
 def do_resource_type_list(hc, args):
     '''List the available resource types.'''
+    show_deprecated('heat resource-type-list',
+                    'openstack orchestration resource type list')
+
     types = hc.resource_types.list(
         filters=utils.format_parameters(args.filters))
     utils.print_list(types, ['resource_type'], sortby_index=0)
@@ -790,6 +828,9 @@ def do_resource_type_list(hc, args):
            help=_('Resource type to get the details for.'))
 def do_resource_type_show(hc, args):
     '''Show the resource type.'''
+    show_deprecated('heat resource-type-show',
+                    'openstack orchestration resource type show')
+
     try:
         resource_type = hc.resource_types.get(args.resource_type)
     except exc.HTTPNotFound:
@@ -809,6 +850,9 @@ def do_resource_type_show(hc, args):
                  % ', '.join(utils.supported_formats.keys()))
 def do_resource_type_template(hc, args):
     '''Generate a template based on a resource type.'''
+    show_deprecated('heat resource-type-template',
+                    'openstack orchestration resource '
+                    'type show --template-type hot')
     fields = {'resource_type': args.resource_type,
               'template_type': args.template_type}
     try:
@@ -827,6 +871,8 @@ def do_resource_type_template(hc, args):
            help=_('Name or ID of stack to get the template for.'))
 def do_template_show(hc, args):
     '''Get the template for the specified stack.'''
+    show_deprecated('heat template-show', 'openstack stack template show')
+
     fields = {'stack_id': args.id}
     try:
         template = hc.stacks.template(**fields)
@@ -907,6 +953,8 @@ def do_template_validate(hc, args):
            action='append')
 def do_resource_list(hc, args):
     '''Show list of resources belonging to a stack.'''
+    show_deprecated('heat resource-list', 'openstack stack resource list')
+
     fields = {
         'stack_id': args.id,
         'nested_depth': args.nested_depth,
@@ -941,6 +989,8 @@ def do_resource_list(hc, args):
            action='append')
 def do_resource_show(hc, args):
     '''Describe the resource.'''
+    show_deprecated('heat resource-show', 'openstack stack resource show')
+
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     if args.with_attr:
@@ -969,9 +1019,7 @@ def do_resource_show(hc, args):
            help=_("The template output format, one of: %s.")
                  % ', '.join(utils.supported_formats.keys()))
 def do_resource_template(hc, args):
-    '''DEPRECATED! Use resource-type-template instead.'''
-    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
-                   {'cmd': 'resource-type-template'})
+    '''DEPRECATED!'''
     do_resource_type_template(hc, args)
 
 
@@ -981,6 +1029,9 @@ def do_resource_template(hc, args):
            help=_('Name of the resource to show the metadata for.'))
 def do_resource_metadata(hc, args):
     '''List resource metadata.'''
+    show_deprecated('heat resource-metadata',
+                    'openstack stack resource metadata')
+
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     try:
@@ -1003,6 +1054,8 @@ def do_resource_metadata(hc, args):
            help=_('File containing JSON data to send to the signal handler.'))
 def do_resource_signal(hc, args):
     '''Send a signal to a resource.'''
+    show_deprecated('heat resource-signal', 'openstack stack resource signal')
+
     fields = {'stack_id': args.id,
               'resource_name': args.resource}
     data = args.data
@@ -1040,6 +1093,9 @@ def do_resource_signal(hc, args):
            help=_('Set the resource as healthy.'))
 def do_resource_mark_unhealthy(hc, args):
     '''Set resource's health.'''
+    show_deprecated('heat resource-mark-unhealthy',
+                    'openstack stack resource mark unhealthy')
+
     fields = {'stack_id': args.id,
               'resource_name': args.resource,
               'mark_unhealthy': not args.reset,
@@ -1066,6 +1122,8 @@ def do_resource_mark_unhealthy(hc, args):
                   'nested_stack/an*/*_resource'))
 def do_hook_clear(hc, args):
     '''Clear hooks on a given stack.'''
+    show_deprecated('heat hook-clear', 'openstack stack hook clear')
+
     if args.pre_create:
         hook_type = 'pre-create'
     elif args.pre_update:
@@ -1103,6 +1161,8 @@ def do_hook_clear(hc, args):
            default='table')
 def do_event_list(hc, args):
     '''List events for a stack.'''
+    show_deprecated('heat event-list', 'openstack stack event list')
+
     display_fields = ['id', 'resource_status_reason',
                       'resource_status', 'event_time']
     event_args = {'resource_name': args.resource,
@@ -1153,6 +1213,7 @@ def do_event_list(hc, args):
            help=_('Depth of nested stacks from which to display hooks.'))
 def do_hook_poll(hc, args):
     '''List resources with pending hook for a stack.'''
+    show_deprecated('heat hook-poll', 'openstack stack hook poll')
 
     # There are a few steps to determining if a stack has pending hooks
     # 1. The stack is IN_PROGRESS status (otherwise, by definition no hooks
@@ -1198,9 +1259,7 @@ def do_hook_poll(hc, args):
 @utils.arg('event', metavar='<EVENT>',
            help=_('ID of event to display details for.'))
 def do_event(hc, args):
-    '''DEPRECATED! Use event-show instead.'''
-    logger.warning(_LW('DEPRECATED! Use %(cmd)s instead.'),
-                   {'cmd': 'event-show'})
+    '''DEPRECATED!'''
     do_event_show(hc, args)
 
 
@@ -1212,6 +1271,8 @@ def do_event(hc, args):
            help=_('ID of event to display details for.'))
 def do_event_show(hc, args):
     '''Describe the event.'''
+    show_deprecated('heat event-show', 'openstack stack event show')
+
     fields = {'stack_id': args.id,
               'resource_name': args.resource,
               'event_id': args.event}
@@ -1240,6 +1301,8 @@ def do_event_show(hc, args):
            help=_('Name of the configuration to create.'))
 def do_config_create(hc, args):
     '''Create a software configuration.'''
+    show_deprecated('heat config-create', 'openstack software config create')
+
     config = {
         'group': args.group,
         'config': ''
@@ -1285,6 +1348,8 @@ def do_config_create(hc, args):
            help=_('Return configs that appear after the given config ID.'))
 def do_config_list(hc, args):
     '''List software configs.'''
+    show_deprecated('heat config-list', 'openstack software config list')
+
     kwargs = {}
     if args.limit:
         kwargs['limit'] = args.limit
@@ -1301,6 +1366,8 @@ def do_config_list(hc, args):
            help=_('Only display the value of the <config> property.'))
 def do_config_show(hc, args):
     '''View details of a software configuration.'''
+    show_deprecated('heat config-show', 'openstack software config show')
+
     try:
         sc = hc.software_configs.get(config_id=args.id)
     except exc.HTTPNotFound:
@@ -1316,6 +1383,8 @@ def do_config_show(hc, args):
            help=_('ID of the configuration(s) to delete.'))
 def do_config_delete(hc, args):
     '''Delete the software configuration(s).'''
+    show_deprecated('heat config-delete', 'openstack software config delete')
+
     failure_count = 0
 
     for config_id in args.id:
@@ -1365,6 +1434,9 @@ def do_config_delete(hc, args):
                   'list of configurations currently deployed to the server.'))
 def do_deployment_create(hc, args):
     '''Create a software deployment.'''
+    show_deprecated('heat deployment-create',
+                    'openstack software deployment create')
+
     config = {}
     if args.config:
         try:
@@ -1398,6 +1470,9 @@ def do_deployment_create(hc, args):
            help=_('ID of the server to fetch deployments for.'))
 def do_deployment_list(hc, args):
     '''List software deployments.'''
+    show_deprecated('heat deployment-list',
+                    'openstack software deployment list')
+
     kwargs = {'server_id': args.server} if args.server else {}
     deployments = hc.software_deployments.list(**kwargs)
     fields = ['id', 'config_id', 'server_id', 'action', 'status',
@@ -1409,6 +1484,9 @@ def do_deployment_list(hc, args):
            help=_('ID of the deployment.'))
 def do_deployment_show(hc, args):
     '''Show the details of a software deployment.'''
+    show_deprecated('heat deployment-show',
+                    'openstack software deployment show')
+
     try:
         sd = hc.software_deployments.get(deployment_id=args.id)
     except exc.HTTPNotFound:
@@ -1421,6 +1499,9 @@ def do_deployment_show(hc, args):
            help=_('ID of the server to fetch deployments for.'))
 def do_deployment_metadata_show(hc, args):
     '''Get deployment configuration metadata for the specified server.'''
+    show_deprecated('heat deployment-metadata-show',
+                    'openstack software deployment metadata show')
+
     md = hc.software_deployments.metadata(server_id=args.id)
     print(jsonutils.dumps(md, indent=2))
 
@@ -1429,6 +1510,9 @@ def do_deployment_metadata_show(hc, args):
            help=_('ID of the deployment(s) to delete.'))
 def do_deployment_delete(hc, args):
     '''Delete the software deployment(s).'''
+    show_deprecated('heat deployment-delete',
+                    'openstack software deployment delete')
+
     failure_count = 0
 
     for deploy_id in args.id:
@@ -1467,6 +1551,9 @@ def do_deployment_delete(hc, args):
            default='raw')
 def do_deployment_output_show(hc, args):
     '''Show a specific deployment output.'''
+    show_deprecated('heat deployment-output-show',
+                    'openstack software deployment output show')
+
     if (not args.all and args.output is None or
             args.all and args.output is not None):
         raise exc.CommandError(
@@ -1497,6 +1584,8 @@ def do_deployment_output_show(hc, args):
 
 def do_build_info(hc, args):
     '''Retrieve build information.'''
+    show_deprecated('heat build-info', 'openstack orchestration build info')
+
     result = hc.build_info.build_info()
     formatters = {
         'api': utils.json_formatter,
@@ -1511,6 +1600,8 @@ def do_build_info(hc, args):
            help=_('If specified, the name given to the snapshot.'))
 def do_stack_snapshot(hc, args):
     '''Make a snapshot of a stack.'''
+    show_deprecated('heat stack-snapshot', 'openstack stack snapshot create')
+
     fields = {'stack_id': args.id}
     if args.name:
         fields['name'] = args.name
@@ -1528,6 +1619,8 @@ def do_stack_snapshot(hc, args):
            help=_('The ID of the snapshot to show.'))
 def do_snapshot_show(hc, args):
     '''Show a snapshot of a stack.'''
+    show_deprecated('heat snapshot-show', 'openstack stack snapshot show')
+
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
     try:
         snapshot = hc.stacks.snapshot_show(**fields)
@@ -1543,6 +1636,8 @@ def do_snapshot_show(hc, args):
            help=_('The ID of the snapshot to delete.'))
 def do_snapshot_delete(hc, args):
     '''Delete a snapshot of a stack.'''
+    show_deprecated('heat snapshot-delete', 'openstack stack snapshot delete')
+
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
     try:
         hc.stacks.snapshot_delete(**fields)
@@ -1556,6 +1651,8 @@ def do_snapshot_delete(hc, args):
            help=_('The ID of the snapshot to restore.'))
 def do_stack_restore(hc, args):
     '''Restore a snapshot of a stack.'''
+    show_deprecated('heat stack-restore', 'openstack stack snapshot restore')
+
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
     try:
         hc.stacks.restore(**fields)
@@ -1567,6 +1664,8 @@ def do_stack_restore(hc, args):
            help=_('Name or ID of the stack containing the snapshots.'))
 def do_snapshot_list(hc, args):
     '''List the snapshots of a stack.'''
+    show_deprecated('heat snapshot-list', 'openstack stack snapshot list')
+
     fields = {'stack_id': args.id}
     try:
         snapshots = hc.stacks.snapshot_list(**fields)
@@ -1586,6 +1685,9 @@ def do_snapshot_list(hc, args):
 
 def do_service_list(hc, args=None):
     '''List the Heat engines.'''
+    show_deprecated('heat service-list',
+                    'openstack orchestration service list')
+
     fields = ['hostname', 'binary', 'engine_id', 'host',
               'topic', 'updated_at', 'status']
     services = hc.services.list()
@@ -1594,6 +1696,9 @@ def do_service_list(hc, args=None):
 
 def do_template_version_list(hc, args):
     '''List the available template versions.'''
+    show_deprecated('heat template-version-list',
+                    'openstack orchestration template version list')
+
     versions = hc.template_versions.list()
     fields = ['version', 'type']
     utils.print_list(versions, fields, sortby_index=1)
@@ -1603,6 +1708,9 @@ def do_template_version_list(hc, args):
            help=_('Template version to get the functions for.'))
 def do_template_function_list(hc, args):
     '''List the available functions.'''
+    show_deprecated('heat template-function-list',
+                    'openstack orchestration template function list')
+
     try:
         functions = hc.template_versions.get(args.template_version)
     except exc.HTTPNotFound:
