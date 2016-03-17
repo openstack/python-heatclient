@@ -339,6 +339,8 @@ def do_stack_delete(hc, args):
         fields = {'stack_id': sid}
         try:
             hc.stacks.delete(**fields)
+            success_msg = _("Request to delete stack %s has been accepted.")
+            print(success_msg % sid)
         except (exc.HTTPNotFound, exc.Forbidden) as e:
             failure_count += 1
             print(e)
@@ -347,7 +349,6 @@ def do_stack_delete(hc, args):
                                "stacks.") %
                                {'count': failure_count,
                                 'total': len(args.id)})
-    do_stack_list(hc)
 
 
 @utils.arg('-O', '--output-file', metavar='<FILE>',
