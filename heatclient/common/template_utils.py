@@ -289,15 +289,15 @@ def process_environment_and_files(env_path=None,
         env_base_url = utils.base_url_for_url(env_url)
         raw_env = request.urlopen(env_url).read()
 
-        if include_env_in_files:
-            files[env_url] = raw_env
-
         env = environment_format.parse(raw_env)
 
         resolve_environment_urls(
             env.get('resource_registry'),
             files,
             env_base_url)
+
+        if include_env_in_files:
+            files[env_url] = jsonutils.dumps(env)
 
     return files, env
 
