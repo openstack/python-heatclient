@@ -2486,26 +2486,18 @@ class ShellTestUserPass(ShellBase):
         else:
             self.client.raw_request(
                 'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
-        fakes.script_heat_list(client=self.client)
 
         self.m.ReplayAll()
 
-        delete_text = self.shell('stack-delete teststack2/2')
-        self.assertRegexpMatches(
-            delete_text, "Are you sure you want to delete this stack")
-        self.assertNotRegexpMatches(delete_text, "teststack")
+        resp = self.shell('stack-delete teststack2/2')
+        resp_text = 'Are you sure you want to delete this stack(s) [y/N]? '
+        self.assertEqual(resp_text, resp)
         self.m.ReplayAll()
 
         mock_stdin.readline.return_value = 'Y'
-        delete_text = self.shell('stack-delete teststack2/2')
-        required = [
-            'stack_name',
-            'id',
-            'teststack',
-            '1'
-        ]
-        for r in required:
-            self.assertRegexpMatches(delete_text, r)
+        resp = self.shell('stack-delete teststack2/2')
+        msg = 'Request to delete stack teststack2/2 has been accepted.'
+        self.assertRegexpMatches(resp, msg)
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
@@ -2530,21 +2522,12 @@ class ShellTestUserPass(ShellBase):
         else:
             self.client.raw_request(
                 'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
-        fakes.script_heat_list(client=self.client)
 
         self.m.ReplayAll()
         # -y from the shell should skip the n/y prompt
-        delete_text = self.shell('stack-delete -y teststack2/2')
-        self.assertNotRegexpMatches(
-            delete_text, "Are you sure you want to delete this stack")
-        required = [
-            'stack_name',
-            'id',
-            'teststack',
-            '1'
-        ]
-        for r in required:
-            self.assertRegexpMatches(delete_text, r)
+        resp = self.shell('stack-delete -y teststack2/2')
+        msg = 'Request to delete stack teststack2/2 has been accepted.'
+        self.assertRegexpMatches(resp, msg)
 
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
@@ -2559,20 +2542,11 @@ class ShellTestUserPass(ShellBase):
         else:
             self.client.raw_request(
                 'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
-        fakes.script_heat_list(client=self.client)
 
         self.m.ReplayAll()
-
-        delete_text = self.shell('stack-delete teststack2/2')
-
-        required = [
-            'stack_name',
-            'id',
-            'teststack',
-            '1'
-        ]
-        for r in required:
-            self.assertRegexpMatches(delete_text, r)
+        resp = self.shell('stack-delete teststack2/2')
+        msg = 'Request to delete stack teststack2/2 has been accepted.'
+        self.assertRegexpMatches(resp, msg)
 
     def test_stack_delete_multiple(self):
         self.register_keystone_auth_fixture()
@@ -2591,22 +2565,13 @@ class ShellTestUserPass(ShellBase):
                 'DELETE', '/stacks/teststack/1').AndReturn((resp, None))
             self.client.raw_request(
                 'DELETE', '/stacks/teststack2/2').AndReturn((resp, None))
-        fakes.script_heat_list(client=self.client)
 
         self.m.ReplayAll()
-
-        delete_text = self.shell('stack-delete teststack/1 teststack2/2')
-
-        required = [
-            'stack_name',
-            'id',
-            'teststack',
-            '1',
-            'teststack2',
-            '2'
-        ]
-        for r in required:
-            self.assertRegexpMatches(delete_text, r)
+        resp = self.shell('stack-delete teststack/1 teststack2/2')
+        msg1 = 'Request to delete stack teststack/1 has been accepted.'
+        msg2 = 'Request to delete stack teststack2/2 has been accepted.'
+        self.assertRegexpMatches(resp, msg1)
+        self.assertRegexpMatches(resp, msg2)
 
     def test_stack_delete_failed_on_notfound(self):
         self.register_keystone_auth_fixture()
