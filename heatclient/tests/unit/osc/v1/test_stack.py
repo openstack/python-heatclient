@@ -846,6 +846,7 @@ class TestStackOutputShow(TestStack):
     def test_stack_output_show_bad_output(self):
         arglist = ['my_stack', 'output3']
         self.stack_client.output_show.side_effect = heat_exc.HTTPNotFound
+        self.stack_client.get.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         error = self.assertRaises(exc.CommandError,
@@ -854,15 +855,32 @@ class TestStackOutputShow(TestStack):
                          str(error))
         self.stack_client.output_show.assert_called_with('my_stack', 'output3')
 
+    def test_stack_output_show_old_api(self):
+        arglist = ['my_stack', 'output1']
+        self.stack_client.output_show.side_effect = heat_exc.HTTPNotFound
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, outputs = self.cmd.take_action(parsed_args)
+
+        self.stack_client.get.assert_called_with('my_stack')
+        self.assertEqual(('output_key', 'output_value'), columns)
+        self.assertEqual(('output1', 'value1'), outputs)
+
 
 class TestStackOutputList(TestStack):
 
     response = {'outputs': [{'output_key': 'key1', 'description': 'desc1'},
                             {'output_key': 'key2', 'description': 'desc2'}]}
+    stack_response = {
+        'stack_name': 'my_stack',
+        'outputs': response['outputs']
+    }
 
     def setUp(self):
         super(TestStackOutputList, self).setUp()
         self.cmd = stack.OutputListStack(self.app, None)
+        self.stack_client.get = mock.MagicMock(
+            return_value=stacks.Stack(None, self.response))
 
     def test_stack_output_list(self):
         arglist = ['my_stack']
@@ -877,11 +895,22 @@ class TestStackOutputList(TestStack):
     def test_stack_output_list_not_found(self):
         arglist = ['my_stack']
         self.stack_client.output_list.side_effect = heat_exc.HTTPNotFound
+        self.stack_client.get.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         error = self.assertRaises(exc.CommandError,
                                   self.cmd.take_action, parsed_args)
         self.assertEqual('Stack not found: my_stack', str(error))
+
+    def test_stack_output_list_old_api(self):
+        arglist = ['my_stack']
+        self.stack_client.output_list.side_effect = heat_exc.HTTPNotFound
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, outputs = self.cmd.take_action(parsed_args)
+
+        self.stack_client.get.assert_called_with('my_stack')
+        self.assertEqual(['output_key', 'description'], columns)
 
 
 class TestStackTemplateShow(TestStack):

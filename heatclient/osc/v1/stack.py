@@ -862,7 +862,17 @@ class OutputShowStack(show.ShowOne):
         except heat_exc.HTTPNotFound:
             msg = _('Stack %(id)s or output %(out)s not found.') % {
                 'id': parsed_args.stack, 'out': parsed_args.output}
-            raise exc.CommandError(msg)
+            try:
+                output = None
+                stack = client.stacks.get(parsed_args.stack).to_dict()
+                for o in stack.get('outputs', []):
+                    if o['output_key'] == parsed_args.output:
+                        output = o
+                        break
+                if output is None:
+                    raise exc.CommandError(msg)
+            except heat_exc.HTTPNotFound:
+                raise exc.CommandError(msg)
 
         if 'output_error' in output:
             msg = _('Output error: %s') % output['output_error']
@@ -898,8 +908,12 @@ class OutputListStack(lister.Lister):
         try:
             outputs = client.stacks.output_list(parsed_args.stack)['outputs']
         except heat_exc.HTTPNotFound:
-            msg = _('Stack not found: %s') % parsed_args.stack
-            raise exc.CommandError(msg)
+            try:
+                outputs = client.stacks.get(
+                    parsed_args.stack).to_dict()['outputs']
+            except heat_exc.HTTPNotFound:
+                msg = _('Stack not found: %s') % parsed_args.stack
+                raise exc.CommandError(msg)
 
         columns = ['output_key', 'description']
 
