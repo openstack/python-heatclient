@@ -45,12 +45,6 @@ class CreateStack(show.ShowOne):
     def get_parser(self, prog_name):
         parser = super(CreateStack, self).get_parser(prog_name)
         parser.add_argument(
-            '-t', '--template',
-            metavar='<template>',
-            required=True,
-            help=_('Path to the template')
-        )
-        parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
             action='append',
@@ -114,6 +108,12 @@ class CreateStack(show.ShowOne):
             'name',
             metavar='<stack-name>',
             help=_('Name of the stack to create')
+        )
+        parser.add_argument(
+            '-t', '--template',
+            metavar='<template>',
+            required=True,
+            help=_('Path to the template')
         )
 
         return parser
