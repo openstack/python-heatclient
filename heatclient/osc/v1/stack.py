@@ -37,17 +37,6 @@ from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LI
 
 
-def _authenticated_fetcher(client):
-    def _do(*args, **kwargs):
-        if isinstance(client.http_client, http.SessionClient):
-            method, url = args
-            return client.http_client.request(url, method, **kwargs).content
-        else:
-            return client.http_client.raw_request(*args, **kwargs).content
-
-    return _do
-
-
 class CreateStack(show.ShowOne):
     """Create a stack."""
 
@@ -136,7 +125,7 @@ class CreateStack(show.ShowOne):
 
         tpl_files, template = template_utils.process_template_path(
             parsed_args.template,
-            object_request=_authenticated_fetcher(client))
+            object_request=http.authenticated_fetcher(client))
 
         env_files, env = (
             template_utils.process_multiple_environments_and_files(
@@ -297,7 +286,7 @@ class UpdateStack(show.ShowOne):
 
         tpl_files, template = template_utils.process_template_path(
             parsed_args.template,
-            object_request=_authenticated_fetcher(client),
+            object_request=http.authenticated_fetcher(client),
             existing=parsed_args.existing)
 
         env_files, env = (
