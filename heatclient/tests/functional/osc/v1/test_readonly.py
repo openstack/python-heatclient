@@ -100,7 +100,7 @@ class SimpleReadOnlyOpenStackClientTest(base.ClientTestBase):
         for parm in parms:
             cmd += ' --parameter ' + parm
         ret = self.openstack(cmd)
-        self.assertRegexpMatches(ret, r'stack_name.*|.*test_stack')
+        self.assertRegex(ret, r'stack_name.*|.*test_stack')
 
     def test_heat_template_validate_yaml(self):
         self._template_validate(

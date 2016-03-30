@@ -96,7 +96,7 @@ class TestCase(testtools.TestCase):
         sys.stderr = six.StringIO()
         _shell = heatclient.shell.HeatShell()
         e = self.assertRaises(exception, _shell.main, argstr.split())
-        self.assertRegexpMatches(e.__str__(), error_match)
+        self.assertRegex(e.__str__(), error_match)
         err = sys.stderr.getvalue()
         sys.stderr.close()
         sys.stderr = orig
@@ -416,7 +416,7 @@ class ShellTestNoMox(TestCase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
 
 class ShellTestNoMoxV3(ShellTestNoMox):
@@ -517,7 +517,7 @@ class ShellTestCommon(ShellBase):
         for argstr in ['--help', 'help']:
             help_text = self.shell(argstr)
             for r in required:
-                self.assertRegexpMatches(help_text, r)
+                self.assertRegex(help_text, r)
 
     def test_command_help(self):
         output = self.shell('help help')
@@ -529,7 +529,7 @@ class ShellTestCommon(ShellBase):
             output1 = self.shell('help %s' % command)
             output2 = self.shell('%s --help' % command)
             self.assertEqual(output1, output2)
-            self.assertRegexpMatches(output1, '^usage: heat %s' % command)
+            self.assertRegex(output1, '^usage: heat %s' % command)
 
     def test_debug_switch_raises_error(self):
         self.register_keystone_auth_fixture()
@@ -584,7 +584,7 @@ class ShellTestCommon(ShellBase):
         for argstr in argstrings:
             help_text = self.shell(argstr)
             for r in required:
-                self.assertRegexpMatches(help_text, r)
+                self.assertRegex(help_text, r)
 
 
 class ShellTestUserPass(ShellBase):
@@ -616,7 +616,7 @@ class ShellTestUserPass(ShellBase):
             'IN_PROGRESS',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
 
     def test_stack_list_show_nested(self):
@@ -640,7 +640,7 @@ class ShellTestUserPass(ShellBase):
             'theparentof3'
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_stack_list_show_owner(self):
         self.register_keystone_auth_fixture()
@@ -654,7 +654,7 @@ class ShellTestUserPass(ShellBase):
             'testowner',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_parsable_error(self):
         self.register_keystone_auth_fixture()
@@ -787,7 +787,7 @@ class ShellTestUserPass(ShellBase):
             "['tag1', 'tag2']",
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_stack_show_without_outputs(self):
         self.register_keystone_auth_fixture()
@@ -827,7 +827,7 @@ class ShellTestUserPass(ShellBase):
             '2012-10-25T01:58:47Z'
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def _output_fake_response(self, output_key):
 
@@ -932,7 +932,7 @@ class ShellTestUserPass(ShellBase):
             '}'
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
     def test_template_show_cfn_unicode(self):
         self.register_keystone_auth_fixture()
@@ -967,7 +967,7 @@ class ShellTestUserPass(ShellBase):
             '}'
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
     def test_template_show_hot(self):
         self.register_keystone_auth_fixture()
@@ -998,7 +998,7 @@ class ShellTestUserPass(ShellBase):
             "resources: {}"
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
     def test_template_validate(self):
         self.register_keystone_auth_fixture()
@@ -1034,7 +1034,7 @@ class ShellTestUserPass(ShellBase):
             'resources'
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
     def _test_stack_preview(self, timeout=None, enable_rollback=False,
                             tags=None):
@@ -1098,7 +1098,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(preview_text, r)
+            self.assertRegex(preview_text, r)
 
     def test_stack_preview(self):
         self._test_stack_preview()
@@ -1148,7 +1148,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_create_success_with_poll(self):
         self.register_keystone_auth_fixture()
@@ -1236,7 +1236,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_create_failed_with_poll(self):
         self.register_keystone_auth_fixture()
@@ -1354,7 +1354,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_create_only_param_file(self):
         self.register_keystone_auth_fixture()
@@ -1399,7 +1399,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_create_timeout(self):
         self.register_keystone_auth_fixture()
@@ -1456,7 +1456,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_update_timeout(self):
         self.register_keystone_auth_fixture()
@@ -1515,7 +1515,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_create_url(self):
         self.register_keystone_auth_fixture()
@@ -1571,7 +1571,7 @@ class ShellTestUserPass(ShellBase):
             '2'
         ]
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_create_object(self):
         self.register_keystone_auth_fixture()
@@ -1633,7 +1633,7 @@ class ShellTestUserPass(ShellBase):
             '2'
         ]
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_create_with_tags(self):
         self.register_keystone_auth_fixture()
@@ -1685,7 +1685,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(create_text, r)
+            self.assertRegex(create_text, r)
 
     def test_stack_abandon(self):
         self.register_keystone_auth_fixture()
@@ -1806,7 +1806,7 @@ class ShellTestUserPass(ShellBase):
         ]
 
         for r in required:
-            self.assertRegexpMatches(adopt_text, r)
+            self.assertRegex(adopt_text, r)
 
     def test_stack_adopt_with_environment(self):
         self.register_keystone_auth_fixture()
@@ -1906,7 +1906,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_disable_rollback(self):
         self.register_keystone_auth_fixture()
@@ -1959,7 +1959,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_fault_rollback_value(self):
         self.register_keystone_auth_fixture()
@@ -2020,7 +2020,7 @@ class ShellTestUserPass(ShellBase):
             '2'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_parameters(self):
         self.register_keystone_auth_fixture()
@@ -2070,7 +2070,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_patched_existing_parameters(self):
         self.register_keystone_auth_fixture()
@@ -2121,7 +2121,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_and_default_parameters(self):
         self.register_keystone_auth_fixture()
@@ -2179,7 +2179,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_patched_and_default_parameters(self):
         self.register_keystone_auth_fixture()
@@ -2238,7 +2238,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_template(self):
         self.register_keystone_auth_fixture()
@@ -2283,7 +2283,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_update_with_tags(self):
         self.register_keystone_auth_fixture()
@@ -2330,7 +2330,7 @@ class ShellTestUserPass(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def _setup_stubs_update_dry_run(self, template_file, existing=False,
                                     show_nested=False):
@@ -2417,7 +2417,7 @@ class ShellTestUserPass(ShellBase):
             'replaced'
         ]
         for r in required:
-            self.assertRegexpMatches(update_preview_text, r)
+            self.assertRegex(update_preview_text, r)
 
     def test_stack_update_dry_run_show_nested(self):
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -2439,7 +2439,7 @@ class ShellTestUserPass(ShellBase):
             'replaced'
         ]
         for r in required:
-            self.assertRegexpMatches(update_preview_text, r)
+            self.assertRegex(update_preview_text, r)
 
     def test_stack_update_dry_run_patch(self):
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -2461,7 +2461,7 @@ class ShellTestUserPass(ShellBase):
             'replaced'
         ]
         for r in required:
-            self.assertRegexpMatches(update_preview_text, r)
+            self.assertRegex(update_preview_text, r)
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
@@ -2497,7 +2497,7 @@ class ShellTestUserPass(ShellBase):
         mock_stdin.readline.return_value = 'Y'
         resp = self.shell('stack-delete teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
-        self.assertRegexpMatches(resp, msg)
+        self.assertRegex(resp, msg)
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
@@ -2527,7 +2527,7 @@ class ShellTestUserPass(ShellBase):
         # -y from the shell should skip the n/y prompt
         resp = self.shell('stack-delete -y teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
-        self.assertRegexpMatches(resp, msg)
+        self.assertRegex(resp, msg)
 
     def test_stack_delete(self):
         self.register_keystone_auth_fixture()
@@ -2546,7 +2546,7 @@ class ShellTestUserPass(ShellBase):
         self.m.ReplayAll()
         resp = self.shell('stack-delete teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
-        self.assertRegexpMatches(resp, msg)
+        self.assertRegex(resp, msg)
 
     def test_stack_delete_multiple(self):
         self.register_keystone_auth_fixture()
@@ -2570,8 +2570,8 @@ class ShellTestUserPass(ShellBase):
         resp = self.shell('stack-delete teststack/1 teststack2/2')
         msg1 = 'Request to delete stack teststack/1 has been accepted.'
         msg2 = 'Request to delete stack teststack2/2 has been accepted.'
-        self.assertRegexpMatches(resp, msg1)
-        self.assertRegexpMatches(resp, msg2)
+        self.assertRegex(resp, msg1)
+        self.assertRegex(resp, msg2)
 
     def test_stack_delete_failed_on_notfound(self):
         self.register_keystone_auth_fixture()
@@ -2634,7 +2634,7 @@ class ShellTestUserPass(ShellBase):
             'engine_revision',
         ]
         for r in required:
-            self.assertRegexpMatches(build_info_text, r)
+            self.assertRegex(build_info_text, r)
 
     def test_stack_snapshot(self):
         self.register_keystone_auth_fixture()
@@ -2703,7 +2703,7 @@ class ShellTestUserPass(ShellBase):
             '2014-12-05T01:25:52Z',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_snapshot_show(self):
         self.register_keystone_auth_fixture()
@@ -2817,7 +2817,7 @@ class ShellTestUserPass(ShellBase):
             'description1'
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_list_api_400_error(self):
         self.register_keystone_auth_fixture()
@@ -2875,7 +2875,7 @@ class ShellTestUserPass(ShellBase):
             'description1'
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_show_all(self):
         self.register_keystone_auth_fixture()
@@ -2932,7 +2932,7 @@ class ShellTestUserPass(ShellBase):
             'description',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_show(self):
         self.register_keystone_auth_fixture()
@@ -2968,7 +2968,7 @@ class ShellTestUserPass(ShellBase):
             'description',
         ]
         for r in required:
-            self.assertRegexpMatches(resp, r)
+            self.assertRegex(resp, r)
 
     def test_output_show_api_400_error(self):
         self.register_keystone_auth_fixture()
@@ -3024,7 +3024,7 @@ class ShellTestUserPass(ShellBase):
             'description',
         ]
         for r in required:
-            self.assertRegexpMatches(resp, r)
+            self.assertRegex(resp, r)
 
     def test_output_show_output1_with_detail(self):
         self.register_keystone_auth_fixture()
@@ -3040,7 +3040,7 @@ class ShellTestUserPass(ShellBase):
             'test output 1',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_show_output1(self):
         self.register_keystone_auth_fixture()
@@ -3072,7 +3072,7 @@ class ShellTestUserPass(ShellBase):
             'test output 2',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_show_output2_json(self):
         self.register_keystone_auth_fixture()
@@ -3097,7 +3097,7 @@ class ShellTestUserPass(ShellBase):
             'test output 2',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def test_output_show_unicode_output(self):
         self.register_keystone_auth_fixture()
@@ -3153,7 +3153,7 @@ class ShellTestActions(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(update_text, r)
+            self.assertRegex(update_text, r)
 
     def test_stack_check(self):
         self.register_keystone_auth_fixture()
@@ -3186,7 +3186,7 @@ class ShellTestActions(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(check_text, r)
+            self.assertRegex(check_text, r)
 
     def test_stack_suspend(self):
         self.register_keystone_auth_fixture()
@@ -3220,7 +3220,7 @@ class ShellTestActions(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(suspend_text, r)
+            self.assertRegex(suspend_text, r)
 
     def test_stack_resume(self):
         self.register_keystone_auth_fixture()
@@ -3254,7 +3254,7 @@ class ShellTestActions(ShellBase):
             '1'
         ]
         for r in required:
-            self.assertRegexpMatches(resume_text, r)
+            self.assertRegex(resume_text, r)
 
 
 class ShellTestEvents(ShellBase):
@@ -3307,7 +3307,7 @@ class ShellTestEvents(ShellBase):
             '2013-12-05T14:14:32',
         ]
         for r in required:
-            self.assertRegexpMatches(event_list_text, r)
+            self.assertRegex(event_list_text, r)
 
     def test_stack_event_list_log(self):
         self.register_keystone_auth_fixture()
@@ -3406,7 +3406,7 @@ class ShellTestEvents(ShellBase):
             'OS::Nova::Server',
         ]
         for r in required:
-            self.assertRegexpMatches(event_list_text, r)
+            self.assertRegex(event_list_text, r)
 
 
 class ShellTestEventsNested(ShellBase):
@@ -3463,7 +3463,7 @@ class ShellTestEventsNested(ShellBase):
         list_text = self.shell('event-list %s --nested-depth 0' % stack_id)
         required = ['id', 'eventid1', 'eventid2']
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
     def _stub_event_list_response(self, stack_id, nested_id, timestamps):
         # Stub events for parent stack
@@ -3540,11 +3540,11 @@ class ShellTestEventsNested(ShellBase):
         required = ['id', 'p_eventid1', 'p_eventid2', 'n_eventid1',
                     'n_eventid2', 'stack_name', 'teststack', 'nested']
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
         # Check event time sort/ordering
-        self.assertRegexpMatches(list_text,
-                                 "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
+        self.assertRegex(list_text,
+                         "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
 
     def test_shell_nested_depth_marker(self):
         self.register_keystone_auth_fixture()
@@ -3561,12 +3561,12 @@ class ShellTestEventsNested(ShellBase):
         required = ['id', 'p_eventid2', 'n_eventid1', 'n_eventid2',
                     'stack_name', 'teststack', 'nested']
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
 
         self.assertNotRegexpMatches(list_text, 'p_eventid1')
 
-        self.assertRegexpMatches(list_text,
-                                 "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
+        self.assertRegex(list_text,
+                         "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
 
     def test_shell_nested_depth_limit(self):
         self.register_keystone_auth_fixture()
@@ -3583,12 +3583,12 @@ class ShellTestEventsNested(ShellBase):
         required = ['id', 'p_eventid1', 'n_eventid1',
                     'stack_name', 'teststack', 'nested']
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'p_eventid2')
         self.assertNotRegexpMatches(list_text, 'n_eventid2')
 
-        self.assertRegexpMatches(list_text,
-                                 "%s.*\n.*%s.*\n" % timestamps[:2])
+        self.assertRegex(list_text,
+                         "%s.*\n.*%s.*\n" % timestamps[:2])
 
 
 class ShellTestHookFunctions(ShellBase):
@@ -3704,7 +3704,7 @@ class ShellTestHookFunctions(ShellBase):
         hook_reason = 'CREATE paused until Hook pre-create is cleared'
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'p_eventid1')
         self.assertNotRegexpMatches(list_text, 'n_eventid1')
         self.assertNotRegexpMatches(list_text, 'n_eventid2')
@@ -3719,7 +3719,7 @@ class ShellTestHookFunctions(ShellBase):
         hook_reason = 'UPDATE paused until Hook pre-update is cleared'
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'p_eventid1')
         self.assertNotRegexpMatches(list_text, 'n_eventid1')
         self.assertNotRegexpMatches(list_text, 'n_eventid2')
@@ -3821,7 +3821,7 @@ class ShellTestResources(ShellBase):
             required.append("aLogicalResource")
 
         for r in required:
-            self.assertRegexpMatches(resource_list_text, r)
+            self.assertRegex(resource_list_text, r)
 
     def test_resource_list(self):
         self._test_resource_list(True)
@@ -3887,7 +3887,7 @@ class ShellTestResources(ShellBase):
         resource_list_text = self.shell(shell_cmd)
 
         for field in response_args:
-            self.assertRegexpMatches(resource_list_text, field)
+            self.assertRegex(resource_list_text, field)
 
     def test_resource_list_nested(self):
         self._test_resource_list_more_args(
@@ -3971,7 +3971,7 @@ class ShellTestResources(ShellBase):
             '2014-01-06T16:14:26Z',
         ]
         for r in required:
-            self.assertRegexpMatches(resource_show_text, r)
+            self.assertRegex(resource_show_text, r)
 
     def test_resource_signal(self):
         self.register_keystone_auth_fixture()
@@ -4206,7 +4206,7 @@ class ShellTestResourceTypes(ShellBase):
             "resources: {}"
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
     def test_resource_type_template_json(self):
         self.register_keystone_auth_fixture()
@@ -4238,7 +4238,7 @@ class ShellTestResourceTypes(ShellBase):
             '}'
         ]
         for r in required:
-            self.assertRegexpMatches(show_text, r)
+            self.assertRegex(show_text, r)
 
 
 class ShellTestConfig(ShellBase):
@@ -4371,7 +4371,7 @@ class ShellTestConfig(ShellBase):
             'id',
         ]
         for r in required:
-            self.assertRegexpMatches(text, r)
+            self.assertRegex(text, r)
 
         self.assertEqual(
             'the config script\n',
@@ -4531,11 +4531,11 @@ class ShellTestDeployment(ShellBase):
             'id',
         ]
         for r in required:
-            self.assertRegexpMatches(text, r)
+            self.assertRegex(text, r)
 
         text = self.shell('deployment-create -sinst01 xxx')
         for r in required:
-            self.assertRegexpMatches(text, r)
+            self.assertRegex(text, r)
 
         self.assertRaises(exc.CommandError, self.shell,
                           'deployment-create -c defgh -s inst01 yyy')
@@ -4591,13 +4591,13 @@ class ShellTestDeployment(ShellBase):
             'status_reason',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
 
         list_text = self.shell('deployment-list -s 123')
 
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
 
     def test_deploy_show(self):
@@ -4650,7 +4650,7 @@ class ShellTestDeployment(ShellBase):
             'id',
         ]
         for r in required:
-            self.assertRegexpMatches(text, r)
+            self.assertRegex(text, r)
         self.assertRaises(exc.CommandError, self.shell,
                           'deployment-show defgh')
 
@@ -4727,12 +4727,10 @@ class ShellTestDeployment(ShellBase):
         self.assertIn('Unable to delete 2 of the 2 deployments.',
                       str(error2))
         output = self.shell('deployment-delete defg qwer')
-        self.assertRegexpMatches(output, 'Failed to delete the correlative '
-                                         'config dummy_config_id of '
-                                         'deployment defg')
-        self.assertRegexpMatches(output, 'Failed to delete the correlative '
-                                         'config dummy_config_id of '
-                                         'deployment qwer')
+        self.assertRegex(output, 'Failed to delete the correlative config '
+                                 'dummy_config_id of deployment defg')
+        self.assertRegex(output, 'Failed to delete the correlative config '
+                                 'dummy_config_id of deployment qwer')
 
         self.assertEqual('', self.shell('deployment-delete defg qwer'))
 
@@ -4766,7 +4764,7 @@ class ShellTestDeployment(ShellBase):
             'id',
         ]
         for r in required:
-            self.assertRegexpMatches(build_info_text, r)
+            self.assertRegex(build_info_text, r)
 
     def test_deploy_output_show(self):
         self.register_keystone_auth_fixture()
@@ -4885,7 +4883,7 @@ class ShellTestBuildInfo(ShellBase):
             'engine_revision',
         ]
         for r in required:
-            self.assertRegexpMatches(build_info_text, r)
+            self.assertRegex(build_info_text, r)
 
 
 class ShellTestToken(ShellTestUserPass):
@@ -5002,7 +5000,7 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             'CREATE_COMPLETE',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
 
 
@@ -5077,7 +5075,7 @@ class MockShellTestUserPass(MockShellBase):
             'teststack2',
         ]
         for r in required:
-            self.assertRegexpMatches(list_text, r)
+            self.assertRegex(list_text, r)
         self.assertNotRegexpMatches(list_text, 'parent')
 
         if self.jreq_mock.call_args is None:
@@ -5224,7 +5222,7 @@ class ShellTestManageService(ShellBase):
             'topic', 'updated_at', 'status'
         ]
         for r in required:
-            self.assertRegexpMatches(services_text, r)
+            self.assertRegex(services_text, r)
 
     def test_service_list_503(self):
         self._test_error_case(
