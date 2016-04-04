@@ -33,8 +33,14 @@ def make_client(instance):
         API_VERSIONS)
     LOG.debug('Instantiating orchestration client: %s', heat_client)
 
+    endpoint = instance.get_endpoint_for_service_type(
+        API_NAME,
+        region_name=instance._region_name,
+        interface=instance._interface,
+    )
+
     client = heat_client(
-        endpoint=instance.get_endpoint_for_service_type('orchestration'),
+        endpoint=endpoint,
         session=instance.session,
         auth_url=instance._auth_url,
         username=instance._username,
