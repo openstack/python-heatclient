@@ -59,6 +59,7 @@ class HeatShell(object):
 
         parser.add_argument(
             '--os-cert',
+            default=utils.env('OS_CERT'),
             help=_('Path of certificate file to use in SSL connection. '
                    'This file can optionally be prepended with '
                    'the private key.'))
@@ -70,6 +71,7 @@ class HeatShell(object):
                                  {'arg': '--os-cert'})
 
         parser.add_argument('--os-key',
+                            default=utils.env('OS_KEY'),
                             help=_('Path of client key to use in SSL '
                                    'connection. This option is not necessary '
                                    'if your key is prepended to your cert '
