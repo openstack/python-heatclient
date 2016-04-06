@@ -92,15 +92,9 @@ class TestCase(testtools.TestCase):
                 fixtures.EnvironmentVariable(key, fake_env.get(key)))
 
     def shell_error(self, argstr, error_match, exception):
-        orig = sys.stderr
-        sys.stderr = six.StringIO()
         _shell = heatclient.shell.HeatShell()
         e = self.assertRaises(exception, _shell.main, argstr.split())
         self.assertRegex(e.__str__(), error_match)
-        err = sys.stderr.getvalue()
-        sys.stderr.close()
-        sys.stderr = orig
-        return err
 
     def register_keystone_v2_token_fixture(self):
         v2_token = keystone_fixture.V2Token(token_id=self.tokenid)
