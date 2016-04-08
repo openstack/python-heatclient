@@ -1220,6 +1220,11 @@ class StackHookClear(command.Command):
             help=_('Clear the pre-update hooks')
         )
         parser.add_argument(
+            '--pre-delete',
+            action='store_true',
+            help=_('Clear the pre-delete hooks')
+        )
+        parser.add_argument(
             'hook',
             metavar='<resource>',
             nargs='+',
@@ -1246,6 +1251,8 @@ def _hook_clear(args, heat_client):
         hook_type = 'pre-create'
     elif args.pre_update:
         hook_type = 'pre-update'
+    elif args.pre_delete:
+        hook_type = 'pre-delete'
     else:
         hook_type = hook_utils.get_hook_type_via_status(heat_client,
                                                         args.stack)

@@ -1299,3 +1299,12 @@ class TestStackHookClear(TestStack):
             data={'unset_hook': 'pre-update'},
             resource_name='resource',
             stack_id='my_stack')
+
+    def test_hook_clear_pre_delete(self):
+        arglist = ['my_stack', 'resource', '--pre-delete']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+        self.mock_client.resources.signal.assert_called_once_with(
+            data={'unset_hook': 'pre-delete'},
+            resource_name='resource',
+            stack_id='my_stack')

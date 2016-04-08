@@ -1104,6 +1104,8 @@ def do_resource_mark_unhealthy(hc, args):
            help=_('Clear the pre-create hooks (optional)'))
 @utils.arg('--pre-update', action='store_true', default=False,
            help=_('Clear the pre-update hooks (optional)'))
+@utils.arg('--pre-delete', action='store_true', default=False,
+           help=_('Clear the pre-delete hooks (optional)'))
 @utils.arg('hook', metavar='<RESOURCE>', nargs='+',
            help=_('Resource names with hooks to clear. Resources '
                   'in nested stacks can be set using slash as a separator: '
@@ -1118,6 +1120,8 @@ def do_hook_clear(hc, args):
         hook_type = 'pre-create'
     elif args.pre_update:
         hook_type = 'pre-update'
+    elif args.pre_delete:
+        hook_type = 'pre-delete'
     else:
         hook_type = hook_utils.get_hook_type_via_status(hc, args.id)
 

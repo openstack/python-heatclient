@@ -3718,6 +3718,21 @@ class ShellTestHookFunctions(ShellBase):
         self.assertNotRegexpMatches(list_text, 'n_eventid1')
         self.assertNotRegexpMatches(list_text, 'n_eventid2')
 
+    def test_hook_poll_pre_delete(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_id = 'nested/2'
+        self._stub_responses(stack_id, nested_id, 'DELETE')
+        self.m.ReplayAll()
+        list_text = self.shell('hook-poll %s --nested-depth 1' % stack_id)
+        hook_reason = 'DELETE paused until Hook pre-delete is cleared'
+        required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
+        for r in required:
+            self.assertRegex(list_text, r)
+        self.assertNotRegexpMatches(list_text, 'p_eventid1')
+        self.assertNotRegexpMatches(list_text, 'n_eventid1')
+        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+
     def test_hook_poll_bad_status(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
@@ -3752,12 +3767,12 @@ class ShellTestHookFunctions(ShellBase):
     def test_hook_poll_clear_bad_action(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
-        self._stub_stack_response(stack_id, action='DELETE')
+        self._stub_stack_response(stack_id, action='BADACTION')
         self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'hook-clear %s aresource' % stack_id)
-        self.assertIn('Unexpected stack status DELETE_IN_PROGRESS',
+        self.assertIn('Unexpected stack status BADACTION_IN_PROGRESS',
                       str(error))
 
 

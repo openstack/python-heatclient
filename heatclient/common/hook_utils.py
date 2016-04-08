@@ -56,8 +56,9 @@ def clear_wildcard_hooks(hc, stack_id, stack_patterns, hook_type,
 
 
 def get_hook_type_via_status(hc, stack_id):
-    # Figure out if the hook should be pre-create or pre-update based
-    # on the stack status, also sanity assertions that we're in-progress.
+    # Figure out if the hook should be pre-create, pre-update or
+    # pre-delete based on the stack status, also sanity assertions
+    # that we're in-progress.
     try:
         stack = hc.stacks.get(stack_id=stack_id)
     except exc.HTTPNotFound:
@@ -71,8 +72,10 @@ def get_hook_type_via_status(hc, stack_id):
         hook_type = 'pre-create'
     elif 'UPDATE' in stack.stack_status:
         hook_type = 'pre-update'
+    elif 'DELETE' in stack.stack_status:
+        hook_type = 'pre-delete'
     else:
         raise exc.CommandError(_('Unexpected stack status %s, '
-                                 'only create/update supported')
+                                 'only create, update and delete supported')
                                % stack.stack_status)
     return hook_type

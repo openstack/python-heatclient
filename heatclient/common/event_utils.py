@@ -31,6 +31,10 @@ def get_hook_events(hc, stack_id, event_args, nested_depth=0,
         stack_action_reason = 'Stack UPDATE started'
         hook_event_reason = 'UPDATE paused until Hook pre-update is cleared'
         hook_clear_event_reason = 'Hook pre-update is cleared'
+    elif hook_type == 'pre-delete':
+        stack_action_reason = 'Stack DELETE started'
+        hook_event_reason = 'DELETE paused until Hook pre-delete is cleared'
+        hook_clear_event_reason = 'Hook pre-delete is cleared'
     else:
         raise exc.CommandError(_('Unexpected hook type %s') % hook_type)
 
