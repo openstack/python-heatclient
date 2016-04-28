@@ -12,7 +12,7 @@
 
 import yaml
 
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 
 from heatclient.tests.functional.osc.v1 import base
 
