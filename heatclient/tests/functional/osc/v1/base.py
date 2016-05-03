@@ -13,8 +13,8 @@
 import os
 import six
 
-from tempest_lib.cli import base
-from tempest_lib.cli import output_parser
+from tempest.lib.cli import base
+from tempest.lib.cli import output_parser
 
 
 class OpenStackClientTestBase(base.ClientTestBase):

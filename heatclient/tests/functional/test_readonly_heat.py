@@ -13,7 +13,7 @@
 import json
 import os
 
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 import yaml
 
 from heatclient.tests.functional import base

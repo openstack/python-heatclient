@@ -14,7 +14,7 @@
 import logging
 
 from heatclient.tests.functional.osc.v1 import base
-from tempest_lib.common.utils import data_utils as utils
+from tempest.lib.common.utils import data_utils as utils
 
 LOG = logging.getLogger(__name__)
 
