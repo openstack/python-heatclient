@@ -409,8 +409,9 @@ class ShellEnvironmentTest(testtools.TestCase):
                          files['file:///home/b/a.yaml'])
 
         self.assertEqual(['file:///home/my/dir/env1.yaml'], env_file_list)
-        self.assertEqual(json.dumps(expected_env),
-                         files['file:///home/my/dir/env1.yaml'])
+        self.assertTrue('file:///home/my/dir/env1.yaml' in files)
+        self.assertEqual(expected_env,
+                         json.loads(files['file:///home/my/dir/env1.yaml']))
 
     def test_process_environment_relative_file_tracker(self):
 
