@@ -42,7 +42,7 @@ class TestResourceTypeShow(TestResourceType):
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.mock_client.resource_types.get.assert_called_once_with(
-            'OS::Heat::None')
+            'OS::Heat::None', False)
 
     def test_resourcetype_show_json(self):
         arglist = ['OS::Heat::None',
@@ -50,7 +50,7 @@ class TestResourceTypeShow(TestResourceType):
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.mock_client.resource_types.get.assert_called_once_with(
-            'OS::Heat::None')
+            'OS::Heat::None', False)
 
     def test_resourcetype_show_error_get(self):
         arglist = ['OS::Heat::None']
@@ -98,6 +98,20 @@ class TestResourceTypeShow(TestResourceType):
     def test_resourcetype_show_invalid_template_type(self):
         arglist = ['OS::Heat::None',
                    '--template-type', 'abc']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_resourcetype_show_with_description(self):
+        arglist = ['OS::Heat::None', '--long']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+        self.mock_client.resource_types.get.assert_called_with(
+            'OS::Heat::None', True)
+
+    def test_resourcetype_show_long_and_template_type_error(self):
+        arglist = ['OS::Heat::None',
+                   '--template-type', 'cfn',
+                   '--long']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 

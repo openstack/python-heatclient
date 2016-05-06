@@ -62,15 +62,17 @@ class ResourceTypeManager(base.BaseManager):
 
         return self._list(url, self.KEY)
 
-    def get(self, resource_type):
+    def get(self, resource_type, with_description=False):
         """Get the details for a specific resource_type.
 
         :param resource_type: name of the resource type to get the details for
+        :param with_description: return result with description or not
         """
         url_str = '/%s/%s' % (
                   self.KEY,
                   parse.quote(encodeutils.safe_encode(resource_type), ''))
-        resp = self.client.get(url_str)
+        resp = self.client.get(url_str,
+                               params={'with_description': with_description})
         body = utils.get_response_body(resp)
         return body
 
