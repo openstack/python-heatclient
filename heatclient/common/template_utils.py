@@ -31,15 +31,26 @@ def process_template_path(template_path, object_request=None, existing=False):
     """Read template from template path.
 
     Attempt to read template first as a file or url. If that is unsuccessful,
-    try again to assuming path is to a template object.
+    try again assuming path is to a template object.
+
+    :param template_path: local or uri path to template
+    :param object_request: custom object request function used to get template
+                           if local or uri path fails
+    :param existing: if the current stack's template should be used
+    :returns: get_file dict and template contents
+    :raises: error.URLError
     """
     try:
         return get_template_contents(template_file=template_path,
                                      existing=existing)
-    except error.URLError:
-        return get_template_contents(template_object=template_path,
-                                     object_request=object_request,
-                                     existing=existing)
+    except error.URLError as template_file_exc:
+        try:
+            return get_template_contents(template_object=template_path,
+                                         object_request=object_request,
+                                         existing=existing)
+        except exc.HTTPNotFound:
+            # The initial exception gives the user better failure context.
+            raise template_file_exc
 
 
 def get_template_contents(template_file=None, template_url=None,

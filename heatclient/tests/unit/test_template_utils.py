@@ -15,6 +15,7 @@ import base64
 import json
 from mox3 import mox
 import six
+from six.moves.urllib import error
 from six.moves.urllib import request
 import tempfile
 import testtools
@@ -566,6 +567,17 @@ class TestGetTemplateContents(testtools.TestCase):
             self.assertEqual(
                 'Could not fetch template from file://%s' % tmpl_file.name,
                 str(ex))
+
+    def test_get_template_file_nonextant(self):
+        nonextant_file = '/template/dummy/file/path/and/name.yaml'
+        ex = self.assertRaises(
+            error.URLError,
+            template_utils.get_template_contents,
+            nonextant_file)
+        self.assertEqual(
+            "<urlopen error [Errno 2] No such file or directory: '%s'>"
+            % nonextant_file,
+            str(ex))
 
     def test_get_template_contents_file_none(self):
         ex = self.assertRaises(
