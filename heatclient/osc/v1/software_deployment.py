@@ -65,12 +65,6 @@ class CreateDeployment(format_utils.YamlFormat):
             help=_('ID of the configuration to deploy')
         )
         parser.add_argument(
-            '--server',
-            metavar='<server>',
-            required=True,
-            help=_('ID of the server being deployed to')
-        )
-        parser.add_argument(
             '--signal-transport',
             metavar='<signal-transport>',
             default='TEMP_URL_SIGNAL',
@@ -95,6 +89,12 @@ class CreateDeployment(format_utils.YamlFormat):
             type=int,
             default=60,
             help=_('Deployment timeout in minutes')
+        )
+        parser.add_argument(
+            '--server',
+            metavar='<server>',
+            required=True,
+            help=_('ID of the server being deployed to')
         )
         return parser
 

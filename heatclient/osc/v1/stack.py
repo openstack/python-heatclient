@@ -721,12 +721,6 @@ class AdoptStack(show.ShowOne):
             help=_('Stack creation timeout in minutes')
         )
         parser.add_argument(
-            '--adopt-file',
-            metavar='<adopt-file>',
-            required=True,
-            help=_('Path to adopt stack data file')
-        )
-        parser.add_argument(
             '--enable-rollback',
             action='store_true',
             help=_('Enable rollback on create/update failure')
@@ -742,6 +736,12 @@ class AdoptStack(show.ShowOne):
             '--wait',
             action='store_true',
             help=_('Wait until stack adopt completes')
+        )
+        parser.add_argument(
+            '--adopt-file',
+            metavar='<adopt-file>',
+            required=True,
+            help=_('Path to adopt stack data file')
         )
         return parser
 

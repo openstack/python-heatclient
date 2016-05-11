@@ -88,12 +88,6 @@ class Validate(format_utils.YamlFormat):
     def get_parser(self, prog_name):
         parser = super(Validate, self).get_parser(prog_name)
         parser.add_argument(
-            '-t', '--template',
-            metavar='<template>',
-            required=True,
-            help=_('Path to the template')
-        )
-        parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
             action='append',
@@ -115,6 +109,12 @@ class Validate(format_utils.YamlFormat):
             '--ignore-errors',
             metavar='<error1,error2,...>',
             help=_('List of heat errors to ignore')
+        )
+        parser.add_argument(
+            '-t', '--template',
+            metavar='<template>',
+            required=True,
+            help=_('Path to the template')
         )
         return parser
 
