@@ -17,6 +17,8 @@ from heatclient.common import utils
 import six
 from six.moves.urllib import parse
 
+from heatclient import exc
+from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common.apiclient import base
 
 
@@ -106,8 +108,10 @@ class StackChildManager(base.BaseManager):
         # redirected stacks:show, so pass redirect=False
         resp = self.client.get('/stacks/%s' % stack_id, redirect=False)
         location = resp.headers.get('location')
-        path = self.client.strip_endpoint(location)
-        return path[len('/stacks/'):]
+        if not location:
+            message = _("Location not returned with redirect")
+            raise exc.InvalidEndpoint(message=message)
+        return location.split('/stacks/', 1)[1]
 
 
 class StackManager(StackChildManager):

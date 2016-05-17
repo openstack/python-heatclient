@@ -201,10 +201,14 @@ class HTTPClient(object):
         # See issue: https://github.com/kennethreitz/requests/issues/1704
         allow_redirects = False
 
+        # Use fully qualified URL from response header for redirects
+        if not parse.urlparse(url).netloc:
+            url = self.endpoint_url + url
+
         try:
             resp = requests.request(
                 method,
-                self.endpoint_url + url,
+                url,
                 allow_redirects=allow_redirects,
                 **kwargs)
         except socket.gaierror as e:
@@ -231,22 +235,14 @@ class HTTPClient(object):
             # unless caller specified redirect=False
             if redirect:
                 location = resp.headers.get('location')
-                path = self.strip_endpoint(location)
-                resp = self._http_request(path, method, **kwargs)
+                if not location:
+                    message = _("Location not returned with redirect")
+                    raise exc.InvalidEndpoint(message=message)
+                resp = self._http_request(location, method, **kwargs)
         elif resp.status_code == 300:
             raise exc.from_response(resp)
 
         return resp
-
-    def strip_endpoint(self, location):
-        if location is None:
-            message = _("Location not returned with 302")
-            raise exc.InvalidEndpoint(message=message)
-        elif location.lower().startswith(self.endpoint.lower()):
-            return location[len(self.endpoint):]
-        else:
-            message = _("Prohibited endpoint redirect %s") % location
-            raise exc.InvalidEndpoint(message=message)
 
     def credentials_headers(self):
         creds = {}
