@@ -19,6 +19,7 @@ import logging
 import os
 import socket
 
+from keystoneauth1 import adapter
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import importutils
@@ -30,7 +31,6 @@ from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LW
-from keystoneclient import adapter
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'

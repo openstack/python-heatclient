@@ -16,7 +16,8 @@ import mock
 import os
 import socket
 
-
+from keystoneauth1 import adapter
+from mox3 import mox
 from oslo_serialization import jsonutils
 import requests
 import six
@@ -26,8 +27,6 @@ from heatclient.common import http
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.tests.unit import fakes
-from keystoneclient import adapter
-from mox3 import mox
 
 
 class HttpClientTest(testtools.TestCase):

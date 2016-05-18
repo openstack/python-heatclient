@@ -20,16 +20,15 @@ import argparse
 import logging
 import sys
 
+from keystoneauth1 import discover
+from keystoneauth1 import exceptions as ks_exc
+from keystoneauth1.identity import v2 as v2_auth
+from keystoneauth1.identity import v3 as v3_auth
+from keystoneauth1 import session as kssession
 from oslo_utils import encodeutils
 from oslo_utils import importutils
 import six
 import six.moves.urllib.parse as urlparse
-
-from keystoneclient.auth.identity import v2 as v2_auth
-from keystoneclient.auth.identity import v3 as v3_auth
-from keystoneclient import discover
-from keystoneclient import exceptions as ks_exc
-from keystoneclient import session as kssession
 
 import heatclient
 from heatclient import client as heat_client
@@ -409,7 +408,7 @@ class HeatShell(object):
         v2_auth_url = None
         v3_auth_url = None
         try:
-            ks_discover = discover.Discover(session=session, auth_url=auth_url)
+            ks_discover = discover.Discover(session=session, url=auth_url)
             v2_auth_url = ks_discover.url_for('2.0')
             v3_auth_url = ks_discover.url_for('3.0')
         except ks_exc.ClientException:
