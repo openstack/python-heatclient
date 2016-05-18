@@ -20,15 +20,11 @@ import argparse
 import logging
 import sys
 
-from keystoneauth1 import discover
-from keystoneauth1 import exceptions as ks_exc
-from keystoneauth1.identity import v2 as v2_auth
-from keystoneauth1.identity import v3 as v3_auth
+from keystoneauth1.identity import generic
 from keystoneauth1 import session as kssession
 from oslo_utils import encodeutils
 from oslo_utils import importutils
 import six
-import six.moves.urllib.parse as urlparse
 
 import heatclient
 from heatclient import client as heat_client
@@ -402,36 +398,6 @@ class HeatShell(object):
         if verbose:
             exc.verbose = 1
 
-    def _discover_auth_versions(self, session, auth_url):
-        # discover the API versions the server is supporting base on the
-        # given URL
-        v2_auth_url = None
-        v3_auth_url = None
-        try:
-            ks_discover = discover.Discover(session=session, url=auth_url)
-            v2_auth_url = ks_discover.url_for('2.0')
-            v3_auth_url = ks_discover.url_for('3.0')
-        except ks_exc.ClientException:
-            # Identity service may not support discover API version.
-            # Lets trying to figure out the API version from the original URL.
-            url_parts = urlparse.urlparse(auth_url)
-            (scheme, netloc, path, params, query, fragment) = url_parts
-            path = path.lower()
-            if path.startswith('/v3'):
-                v3_auth_url = auth_url
-            elif path.startswith('/v2'):
-                v2_auth_url = auth_url
-            else:
-                # not enough information to determine the auth version
-                msg = _('Unable to determine the Keystone version '
-                        'to authenticate with using the given '
-                        'auth_url. Identity service may not support API '
-                        'version discovery. Please provide a versioned '
-                        'auth_url instead.')
-                raise exc.CommandError(msg)
-
-        return (v2_auth_url, v3_auth_url)
-
     def _get_keystone_session(self, **kwargs):
         # first create a Keystone session
         cacert = kwargs.pop('cacert', None)
@@ -441,7 +407,6 @@ class HeatShell(object):
         timeout = kwargs.pop('timeout', None)
         verify = kwargs.pop('verify', None)
 
-        # FIXME(gyee): this code should come from keystoneclient
         if verify is None:
             if insecure:
                 verify = False
@@ -455,66 +420,6 @@ class HeatShell(object):
             cert = (cert, key)
 
         return kssession.Session(verify=verify, cert=cert, timeout=timeout)
-
-    def _get_keystone_v3_auth(self, v3_auth_url, **kwargs):
-        auth_token = kwargs.pop('auth_token', None)
-        if auth_token:
-            return v3_auth.Token(v3_auth_url, auth_token)
-        else:
-            return v3_auth.Password(v3_auth_url, **kwargs)
-
-    def _get_keystone_v2_auth(self, v2_auth_url, **kwargs):
-        auth_token = kwargs.pop('auth_token', None)
-        tenant_id = kwargs.pop('project_id', None)
-        tenant_name = kwargs.pop('project_name', None)
-        if auth_token:
-            return v2_auth.Token(v2_auth_url, auth_token,
-                                 tenant_id=tenant_id,
-                                 tenant_name=tenant_name)
-        else:
-            return v2_auth.Password(v2_auth_url,
-                                    username=kwargs.pop('username', None),
-                                    password=kwargs.pop('password', None),
-                                    tenant_id=tenant_id,
-                                    tenant_name=tenant_name)
-
-    def _get_keystone_auth(self, session, auth_url, **kwargs):
-        # FIXME(dhu): this code should come from keystoneclient
-
-        # discover the supported keystone versions using the given url
-        (v2_auth_url, v3_auth_url) = self._discover_auth_versions(
-            session=session,
-            auth_url=auth_url)
-
-        # Determine which authentication plugin to use. First inspect the
-        # auth_url to see the supported version. If both v3 and v2 are
-        # supported, then use the highest version if possible.
-        auth = None
-        if v3_auth_url and v2_auth_url:
-            user_domain_name = kwargs.get('user_domain_name', None)
-            user_domain_id = kwargs.get('user_domain_id', None)
-            project_domain_name = kwargs.get('project_domain_name', None)
-            project_domain_id = kwargs.get('project_domain_id', None)
-
-            # support both v2 and v3 auth. Use v3 if domain information is
-            # provided.
-            if (user_domain_name or user_domain_id or project_domain_name or
-                    project_domain_id):
-                auth = self._get_keystone_v3_auth(v3_auth_url, **kwargs)
-            else:
-                auth = self._get_keystone_v2_auth(v2_auth_url, **kwargs)
-        elif v3_auth_url:
-            # support only v3
-            auth = self._get_keystone_v3_auth(v3_auth_url, **kwargs)
-        elif v2_auth_url:
-            # support only v2
-            auth = self._get_keystone_v2_auth(v2_auth_url, **kwargs)
-        else:
-            raise exc.CommandError(_('Unable to determine the Keystone '
-                                     'version to authenticate with using the '
-                                     'given auth_url.'))
-
-        return auth
 
     def main(self, argv):
         # Parse args once to find version
@@ -582,7 +487,6 @@ class HeatShell(object):
                 raise exc.CommandError(_("You must provide an auth url via "
                                          "either --os-auth-url or via "
                                          "env[OS_AUTH_URL]"))
-
         kwargs = {
             'insecure': args.insecure,
             'cacert': args.os_cacert,
@@ -607,24 +511,29 @@ class HeatShell(object):
             }
         else:
             keystone_session = self._get_keystone_session(**kwargs)
-            project_id = args.os_project_id or args.os_tenant_id
-            project_name = args.os_project_name or args.os_tenant_name
             endpoint_type = args.os_endpoint_type or 'publicURL'
-            kwargs = {
-                'username': args.os_username,
-                'user_id': args.os_user_id,
-                'user_domain_id': args.os_user_domain_id,
-                'user_domain_name': args.os_user_domain_name,
-                'password': args.os_password,
-                'auth_token': args.os_auth_token,
-                'project_id': project_id,
-                'project_name': project_name,
-                'project_domain_id': args.os_project_domain_id,
-                'project_domain_name': args.os_project_domain_name,
-            }
-            keystone_auth = self._get_keystone_auth(keystone_session,
-                                                    args.os_auth_url,
-                                                    **kwargs)
+            if args.os_auth_token:
+                kwargs = {
+                    'token': args.os_auth_token,
+                    'auth_url': args.os_auth_url
+                }
+                keystone_auth = generic.Token(**kwargs)
+            else:
+                project_id = args.os_project_id or args.os_tenant_id
+                project_name = args.os_project_name or args.os_tenant_name
+                kwargs = {
+                    'username': args.os_username,
+                    'user_id': args.os_user_id,
+                    'user_domain_id': args.os_user_domain_id,
+                    'user_domain_name': args.os_user_domain_name,
+                    'password': args.os_password,
+                    'auth_url': args.os_auth_url,
+                    'project_id': project_id,
+                    'project_name': project_name,
+                    'project_domain_id': args.os_project_domain_id,
+                    'project_domain_name': args.os_project_domain_name,
+                }
+                keystone_auth = generic.Password(**kwargs)
             if not endpoint:
                 svc_type = service_type
                 region_name = args.os_region_name
