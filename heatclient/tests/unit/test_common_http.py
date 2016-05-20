@@ -421,7 +421,7 @@ class HttpClientTest(testtools.TestCase):
                 {'location': 'http://example.com:8004/foo/bar'},
                 ''))
         mock_conn = http.requests.request(
-            'PUT', 'http://EXAMPLE.com:8004/foo/bar',
+            'PUT', 'http://example.com:8004/foo/bar',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
@@ -438,23 +438,6 @@ class HttpClientTest(testtools.TestCase):
         resp, body = client.json_request('PUT', '')
 
         self.assertEqual(200, resp.status_code)
-
-    def test_http_manual_redirect_prohibited(self):
-        mock_conn = http.requests.request(
-            'DELETE', 'http://example.com:8004/foo',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                302, 'Found',
-                {'location': 'http://example.com:8004/'},
-                ''))
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004/foo')
-        self.assertRaises(exc.InvalidEndpoint,
-                          client.json_request, 'DELETE', '')
 
     def test_http_manual_redirect_error_without_location(self):
         mock_conn = http.requests.request(
