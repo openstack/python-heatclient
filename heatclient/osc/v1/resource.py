@@ -104,7 +104,7 @@ class ResourceList(lister.Lister):
             action='append',
             help=_('Filter parameters to apply on returned resources based on '
                    'their name, status, type, action, id and '
-                   'physcial_resource_id')
+                   'physical_resource_id')
         )
 
         return parser

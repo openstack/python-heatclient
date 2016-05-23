@@ -938,7 +938,7 @@ def do_template_validate(hc, args):
 @utils.arg('-f', '--filter', metavar='<KEY=VALUE>',
            help=_('Filter parameters to apply on returned resources based on'
                   ' their name, status, type, action, id and'
-                  ' physcial_resource_id. This can be specified multiple'
+                  ' physical_resource_id. This can be specified multiple'
                   ' times.'),
            action='append')
 def do_resource_list(hc, args):
