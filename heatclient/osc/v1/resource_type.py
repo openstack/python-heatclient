@@ -42,10 +42,20 @@ class ResourceTypeShow(format_utils.YamlFormat):
             metavar='<template-type>',
             help=_('Optional template type to generate, hot or cfn')
         )
+        parser.add_argument(
+            '--long',
+            default=False,
+            action='store_true',
+            help=_('Show resource type with corresponding description.')
+        )
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug("take_action(%s)", parsed_args)
+
+        if parsed_args.template_type is not None and parsed_args.long:
+            msg = _('Cannot use --template-type and --long in one time.')
+            raise exc.CommandError(msg)
 
         heat_client = self.app.client_manager.orchestration
         return _show_resourcetype(heat_client, parsed_args)
@@ -63,7 +73,8 @@ def _show_resourcetype(heat_client, parsed_args):
                       'template_type': template_type}
             data = heat_client.resource_types.generate_template(**fields)
         else:
-            data = heat_client.resource_types.get(parsed_args.resource_type)
+            data = heat_client.resource_types.get(parsed_args.resource_type,
+                                                  parsed_args.long)
     except heat_exc.HTTPNotFound:
         raise exc.CommandError(
             _('Resource type not found: %s') % parsed_args.resource_type)
