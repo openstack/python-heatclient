@@ -90,6 +90,13 @@ class ResourceTypeList(lister.Lister):
                    'name, version or support_status'),
             action='append'
         )
+        parser.add_argument(
+            '--long',
+            default=False,
+            action='store_true',
+            help=_('Show resource types with corresponding description of '
+                   'each resource type.')
+        )
         return parser
 
     def take_action(self, parsed_args):
@@ -101,7 +108,13 @@ class ResourceTypeList(lister.Lister):
 
 def _list_resourcetypes(heat_client, parsed_args):
     resource_types = heat_client.resource_types.list(
-        filters=heat_utils.format_parameters(parsed_args.filter))
-    columns = ['Resource Type']
-    rows = sorted([r.resource_type] for r in resource_types)
-    return (columns, rows)
+        filters=heat_utils.format_parameters(parsed_args.filter),
+        with_description=parsed_args.long
+    )
+    if parsed_args.long:
+        columns = ['Resource Type', 'Description']
+        rows = sorted([r.resource_type, r.description] for r in resource_types)
+    else:
+        columns = ['Resource Type']
+        rows = sorted([r.resource_type] for r in resource_types)
+    return columns, rows

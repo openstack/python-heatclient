@@ -101,9 +101,13 @@ class TestTypeList(TestResourceType):
 
     expected_columns = ['Resource Type']
     list_response = [
-        resource_types.ResourceType(None, 'BBB'),
-        resource_types.ResourceType(None, 'AAA'),
-        resource_types.ResourceType(None, 'CCC')
+        resource_types.ResourceType(None, {'resource_type': 'BBB',
+                                           'description': 'This is BBB'}),
+        resource_types.ResourceType(None, {'resource_type': 'AAA',
+                                           'description': 'Well done'}),
+        resource_types.ResourceType(None,
+                                    {'resource_type': 'CCC',
+                                     'description': 'No description given'})
     ]
     expected_rows = [
         ['AAA'],
@@ -122,7 +126,7 @@ class TestTypeList(TestResourceType):
         columns, rows = self.cmd.take_action(parsed_args)
 
         self.mock_client.resource_types.list.assert_called_with(
-            filters={})
+            filters={}, with_description=False)
         self.assertEqual(self.expected_columns, columns)
         self.assertEqual(self.expected_rows, rows)
 
@@ -132,7 +136,7 @@ class TestTypeList(TestResourceType):
         columns, rows = self.cmd.take_action(parsed_args)
 
         self.mock_client.resource_types.list.assert_called_once_with(
-            filters={'name': 'B'})
+            filters={'name': 'B'}, with_description=False)
         self.assertEqual(self.expected_columns, columns)
         self.assertEqual(self.expected_rows, rows)
 
@@ -142,6 +146,19 @@ class TestTypeList(TestResourceType):
         columns, rows = self.cmd.take_action(parsed_args)
 
         self.mock_client.resource_types.list.assert_called_once_with(
-            filters={'name': 'B', 'version': '123'})
+            filters={'name': 'B', 'version': '123'}, with_description=False)
         self.assertEqual(self.expected_columns, columns)
         self.assertEqual(self.expected_rows, rows)
+
+    def test_resourcetype_list_with_description(self):
+        arglist = ['--long']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, rows = self.cmd.take_action(parsed_args)
+
+        self.mock_client.resource_types.list.assert_called_once_with(
+            filters={}, with_description=True)
+        self.assertEqual(['Resource Type', 'Description'], columns)
+        self.assertEqual([['AAA', 'Well done'],
+                          ['BBB', 'This is BBB'],
+                          ['CCC', 'No description given']],
+                         rows)

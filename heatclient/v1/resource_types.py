@@ -10,6 +10,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import six
+
 from heatclient.common import utils
 
 from oslo_utils import encodeutils
@@ -20,13 +23,20 @@ from heatclient.openstack.common.apiclient import base
 
 class ResourceType(base.Resource):
     def __repr__(self):
-        return "<ResourceType %s>" % self._info
+        if isinstance(self._info, six.string_types):
+            return "<ResourceType %s>" % self._info
+        else:
+            return "<ResourceType %s>" % self._info.get('resource_type')
 
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
 
     def _add_details(self, info):
-        self.resource_type = info
+        if isinstance(info, six.string_types):
+            self.resource_type = info
+        elif isinstance(info, dict):
+            self.resource_type = info.get('resource_type')
+            self.description = info.get('description')
 
 
 class ResourceTypeManager(base.BaseManager):
@@ -44,6 +54,10 @@ class ResourceTypeManager(base.BaseManager):
         if 'filters' in kwargs:
             filters = kwargs.pop('filters')
             params.update(filters)
+        if 'with_description' in kwargs:
+            with_description = kwargs.pop('with_description')
+            params.update({'with_description': with_description})
+        if params:
             url += '?%s' % parse.urlencode(params, True)
 
         return self._list(url, self.KEY)
