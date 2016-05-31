@@ -427,7 +427,8 @@ class TestStackList(TestStack):
         'stack_name': 'my_stack',
         'stack_status': 'CREATE_COMPLETE',
         'creation_time': '2015-10-21T07:28:00Z',
-        'update_time': '2015-10-21T07:30:00Z'
+        'update_time': '2015-10-21T07:30:00Z',
+        'deletion_time': '2015-10-21T07:50:00Z',
     }
 
     def setUp(self):
@@ -451,6 +452,19 @@ class TestStackList(TestStack):
         cols = copy.deepcopy(self.columns)
         cols.append('Parent')
         arglist = ['--nested']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
+    def test_stack_list_deleted(self):
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['show_deleted'] = True
+        cols = copy.deepcopy(self.columns)
+        cols.append('Deletion Time')
+        arglist = ['--deleted']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         columns, data = self.cmd.take_action(parsed_args)

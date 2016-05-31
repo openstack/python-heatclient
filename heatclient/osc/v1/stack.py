@@ -593,6 +593,9 @@ def _list(client, args=None):
             columns.append('Parent')
             kwargs['show_nested'] = True
 
+        if args.deleted:
+            columns.append('Deletion Time')
+
     data = client.stacks.list(**kwargs)
     data = utils.sort_items(data, args.sort if args else None)
 
