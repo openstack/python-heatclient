@@ -532,15 +532,15 @@ class EnvironmentShowStack(format_utils.YamlFormat):
         client = self.app.client_manager.orchestration
 
         try:
-            template = client.stacks.environment(stack_id=parsed_args.stack)
+            env = client.stacks.environment(stack_id=parsed_args.stack)
         except heat_exc.HTTPNotFound:
             msg = _('Stack not found: %s') % parsed_args.stack
             raise exc.CommandError(msg)
 
-        fields = ['parameters', 'resource_registry']
+        fields = ['parameters', 'resource_registry', 'parameter_defaults']
 
-        columns = [f for f in fields if f in template]
-        data = [template[c] for c in columns]
+        columns = [f for f in fields if f in env]
+        data = [env[c] for c in columns]
 
         return columns, data
 

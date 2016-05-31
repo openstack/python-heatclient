@@ -1295,7 +1295,8 @@ class TestEnvironmentStackShow(TestStack):
 
     SAMPLE_ENV = {
         'parameters': {'p1': 'v1'},
-        'resource_registry': {'r1': 't1'}
+        'resource_registry': {'resources': {'r1': 't1'}},
+        'parameter_defaults': {'p1': 'v_default'}
     }
 
     def setUp(self):
@@ -1303,49 +1304,57 @@ class TestEnvironmentStackShow(TestStack):
         self.cmd = stack.EnvironmentShowStack(self.app, None)
 
     def test_stack_environment_show(self):
-        # Setup
-        self.stack_client.environment = mock.MagicMock(
-            return_value=self.SAMPLE_ENV
-        )
-
         # Test
-        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
-        columns, outputs = self.cmd.take_action(parsed_args)
+        columns, outputs = self._test_stack_environment_show(self.SAMPLE_ENV)
 
         # Verify
-        self.assertEqual(['parameters', 'resource_registry'], columns)
-        self.assertEqual({'p1': 'v1'}, outputs[0])
+        self.assertEqual([{'p1': 'v1'}, {'resources': {'r1': 't1'}},
+                          {'p1': 'v_default'}], outputs)
 
     def test_stack_environment_show_no_parameters(self):
         # Setup
         sample_env = copy.deepcopy(self.SAMPLE_ENV)
-        sample_env.pop('parameters')
-
-        self.stack_client.environment = mock.MagicMock(
-            return_value=sample_env
-        )
+        sample_env['parameters'] = {}
 
         # Test
-        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
-        columns, outputs = self.cmd.take_action(parsed_args)
+        columns, outputs = self._test_stack_environment_show(sample_env)
 
         # Verify
-        self.assertEqual(['resource_registry'], columns)
-        self.assertEqual({'r1': 't1'}, outputs[0])
+        self.assertEqual([{}, {'resources': {'r1': 't1'}},
+                          {'p1': 'v_default'}], outputs)
 
     def test_stack_environment_show_no_registry(self):
         # Setup
         sample_env = copy.deepcopy(self.SAMPLE_ENV)
-        sample_env.pop('resource_registry')
-
-        self.stack_client.environment = mock.MagicMock(
-            return_value=sample_env
-        )
+        sample_env['resource_registry'] = {'resources': {}}
 
         # Test
-        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
-        columns, outputs = self.cmd.take_action(parsed_args)
+        columns, outputs = self._test_stack_environment_show(sample_env)
 
         # Verify
-        self.assertEqual(['parameters'], columns)
-        self.assertEqual({'p1': 'v1'}, outputs[0])
+        self.assertEqual([{'p1': 'v1'}, {'resources': {}},
+                          {'p1': 'v_default'}], outputs)
+
+    def test_stack_environment_show_no_param_defaults(self):
+        # Setup
+        sample_env = copy.deepcopy(self.SAMPLE_ENV)
+        sample_env['parameter_defaults'] = {}
+
+        # Test
+        columns, outputs = self._test_stack_environment_show(sample_env)
+
+        # Verify
+        self.assertEqual([{'p1': 'v1'}, {'resources': {'r1': 't1'}}, {}],
+                         outputs)
+
+    def _test_stack_environment_show(self, env):
+        self.stack_client.environment = mock.MagicMock(
+            return_value=env
+        )
+
+        parsed_args = self.check_parser(self.cmd, ['test-stack'], [])
+        columns, outputs = self.cmd.take_action(parsed_args)
+        self.assertEqual(['parameters', 'resource_registry',
+                          'parameter_defaults'], columns)
+
+        return columns, outputs
