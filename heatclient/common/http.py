@@ -306,10 +306,8 @@ class SessionClient(adapter.LegacyJsonAdapter):
         redirect = kwargs.get('redirect')
         kwargs.setdefault('user_agent', USER_AGENT)
 
-        try:
-            kwargs.setdefault('json', kwargs.pop('data'))
-        except KeyError:
-            pass
+        if 'data' in kwargs:
+            kwargs['data'] = jsonutils.dumps(kwargs['data'])
 
         resp, body = super(SessionClient, self).request(
             url, method,
