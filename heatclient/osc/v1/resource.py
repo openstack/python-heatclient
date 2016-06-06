@@ -78,6 +78,10 @@ class ResourceList(lister.Lister):
 
     log = logging.getLogger(__name__ + '.ResourceListStack')
 
+    @property
+    def formatter_namespace(self):
+        return 'heatclient.resource.formatter.list'
+
     def get_parser(self, prog_name):
         parser = super(ResourceList, self).get_parser(prog_name)
         parser.add_argument(
@@ -125,6 +129,9 @@ class ResourceList(lister.Lister):
         except heat_exc.HTTPNotFound:
             msg = _('Stack not found: %s') % parsed_args.stack
             raise exc.CommandError(msg)
+
+        if parsed_args.formatter == 'dot':
+            return [], resources
 
         columns = ['physical_resource_id', 'resource_type', 'resource_status',
                    'updated_time']
