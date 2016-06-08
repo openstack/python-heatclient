@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
 from oslo_utils import encodeutils
 import six
 from six.moves.urllib import parse
@@ -65,6 +66,8 @@ class EventManager(stacks.StackChildManager):
                 parse.quote(stack_id, ''),
                 parse.quote(encodeutils.safe_encode(resource_name), ''))
         if params:
+            # convert to a sorted dict for python3 predictible order
+            params = collections.OrderedDict(sorted(params.items()))
             url += '?%s' % parse.urlencode(params, True)
 
         return self._list(url, 'events')

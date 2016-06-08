@@ -2767,14 +2767,18 @@ class ShellTestEventsNested(ShellBase):
         for r in required:
             self.assertRegex(list_text, r)
 
-    def _stub_event_list_response(self, stack_id, nested_id, timestamps):
+    def _stub_event_list_response_old_api(self, stack_id, nested_id,
+                                          timestamps, first_request):
         # Stub events for parent stack
         ev_resp_dict = {"events": [{"id": "p_eventid1",
                                     "event_time": timestamps[0]},
                                    {"id": "p_eventid2",
                                     "event_time": timestamps[3]}]}
-        self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
-                              ev_resp_dict)
+        self.mock_request_get(first_request, ev_resp_dict)
+
+        # response lacks root_stack link, fetch nested events recursively
+        self.mock_request_get('/stacks/%s/events?sort_dir=asc'
+                              % stack_id, ev_resp_dict)
 
         # Stub resources for parent, including one nested
         res_resp_dict = {"resources": [
@@ -2794,7 +2798,7 @@ class ShellTestEventsNested(ShellBase):
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % nested_id,
                               nev_resp_dict)
 
-    def test_shell_nested_depth(self):
+    def test_shell_nested_depth_old_api(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2802,7 +2806,10 @@ class ShellTestEventsNested(ShellBase):
                       "2014-01-06T16:15:00Z",  # nested n_eventid1
                       "2014-01-06T16:16:00Z",  # nested n_eventid2
                       "2014-01-06T16:17:00Z")  # parent p_eventid2
-        self._stub_event_list_response(stack_id, nested_id, timestamps)
+        first_request = ('/stacks/%s/events?nested_depth=1&sort_dir=asc'
+                         % stack_id)
+        self._stub_event_list_response_old_api(
+            stack_id, nested_id, timestamps, first_request)
         self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1' % stack_id)
         required = ['id', 'p_eventid1', 'p_eventid2', 'n_eventid1',
@@ -2814,7 +2821,7 @@ class ShellTestEventsNested(ShellBase):
         self.assertRegex(list_text,
                          "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
 
-    def test_shell_nested_depth_marker(self):
+    def test_shell_nested_depth_marker_old_api(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2822,7 +2829,10 @@ class ShellTestEventsNested(ShellBase):
                       "2014-01-06T16:15:00Z",  # nested n_eventid1
                       "2014-01-06T16:16:00Z",  # nested n_eventid2
                       "2014-01-06T16:17:00Z")  # parent p_eventid2
-        self._stub_event_list_response(stack_id, nested_id, timestamps)
+        first_request = ('/stacks/%s/events?marker=n_eventid1&nested_depth=1'
+                         '&sort_dir=asc' % stack_id)
+        self._stub_event_list_response_old_api(
+            stack_id, nested_id, timestamps, first_request)
         self.m.ReplayAll()
         list_text = self.shell(
             'event-list %s --nested-depth 1 --marker n_eventid1' % stack_id)
@@ -2836,7 +2846,7 @@ class ShellTestEventsNested(ShellBase):
         self.assertRegex(list_text,
                          "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
 
-    def test_shell_nested_depth_limit(self):
+    def test_shell_nested_depth_limit_old_api(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2844,7 +2854,10 @@ class ShellTestEventsNested(ShellBase):
                       "2014-01-06T16:15:00Z",  # nested n_eventid1
                       "2014-01-06T16:16:00Z",  # nested n_eventid2
                       "2014-01-06T16:17:00Z")  # parent p_eventid2
-        self._stub_event_list_response(stack_id, nested_id, timestamps)
+        first_request = ('/stacks/%s/events?limit=2&nested_depth=1'
+                         '&sort_dir=asc' % stack_id)
+        self._stub_event_list_response_old_api(
+            stack_id, nested_id, timestamps, first_request)
         self.m.ReplayAll()
         list_text = self.shell(
             'event-list %s --nested-depth 1 --limit 2' % stack_id)
@@ -2857,6 +2870,104 @@ class ShellTestEventsNested(ShellBase):
 
         self.assertRegex(list_text,
                          "%s.*\n.*%s.*\n" % timestamps[:2])
+
+    def _nested_events(self):
+        links = [
+            {"rel": "self"},
+            {"rel": "resource"},
+            {"rel": "stack"},
+            {"rel": "root_stack"}
+        ]
+        return [
+            {
+                "id": "p_eventid1",
+                "event_time": '2014-01-06T16:14:00Z',
+                "stack_id": '1',
+                "resource_name": 'the_stack',
+                "resource_status": 'CREATE_IN_PROGRESS',
+                "resource_status_reason": 'Stack CREATE started',
+                "links": links,
+            }, {
+                "id": 'n_eventid1',
+                "event_time": '2014-01-06T16:15:00Z',
+                "stack_id": '2',
+                "resource_name": 'nested_stack',
+                "resource_status": 'CREATE_IN_PROGRESS',
+                "resource_status_reason": 'Stack CREATE started',
+                "links": links,
+            }, {
+                "id": 'n_eventid2',
+                "event_time": '2014-01-06T16:16:00Z',
+                "stack_id": '2',
+                "resource_name": 'nested_stack',
+                "resource_status": 'CREATE_COMPLETE',
+                "resource_status_reason": 'Stack CREATE completed',
+                "links": links,
+            }, {
+                "id": "p_eventid2",
+                "event_time": '2014-01-06T16:17:00Z',
+                "stack_id": '1',
+                "resource_name": 'the_stack',
+                "resource_status": 'CREATE_COMPLETE',
+                "resource_status_reason": 'Stack CREATE completed',
+                "links": links,
+            },
+        ]
+
+    def test_shell_nested_depth(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_events = self._nested_events()
+        ev_resp_dict = {'events': nested_events}
+
+        url = '/stacks/%s/events?nested_depth=1&sort_dir=asc' % stack_id
+        self.mock_request_get(url, ev_resp_dict)
+        self.m.ReplayAll()
+        list_text = self.shell('event-list %s --nested-depth 1 --format log'
+                               % stack_id)
+        self.assertEqual('''\
+2014-01-06 16:14:00Z [the_stack]: CREATE_IN_PROGRESS  Stack CREATE started
+2014-01-06 16:15:00Z [nested_stack]: CREATE_IN_PROGRESS  Stack CREATE started
+2014-01-06 16:16:00Z [nested_stack]: CREATE_COMPLETE  Stack CREATE completed
+2014-01-06 16:17:00Z [the_stack]: CREATE_COMPLETE  Stack CREATE completed
+''', list_text)
+
+    def test_shell_nested_depth_marker(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_events = self._nested_events()
+        ev_resp_dict = {'events': nested_events[1:]}
+
+        url = ('/stacks/%s/events?marker=n_eventid1&nested_depth=1'
+               '&sort_dir=asc' % stack_id)
+        self.mock_request_get(url, ev_resp_dict)
+        self.m.ReplayAll()
+        list_text = self.shell('event-list %s --nested-depth 1 --format log '
+                               '--marker n_eventid1'
+                               % stack_id)
+        self.assertEqual('''\
+2014-01-06 16:15:00Z [nested_stack]: CREATE_IN_PROGRESS  Stack CREATE started
+2014-01-06 16:16:00Z [nested_stack]: CREATE_COMPLETE  Stack CREATE completed
+2014-01-06 16:17:00Z [the_stack]: CREATE_COMPLETE  Stack CREATE completed
+''', list_text)
+
+    def test_shell_nested_depth_limit(self):
+        self.register_keystone_auth_fixture()
+        stack_id = 'teststack/1'
+        nested_events = self._nested_events()
+        ev_resp_dict = {'events': nested_events[:2]}
+
+        url = ('/stacks/%s/events?limit=2&nested_depth=1&sort_dir=asc'
+               % stack_id)
+        self.mock_request_get(url, ev_resp_dict)
+        self.m.ReplayAll()
+        list_text = self.shell('event-list %s --nested-depth 1 --format log '
+                               '--limit 2'
+                               % stack_id)
+        self.assertEqual('''\
+2014-01-06 16:14:00Z [the_stack]: CREATE_IN_PROGRESS  Stack CREATE started
+2014-01-06 16:15:00Z [nested_stack]: CREATE_IN_PROGRESS  Stack CREATE started
+''', list_text)
 
 
 class ShellTestHookFunctions(ShellBase):
@@ -2892,6 +3003,10 @@ class ShellTestHookFunctions(ShellBase):
                                     "event_time": "2014-01-06T16:17:00Z",
                                     "resource_name": "p_res",
                                     "resource_status_reason": hook_reason}]}
+
+        url = '/stacks/%s/events?nested_depth=1&sort_dir=asc' % stack_id
+        self.mock_request_get(url, ev_resp_dict)
+        # this api doesn't support nested_depth, fetch events recursively
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
                               ev_resp_dict)
 

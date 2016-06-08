@@ -157,8 +157,6 @@ class ListEvent(lister.Lister):
 
         kwargs = {
             'resource_name': parsed_args.resource,
-            'limit': parsed_args.limit,
-            'marker': parsed_args.marker,
             'filters': heat_utils.format_parameters(parsed_args.filter),
             'sort_dir': 'asc'
         }
@@ -168,10 +166,6 @@ class ListEvent(lister.Lister):
             raise exc.CommandError(msg)
 
         if parsed_args.nested_depth:
-            # Until the API supports recursive event listing we'll have to do
-            # the marker/limit filtering client-side
-            del kwargs['marker']
-            del kwargs['limit']
             columns.append('stack_name')
             nested_depth = parsed_args.nested_depth
         else:
@@ -185,7 +179,6 @@ class ListEvent(lister.Lister):
             marker = parsed_args.marker
             try:
                 while True:
-                    kwargs['marker'] = marker
                     events = event_utils.get_events(
                         client,
                         stack_id=parsed_args.stack,

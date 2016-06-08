@@ -99,8 +99,6 @@ class TestEventList(TestEvent):
     defaults = {
         'stack_id': 'my_stack',
         'resource_name': None,
-        'limit': None,
-        'marker': None,
         'filters': {},
         'sort_dir': 'asc'
     }
@@ -169,8 +167,7 @@ class TestEventList(TestEvent):
     def test_event_list_nested_depth(self):
         arglist = ['my_stack', '--nested-depth', '3', '--format', 'table']
         kwargs = copy.deepcopy(self.defaults)
-        del kwargs['marker']
-        del kwargs['limit']
+        kwargs['nested_depth'] = 3
         cols = copy.deepcopy(self.fields)
         cols[-1] = 'stack_name'
         cols.append('logical_resource_id')
@@ -178,7 +175,10 @@ class TestEventList(TestEvent):
 
         columns, data = self.cmd.take_action(parsed_args)
 
-        self.event_client.list.assert_called_with(**kwargs)
+        self.event_client.list.assert_has_calls([
+            mock.call(**kwargs),
+            mock.call(**self.defaults)
+        ])
         self.assertEqual(cols, columns)
 
     def test_event_list_sort(self):
