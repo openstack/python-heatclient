@@ -11,6 +11,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 import mock
 import os
@@ -833,7 +834,31 @@ class SessionClientTest(testtools.TestCase):
         resp = client.request('', 'GET', **kwargs)
 
         self.assertEqual({'endpoint_override': 'http://no.where/',
-                          'json': 'some_data',
+                          'data': '"some_data"',
+                          'user_agent': 'python-heatclient',
+                          'raise_exc': False}, self.request.call_args[1])
+        self.assertEqual(200, resp.status_code)
+
+    @mock.patch.object(jsonutils, 'dumps')
+    def test_kwargs_with_files(self, mock_dumps):
+        fake = fakes.FakeHTTPResponse(
+            200,
+            'OK',
+            {'content-type': 'application/json'},
+            {}
+        )
+        mock_dumps.return_value = "{'files': test}}"
+        data = six.BytesIO(b'test')
+        kwargs = {'endpoint_override': 'http://no.where/',
+                  'data': {'files': data}}
+        client = http.SessionClient(mock.ANY)
+
+        self.request.return_value = (fake, {})
+
+        resp = client.request('', 'GET', **kwargs)
+
+        self.assertEqual({'endpoint_override': 'http://no.where/',
+                          'data': "{'files': test}}",
                           'user_agent': 'python-heatclient',
                           'raise_exc': False}, self.request.call_args[1])
         self.assertEqual(200, resp.status_code)
