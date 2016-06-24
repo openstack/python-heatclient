@@ -14,7 +14,7 @@
 import copy
 import mock
 
-from openstackclient.common import exceptions as exc
+from osc_lib import exceptions as exc
 
 from heatclient import exc as heat_exc
 from heatclient.osc.v1 import software_deployment

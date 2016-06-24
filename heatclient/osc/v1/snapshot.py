@@ -19,12 +19,12 @@ import six
 from cliff import command
 from cliff import lister
 from cliff import show
-from openstackclient.common import exceptions as exc
-from openstackclient.common import utils
+from osc_lib import exceptions as exc
+from osc_lib.i18n import _
+from osc_lib import utils
 
 from heatclient.common import format_utils
 from heatclient import exc as heat_exc
-from openstackclient.i18n import _
 
 
 class ListSnapshot(lister.Lister):

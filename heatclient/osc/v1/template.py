@@ -17,7 +17,7 @@ import six
 
 
 from cliff import lister
-from openstackclient.common import utils
+from osc_lib import utils
 
 from heatclient.common import format_utils
 from heatclient.common import http

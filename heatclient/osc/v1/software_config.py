@@ -21,8 +21,8 @@ import yaml
 
 from cliff import command
 from cliff import lister
-from openstackclient.common import exceptions as exc
-from openstackclient.common import utils
+from osc_lib import exceptions as exc
+from osc_lib import utils
 
 from heatclient.common import format_utils
 from heatclient.common import template_format

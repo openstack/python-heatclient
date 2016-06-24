@@ -20,9 +20,9 @@ from six.moves.urllib import request
 
 from cliff import lister
 from cliff import show
-from openstackclient.common import exceptions as exc
-from openstackclient.common import utils
-from openstackclient.i18n import _
+from osc_lib import exceptions as exc
+from osc_lib.i18n import _
+from osc_lib import utils
 from oslo_serialization import jsonutils
 
 from heatclient.common import format_utils

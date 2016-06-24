@@ -19,9 +19,9 @@ import sys
 from cliff import command
 from cliff import lister
 from cliff import show
-from openstackclient.common import exceptions as exc
-from openstackclient.common import parseractions
-from openstackclient.common import utils
+from osc_lib.cli import parseractions
+from osc_lib import exceptions as exc
+from osc_lib import utils
 from oslo_serialization import jsonutils
 import six
 from six.moves.urllib import request

@@ -20,8 +20,8 @@ from cliff import lister
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
-from openstackclient.common import exceptions as exc
-from openstackclient.i18n import _
+from osc_lib import exceptions as exc
+from osc_lib.i18n import _
 
 
 class ResourceTypeShow(format_utils.YamlFormat):

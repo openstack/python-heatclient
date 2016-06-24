@@ -18,8 +18,8 @@ import six
 import testscenarios
 import yaml
 
-from openstackclient.common import exceptions as exc
-from openstackclient.common import utils
+from osc_lib import exceptions as exc
+from osc_lib import utils
 
 from heatclient.common import template_format
 from heatclient import exc as heat_exc

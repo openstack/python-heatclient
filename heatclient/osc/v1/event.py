@@ -18,7 +18,7 @@ import time
 from cliff.formatters import base
 from cliff import lister
 from cliff import show
-from openstackclient.common import utils
+from osc_lib import utils
 
 from heatclient.common import event_utils
 from heatclient.common import utils as heat_utils

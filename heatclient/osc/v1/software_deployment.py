@@ -20,8 +20,8 @@ from cliff import command
 from cliff import lister
 from cliff import show
 
-from openstackclient.common import exceptions as exc
-from openstackclient.common import utils
+from osc_lib import exceptions as exc
+from osc_lib import utils
 
 from heatclient.common import deployment_utils
 from heatclient.common import format_utils

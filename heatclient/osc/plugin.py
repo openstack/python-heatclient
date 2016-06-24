@@ -13,7 +13,7 @@
 
 import logging
 
-from openstackclient.common import utils
+from osc_lib import utils
 
 LOG = logging.getLogger(__name__)
 

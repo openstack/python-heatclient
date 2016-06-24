@@ -16,7 +16,7 @@
 import logging
 
 from cliff import lister
-from openstackclient.common import utils
+from osc_lib import utils
 
 
 class ListService(lister.Lister):
