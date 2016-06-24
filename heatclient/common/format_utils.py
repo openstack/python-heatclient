@@ -81,6 +81,8 @@ def print_software_deployment_output(data, name, out=sys.stdout, long=False):
     The format attempts to be valid yaml, but is primarily aimed at showing
     useful information to the user in a helpful layout.
     """
+    if data is None:
+        data = {}
     if name in ('deploy_stdout', 'deploy_stderr'):
         output = indent_and_truncate(
             data.get(name),
