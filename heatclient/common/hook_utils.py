@@ -30,7 +30,7 @@ def clear_hook(hc, stack_id, resource_name, hook_type):
             data={'unset_hook': hook_type})
     except exc.HTTPNotFound:
         logger.error(
-            _LE("Stack %(stack)s or resource %(resource)s"
+            _LE("Stack %(stack)s or resource %(resource)s "
                 "not found for hook %(hook_type)"),
             {'resource': resource_name, 'stack': stack_id,
              'hook_type': hook_type})
