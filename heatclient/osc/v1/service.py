@@ -15,11 +15,11 @@
 
 import logging
 
-from cliff import lister
+from osc_lib.command import command
 from osc_lib import utils
 
 
-class ListService(lister.Lister):
+class ListService(command.Lister):
     """List the Heat engines."""
 
     log = logging.getLogger(__name__ + ".ListService")

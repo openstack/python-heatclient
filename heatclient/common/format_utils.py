@@ -12,12 +12,12 @@
 #
 #   Copyright 2015 IBM Corp.
 
-from cliff import show
+from osc_lib.command import command
 import six
 import sys
 
 
-class RawFormat(show.ShowOne):
+class RawFormat(command.ShowOne):
 
     def produce_output(self, parsed_args, column_names, data):
         if data is None:

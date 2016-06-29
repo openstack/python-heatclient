@@ -16,10 +16,8 @@
 import logging
 import sys
 
-from cliff import command
-from cliff import lister
-from cliff import show
 from osc_lib.cli import parseractions
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
 from oslo_serialization import jsonutils
@@ -37,7 +35,7 @@ from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LI
 
 
-class CreateStack(show.ShowOne):
+class CreateStack(command.ShowOne):
     """Create a stack."""
 
     log = logging.getLogger(__name__ + '.CreateStack')
@@ -188,7 +186,7 @@ class CreateStack(show.ShowOne):
         return _show_stack(client, stack['id'], format='table', short=True)
 
 
-class UpdateStack(show.ShowOne):
+class UpdateStack(command.ShowOne):
     """Update a stack."""
 
     log = logging.getLogger(__name__ + '.UpdateStack')
@@ -359,7 +357,7 @@ class UpdateStack(show.ShowOne):
                            short=True)
 
 
-class ShowStack(show.ShowOne):
+class ShowStack(command.ShowOne):
     """Show stack details."""
 
     log = logging.getLogger(__name__ + ".ShowStack")
@@ -427,7 +425,7 @@ def _show_stack(heat_client, stack_id, format='', short=False):
                                                   formatters=formatters)
 
 
-class ListStack(lister.Lister):
+class ListStack(command.Lister):
     """List stacks."""
 
     log = logging.getLogger(__name__ + '.ListStack')
@@ -696,7 +694,7 @@ class DeleteStack(command.Command):
             raise exc.CommandError(msg)
 
 
-class AdoptStack(show.ShowOne):
+class AdoptStack(command.ShowOne):
     """Adopt a stack."""
 
     log = logging.getLogger(__name__ + '.AdoptStack')
@@ -823,7 +821,7 @@ class AbandonStack(format_utils.JsonFormat):
         return columns, data
 
 
-class OutputShowStack(show.ShowOne):
+class OutputShowStack(command.ShowOne):
     """Show stack output."""
 
     log = logging.getLogger(__name__ + '.OutputShowStack')
@@ -908,7 +906,7 @@ class OutputShowStack(show.ShowOne):
         return self.dict2columns(output)
 
 
-class OutputListStack(lister.Lister):
+class OutputListStack(command.Lister):
     """List stack outputs."""
 
     log = logging.getLogger(__name__ + '.OutputListStack')
@@ -973,7 +971,7 @@ class TemplateShowStack(format_utils.YamlFormat):
         return self.dict2columns(template)
 
 
-class StackActionBase(lister.Lister):
+class StackActionBase(command.Lister):
     """Stack actions base."""
 
     log = logging.getLogger(__name__ + '.StackActionBase')
@@ -1161,7 +1159,7 @@ class CancelStack(StackActionBase):
         return (columns, rows)
 
 
-class StackHookPoll(lister.Lister):
+class StackHookPoll(command.Lister):
     '''List resources with pending hook for a stack.'''
 
     log = logging.getLogger(__name__ + '.StackHookPoll')

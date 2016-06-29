@@ -14,7 +14,7 @@
 
 import collections
 
-from cliff import command
+from osc_lib.command import command
 
 from heatclient.common import format_utils
 from heatclient import exc

@@ -19,8 +19,7 @@ import six
 from six.moves.urllib import request
 import yaml
 
-from cliff import command
-from cliff import lister
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
 
@@ -73,7 +72,7 @@ def _delete_config(heat_client, args):
                                 'total': len(args.config)})
 
 
-class ListConfig(lister.Lister):
+class ListConfig(command.Lister):
     """List software configs"""
 
     log = logging.getLogger(__name__ + ".ListConfig")

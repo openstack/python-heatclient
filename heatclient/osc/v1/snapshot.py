@@ -16,9 +16,7 @@
 import logging
 import six
 
-from cliff import command
-from cliff import lister
-from cliff import show
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
@@ -27,7 +25,7 @@ from heatclient.common import format_utils
 from heatclient import exc as heat_exc
 
 
-class ListSnapshot(lister.Lister):
+class ListSnapshot(command.Lister):
     """List stack snapshots."""
 
     log = logging.getLogger(__name__ + ".ListSnapshot")
@@ -137,7 +135,7 @@ class RestoreSnapshot(command.Command):
                                     'snapshot': parsed_args.snapshot})
 
 
-class CreateSnapshot(show.ShowOne):
+class CreateSnapshot(command.ShowOne):
     """Create stack snapshot."""
 
     log = logging.getLogger(__name__ + ".CreateSnapshot")

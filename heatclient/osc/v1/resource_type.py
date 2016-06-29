@@ -16,10 +16,10 @@
 import logging
 import six
 
-from cliff import lister
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 
@@ -84,7 +84,7 @@ def _show_resourcetype(heat_client, parsed_args):
     return columns, rows
 
 
-class ResourceTypeList(lister.Lister):
+class ResourceTypeList(command.Lister):
     """List resource types."""
 
     log = logging.getLogger(__name__ + '.ResourceTypeList')

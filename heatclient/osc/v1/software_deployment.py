@@ -16,10 +16,7 @@
 import logging
 from oslo_serialization import jsonutils
 
-from cliff import command
-from cliff import lister
-from cliff import show
-
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
 
@@ -182,7 +179,7 @@ class DeleteDeployment(command.Command):
                                    'total': len(parsed_args.deployment)})
 
 
-class ListDeployment(lister.Lister):
+class ListDeployment(command.Lister):
     """List software deployments."""
 
     log = logging.getLogger(__name__ + '.ListDeployment')
@@ -222,7 +219,7 @@ def _list_deployment(heat_client, args=None):
     )
 
 
-class ShowDeployment(show.ShowOne):
+class ShowDeployment(command.ShowOne):
     """Show SoftwareDeployment Details."""
 
     log = logging.getLogger(__name__ + ".ShowSoftwareDeployment")

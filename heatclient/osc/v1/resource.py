@@ -13,13 +13,11 @@
 
 """Orchestration v1 Stack action implementations"""
 
-from cliff import command
 import logging
 import six
 from six.moves.urllib import request
 
-from cliff import lister
-from cliff import show
+from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
@@ -30,7 +28,7 @@ from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
 
 
-class ResourceShow(show.ShowOne):
+class ResourceShow(command.ShowOne):
     """Display stack resource."""
 
     log = logging.getLogger(__name__ + '.ResourceShowStack')
@@ -73,7 +71,7 @@ class ResourceShow(show.ShowOne):
         return self.dict2columns(resource.to_dict())
 
 
-class ResourceList(lister.Lister):
+class ResourceList(command.Lister):
     """List stack resources."""
 
     log = logging.getLogger(__name__ + '.ResourceListStack')

@@ -16,8 +16,7 @@ import logging
 import time
 
 from cliff.formatters import base
-from cliff import lister
-from cliff import show
+from osc_lib.command import command
 from osc_lib import utils
 
 from heatclient.common import event_utils
@@ -26,7 +25,7 @@ from heatclient import exc
 from heatclient.openstack.common._i18n import _
 
 
-class ShowEvent(show.ShowOne):
+class ShowEvent(command.ShowOne):
     """Show event details."""
 
     log = logging.getLogger(__name__ + '.ShowEvent')
@@ -82,7 +81,7 @@ class ShowEvent(show.ShowOne):
                                                   formatters=formatters)
 
 
-class ListEvent(lister.Lister):
+class ListEvent(command.Lister):
     """List events."""
 
     log = logging.getLogger(__name__ + '.ListEvent')
