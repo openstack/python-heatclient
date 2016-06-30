@@ -39,14 +39,17 @@ def make_client(instance):
         interface=instance._interface,
     )
 
-    client = heat_client(
-        endpoint=endpoint,
-        session=instance.session,
-        auth_url=instance._auth_url,
-        username=instance._username,
-        password=instance._password,
-        region_name=instance._region_name,
-    )
+    kwargs = {'endpoint': endpoint,
+              'auth_url': instance._auth_url,
+              'region_name': instance._region_name,
+              'username': instance.auth_ref.username}
+
+    if instance.session:
+        kwargs.update(session=instance.session)
+    else:
+        kwargs.update(token=instance.auth_ref.auth_token)
+
+    client = heat_client(**kwargs)
 
     return client
 
