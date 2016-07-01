@@ -43,7 +43,7 @@ parameters:
     default: 0
     constraints:
       - range: {min: 0, max: 10}
-        description: must be betwen 0 and 10
+        description: must be between 0 and 10
   param3:
     type: boolean
 
