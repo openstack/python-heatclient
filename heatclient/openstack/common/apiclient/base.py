@@ -529,6 +529,9 @@ class Resource(object):
                         "function."))
         return self._info == other._info
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def is_same_obj(self, other):
         """Identify the two objects are same one with same id."""
         if isinstance(other, self.__class__):
