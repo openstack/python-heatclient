@@ -686,9 +686,12 @@ def do_stack_list(hc, args=None):
             kwargs['sort_dir'] = args.sort_dir
 
         if args.global_tenant or args.show_owner:
-            fields.insert(2, 'stack_owner')
+            fields.append('stack_owner')
         if args.global_tenant:
-            fields.insert(2, 'project')
+            fields.append('project')
+
+        if args.show_deleted:
+            fields.append('deletion_time')
 
     stacks = hc.stacks.list(**kwargs)
     utils.print_list(stacks, fields, sortby_index=sortby_index)
