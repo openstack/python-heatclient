@@ -340,8 +340,8 @@ class UpdateStack(command.ShowOne):
             # find the last event to use as the marker
             events = event_utils.get_events(client,
                                             stack_id=parsed_args.stack,
-                                            event_args={'sort_dir': 'desc',
-                                                        'limit': 1})
+                                            event_args={'sort_dir': 'desc'},
+                                            limit=1)
             marker = events[0].id if events else None
 
         client.stacks.update(**fields)
@@ -661,8 +661,8 @@ class DeleteStack(command.Command):
                     events = event_utils.get_events(heat_client,
                                                     stack_id=sid,
                                                     event_args={
-                                                        'sort_dir': 'desc',
-                                                        'limit': 1})
+                                                        'sort_dir': 'desc'},
+                                                    limit=1)
                     if events:
                         marker = events[0].id
                 except heat_exc.CommandError as ex:
@@ -1026,8 +1026,8 @@ def _stack_action(stack, parsed_args, heat_client, action, action_name=None):
         # find the last event to use as the marker
         events = event_utils.get_events(heat_client,
                                         stack_id=stack,
-                                        event_args={'sort_dir': 'desc',
-                                                    'limit': 1})
+                                        event_args={'sort_dir': 'desc'},
+                                        limit=1)
         marker = events[0].id if events else None
 
     try:
