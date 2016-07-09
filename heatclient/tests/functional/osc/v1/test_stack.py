@@ -11,12 +11,8 @@
 #    under the License.
 
 
-import logging
-
 from heatclient.tests.functional.osc.v1 import base
 from tempest.lib.common.utils import data_utils as utils
-
-LOG = logging.getLogger(__name__)
 
 
 class OpenStackClientStackTest(base.OpenStackClientTestBase):
