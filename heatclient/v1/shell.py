@@ -250,7 +250,7 @@ def do_stack_adopt(hc, args):
            help=_('A list of tags to associate with the stack.'))
 def do_stack_preview(hc, args):
     '''Preview the stack.'''
-    show_deprecated('heat stack-preview', 'openstack stack update --dry-run')
+    show_deprecated('heat stack-preview', 'openstack stack create --dry-run')
 
     tpl_files, template = template_utils.get_template_contents(
         args.template_file,
