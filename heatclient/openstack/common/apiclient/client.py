@@ -287,25 +287,6 @@ class HTTPClient(object):
         """Add a new instance of :class:`BaseClient` descendant.
 
         `self` will store a reference to `base_client_instance`.
-
-        Example:
-
-        >>> def test_clients():
-        ...     from keystoneclient.auth import keystone
-        ...     from openstack.common.apiclient import client
-        ...     auth = keystone.KeystoneAuthPlugin(
-        ...         username="user", password="pass", tenant_name="tenant",
-        ...         auth_url="http://auth:5000/v2.0")
-        ...     openstack_client = client.HTTPClient(auth)
-        ...     # create nova client
-        ...     from novaclient.v1_1 import client
-        ...     client.Client(openstack_client)
-        ...     # create keystone client
-        ...     from keystoneclient.v2_0 import client
-        ...     client.Client(openstack_client)
-        ...     # use them
-        ...     openstack_client.identity.tenants.list()
-        ...     openstack_client.compute.servers.list()
         """
         service_type = base_client_instance.service_type
         if service_type and not hasattr(self, service_type):
