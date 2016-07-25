@@ -156,6 +156,12 @@ class StackOperationsTest(testtools.TestCase):
         stack.environment()
         manager.environment.assert_called_once_with('env_stack/env1')
 
+    def test_files_show(self):
+        manager = mock.MagicMock()
+        stack = mock_stack(manager, 'files_stack', 'files1')
+        stack.files()
+        manager.files.assert_called_once_with('files_stack/files1')
+
 
 class StackManagerNoPaginationTest(testtools.TestCase):
 

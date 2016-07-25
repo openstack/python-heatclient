@@ -65,6 +65,9 @@ class Stack(base.Resource):
     def environment(self):
         return self.manager.environment(self.identifier)
 
+    def files(self):
+        return self.manager.files(self.identifier)
+
     def get(self):
         # set_loaded() first ... so if we have to bail, we know we tried.
         self._loaded = True
@@ -288,6 +291,16 @@ class StackManager(StackChildManager):
         :return:
         """
         resp = self.client.get('/stacks/%s/environment' % stack_id)
+        body = utils.get_response_body(resp)
+        return body
+
+    def files(self, stack_id):
+        """Returns the files for an existing stack.
+
+        :param stack_id: identifies the stack
+        :return:
+        """
+        resp = self.client.get('/stacks/%s/files' % stack_id)
         body = utils.get_response_body(resp)
         return body
 
