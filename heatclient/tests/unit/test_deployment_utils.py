@@ -16,11 +16,11 @@ import six
 import swiftclient.client
 import testscenarios
 import testtools
+from testtools import matchers
 
 from heatclient.common import deployment_utils
 from heatclient import exc
 from heatclient.v1 import software_configs
-from testtools import matchers
 
 
 load_tests = testscenarios.load_tests_apply_scenarios

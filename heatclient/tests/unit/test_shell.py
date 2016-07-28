@@ -11,27 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import fixtures
-import mock
 import os
+import sys
+import tempfile
+import uuid
+
+import fixtures
+from keystoneauth1 import fixture as keystone_fixture
+import mock
+from mox3 import mox
+from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from oslotest import mockpatch
 import requests
+from requests_mock.contrib import fixture as rm_fixture
 import six
 from six.moves.urllib import parse
 from six.moves.urllib import request
-import sys
-import tempfile
 import testscenarios
 import testtools
-import uuid
 import yaml
-
-from keystoneauth1 import fixture as keystone_fixture
-from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
-from requests_mock.contrib import fixture as rm_fixture
-
-from mox3 import mox
 
 from heatclient.common import http
 from heatclient.common import utils

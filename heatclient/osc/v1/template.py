@@ -13,11 +13,10 @@
 #   Copyright 2015 IBM Corp.
 
 import logging
-import six
-
 
 from osc_lib.command import command
 from osc_lib import utils
+import six
 
 from heatclient.common import format_utils
 from heatclient.common import http

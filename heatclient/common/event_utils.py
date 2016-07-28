@@ -17,7 +17,6 @@ import time
 
 from heatclient.common import utils
 import heatclient.exc as exc
-
 from heatclient.openstack.common._i18n import _
 
 

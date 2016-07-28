@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import testtools
+
 from heatclient.tests.unit import fakes
 from heatclient.v1 import actions
-
-import testtools
 
 
 class ActionManagerTest(testtools.TestCase):

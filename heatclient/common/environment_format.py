@@ -10,10 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import yaml
+
 from heatclient.common import template_format
 from heatclient.openstack.common._i18n import _
-
-import yaml
 
 
 SECTIONS = (

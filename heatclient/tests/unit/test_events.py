@@ -12,12 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common import utils
-from heatclient.v1 import events
-
 import mock
 from mox3 import mox
 import testtools
+
+from heatclient.common import utils
+from heatclient.v1 import events
 
 
 class EventManagerTest(testtools.TestCase):

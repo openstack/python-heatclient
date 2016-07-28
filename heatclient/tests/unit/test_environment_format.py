@@ -10,14 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.common import environment_format
-
 import mock
 import six
 import testscenarios
 import testtools
 import yaml
 
+from heatclient.common import environment_format
 
 load_tests = testscenarios.load_tests_apply_scenarios
 

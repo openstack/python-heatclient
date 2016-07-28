@@ -11,11 +11,12 @@
 #    under the License.
 
 import copy
+import uuid
+
 import six
 from six.moves.urllib import parse as urlparse
 from swiftclient import client as sc
 from swiftclient import utils as swiftclient_utils
-import uuid
 
 from heatclient import exc
 from heatclient.openstack.common._i18n import _

@@ -14,12 +14,12 @@
 """Orchestration v1 Stack Snapshot implementations."""
 
 import logging
-import six
 
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
+import six
 
 from heatclient.common import format_utils
 from heatclient import exc as heat_exc

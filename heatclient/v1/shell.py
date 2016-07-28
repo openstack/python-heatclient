@@ -14,12 +14,12 @@
 #    under the License.
 
 import logging
+import sys
 
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
 import six
 from six.moves.urllib import request
-import sys
 import yaml
 
 from heatclient.common import deployment_utils
@@ -29,12 +29,10 @@ from heatclient.common import http
 from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
-
+import heatclient.exc as exc
 from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LI
 from heatclient.openstack.common._i18n import _LW
-
-import heatclient.exc as exc
 
 logger = logging.getLogger(__name__)
 

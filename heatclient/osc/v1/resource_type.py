@@ -14,14 +14,15 @@
 """Orchestration v1 resource type implementations"""
 
 import logging
+
+from osc_lib.command import command
+from osc_lib import exceptions as exc
+from osc_lib.i18n import _
 import six
 
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
-from osc_lib.command import command
-from osc_lib import exceptions as exc
-from osc_lib.i18n import _
 
 
 class ResourceTypeShow(format_utils.YamlFormat):

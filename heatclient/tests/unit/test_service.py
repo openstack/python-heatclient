@@ -13,10 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient import exc
 import testtools
 
-
+from heatclient import exc
 from heatclient.v1 import services
 
 

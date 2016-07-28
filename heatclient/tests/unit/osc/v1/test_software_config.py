@@ -12,9 +12,8 @@
 #
 
 import mock
-import yaml
-
 from osc_lib import exceptions as exc
+import yaml
 
 from heatclient import exc as heat_exc
 from heatclient.osc.v1 import software_config

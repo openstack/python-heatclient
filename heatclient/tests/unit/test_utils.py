@@ -12,12 +12,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import os
+
+import mock
+import testtools
+
 from heatclient.common import utils
 from heatclient import exc
 from heatclient.v1 import resources as hc_res
-import mock
-import os
-import testtools
 
 
 class ShellTest(testtools.TestCase):
