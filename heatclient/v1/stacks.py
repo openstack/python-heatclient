@@ -12,11 +12,11 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from heatclient.common import utils
 
 import six
 from six.moves.urllib import parse
 
+from heatclient.common import utils
 from heatclient import exc
 from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common.apiclient import base

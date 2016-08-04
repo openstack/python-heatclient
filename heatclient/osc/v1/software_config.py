@@ -14,14 +14,13 @@
 """Orchestration v1 software config action implementations"""
 
 import logging
-import six
-
-from six.moves.urllib import request
-import yaml
 
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
+import six
+from six.moves.urllib import request
+import yaml
 
 from heatclient.common import format_utils
 from heatclient.common import template_format

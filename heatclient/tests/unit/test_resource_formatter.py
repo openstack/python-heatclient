@@ -13,6 +13,7 @@
 
 import json
 import os
+
 import six
 
 from heatclient.common import resource_formatter

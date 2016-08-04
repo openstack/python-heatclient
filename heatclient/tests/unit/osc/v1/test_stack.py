@@ -13,13 +13,13 @@
 
 import copy
 import io
+
 import mock
+from osc_lib import exceptions as exc
+from osc_lib import utils
 import six
 import testscenarios
 import yaml
-
-from osc_lib import exceptions as exc
-from osc_lib import utils
 
 from heatclient.common import template_format
 from heatclient import exc as heat_exc

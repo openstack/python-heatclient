@@ -14,9 +14,8 @@
 import mock
 import testtools
 
-import heatclient.v1.shell as shell
-
 from heatclient.common import hook_utils
+import heatclient.v1.shell as shell
 
 
 class TestHooks(testtools.TestCase):

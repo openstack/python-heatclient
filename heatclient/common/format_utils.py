@@ -12,9 +12,10 @@
 #
 #   Copyright 2015 IBM Corp.
 
+import sys
+
 from osc_lib.command import command
 import six
-import sys
 
 
 class RawFormat(command.ShowOne):

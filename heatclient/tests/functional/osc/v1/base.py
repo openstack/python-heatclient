@@ -11,8 +11,8 @@
 #    under the License.
 
 import os
-import six
 
+import six
 from tempest.lib.cli import base
 from tempest.lib.cli import output_parser
 

@@ -14,11 +14,11 @@
 """Orchestration v1 Software Deployment action implementations"""
 
 import logging
-from oslo_serialization import jsonutils
 
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
+from oslo_serialization import jsonutils
 
 from heatclient.common import deployment_utils
 from heatclient.common import format_utils

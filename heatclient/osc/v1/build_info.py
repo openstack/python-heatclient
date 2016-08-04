@@ -14,10 +14,10 @@
 """Orchestration v1 build info action implementations"""
 
 import logging
-import six
 
 from osc_lib.command import command
 from osc_lib import utils
+import six
 
 from heatclient.common import utils as heat_utils
 

@@ -13,6 +13,7 @@
 #   Copyright 2015 IBM Corp.
 
 import copy
+
 import mock
 import testscenarios
 

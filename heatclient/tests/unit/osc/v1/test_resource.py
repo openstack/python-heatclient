@@ -12,8 +12,8 @@
 #
 
 import copy
-import mock
 
+import mock
 from osc_lib import exceptions as exc
 
 from heatclient import exc as heat_exc

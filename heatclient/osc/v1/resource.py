@@ -14,14 +14,14 @@
 """Orchestration v1 Stack action implementations"""
 
 import logging
-import six
-from six.moves.urllib import request
 
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
 from oslo_serialization import jsonutils
+import six
+from six.moves.urllib import request
 
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils

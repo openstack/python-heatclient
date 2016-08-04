@@ -15,7 +15,6 @@ import logging
 from oslo_utils import fnmatch
 
 import heatclient.exc as exc
-
 from heatclient.openstack.common._i18n import _
 from heatclient.openstack.common._i18n import _LE
 
