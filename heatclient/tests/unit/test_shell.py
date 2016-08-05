@@ -19,7 +19,7 @@ import uuid
 import fixtures
 from keystoneauth1 import fixture as keystone_fixture
 import mock
-from mox3 import mox
+import mox
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslotest import mockpatch

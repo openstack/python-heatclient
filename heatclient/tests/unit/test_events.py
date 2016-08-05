@@ -13,7 +13,7 @@
 #    under the License.
 
 import mock
-from mox3 import mox
+import mox
 import testtools
 
 from heatclient.common import utils

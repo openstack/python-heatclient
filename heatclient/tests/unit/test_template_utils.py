@@ -15,7 +15,7 @@ import base64
 import json
 import tempfile
 
-from mox3 import mox
+import mox
 import six
 from six.moves.urllib import error
 from six.moves.urllib import request
