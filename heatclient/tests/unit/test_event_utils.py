@@ -150,10 +150,10 @@ class ShellTestEventUtils(testtools.TestCase):
         self.assertEqual('CREATE_COMPLETE', stack_status)
         self.assertEqual('\n Stack astack CREATE_COMPLETE \n', msg)
         ge.assert_has_calls([
-            mock.call(None, stack_id='astack', event_args={
+            mock.call(None, stack_id='astack', nested_depth=0, event_args={
                 'sort_dir': 'asc', 'marker': None
             }),
-            mock.call(None, stack_id='astack', event_args={
+            mock.call(None, stack_id='astack', nested_depth=0, event_args={
                 'sort_dir': 'asc', 'marker': '4'
             })
         ])
@@ -168,11 +168,12 @@ class ShellTestEventUtils(testtools.TestCase):
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
-            None, 'astack', action='CREATE', poll_period=0, marker='4')
+            None, 'astack', action='CREATE', poll_period=0, marker='4',
+            nested_depth=0)
         self.assertEqual('CREATE_COMPLETE', stack_status)
         self.assertEqual('\n Stack astack CREATE_COMPLETE \n', msg)
         ge.assert_has_calls([
-            mock.call(None, stack_id='astack', event_args={
+            mock.call(None, stack_id='astack', nested_depth=0, event_args={
                 'sort_dir': 'asc', 'marker': '4'
             })
         ])

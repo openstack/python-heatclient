@@ -166,7 +166,7 @@ def _get_stack_events(hc, stack_id, event_args):
 
 
 def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
-                    out=None):
+                    out=None, nested_depth=0):
     """Continuously poll events and logs for performed action on stack."""
 
     if action:
@@ -180,7 +180,7 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
     if not out:
         out = sys.stdout
     while True:
-        events = get_events(hc, stack_id=stack_name,
+        events = get_events(hc, stack_id=stack_name, nested_depth=nested_depth,
                             event_args={'sort_dir': 'asc',
                                         'marker': marker})
 
