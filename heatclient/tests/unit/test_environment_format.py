@@ -27,14 +27,30 @@ class YamlEnvironmentTest(testtools.TestCase):
         yaml1 = ''
         yaml2 = '''
 parameter_defaults: {}
+encrypted_param_names: []
 parameters: {}
 resource_registry: {}
-event_sinks: {}
+event_sinks: []
 '''
         tpl1 = environment_format.parse(yaml1)
         environment_format.default_for_missing(tpl1)
         tpl2 = environment_format.parse(yaml2)
         self.assertEqual(tpl2, tpl1)
+
+    def test_param_valid_strategy_section(self):
+        yaml1 = ''
+        yaml2 = '''
+parameters: {}
+encrypted_param_names: []
+parameter_defaults: {}
+parameter_merge_strategies: {}
+event_sinks: []
+resource_registry: {}
+'''
+        tpl1 = environment_format.parse(yaml1)
+        environment_format.default_for_missing(tpl1)
+        tpl2 = environment_format.parse(yaml2)
+        self.assertNotEqual(tpl1, tpl2)
 
     def test_wrong_sections(self):
         env = '''
