@@ -117,7 +117,7 @@ class TestTemplateValidate(TestTemplate):
         self.assertEqual(1, self.stack_client.validate.call_count)
         args = self.stack_client.validate.call_args[1]
         self.assertEqual(args.get('environment'), {'parameters': {}})
-        self.assertTrue(self.env_path in args.get('environment_files')[0])
+        self.assertIn(self.env_path, args.get('environment_files')[0])
         self.assertEqual([], columns)
         self.assertEqual([], data)
 
