@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from mox3 import mox
+import mox
 from six.moves.urllib import parse
 import testtools
 

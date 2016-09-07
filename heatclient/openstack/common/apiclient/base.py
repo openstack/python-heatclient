@@ -286,7 +286,7 @@ class CrudManager(BaseManager):
       {}, {}]}`).
     - `key`: Usually a singular noun by convention (e.g. `entity`); used to
       refer to an individual member of the collection.
-
+    
     """
     collection_key = None
     key = None
@@ -446,7 +446,7 @@ class Resource(object):
 
     This is pretty much just a bag for attributes.
     """
-
+    
     HUMAN_ID = False
     NAME_ATTR = 'name'
 
