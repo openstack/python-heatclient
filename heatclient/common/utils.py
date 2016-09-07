@@ -97,16 +97,84 @@ def print_dict(d, formatters=None):
     print(pt.get_string(sortby='Property'))
 
 
-def event_log_formatter(events):
+class EventLogContext(object):
+
+    def __init__(self):
+        # key is a stack id or the name of the nested stack, value is a tuple
+        # of the parent stack id, and the name of the resource in the parent
+        # stack
+        self.id_to_res_info = {}
+
+    def prepend_paths(self, resource_path, stack_id):
+        if stack_id not in self.id_to_res_info:
+            return
+        stack_id, res_name = self.id_to_res_info.get(stack_id)
+        if res_name in self.id_to_res_info:
+            # do a double lookup to skip the ugly stack name that doesn't
+            # correspond to an actual resource name
+            n_stack_id, res_name = self.id_to_res_info.get(res_name)
+            resource_path.insert(0, res_name)
+            self.prepend_paths(resource_path, n_stack_id)
+        elif res_name:
+            resource_path.insert(0, res_name)
+
+    def build_resource_name(self, event):
+        res_name = getattr(event, 'resource_name')
+
+        # Contribute this event to self.id_to_res_info to assist with
+        # future calls to build_resource_name
+
+        def get_stack_id():
+            for l in getattr(event, 'links', []):
+                if l.get('rel') == 'stack':
+                    if 'href' not in l:
+                        return None
+                    stack_link = l['href']
+                    return stack_link.split('/')[-1]
+
+        stack_id = get_stack_id()
+        if not stack_id:
+            return res_name
+        phys_id = getattr(event, 'physical_resource_id')
+        status = getattr(event, 'resource_status')
+
+        is_stack_event = stack_id == phys_id
+        if is_stack_event:
+            # this is an event for a stack
+            self.id_to_res_info[stack_id] = (stack_id, res_name)
+        elif phys_id and status == 'CREATE_IN_PROGRESS':
+            # this might be an event for a resource which creates a stack
+            self.id_to_res_info[phys_id] = (stack_id, res_name)
+
+        # Now build this resource path based on previous calls to
+        # build_resource_name
+        resource_path = []
+        if res_name and not is_stack_event:
+            resource_path.append(res_name)
+        self.prepend_paths(resource_path, stack_id)
+
+        return '.'.join(resource_path)
+
+
+def event_log_formatter(events, event_log_context=None):
     """Return the events in log format."""
     event_log = []
     log_format = ("%(event_time)s "
                   "[%(rsrc_name)s]: %(rsrc_status)s  %(rsrc_status_reason)s")
+
+    # It is preferable for a context to be passed in, but there might be enough
+    # events in this call to build a better resource name, so create a context
+    # anyway
+    if event_log_context is None:
+        event_log_context = EventLogContext()
+
     for event in events:
+        rsrc_name = event_log_context.build_resource_name(event)
+
         event_time = getattr(event, 'event_time', '')
         log = log_format % {
             'event_time': event_time.replace('T', ' '),
-            'rsrc_name': getattr(event, 'resource_name', ''),
+            'rsrc_name': rsrc_name,
             'rsrc_status': getattr(event, 'resource_status', ''),
             'rsrc_status_reason': getattr(event, 'resource_status_reason', '')
         }

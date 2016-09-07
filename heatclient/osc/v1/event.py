@@ -177,6 +177,7 @@ class ListEvent(command.Lister):
 
             marker = parsed_args.marker
             try:
+                event_log_context = heat_utils.EventLogContext()
                 while True:
                     events = event_utils.get_events(
                         client,
@@ -186,7 +187,8 @@ class ListEvent(command.Lister):
                         marker=marker)
                     if events:
                         marker = getattr(events[-1], 'id', None)
-                        events_log = heat_utils.event_log_formatter(events)
+                        events_log = heat_utils.event_log_formatter(
+                            events, event_log_context)
                         self.app.stdout.write(events_log)
                         self.app.stdout.write('\n')
                     time.sleep(5)

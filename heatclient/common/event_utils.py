@@ -179,6 +179,7 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
     msg_template = _("\n Stack %(name)s %(status)s \n")
     if not out:
         out = sys.stdout
+    event_log_context = utils.EventLogContext()
     while True:
         events = get_events(hc, stack_id=stack_name, nested_depth=nested_depth,
                             event_args={'sort_dir': 'asc',
@@ -190,7 +191,7 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
             no_event_polls = 0
             # set marker to last event that was received.
             marker = getattr(events[-1], 'id', None)
-            events_log = utils.event_log_formatter(events)
+            events_log = utils.event_log_formatter(events, event_log_context)
             out.write(events_log)
             out.write('\n')
 
