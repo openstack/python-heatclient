@@ -620,7 +620,7 @@ class ShellTestEndpointType(TestCase):
             'password': 'password',
             'include_pass': False
         }
-        http._construct_http_client(u'http://heat.example.com', **kwargs)
+        http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
         self.m.ReplayAll()
@@ -639,7 +639,7 @@ class ShellTestEndpointType(TestCase):
             'password': 'password',
             'include_pass': False
         }
-        http._construct_http_client(u'http://heat-admin.localdomain', **kwargs)
+        http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
         self.m.ReplayAll()
@@ -660,7 +660,7 @@ class ShellTestEndpointType(TestCase):
             'password': 'password',
             'include_pass': False
         }
-        http._construct_http_client(u'http://heat.localdomain', **kwargs)
+        http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
         self.m.ReplayAll()

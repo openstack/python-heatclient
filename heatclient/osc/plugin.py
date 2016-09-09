@@ -33,22 +33,23 @@ def make_client(instance):
         API_VERSIONS)
     LOG.debug('Instantiating orchestration client: %s', heat_client)
 
-    # Note: We can change '_interface' and '_region_name' once
-    # the requirements change to python-openstackclient-2.6.1
-    endpoint = instance.get_endpoint_for_service_type(
-        API_NAME,
-        region_name=instance._region_name,
-        interface=instance._interface,
-    )
-
-    kwargs = {'endpoint': endpoint,
-              'auth_url': instance.auth.auth_url,
-              'region_name': instance._region_name,
-              'username': instance.auth_ref.username}
-
     if instance.session:
-        kwargs.update(session=instance.session)
+        kwargs = {'session': instance.session,
+                  'service_type': API_NAME}
     else:
+        # Note: We can change '_interface' and '_region_name' once
+        # the requirements change to python-openstackclient-2.6.1
+        endpoint = instance.get_endpoint_for_service_type(
+            API_NAME,
+            region_name=instance._region_name,
+            interface=instance._interface,
+        )
+
+        kwargs = {'endpoint': endpoint,
+                  'auth_url': instance.auth.auth_url,
+                  'region_name': instance._region_name,
+                  'username': instance.auth_ref.username}
+
         kwargs.update(token=instance.auth_ref.auth_token)
 
     client = heat_client(**kwargs)
