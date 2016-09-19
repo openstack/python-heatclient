@@ -604,17 +604,21 @@ def do_stack_cancel_update(hc, args):
                   'parameters separated by a semicolon.'),
            action='append')
 @utils.arg('-t', '--tags', metavar='<TAG1,TAG2...>',
-           help=_('Show stacks containing these tags, combine multiple tags '
-                  'using the boolean AND expression'))
+           help=_('Show stacks containing these tags. If multiple tags '
+                  'are passed, they will be combined using the AND '
+                  'boolean expression. '))
 @utils.arg('--tags-any', metavar='<TAG1,TAG2...>',
-           help=_('Show stacks containing these tags, combine multiple tags '
-                  'using the boolean OR expression'))
+           help=_('Show stacks containing these tags, If multiple tags '
+                  'are passed, they will be combined using the OR '
+                  'boolean expression. '))
 @utils.arg('--not-tags', metavar='<TAG1,TAG2...>',
-           help=_('Show stacks not containing these tags, combine multiple '
-                  'tags using the boolean AND expression'))
+           help=_('Show stacks not containing these tags, If multiple tags '
+                  'are passed, they will be combined using the AND '
+                  'boolean expression. '))
 @utils.arg('--not-tags-any', metavar='<TAG1,TAG2...>',
-           help=_('Show stacks not containing these tags, combine multiple '
-                  'tags using the boolean OR expression'))
+           help=_('Show stacks not containing these tags, If multiple tags '
+                  'are passed, they will be combined using the OR '
+                  'boolean expression. '))
 @utils.arg('-l', '--limit', metavar='<LIMIT>',
            help=_('Limit the number of stacks returned.'))
 @utils.arg('-m', '--marker', metavar='<ID>',
