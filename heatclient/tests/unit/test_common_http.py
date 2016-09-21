@@ -18,7 +18,7 @@ import socket
 
 from keystoneauth1 import adapter
 import mock
-from mox3 import mox
+import mox
 from oslo_serialization import jsonutils
 import requests
 import six

@@ -191,6 +191,148 @@ class ShellTest(testtools.TestCase):
         self.assertEqual(expected, utils.event_log_formatter(events_list))
         self.assertEqual('', utils.event_log_formatter([]))
 
+    def test_event_log_formatter_resource_path_old_heat(self):
+
+        events = [{
+            'resource_name': 'nested',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested/1bed5d4d-41d6-4451-b274-c073ebee375d',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'nested',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'Stack CREATE started',
+            'physical_resource_id': '1bed5d4d-41d6-4451-b274-c073ebee375d',
+        }, {
+            'resource_name': 'rg1',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested/1bed5d4d-41d6-4451-b274-c073ebee375d',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'rg1',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'state changed',
+            'physical_resource_id': None,  # note the None from old heat
+            'id': '375c49ae-cefb-4fb3-8f4d-1d5f1b9e3e5d'
+        }, {
+            'resource_name': 'nested-rg1-m4zxcs4pra6t',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested-rg1-m4zxcs4pra6t/'
+                '3400bbad-a825-4226-ac23-c607846420db',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'nested-rg1-m4zxcs4pra6t',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'Stack CREATE started',
+            'physical_resource_id': '3400bbad-a825-4226-ac23-c607846420db',
+            'id': '7e521c84-cd35-4f4c-b0de-962bd3cc40a8'
+        }, {
+            'resource_name': '1',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested-rg1-m4zxcs4pra6t/'
+                '3400bbad-a825-4226-ac23-c607846420db',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': '1',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'state changed',
+            'physical_resource_id': None,  # note the None from old heat
+            'id': 'c6186c16-94ef-4214-a11a-7e3cc8a17f82'
+        }]
+
+        events_list = [hc_res.Resource(manager=None, info=event)
+                       for event in events]
+
+        expected = '''\
+2016-09-05 04:10:24Z [nested]: \
+CREATE_IN_PROGRESS  Stack CREATE started
+2016-09-05 04:10:24Z [nested.rg1]: \
+CREATE_IN_PROGRESS  state changed
+2016-09-05 04:10:24Z [nested-rg1-m4zxcs4pra6t]: \
+CREATE_IN_PROGRESS  Stack CREATE started
+2016-09-05 04:10:24Z [nested-rg1-m4zxcs4pra6t.1]: \
+CREATE_IN_PROGRESS  state changed'''
+        self.assertEqual(expected, utils.event_log_formatter(events_list))
+
+    def test_event_log_formatter_resource_path(self):
+
+        events = [{
+            'resource_name': 'nested',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested/1bed5d4d-41d6-4451-b274-c073ebee375d',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'nested',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'Stack CREATE started',
+            'physical_resource_id': '1bed5d4d-41d6-4451-b274-c073ebee375d',
+        }, {
+            'resource_name': 'rg1',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested/1bed5d4d-41d6-4451-b274-c073ebee375d',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'rg1',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'state changed',
+            'physical_resource_id': 'nested-rg1-m4zxcs4pra6t',
+            'id': '375c49ae-cefb-4fb3-8f4d-1d5f1b9e3e5d'
+        }, {
+            'resource_name': 'nested-rg1-m4zxcs4pra6t',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested-rg1-m4zxcs4pra6t/'
+                '3400bbad-a825-4226-ac23-c607846420db',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': 'nested-rg1-m4zxcs4pra6t',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'Stack CREATE started',
+            'physical_resource_id': '3400bbad-a825-4226-ac23-c607846420db',
+            'id': '7e521c84-cd35-4f4c-b0de-962bd3cc40a8'
+        }, {
+            'resource_name': '1',
+            'event_time': '2016-09-05T04:10:24Z',
+            'links': [{
+                'href': 'http://192.0.2.1:8004/v1/t/stacks/'
+                'nested-rg1-m4zxcs4pra6t/'
+                '3400bbad-a825-4226-ac23-c607846420db',
+                'rel': 'stack'
+            }],
+            'logical_resource_id': '1',
+            'resource_status': 'CREATE_IN_PROGRESS',
+            'resource_status_reason': 'state changed',
+            'physical_resource_id': 'nested-rg1-m4zxcs4pra6t-1-z6sgpq54n6e7',
+            'id': 'c6186c16-94ef-4214-a11a-7e3cc8a17f82'
+        }]
+
+        events_list = [hc_res.Resource(manager=None, info=event)
+                       for event in events]
+
+        expected = '''\
+2016-09-05 04:10:24Z [nested]: \
+CREATE_IN_PROGRESS  Stack CREATE started
+2016-09-05 04:10:24Z [nested.rg1]: \
+CREATE_IN_PROGRESS  state changed
+2016-09-05 04:10:24Z [nested.rg1]: \
+CREATE_IN_PROGRESS  Stack CREATE started
+2016-09-05 04:10:24Z [nested.rg1.1]: \
+CREATE_IN_PROGRESS  state changed'''
+        self.assertEqual(expected, utils.event_log_formatter(events_list))
+
 
 class ShellTestParameterFiles(testtools.TestCase):
 

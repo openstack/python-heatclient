@@ -15,7 +15,7 @@ import base64
 import json
 import tempfile
 
-from mox3 import mox
+import mox
 import six
 from six.moves.urllib import error
 from six.moves.urllib import request
@@ -411,7 +411,7 @@ class ShellEnvironmentTest(testtools.TestCase):
                          files['file:///home/b/a.yaml'])
 
         self.assertEqual(['file:///home/my/dir/env1.yaml'], env_file_list)
-        self.assertTrue('file:///home/my/dir/env1.yaml' in files)
+        self.assertIn('file:///home/my/dir/env1.yaml', files)
         self.assertEqual(expected_env,
                          json.loads(files['file:///home/my/dir/env1.yaml']))
 

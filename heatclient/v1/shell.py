@@ -417,7 +417,7 @@ def do_action_check(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack to describe.'))
 @utils.arg('--no-resolve-outputs', action="store_true",
-           help='Do not resolve outputs of the stack.')
+           help=_('Do not resolve outputs of the stack.'))
 def do_stack_show(hc, args):
     '''Describe the stack.'''
     show_deprecated('heat stack-show', 'openstack stack show')
@@ -462,10 +462,10 @@ def do_stack_show(hc, args):
                   'updated.')
            % {'true': strutils.TRUE_STRINGS, 'false': strutils.FALSE_STRINGS})
 @utils.arg('-y', '--dry-run', default=False, action="store_true",
-           help='Do not actually perform the stack update, but show what '
-           'would be changed')
+           help=_('Do not actually perform the stack update, but show what '
+                  'would be changed'))
 @utils.arg('-n', '--show-nested', default=False, action="store_true",
-           help='Show nested stacks when performing --dry-run')
+           help=_('Show nested stacks when performing --dry-run'))
 @utils.arg('-P', '--parameters', metavar='<KEY1=VALUE1;KEY2=VALUE2...>',
            help=_('Parameter values used to create the stack. '
                   'This can be specified multiple times, or once with '
