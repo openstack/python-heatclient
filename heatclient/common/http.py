@@ -347,7 +347,6 @@ def _construct_http_client(endpoint=None, username=None, password=None,
     auth = kwargs.pop('auth', None)
 
     if session:
-        kwargs['endpoint_override'] = endpoint
         return SessionClient(session, auth=auth, **kwargs)
     else:
         return HTTPClient(endpoint=endpoint, username=username,

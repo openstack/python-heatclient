@@ -495,7 +495,6 @@ class HeatShell(object):
             'timeout': args.api_timeout
         }
 
-        endpoint = args.heat_url
         service_type = args.os_service_type or 'orchestration'
         if args.os_no_client_auth:
             # Do not use session since no_client_auth means using heat to
@@ -507,7 +506,8 @@ class HeatShell(object):
                 'token': args.os_auth_token,
                 'include_pass': args.include_password,
                 'insecure': args.insecure,
-                'timeout': args.api_timeout
+                'timeout': args.api_timeout,
+                'endpoint': args.heat_url
             }
         else:
             keystone_session = self._get_keystone_session(**kwargs)
@@ -534,13 +534,7 @@ class HeatShell(object):
                     'project_domain_name': args.os_project_domain_name,
                 }
                 keystone_auth = generic.Password(**kwargs)
-            if not endpoint:
-                svc_type = service_type
-                region_name = args.os_region_name
-                endpoint = keystone_auth.get_endpoint(keystone_session,
-                                                      service_type=svc_type,
-                                                      interface=endpoint_type,
-                                                      region_name=region_name)
+
             kwargs = {
                 'auth_url': args.os_auth_url,
                 'session': keystone_session,
@@ -553,7 +547,7 @@ class HeatShell(object):
                 'include_pass': args.include_password
             }
 
-        client = heat_client.Client(api_version, endpoint, **kwargs)
+        client = heat_client.Client(api_version, **kwargs)
 
         profile = osprofiler_profiler and options.profile
         if profile:
