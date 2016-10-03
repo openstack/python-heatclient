@@ -133,11 +133,15 @@ class ListEvent(command.Lister):
         )
         parser.add_argument(
             '--sort',
-            metavar='<key>[:<direction>]',
+            metavar='[<key>][:<direction>]',
             action='append',
             help=_('Sort output by selected keys and directions (asc or desc) '
                    '(default: asc). Specify multiple times to sort on '
-                   'multiple keys')
+                   'multiple keys. Sort key can be: '
+                   '"event_time" (default), "resource_name", "links", '
+                   '"logical_resource_id", "resource_status", '
+                   '"resource_status_reason", "physical_resource_id", or '
+                   '"id".')
         )
         parser.add_argument(
             '--follow',
@@ -202,7 +206,13 @@ class ListEvent(command.Lister):
             limit=parsed_args.limit)
 
         if parsed_args.sort:
-            events = utils.sort_items(events, ','.join(parsed_args.sort))
+            sorts = []
+            for sort in parsed_args.sort:
+                if sort.startswith(":"):
+                    sorts.append(":".join(["event_time", sort.lstrip(":")]))
+                else:
+                    sorts.append(sort)
+            events = utils.sort_items(events, ','.join(sorts))
 
         if parsed_args.formatter == 'log':
             return [], events
