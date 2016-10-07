@@ -188,6 +188,12 @@ def normalise_file_path_to_url(path):
 
 def deep_update(old, new):
     '''Merge nested dictionaries.'''
+
+    # Prevents an error if in a previous iteration
+    # old[k] = None but v[k] = {...},
+    if old is None:
+        old = {}
+
     for k, v in new.items():
         if isinstance(v, collections.Mapping):
             r = deep_update(old.get(k, {}), v)
