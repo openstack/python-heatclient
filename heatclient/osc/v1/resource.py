@@ -43,7 +43,7 @@ class ResourceShow(command.ShowOne):
         parser.add_argument(
             'resource',
             metavar='<resource>',
-            help=_('Name or ID of resource')
+            help=_('Name of resource')
         )
         parser.add_argument(
             '--with-attr',
