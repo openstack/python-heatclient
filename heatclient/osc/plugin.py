@@ -11,6 +11,8 @@
 #   under the License.
 #
 
+"""OpenStackClient plugin for Orchestration service."""
+
 import logging
 
 from osc_lib import utils
