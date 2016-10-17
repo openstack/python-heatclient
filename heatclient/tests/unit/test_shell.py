@@ -2446,8 +2446,18 @@ class ShellTestUserPass(ShellBase):
 
         self._output_fake_response('output2')
         list_text = self.shell('output-show -F json teststack/1 output2')
-        self.assertEqual('[\n  "output", \n  "value", \n  "2"\n]\n',
-                         list_text)
+        required = [
+            '{',
+            '"output_key": "output2"',
+            '"description": "test output 2"',
+            '"output_value": \[',
+            '"output"',
+            '"value"',
+            '"2"',
+            '}'
+        ]
+        for r in required:
+            self.assertRegex(list_text, r)
 
     def test_output_show_output2_json_with_detail(self):
         self.register_keystone_auth_fixture()
@@ -2471,7 +2481,7 @@ class ShellTestUserPass(ShellBase):
 
         self._output_fake_response('output_uni')
         list_text = self.shell('output-show teststack/1 output_uni')
-        self.assertEqual(u'"test\u2665"\n', list_text)
+        self.assertEqual(u'test\u2665\n', list_text)
 
     def test_output_show_error(self):
         self.register_keystone_auth_fixture()

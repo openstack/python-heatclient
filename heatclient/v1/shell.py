@@ -728,7 +728,7 @@ def do_output_list(hc, args):
            help=_('Name of an output to display.'))
 @utils.arg('-F', '--format', metavar='<FORMAT>',
            help=_('The output value format, one of: json, raw.'),
-           default='json')
+           default='raw')
 @utils.arg('-a', '--all', default=False, action='store_true',
            help=_('Display all stack outputs.'))
 @utils.arg('--with-detail', default=False, action="store_true",
@@ -771,11 +771,11 @@ def do_output_show(hc, args):
             }
             utils.print_dict(output['output'], formatters=formatters)
         else:
-            if (args.format == 'json'
-                    or isinstance(output['output']['output_value'], dict)
-                    or isinstance(output['output']['output_value'], list)):
-                print(
-                    utils.json_formatter(output['output']['output_value']))
+            if args.format == 'json':
+                print(utils.json_formatter(output['output']))
+            elif (isinstance(output['output']['output_value'], dict)
+                  or isinstance(output['output']['output_value'], list)):
+                print(utils.json_formatter(output['output']['output_value']))
             else:
                 print(output['output']['output_value'])
 
