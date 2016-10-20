@@ -41,13 +41,15 @@ def make_client(instance):
     if instance.session:
         kwargs.update({'session': instance.session,
                        'service_type': API_NAME})
+    elif instance.auth_plugin_name == 'token_endpoint':
+        kwargs.update({'endpoint': instance.auth.url,
+                       'token': instance.auth.token})
     else:
         endpoint = instance.get_endpoint_for_service_type(
             API_NAME,
             region_name=instance.region_name,
             interface=instance.interface,
         )
-
         kwargs.update({'endpoint': endpoint,
                        'auth_url': instance.auth.auth_url,
                        'username': instance.auth_ref.username,
