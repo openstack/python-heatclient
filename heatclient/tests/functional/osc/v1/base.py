@@ -114,3 +114,8 @@ class OpenStackClientTestBase(base.ClientTestBase):
     def _stack_snapshot_restore(self, id, snapshot_id):
         cmd = 'stack snapshot restore ' + id + ' ' + snapshot_id
         self.openstack(cmd)
+
+    def _stack_show(self, stack_id):
+        cmd = 'stack show ' + stack_id
+        stack_raw = self.openstack(cmd)
+        return self.show_to_dict(stack_raw)

@@ -75,3 +75,10 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         stacks_raw = self.openstack(
             'stack snapshot list' + ' ' + self.stack_name)
         self.assertNotIn(snapshot['id'], stacks_raw)
+
+    def test_stack_show(self):
+        stack = self._stack_create_minimal()
+        stack_info = self._stack_show(stack['id'])
+        stack_props = {k: v for k, v in stack_info.items()
+                       if k in stack.keys()}
+        self.assertEqual(stack, stack_props)
