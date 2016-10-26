@@ -18,8 +18,8 @@ from six.moves.urllib import parse as urlparse
 from swiftclient import client as sc
 from swiftclient import utils as swiftclient_utils
 
+from heatclient._i18n import _
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
 from heatclient.v1 import software_configs
 
 

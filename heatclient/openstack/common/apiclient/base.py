@@ -46,7 +46,7 @@ from oslo_utils import strutils
 import six
 from six.moves.urllib import parse
 
-from heatclient.openstack.common._i18n import _, _LW
+from heatclient._i18n import _, _LW
 from heatclient.openstack.common.apiclient import exceptions
 
 LOG = logging.getLogger(__name__)

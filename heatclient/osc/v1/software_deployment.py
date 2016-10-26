@@ -20,11 +20,11 @@ from osc_lib import exceptions as exc
 from osc_lib import utils
 from oslo_serialization import jsonutils
 
+from heatclient._i18n import _
 from heatclient.common import deployment_utils
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
-from heatclient.openstack.common._i18n import _
 
 
 class CreateDeployment(format_utils.YamlFormat):

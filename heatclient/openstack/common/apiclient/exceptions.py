@@ -38,7 +38,7 @@ import sys
 
 import six
 
-from heatclient.openstack.common._i18n import _
+from heatclient._i18n import _
 
 
 class ClientException(Exception):

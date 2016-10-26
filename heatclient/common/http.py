@@ -27,10 +27,10 @@ import requests
 import six
 from six.moves.urllib import parse
 
+from heatclient._i18n import _
+from heatclient._i18n import _LW
 from heatclient.common import utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LW
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-heatclient'

@@ -14,9 +14,9 @@ import logging
 
 from oslo_utils import fnmatch
 
-import heatclient.exc as exc
-from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LE
+from heatclient._i18n import _
+from heatclient._i18n import _LE
+from heatclient import exc
 
 logger = logging.getLogger(__name__)
 

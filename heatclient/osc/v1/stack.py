@@ -24,6 +24,8 @@ from oslo_serialization import jsonutils
 import six
 from six.moves.urllib import request
 
+from heatclient._i18n import _
+from heatclient._i18n import _LI
 from heatclient.common import event_utils
 from heatclient.common import format_utils
 from heatclient.common import hook_utils
@@ -31,8 +33,6 @@ from heatclient.common import http
 from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
-from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LI
 
 
 class CreateStack(command.ShowOne):

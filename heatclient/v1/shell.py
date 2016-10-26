@@ -22,6 +22,9 @@ import six
 from six.moves.urllib import request
 import yaml
 
+from heatclient._i18n import _
+from heatclient._i18n import _LI
+from heatclient._i18n import _LW
 from heatclient.common import deployment_utils
 from heatclient.common import event_utils
 from heatclient.common import hook_utils
@@ -30,9 +33,6 @@ from heatclient.common import template_format
 from heatclient.common import template_utils
 from heatclient.common import utils
 import heatclient.exc as exc
-from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LI
-from heatclient.openstack.common._i18n import _LW
 
 logger = logging.getLogger(__name__)
 

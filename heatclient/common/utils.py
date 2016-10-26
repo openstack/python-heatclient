@@ -29,9 +29,9 @@ from six.moves.urllib import parse
 from six.moves.urllib import request
 import yaml
 
+from heatclient._i18n import _
+from heatclient._i18n import _LE
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
-from heatclient.openstack.common._i18n import _LE
 from heatclient.openstack.common import cliutils
 
 LOG = logging.getLogger(__name__)

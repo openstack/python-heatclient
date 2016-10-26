@@ -15,7 +15,7 @@ import sys
 from oslo_serialization import jsonutils
 from oslo_utils import reflection
 
-from heatclient.openstack.common._i18n import _
+from heatclient._i18n import _
 
 verbose = 0
 
