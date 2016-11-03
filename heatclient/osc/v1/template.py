@@ -57,6 +57,12 @@ class FunctionList(command.Lister):
             metavar='<template-version>',
             help=_('Template version to get the functions for')
         )
+        parser.add_argument(
+            '--with_conditions',
+            default=False,
+            action='store_true',
+            help=_('Show condition functions for template.')
+        )
 
         return parser
 
@@ -67,7 +73,8 @@ class FunctionList(command.Lister):
 
         version = parsed_args.template_version
         try:
-            functions = client.template_versions.get(version)
+            functions = client.template_versions.get(
+                version, with_condition_func=parsed_args.with_conditions)
         except exc.HTTPNotFound:
             msg = _('Template version not found: %s') % version
             raise exc.CommandError(msg)

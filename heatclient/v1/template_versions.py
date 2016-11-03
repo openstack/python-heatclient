@@ -35,11 +35,19 @@ class TemplateVersionManager(base.BaseManager):
         """
         return self._list('/template_versions', 'template_versions')
 
-    def get(self, template_version):
+    def get(self, template_version, **kwargs):
         """Get a list of functions for a specific resource_type.
 
         :param template_version: template version to get the functions for
         """
         url_str = '/template_versions/%s/functions' % (
                   parse.quote(encodeutils.safe_encode(template_version), ''))
+
+        params = {}
+        if 'with_condition_func' in kwargs:
+            with_condition_func = kwargs.pop('with_condition_func')
+            params.update({'with_condition_func': with_condition_func})
+        if params:
+            url_str += '?%s' % parse.urlencode(params, True)
+
         return self._list(url_str, 'template_functions')
