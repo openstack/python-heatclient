@@ -18,6 +18,15 @@ from heatclient.v1 import events as hc_ev
 from heatclient.v1 import resources as hc_res
 
 
+class FakeWebSocket(object):
+
+    def __init__(self, events):
+        self.events = events
+
+    def recv(self):
+        return self.events.pop(0)
+
+
 class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_resource(resource_id, nested_id=None):
@@ -245,3 +254,36 @@ class ShellTestEventUtils(testtools.TestCase):
             mock_client, 'astack', action='CREATE', poll_period=0)
         self.assertEqual('CREATE_FAILED', stack_status)
         self.assertEqual('\n Stack astack CREATE_FAILED \n', msg)
+
+    def test_wait_for_events(self):
+        ws = FakeWebSocket([
+            {'body': {
+                'timestamp': '2014-01-06T16:14:26Z',
+                'payload': {'resource_action': 'CREATE',
+                            'resource_status': 'COMPLETE',
+                            'resource_name': 'mystack',
+                            'physical_resource_id': 'stackid1',
+                            'stack_id': 'stackid1'}}}])
+        stack_status, msg = event_utils.wait_for_events(ws, 'mystack')
+        self.assertEqual('CREATE_COMPLETE', stack_status)
+        self.assertEqual('\n Stack mystack CREATE_COMPLETE \n', msg)
+
+    def test_wait_for_events_failed(self):
+        ws = FakeWebSocket([
+            {'body': {
+                'timestamp': '2014-01-06T16:14:23Z',
+                'payload': {'resource_action': 'CREATE',
+                            'resource_status': 'IN_PROGRESS',
+                            'resource_name': 'mystack',
+                            'physical_resource_id': 'stackid1',
+                            'stack_id': 'stackid1'}}},
+            {'body': {
+                'timestamp': '2014-01-06T16:14:26Z',
+                'payload': {'resource_action': 'CREATE',
+                            'resource_status': 'FAILED',
+                            'resource_name': 'mystack',
+                            'physical_resource_id': 'stackid1',
+                            'stack_id': 'stackid1'}}}])
+        stack_status, msg = event_utils.wait_for_events(ws, 'mystack')
+        self.assertEqual('CREATE_FAILED', stack_status)
+        self.assertEqual('\n Stack mystack CREATE_FAILED \n', msg)

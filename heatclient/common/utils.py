@@ -125,6 +125,8 @@ class EventLogContext(object):
         # future calls to build_resource_name
 
         def get_stack_id():
+            if getattr(event, 'stack_id', None) is not None:
+                return event.stack_id
             for l in getattr(event, 'links', []):
                 if l.get('rel') == 'stack':
                     if 'href' not in l:
@@ -135,8 +137,8 @@ class EventLogContext(object):
         stack_id = get_stack_id()
         if not stack_id:
             return res_name
-        phys_id = getattr(event, 'physical_resource_id')
-        status = getattr(event, 'resource_status')
+        phys_id = getattr(event, 'physical_resource_id', None)
+        status = getattr(event, 'resource_status', None)
 
         is_stack_event = stack_id == phys_id
         if is_stack_event:
