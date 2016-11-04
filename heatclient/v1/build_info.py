@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from heatclient.common import base
 from heatclient.common import utils
-from heatclient.openstack.common.apiclient import base
 
 
 class BuildInfo(base.Resource):

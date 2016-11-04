@@ -15,8 +15,8 @@ from oslo_utils import encodeutils
 import six
 from six.moves.urllib import parse
 
+from heatclient.common import base
 from heatclient.common import utils
-from heatclient.openstack.common.apiclient import base
 
 
 class ResourceType(base.Resource):

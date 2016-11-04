@@ -15,7 +15,7 @@
 
 import testtools
 
-from heatclient.openstack.common.apiclient import base
+from heatclient.common import base
 from heatclient.v1 import events
 from heatclient.v1 import stacks
 

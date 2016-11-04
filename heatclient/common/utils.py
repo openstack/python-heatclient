@@ -32,7 +32,6 @@ import yaml
 from heatclient._i18n import _
 from heatclient._i18n import _LE
 from heatclient import exc
-from heatclient.openstack.common import cliutils
 
 LOG = logging.getLogger(__name__)
 
@@ -42,10 +41,94 @@ supported_formats = {
     "yaml": yaml.safe_dump
 }
 
-# Using common methods from oslo cliutils
-arg = cliutils.arg
-env = cliutils.env
-print_list = cliutils.print_list
+
+def arg(*args, **kwargs):
+    """Decorator for CLI args.
+
+    Example:
+
+    >>> @arg("name", help="Name of the new entity")
+    ... def entity_create(args):
+    ...     pass
+    """
+    def _decorator(func):
+        add_arg(func, *args, **kwargs)
+        return func
+    return _decorator
+
+
+def env(*args, **kwargs):
+    """Returns the first environment variable set.
+
+    If all are empty, defaults to '' or keyword arg `default`.
+    """
+    for arg in args:
+        value = os.environ.get(arg)
+        if value:
+            return value
+    return kwargs.get('default', '')
+
+
+def add_arg(func, *args, **kwargs):
+    """Bind CLI arguments to a shell.py `do_foo` function."""
+
+    if not hasattr(func, 'arguments'):
+        func.arguments = []
+
+    # NOTE(sirp): avoid dups that can occur when the module is shared across
+    # tests.
+    if (args, kwargs) not in func.arguments:
+        # Because of the semantics of decorator composition if we just append
+        # to the options list positional options will appear to be backwards.
+        func.arguments.insert(0, (args, kwargs))
+
+
+def print_list(objs, fields, formatters=None, sortby_index=0,
+               mixed_case_fields=None, field_labels=None):
+    """Print a list of objects as a table, one row per object.
+
+    :param objs: iterable of :class:`Resource`
+    :param fields: attributes that correspond to columns, in order
+    :param formatters: `dict` of callables for field formatting
+    :param sortby_index: index of the field for sorting table rows
+    :param mixed_case_fields: fields corresponding to object attributes that
+        have mixed case names (e.g., 'serverId')
+    :param field_labels: Labels to use in the heading of the table, default to
+        fields.
+    """
+    formatters = formatters or {}
+    mixed_case_fields = mixed_case_fields or []
+    field_labels = field_labels or fields
+    if len(field_labels) != len(fields):
+        raise ValueError(_("Field labels list %(labels)s has different number "
+                           "of elements than fields list %(fields)s"),
+                         {'labels': field_labels, 'fields': fields})
+
+    if sortby_index is None:
+        kwargs = {}
+    else:
+        kwargs = {'sortby': field_labels[sortby_index]}
+    pt = prettytable.PrettyTable(field_labels)
+    pt.align = 'l'
+
+    for o in objs:
+        row = []
+        for field in fields:
+            if field in formatters:
+                row.append(formatters[field](o))
+            else:
+                if field in mixed_case_fields:
+                    field_name = field.replace(' ', '_')
+                else:
+                    field_name = field.lower().replace(' ', '_')
+                data = getattr(o, field_name, '')
+                row.append(data)
+        pt.add_row(row)
+
+    if six.PY3:
+        print(encodeutils.safe_encode(pt.get_string(**kwargs)).decode())
+    else:
+        print(encodeutils.safe_encode(pt.get_string(**kwargs)))
 
 
 def link_formatter(links):
