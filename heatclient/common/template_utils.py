@@ -20,11 +20,11 @@ from six.moves.urllib import error
 from six.moves.urllib import parse
 from six.moves.urllib import request
 
+from heatclient._i18n import _
 from heatclient.common import environment_format
 from heatclient.common import template_format
 from heatclient.common import utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
 
 
 def process_template_path(template_path, object_request=None, existing=False):

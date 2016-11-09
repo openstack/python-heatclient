@@ -27,10 +27,10 @@ from oslo_utils import importutils
 import six
 
 import heatclient
+from heatclient._i18n import _
 from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
 
 logger = logging.getLogger(__name__)
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")

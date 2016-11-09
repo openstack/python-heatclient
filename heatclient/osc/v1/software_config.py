@@ -22,11 +22,11 @@ import six
 from six.moves.urllib import request
 import yaml
 
+from heatclient._i18n import _
 from heatclient.common import format_utils
 from heatclient.common import template_format
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
-from heatclient.openstack.common._i18n import _
 
 
 class DeleteConfig(command.Command):

@@ -19,10 +19,10 @@ from cliff.formatters import base
 from osc_lib.command import command
 from osc_lib import utils
 
+from heatclient._i18n import _
 from heatclient.common import event_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
 
 
 class ShowEvent(command.ShowOne):

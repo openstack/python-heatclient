@@ -12,8 +12,8 @@
 
 import yaml
 
+from heatclient._i18n import _
 from heatclient.common import template_format
-from heatclient.openstack.common._i18n import _
 
 
 SECTIONS = (

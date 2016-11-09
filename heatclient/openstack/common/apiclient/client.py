@@ -38,7 +38,7 @@ from oslo_utils import encodeutils
 from oslo_utils import importutils
 import requests
 
-from heatclient.openstack.common._i18n import _
+from heatclient._i18n import _
 from heatclient.openstack.common.apiclient import exceptions
 
 _logger = logging.getLogger(__name__)

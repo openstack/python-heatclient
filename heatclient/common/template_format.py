@@ -13,7 +13,7 @@
 import json
 import yaml
 
-from heatclient.openstack.common._i18n import _
+from heatclient._i18n import _
 
 if hasattr(yaml, 'CSafeLoader'):
     yaml_loader = yaml.CSafeLoader

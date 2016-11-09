@@ -15,9 +15,9 @@
 import sys
 import time
 
+from heatclient._i18n import _
 from heatclient.common import utils
 import heatclient.exc as exc
-from heatclient.openstack.common._i18n import _
 
 
 def get_hook_events(hc, stack_id, event_args, nested_depth=0,

@@ -18,12 +18,12 @@ from osc_lib.command import command
 from osc_lib import utils
 import six
 
+from heatclient._i18n import _
 from heatclient.common import format_utils
 from heatclient.common import http
 from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc
-from heatclient.openstack.common._i18n import _
 
 
 class VersionList(command.Lister):
