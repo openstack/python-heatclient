@@ -1634,13 +1634,34 @@ def do_snapshot_show(hc, args):
            help=_('Name or ID of the stack containing the snapshot.'))
 @utils.arg('snapshot', metavar='<SNAPSHOT>',
            help=_('The ID of the snapshot to delete.'))
+@utils.arg('-y', '--yes', default=False, action="store_true",
+           help=_('Skip yes/no prompt (assume yes).'))
 def do_snapshot_delete(hc, args):
     '''Delete a snapshot of a stack.'''
     show_deprecated('heat snapshot-delete', 'openstack stack snapshot delete')
-
+    msg = "User did not confirm snapshot delete %sso taking no action."
+    try:
+        if not args.yes and sys.stdin.isatty():
+            sys.stdout.write(
+                _('Are you sure you want to delete the snapshot of this '
+                  'stack [Y/N]?'))
+            prompt_response = sys.stdin.readline().lower()
+            if not prompt_response.startswith('y'):
+                logger.info(msg, '')
+                return
+    except KeyboardInterrupt:  # ctrl-c
+        logger.info(msg, '(ctrl-c) ')
+        return
+    except EOFError:  # ctrl-d
+        logger.info(msg, '(ctrl-d) ')
+        return
     fields = {'stack_id': args.id, 'snapshot_id': args.snapshot}
     try:
         hc.stacks.snapshot_delete(**fields)
+        success_msg = _("Request to delete the snapshot %(snapshot_id)s of "
+                        "the stack %(stack_id)s has been accepted.")
+        print(success_msg % {'stack_id': args.id,
+                             'snapshot_id': args.snapshot})
     except exc.HTTPNotFound:
         raise exc.CommandError(_('Stack or snapshot not found'))
 

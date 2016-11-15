@@ -32,6 +32,7 @@ import testscenarios
 import testtools
 import yaml
 
+from heatclient._i18n import _
 from heatclient.common import http
 from heatclient.common import utils
 from heatclient import exc
@@ -2225,6 +2226,65 @@ class ShellTestUserPass(ShellBase):
         resp = self.shell('snapshot-show teststack/1 2')
         self.assertEqual(resp_dict, jsonutils.loads(resp))
 
+    # the main thing this @mock.patch is doing here is keeping
+    # sys.stdin untouched for later tests
+    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    def test_snapshot_delete_prompt_with_tty(self, ms):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"snapshot": {
+            "id": "2",
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        mock_stdin = mock.Mock()
+        mock_stdin.isatty = mock.Mock()
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline = mock.Mock()
+        mock_stdin.readline.return_value = 'n'
+        sys.stdin = mock_stdin
+
+        self.mock_request_delete('/stacks/teststack/1/snapshots/2', resp_dict)
+
+        self.m.ReplayAll()
+
+        resp = self.shell('snapshot-delete teststack/1 2')
+        resp_text = ('Are you sure you want to delete the snapshot of '
+                     'this stack [Y/N]?')
+        self.assertEqual(resp_text, resp)
+        self.m.ReplayAll()
+
+        mock_stdin.readline.return_value = 'Y'
+        resp = self.shell('snapshot-delete teststack/1 2')
+        msg = _("Request to delete the snapshot 2 of the stack "
+                "teststack/1 has been accepted.")
+        self.assertRegex(resp, msg)
+
+    # the main thing this @mock.patch is doing here is keeping
+    # sys.stdin untouched for later tests
+    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    def test_snapshot_delete_prompt_with_tty_y(self, ms):
+        self.register_keystone_auth_fixture()
+        resp_dict = {"snapshot": {
+            "id": "2",
+            "creation_time": "2012-10-25T01:58:47Z"
+        }}
+
+        mock_stdin = mock.Mock()
+        mock_stdin.isatty = mock.Mock()
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline = mock.Mock()
+        mock_stdin.readline.return_value = ''
+        sys.stdin = mock_stdin
+
+        self.mock_request_delete('/stacks/teststack/1/snapshots/2', resp_dict)
+
+        self.m.ReplayAll()
+        # -y from the shell should skip the n/y prompt
+        resp = self.shell('snapshot-delete -y teststack/1 2')
+        msg = _("Request to delete the snapshot 2 of the stack "
+                "teststack/1 has been accepted.")
+        self.assertRegex(resp, msg)
+
     def test_snapshot_delete(self):
         self.register_keystone_auth_fixture()
 
@@ -2236,7 +2296,9 @@ class ShellTestUserPass(ShellBase):
 
         self.m.ReplayAll()
         resp = self.shell('snapshot-delete teststack/1 2')
-        self.assertEqual("", resp)
+        msg = _("Request to delete the snapshot 2 of the stack "
+                "teststack/1 has been accepted.")
+        self.assertRegex(resp, msg)
 
     def test_stack_restore(self):
         self.register_keystone_auth_fixture()
