@@ -61,6 +61,9 @@ class SimpleReadOnlyOpenStackClientTest(base.OpenStackClientTestBase):
     def test_openstack_stack_list_debug(self):
         self.openstack('stack list', flags='--debug')
 
+    def test_openstack_stack_list_property(self):
+        self.openstack('stack list --property id=123')
+
     def test_openstack_help_cmd(self):
         help_text = self.openstack('help stack list')
         lines = help_text.split('\n')

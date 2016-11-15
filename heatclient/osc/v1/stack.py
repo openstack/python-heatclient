@@ -16,7 +16,6 @@
 import logging
 import sys
 
-from osc_lib.cli import parseractions
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
@@ -453,7 +452,7 @@ class ListStack(command.Lister):
             metavar='<key=value>',
             help=_('Filter properties to apply on returned stacks (repeat to '
                    'filter on multiple properties)'),
-            action=parseractions.KeyValueAction
+            action='append'
         )
         parser.add_argument(
             '--tags',
