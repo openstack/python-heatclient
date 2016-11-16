@@ -10,8 +10,9 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 #
-
+import mock
 from osc_lib import exceptions as exc
+import six
 
 from heatclient import exc as heat_exc
 from heatclient.osc.v1 import snapshot
@@ -157,3 +158,28 @@ class TestSnapshotDelete(TestStack):
             exc.CommandError,
             self.cmd.take_action,
             parsed_args)
+
+    @mock.patch('sys.stdin', spec=six.StringIO)
+    def test_snapshot_delete_prompt(self, mock_stdin):
+        arglist = ['my_stack', 'snapshot_id']
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline.return_value = 'y'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        mock_stdin.readline.assert_called_with()
+        self.stack_client.snapshot_delete.assert_called_with('my_stack',
+                                                             'snapshot_id')
+
+    @mock.patch('sys.stdin', spec=six.StringIO)
+    def test_snapshot_delete_prompt_no(self, mock_stdin):
+        arglist = ['my_stack', 'snapshot_id']
+        mock_stdin.isatty.return_value = True
+        mock_stdin.readline.return_value = 'n'
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        mock_stdin.readline.assert_called_with()
+        self.stack_client.snapshot_delete.assert_not_called()

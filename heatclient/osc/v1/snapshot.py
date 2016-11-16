@@ -14,6 +14,7 @@
 """Orchestration v1 Stack Snapshot implementations."""
 
 import logging
+import sys
 
 from osc_lib.command import command
 from osc_lib import exceptions as exc
@@ -192,11 +193,34 @@ class DeleteSnapshot(command.Command):
             metavar='<snapshot>',
             help=_('ID of stack snapshot')
         )
+        parser.add_argument(
+            '-y', '--yes',
+            action='store_true',
+            help=_('Skip yes/no prompt (assume yes)')
+        )
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('take_action(%s)' % parsed_args)
         heat_client = self.app.client_manager.orchestration
+        msg = ('User did not confirm snapshot delete '
+               '%sso taking no action.')
+        try:
+            if not parsed_args.yes and sys.stdin.isatty():
+                sys.stdout.write(
+                    _('Are you sure you want to delete the snapshot of this '
+                      'stack [Y/N]?'))
+                prompt_response = sys.stdin.readline().lower()
+                if not prompt_response.startswith('y'):
+                    self.log.info(msg, '')
+                    return
+        except KeyboardInterrupt:  # ctrl-c
+            self.log.info(msg, '(ctrl-c) ')
+            return
+        except EOFError:  # ctrl-d
+            self.log.info(msg, '(ctrl-d) ')
+            return
+
         try:
             heat_client.stacks.snapshot_delete(parsed_args.stack,
                                                parsed_args.snapshot)
