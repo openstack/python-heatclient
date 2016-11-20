@@ -32,7 +32,6 @@ from heatclient import client as heat_client
 from heatclient.common import utils
 from heatclient import exc
 
-logger = logging.getLogger(__name__)
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 
 
