@@ -45,8 +45,8 @@ class TestServiceList(orchestration_fakes.TestOrchestrationv1):
         }
     ]}
 
-    columns = ['hostname', 'binary', 'engine_id', 'host',
-               'topic', 'updated_at', 'status']
+    columns = ['Hostname', 'Binary', 'Engine ID', 'Host',
+               'Topic', 'Updated At', 'Status']
 
     def setUp(self):
         super(TestServiceList, self).setUp()

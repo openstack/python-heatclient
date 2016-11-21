@@ -46,7 +46,7 @@ class TestTemplateVersionList(TestTemplate):
 
         columns, data = self.cmd.take_action(parsed_args)
 
-        self.assertEqual(['version', 'type'], columns)
+        self.assertEqual(['Version', 'Type'], columns)
         self.assertEqual([('HOT123', 'hot'), ('CFN456', 'cfn')], list(data))
 
 
@@ -73,7 +73,7 @@ class TestTemplateFunctionList(TestTemplate):
         self.template_versions.get.return_value = [self.tv1, self.tv2]
         columns, data = self.cmd.take_action(parsed_args)
 
-        self.assertEqual(['functions', 'description'], columns)
+        self.assertEqual(['Functions', 'Description'], columns)
         self.assertEqual([('func1', 'Function 1'), ('func2', 'Function 2')],
                          list(data))
 
@@ -84,7 +84,7 @@ class TestTemplateFunctionList(TestTemplate):
                                                    self.tv_with_cf]
         columns, data = self.cmd.take_action(parsed_args)
 
-        self.assertEqual(['functions', 'description'], columns)
+        self.assertEqual(['Functions', 'Description'], columns)
         self.assertEqual([('func1', 'Function 1'),
                           ('func2', 'Function 2'),
                           ('condition func', 'Condition Function')],

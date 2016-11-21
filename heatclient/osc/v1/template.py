@@ -37,7 +37,7 @@ class VersionList(command.Lister):
         client = self.app.client_manager.orchestration
 
         versions = client.template_versions.list()
-        fields = ['version', 'type']
+        fields = ['Version', 'Type']
 
         return (
             fields,
@@ -79,7 +79,7 @@ class FunctionList(command.Lister):
             msg = _('Template version not found: %s') % version
             raise exc.CommandError(msg)
 
-        fields = ['functions', 'description']
+        fields = ['Functions', 'Description']
         return (
             fields,
             (utils.get_item_properties(s, fields) for s in functions)

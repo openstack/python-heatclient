@@ -75,13 +75,13 @@ class SimpleReadOnlyOpenStackClientTest(base.OpenStackClientTestBase):
     def test_openstack_template_version_list(self):
         ret = self.openstack('orchestration template version list')
         tmpl_types = self.parser.listing(ret)
-        self.assertTableStruct(tmpl_types, ['version', 'type'])
+        self.assertTableStruct(tmpl_types, ['Version', 'Type'])
 
     def test_openstack_template_function_list(self):
         ret = self.openstack('orchestration template function list '
                              'heat_template_version.2015-10-15')
         tmpl_functions = self.parser.listing(ret)
-        self.assertTableStruct(tmpl_functions, ['functions', 'description'])
+        self.assertTableStruct(tmpl_functions, ['Functions', 'Description'])
 
     def test_openstack_resource_type_list(self):
         ret = self.openstack('orchestration resource type list')
