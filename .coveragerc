@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = heatclient
-omit = heatclient/tests/*,heatclient/openstack/*
+omit = heatclient/tests/*
 
 [report]
 ignore_errors = True
