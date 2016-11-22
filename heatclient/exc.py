@@ -122,6 +122,10 @@ class HTTPNotFound(NotFound):
     pass
 
 
+class NoUniqueMatch(HTTPException):
+    pass
+
+
 class HTTPMethodNotAllowed(HTTPException):
     code = 405
 

@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from heatclient.openstack.common.apiclient import base
+from heatclient.common import base
 from heatclient.v1 import stacks
 
 DEFAULT_PAGE_SIZE = 20

@@ -19,24 +19,6 @@
 """
 Base utilities to build API operation managers and objects on top of.
 """
-
-########################################################################
-#
-# THIS MODULE IS DEPRECATED
-#
-# Please refer to
-# https://etherpad.openstack.org/p/kilo-oslo-library-proposals for
-# the discussion leading to this deprecation.
-#
-# We recommend checking out the python-openstacksdk project
-# (https://launchpad.net/python-openstacksdk) instead.
-#
-########################################################################
-
-
-# E1102: %s is not callable
-# pylint: disable=E1102
-
 import abc
 import copy
 import logging
@@ -46,8 +28,9 @@ from oslo_utils import strutils
 import six
 from six.moves.urllib import parse
 
-from heatclient._i18n import _, _LW
-from heatclient.openstack.common.apiclient import exceptions
+from heatclient._i18n import _
+from heatclient._i18n import _LW
+from heatclient import exc as exceptions
 
 LOG = logging.getLogger(__name__)
 
@@ -279,14 +262,12 @@ class CrudManager(BaseManager):
     """Base manager class for manipulating entities.
 
     Children of this class are expected to define a `collection_key` and `key`.
-
     - `collection_key`: Usually a plural noun by convention (e.g. `entities`);
       used to refer collections in both URL's (e.g.  `/v3/entities`) and JSON
       objects containing a list of member resources (e.g. `{'entities': [{},
       {}, {}]}`).
     - `key`: Usually a singular noun by convention (e.g. `entity`); used to
       refer to an individual member of the collection.
-    
     """
     collection_key = None
     key = None
@@ -296,16 +277,11 @@ class CrudManager(BaseManager):
 
         Given an example collection where `collection_key = 'entities'` and
         `key = 'entity'`, the following URL's could be generated.
-
         By default, the URL will represent a collection of entities, e.g.::
-
             /entities
-
         If kwargs contains an `entity_id`, then the URL will represent a
         specific member, e.g.::
-
             /entities/{entity_id}
-
         :param base_url: if provided, the generated URL will be appended to it
         """
         url = base_url if base_url is not None else ''
@@ -446,7 +422,6 @@ class Resource(object):
 
     This is pretty much just a bag for attributes.
     """
-    
     HUMAN_ID = False
     NAME_ATTR = 'name'
 
@@ -472,8 +447,7 @@ class Resource(object):
 
     @property
     def human_id(self):
-        """Human-readable ID which can be used for bash completion.
-        """
+        """Human-readable ID which can be used for bash completion. """
         if self.HUMAN_ID:
             name = getattr(self, self.NAME_ATTR, None)
             if name is not None:
