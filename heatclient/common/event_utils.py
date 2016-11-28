@@ -206,7 +206,7 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
 
         if no_event_polls >= 2:
             # after 2 polls with no events, fall back to a stack get
-            stack = hc.stacks.get(stack_name)
+            stack = hc.stacks.get(stack_name, resolve_outputs=False)
             stack_status = stack.stack_status
             msg = msg_template % dict(
                 name=stack_name, status=stack_status)
