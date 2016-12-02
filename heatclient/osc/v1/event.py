@@ -133,7 +133,7 @@ class ListEvent(command.Lister):
         )
         parser.add_argument(
             '--sort',
-            metavar='[<key>][:<direction>]',
+            metavar='<key>[:<direction>]',
             action='append',
             help=_('Sort output by selected keys and directions (asc or desc) '
                    '(default: asc). Specify multiple times to sort on '
@@ -141,7 +141,8 @@ class ListEvent(command.Lister):
                    '"event_time" (default), "resource_name", "links", '
                    '"logical_resource_id", "resource_status", '
                    '"resource_status_reason", "physical_resource_id", or '
-                   '"id".')
+                   '"id". You can leave the key empty and specify ":desc" '
+                   'for sorting by reverse time.')
         )
         parser.add_argument(
             '--follow',
