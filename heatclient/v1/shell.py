@@ -1081,7 +1081,7 @@ def do_resource_signal(hc, args):
 @utils.arg('id', metavar='<NAME or ID>',
            help=_('Name or ID of stack the resource belongs to.'))
 @utils.arg('resource', metavar='<RESOURCE>',
-           help=_('Name of the resource.'))
+           help=_('Name or physical ID of the resource.'))
 @utils.arg('reason', default="", nargs='?',
            help=_('Reason for state change.'))
 @utils.arg('--reset', default=False, action="store_true",
