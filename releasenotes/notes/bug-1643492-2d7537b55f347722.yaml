@@ -1,0 +1,8 @@
+---
+other:
+  - |
+    Updated the Openstack orchestration Commands headers for
+    ``openstack orchestration service list``,
+    ``openstack orchestration template version list``, and
+    ``openstack orchestration template function list`` commands
+    [Bug `1643492 <https://bugs.launchpad.net/bugs/1643492>`_]

@@ -32,8 +32,8 @@ class ListService(command.Lister):
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
-        columns = ['hostname', 'binary', 'engine_id', 'host',
-                   'topic', 'updated_at', 'status']
+        columns = ['Hostname', 'Binary', 'Engine ID', 'Host',
+                   'Topic', 'Updated At', 'Status']
         services = heat_client.services.list()
         return (
             columns,
