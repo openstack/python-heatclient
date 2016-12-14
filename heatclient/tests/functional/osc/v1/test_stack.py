@@ -60,3 +60,9 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         snapshot = self._stack_snapshot_create(stack['id'], snapshot_name)
         self.assertEqual(snapshot_name, snapshot['name'])
         self._stack_snapshot_restore(stack['id'], snapshot['id'])
+
+    def test_stack_delete(self):
+        stack = self._stack_create_minimal()
+        self._stack_delete(stack['id'])
+        stacks_raw = self.openstack('stack list')
+        self.assertNotIn(stack['id'], stacks_raw)
