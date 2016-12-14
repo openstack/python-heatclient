@@ -43,6 +43,7 @@ class TestStack(orchestration_fakes.TestOrchestrationv1):
 class TestStackCreate(TestStack):
 
     template_path = 'heatclient/tests/test_templates/empty.yaml'
+    env_path = 'heatclient/tests/unit/var/environment.json'
 
     defaults = {
         'stack_name': 'my_stack',
@@ -70,6 +71,16 @@ class TestStackCreate(TestStack):
         self.cmd.take_action(parsed_args)
 
         self.stack_client.create.assert_called_with(**self.defaults)
+
+    def test_stack_create_with_env(self):
+        arglist = ['my_stack', '-t', self.template_path, '-e', self.env_path]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+
+        self.assertEqual(1, self.stack_client.create.call_count)
+        args = self.stack_client.create.call_args[1]
+        self.assertEqual({'parameters': {}}, args.get('environment'))
+        self.assertIn(self.env_path, args.get('environment_files')[0])
 
     def test_stack_create_rollback(self):
         arglist = ['my_stack', '-t', self.template_path, '--enable-rollback']
@@ -162,6 +173,7 @@ class TestStackCreate(TestStack):
 class TestStackUpdate(TestStack):
 
     template_path = 'heatclient/tests/test_templates/empty.yaml'
+    env_path = 'heatclient/tests/unit/var/environment.json'
 
     defaults = {
         'stack_id': 'my_stack',
@@ -192,6 +204,16 @@ class TestStackUpdate(TestStack):
         self.cmd.take_action(parsed_args)
 
         self.stack_client.update.assert_called_with(**self.defaults)
+
+    def test_stack_update_with_env(self):
+        arglist = ['my_stack', '-t', self.template_path, '-e', self.env_path]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+
+        self.assertEqual(1, self.stack_client.update.call_count)
+        args = self.stack_client.update.call_args[1]
+        self.assertEqual({'parameters': {}}, args.get('environment'))
+        self.assertIn(self.env_path, args.get('environment_files')[0])
 
     def test_stack_update_rollback_enabled(self):
         arglist = ['my_stack', '-t', self.template_path, '--rollback',

@@ -124,9 +124,11 @@ class CreateStack(command.ShowOne):
             parsed_args.template,
             object_request=http.authenticated_fetcher(client))
 
+        env_files_list = []
         env_files, env = (
             template_utils.process_multiple_environments_and_files(
-                env_paths=parsed_args.environment))
+                env_paths=parsed_args.environment,
+                env_list_tracker=env_files_list))
 
         parameters = heat_utils.format_all_parameters(
             parsed_args.parameter,
@@ -145,6 +147,10 @@ class CreateStack(command.ShowOne):
             'files': dict(list(tpl_files.items()) + list(env_files.items())),
             'environment': env
         }
+
+        # If one or more environments is found, pass the listing to the server
+        if env_files_list:
+            fields['environment_files'] = env_files_list
 
         if parsed_args.tags:
             fields['tags'] = parsed_args.tags
@@ -286,9 +292,11 @@ class UpdateStack(command.ShowOne):
             object_request=http.authenticated_fetcher(client),
             existing=parsed_args.existing)
 
+        env_files_list = []
         env_files, env = (
             template_utils.process_multiple_environments_and_files(
-                env_paths=parsed_args.environment))
+                env_paths=parsed_args.environment,
+                env_list_tracker=env_files_list))
 
         parameters = heat_utils.format_all_parameters(
             parsed_args.parameter,
@@ -307,6 +315,10 @@ class UpdateStack(command.ShowOne):
             'files': dict(list(tpl_files.items()) + list(env_files.items())),
             'environment': env
         }
+
+        # If one or more environments is found, pass the listing to the server
+        if env_files_list:
+            fields['environment_files'] = env_files_list
 
         if parsed_args.tags:
             fields['tags'] = parsed_args.tags
