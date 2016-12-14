@@ -12,6 +12,7 @@
 
 from tempest.lib.common.utils import data_utils as utils
 
+from heatclient.tests.functional import config
 from heatclient.tests.functional.osc.v1 import base
 
 
@@ -25,13 +26,22 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         super(OpenStackClientStackTest, self).setUp()
         self.stack_name = utils.rand_name(name='test-stack')
 
-    def _stack_create_minimal(self):
-        template = self.get_template_path('heat_minimal_hot.yaml')
+    def _stack_create_minimal(self, from_url=False):
+        if from_url:
+            template = config.HEAT_MINIMAL_HOT_TEMPLATE_URL
+        else:
+            template = self.get_template_path('heat_minimal_hot.yaml')
         parameters = ['test_client_name=test_client_name']
-        return self._stack_create(self.stack_name, template, parameters)
+        return self._stack_create(self.stack_name, template=template,
+                                  parameters=parameters)
 
-    def test_stack_create_minimal(self):
+    def test_stack_create_minimal_from_file(self):
         stack = self._stack_create_minimal()
+        self.assertEqual(self.stack_name, stack['stack_name'])
+        self.assertEqual("CREATE_COMPLETE", stack['stack_status'])
+
+    def test_stack_create_minimal_from_url(self):
+        stack = self._stack_create_minimal(from_url=True)
         self.assertEqual(self.stack_name, stack['stack_name'])
         self.assertEqual("CREATE_COMPLETE", stack['stack_status'])
 
