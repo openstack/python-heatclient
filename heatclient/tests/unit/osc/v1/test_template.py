@@ -29,25 +29,36 @@ class TestTemplate(fakes.TestOrchestrationv1):
 
 class TestTemplateVersionList(TestTemplate):
 
-    defaults = [
-        {'version': 'HOT123', 'type': 'hot'},
-        {'version': 'CFN456', 'type': 'cfn'}
-    ]
-
-    def setUp(self):
-        super(TestTemplateVersionList, self).setUp()
-        tv1 = template_versions.TemplateVersion(None, self.defaults[0])
-        tv2 = template_versions.TemplateVersion(None, self.defaults[1])
+    def _stub_versions_list(self, ret_data):
+        tv1 = template_versions.TemplateVersion(None, ret_data[0])
+        tv2 = template_versions.TemplateVersion(None, ret_data[1])
         self.template_versions.list.return_value = [tv1, tv2]
         self.cmd = template.VersionList(self.app, None)
 
     def test_version_list(self):
+        ret_data = [
+            {'version': 'HOT123', 'type': 'hot'},
+            {'version': 'CFN456', 'type': 'cfn'}]
+        self._stub_versions_list(ret_data)
         parsed_args = self.check_parser(self.cmd, [], [])
 
         columns, data = self.cmd.take_action(parsed_args)
 
         self.assertEqual(['Version', 'Type'], columns)
         self.assertEqual([('HOT123', 'hot'), ('CFN456', 'cfn')], list(data))
+
+    def test_version_list_with_aliases(self):
+        ret_data = [
+            {'version': 'HOT123', 'type': 'hot', 'aliases': ['releasex']},
+            {'version': 'CFN456', 'type': 'cfn', 'aliases': ['releasey']}]
+        self._stub_versions_list(ret_data)
+        parsed_args = self.check_parser(self.cmd, [], [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.assertEqual(['Version', 'Type', 'Aliases'], columns)
+        self.assertEqual([('HOT123', 'hot', 'releasex'),
+                          ('CFN456', 'cfn', 'releasey')], list(data))
 
 
 class TestTemplateFunctionList(TestTemplate):

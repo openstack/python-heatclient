@@ -37,12 +37,23 @@ class VersionList(command.Lister):
         client = self.app.client_manager.orchestration
 
         versions = client.template_versions.list()
-        fields = ['Version', 'Type']
+        try:
+            versions[1].aliases
 
-        return (
-            fields,
-            (utils.get_item_properties(s, fields) for s in versions)
-        )
+            def format_alias(aliases):
+                return ','.join(aliases)
+
+            fields = ['Version', 'Type', 'Aliases']
+            formatters = {'Aliases': format_alias}
+        except AttributeError:
+            fields = ['Version', 'Type']
+            formatters = None
+
+        items = (utils.get_item_properties(s, fields,
+                                           formatters=formatters)
+                 for s in versions)
+
+        return (fields, items)
 
 
 class FunctionList(command.Lister):
