@@ -623,8 +623,6 @@ def _list(client, args=None):
             columns.pop()
         if args.long:
             columns.insert(2, 'Stack Owner')
-        if args.long or args.all_projects:
-            columns.insert(2, 'Project')
 
         if args.nested:
             columns.append('Parent')
@@ -634,6 +632,11 @@ def _list(client, args=None):
             columns.append('Deletion Time')
 
     data = client.stacks.list(**kwargs)
+    data = list(data)
+    for stk in data:
+        if hasattr(stk, 'project'):
+            columns.insert(2, 'Project')
+            break
     data = utils.sort_items(data, args.sort if args else None)
 
     return (
