@@ -21,7 +21,6 @@ Base utilities to build API operation managers and objects on top of.
 """
 import abc
 import copy
-import logging
 
 from oslo_utils import reflection
 from oslo_utils import strutils
@@ -29,10 +28,7 @@ import six
 from six.moves.urllib import parse
 
 from heatclient._i18n import _
-from heatclient._i18n import _LW
 from heatclient import exc as exceptions
-
-LOG = logging.getLogger(__name__)
 
 
 def getid(obj):
@@ -497,10 +493,6 @@ class Resource(object):
         # two resources of different types are not equal
         if not isinstance(other, self.__class__):
             return False
-        LOG.warning(_LW("Two objects are equal when all of the attributes are "
-                        "equal, if you want to identify whether two objects "
-                        "are same one with same id, please use is_same_obj() "
-                        "function."))
         return self._info == other._info
 
     def __ne__(self, other):
