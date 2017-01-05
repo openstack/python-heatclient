@@ -618,7 +618,8 @@ class ShellTestEndpointType(TestCase):
             'region_name': '',
             'username': 'username',
             'password': 'password',
-            'include_pass': False
+            'include_pass': False,
+            'endpoint_override': mox.IgnoreArg(),
         }
         http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
@@ -637,7 +638,8 @@ class ShellTestEndpointType(TestCase):
             'region_name': '',
             'username': 'username',
             'password': 'password',
-            'include_pass': False
+            'include_pass': False,
+            'endpoint_override': mox.IgnoreArg(),
         }
         http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
@@ -658,7 +660,8 @@ class ShellTestEndpointType(TestCase):
             'region_name': '',
             'username': 'username',
             'password': 'password',
-            'include_pass': False
+            'include_pass': False,
+            'endpoint_override': mox.IgnoreArg(),
         }
         http._construct_http_client(**kwargs)
         heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())

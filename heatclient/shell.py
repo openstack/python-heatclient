@@ -544,7 +544,8 @@ class HeatShell(object):
                 'region_name': args.os_region_name,
                 'username': args.os_username,
                 'password': args.os_password,
-                'include_pass': args.include_password
+                'include_pass': args.include_password,
+                'endpoint_override': args.heat_url,
             }
 
         client = heat_client.Client(api_version, **kwargs)
