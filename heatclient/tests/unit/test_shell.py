@@ -211,7 +211,7 @@ class TestCase(testtools.TestCase):
                               {"href": "http://heat.example.com:8004/foo3",
                                "rel": "stack"}],
                     "logical_resource_id": "aResource",
-                    "physical_resource_id": None,
+                    "physical_resource_id": 'foo3',
                     "resource_name": stack_name,
                     "resource_status": "%s_IN_PROGRESS" % action,
                     "resource_status_reason": "state changed"})
@@ -225,7 +225,7 @@ class TestCase(testtools.TestCase):
                            {"href": "http://heat.example.com:8004/foo3",
                             "rel": "stack"}],
                  "logical_resource_id": "aResource",
-                 "physical_resource_id": None,
+                 "physical_resource_id": 'foo3',
                  "resource_name": stack_name,
                  "resource_status": "%s_%s" % (action, final_state),
                  "resource_status_reason": "state changed"})
