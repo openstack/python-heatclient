@@ -21,7 +21,6 @@ import uuid
 
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-from oslo_utils import importutils
 import prettytable
 import six
 from six.moves.urllib import error
@@ -322,13 +321,6 @@ def find_resource(manager, name_or_id):
                 'name_or_id': name_or_id
             })
         raise exc.CommandError(msg)
-
-
-def import_versioned_module(version, submodule=None):
-    module = 'heatclient.v%s' % version
-    if submodule:
-        module = '.'.join((module, submodule))
-    return importutils.import_module(module)
 
 
 def format_parameters(params, parse_semicolon=True):
