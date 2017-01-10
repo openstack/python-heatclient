@@ -47,11 +47,29 @@ class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_event(event_id, resource_id,
                     resource_status='CREATE_COMPLETE'):
-        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"}],
+        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
+                             {"href": "http://heat/stacks/a", "rel": "stack"}],
                    "logical_resource_id": resource_id,
                    "physical_resource_id": resource_id,
                    "resource_name": resource_id,
                    "resource_status": resource_status,
+                   "resource_status_reason": "state changed",
+                   "event_time": "2014-12-05T14:14:30Z",
+                   "id": event_id}
+        return hc_ev.Event(manager=None, info=ev_info)
+
+    @staticmethod
+    def _mock_stack_event(event_id, stack_name,
+                          stack_status='CREATE_COMPLETE'):
+        stack_id = 'abcdef'
+        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
+                             {"href": "http://heat/stacks/%s/%s" % (stack_name,
+                                                                    stack_id),
+                              "rel": "stack"}],
+                   "logical_resource_id": stack_name,
+                   "physical_resource_id": stack_id,
+                   "resource_name": stack_name,
+                   "resource_status": stack_status,
                    "resource_status_reason": "state changed",
                    "event_time": "2014-12-05T14:14:30Z",
                    "id": event_id}
@@ -143,7 +161,7 @@ class ShellTestEventUtils(testtools.TestCase):
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events(self, ge):
         ge.side_effect = [[
-            self._mock_event('1', 'astack', 'CREATE_IN_PROGRESS'),
+            self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
             self._mock_event('3', 'res_child2', 'CREATE_IN_PROGRESS'),
             self._mock_event('4', 'res_child3', 'CREATE_IN_PROGRESS')
@@ -151,7 +169,7 @@ class ShellTestEventUtils(testtools.TestCase):
             self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
             self._mock_event('6', 'res_child2', 'CREATE_COMPLETE'),
             self._mock_event('7', 'res_child3', 'CREATE_COMPLETE'),
-            self._mock_event('8', 'astack', 'CREATE_COMPLETE')
+            self._mock_stack_event('8', 'astack', 'CREATE_COMPLETE')
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
@@ -168,12 +186,41 @@ class ShellTestEventUtils(testtools.TestCase):
         ])
 
     @mock.patch('heatclient.common.event_utils.get_events')
+    def test_poll_for_events_same_name(self, ge):
+        ge.side_effect = [[
+            self._mock_stack_event('1', 'mything', 'CREATE_IN_PROGRESS'),
+            self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
+            self._mock_event('3', 'mything', 'CREATE_IN_PROGRESS'),
+        ], [
+            self._mock_event('4', 'mything', 'CREATE_COMPLETE'),
+        ], [
+            self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
+            self._mock_stack_event('6', 'mything', 'CREATE_COMPLETE'),
+        ]]
+
+        stack_status, msg = event_utils.poll_for_events(
+            None, 'mything', action='CREATE', poll_period=0)
+        self.assertEqual('CREATE_COMPLETE', stack_status)
+        self.assertEqual('\n Stack mything CREATE_COMPLETE \n', msg)
+        ge.assert_has_calls([
+            mock.call(None, stack_id='mything', nested_depth=0, event_args={
+                'sort_dir': 'asc', 'marker': None
+            }),
+            mock.call(None, stack_id='mything', nested_depth=0, event_args={
+                'sort_dir': 'asc', 'marker': '3'
+            }),
+            mock.call(None, stack_id='mything', nested_depth=0, event_args={
+                'sort_dir': 'asc', 'marker': '4'
+            })
+        ])
+
+    @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_with_marker(self, ge):
         ge.side_effect = [[
             self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
             self._mock_event('6', 'res_child2', 'CREATE_COMPLETE'),
             self._mock_event('7', 'res_child3', 'CREATE_COMPLETE'),
-            self._mock_event('8', 'astack', 'CREATE_COMPLETE')
+            self._mock_stack_event('8', 'astack', 'CREATE_COMPLETE')
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
@@ -190,9 +237,9 @@ class ShellTestEventUtils(testtools.TestCase):
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_in_progress_resource(self, ge):
         ge.side_effect = [[
-            self._mock_event('1', 'astack', 'CREATE_IN_PROGRESS'),
+            self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
-            self._mock_event('3', 'astack', 'CREATE_COMPLETE')
+            self._mock_stack_event('3', 'astack', 'CREATE_COMPLETE')
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
@@ -203,7 +250,7 @@ class ShellTestEventUtils(testtools.TestCase):
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_failed(self, ge):
         ge.side_effect = [[
-            self._mock_event('1', 'astack', 'CREATE_IN_PROGRESS'),
+            self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
             self._mock_event('3', 'res_child2', 'CREATE_IN_PROGRESS'),
             self._mock_event('4', 'res_child3', 'CREATE_IN_PROGRESS')
@@ -211,7 +258,7 @@ class ShellTestEventUtils(testtools.TestCase):
             self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
             self._mock_event('6', 'res_child2', 'CREATE_FAILED'),
             self._mock_event('7', 'res_child3', 'CREATE_COMPLETE'),
-            self._mock_event('8', 'astack', 'CREATE_FAILED')
+            self._mock_stack_event('8', 'astack', 'CREATE_FAILED')
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
@@ -222,7 +269,7 @@ class ShellTestEventUtils(testtools.TestCase):
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_no_action(self, ge):
         ge.side_effect = [[
-            self._mock_event('1', 'astack', 'CREATE_IN_PROGRESS'),
+            self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
             self._mock_event('3', 'res_child2', 'CREATE_IN_PROGRESS'),
             self._mock_event('4', 'res_child3', 'CREATE_IN_PROGRESS')
@@ -230,7 +277,7 @@ class ShellTestEventUtils(testtools.TestCase):
             self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
             self._mock_event('6', 'res_child2', 'CREATE_FAILED'),
             self._mock_event('7', 'res_child3', 'CREATE_COMPLETE'),
-            self._mock_event('8', 'astack', 'FOO_FAILED')
+            self._mock_stack_event('8', 'astack', 'FOO_FAILED')
         ]]
 
         stack_status, msg = event_utils.poll_for_events(
@@ -244,7 +291,7 @@ class ShellTestEventUtils(testtools.TestCase):
         mock_client.stacks.get.return_value.stack_status = 'CREATE_FAILED'
 
         ge.side_effect = [[
-            self._mock_event('1', 'astack', 'CREATE_IN_PROGRESS'),
+            self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
             self._mock_event('3', 'res_child2', 'CREATE_IN_PROGRESS'),
             self._mock_event('4', 'res_child3', 'CREATE_IN_PROGRESS')

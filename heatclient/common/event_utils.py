@@ -181,6 +181,17 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
     if not out:
         out = sys.stdout
     event_log_context = utils.EventLogContext()
+
+    def is_stack_event(event):
+        if getattr(event, 'resource_name', '') != stack_name:
+            return False
+
+        phys_id = getattr(event, 'physical_resource_id', '')
+        links = dict((l.get('rel'),
+                      l.get('href')) for l in getattr(event, 'links', []))
+        stack_id = links.get('stack', phys_id).rsplit('/', 1)[-1]
+        return stack_id == phys_id
+
     while True:
         events = get_events(hc, stack_id=stack_name, nested_depth=nested_depth,
                             event_args={'sort_dir': 'asc',
@@ -198,7 +209,7 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
 
             for event in events:
                 # check if stack event was also received
-                if getattr(event, 'resource_name', '') == stack_name:
+                if is_stack_event(event):
                     stack_status = getattr(event, 'resource_status', '')
                     msg = msg_template % dict(
                         name=stack_name, status=stack_status)
