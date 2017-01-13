@@ -656,7 +656,7 @@ class DeleteStack(command.Command):
             help=_('Stack(s) to delete (name or ID)')
         )
         parser.add_argument(
-            '--yes',
+            '-y', '--yes',
             action='store_true',
             help=_('Skip yes/no prompt (assume yes)')
         )
