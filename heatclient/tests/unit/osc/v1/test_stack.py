@@ -149,7 +149,8 @@ class TestStackCreate(TestStack):
         self.cmd.take_action(parsed_args)
 
         self.stack_client.create.assert_called_with(**self.defaults)
-        self.stack_client.get.assert_called_with(**{'stack_id': '1234'})
+        self.stack_client.get.assert_called_with(**{'stack_id': '1234',
+                                                    'resolve_outputs': False})
 
     @mock.patch('heatclient.common.event_utils.poll_for_events',
                 return_value=('CREATE_FAILED',
@@ -347,7 +348,8 @@ class TestStackUpdate(TestStack):
         self.cmd.take_action(parsed_args)
 
         self.stack_client.update.assert_called_with(**self.defaults)
-        self.stack_client.get.assert_called_with(**{'stack_id': 'my_stack'})
+        self.stack_client.get.assert_called_with(**{'stack_id': 'my_stack',
+                                                    'resolve_outputs': False})
 
     @mock.patch('heatclient.common.event_utils.poll_for_events',
                 return_value=('UPDATE_FAILED',
@@ -414,6 +416,16 @@ class TestStackShow(TestStack):
         self.cmd.take_action(parsed_args)
         self.stack_client.get.assert_called_with(**{
             'stack_id': 'my_stack',
+            'resolve_outputs': True,
+        })
+
+    def test_stack_show_explicit_no_resolve(self):
+        arglist = ['--no-resolve-outputs', '--format', self.format, 'my_stack']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        self.cmd.take_action(parsed_args)
+        self.stack_client.get.assert_called_with(**{
+            'stack_id': 'my_stack',
+            'resolve_outputs': False,
         })
 
     def test_stack_show_short(self):
@@ -729,7 +741,8 @@ class TestStackAdopt(TestStack):
         self.cmd.take_action(parsed_args)
 
         self.stack_client.create.assert_called_with(**self.defaults)
-        self.stack_client.get.assert_called_with(**{'stack_id': '1234'})
+        self.stack_client.get.assert_called_with(**{'stack_id': '1234',
+                                                    'resolve_outputs': False})
 
     @mock.patch('heatclient.common.event_utils.poll_for_events',
                 return_value=('ADOPT_FAILED',

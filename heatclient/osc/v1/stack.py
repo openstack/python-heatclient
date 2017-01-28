@@ -380,19 +380,28 @@ class ShowStack(command.ShowOne):
             metavar='<stack>',
             help='Stack to display (name or ID)',
         )
+        parser.add_argument(
+            '--no-resolve-outputs', action="store_true",
+            help=_('Do not resolve outputs of the stack.')
+        )
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
-        return _show_stack(heat_client, stack_id=parsed_args.stack,
-                           format=parsed_args.formatter)
+        return _show_stack(
+            heat_client, stack_id=parsed_args.stack,
+            format=parsed_args.formatter,
+            resolve_outputs=(not parsed_args.no_resolve_outputs))
 
 
-def _show_stack(heat_client, stack_id, format='', short=False):
+def _show_stack(heat_client, stack_id, format='', short=False,
+                resolve_outputs=True):
     try:
-        data = heat_client.stacks.get(stack_id=stack_id)
+        _resolve_outputs = not short and resolve_outputs
+        data = heat_client.stacks.get(stack_id=stack_id,
+                                      resolve_outputs=_resolve_outputs)
     except heat_exc.HTTPNotFound:
         raise exc.CommandError('Stack not found: %s' % stack_id)
     else:
@@ -408,11 +417,10 @@ def _show_stack(heat_client, stack_id, format='', short=False):
         ]
 
         if not short:
-            columns += [
-                'parameters',
-                'outputs',
-                'links',
-            ]
+            columns.append('parameters')
+            if _resolve_outputs:
+                columns.append('outputs')
+            columns.append('links')
 
             exclude_columns = ('template_description',)
             for key in data.to_dict():
