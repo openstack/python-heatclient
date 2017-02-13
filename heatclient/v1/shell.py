@@ -689,13 +689,16 @@ def do_stack_list(hc, args=None):
 
         if args.global_tenant or args.show_owner:
             fields.append('stack_owner')
-        if args.global_tenant:
-            fields.append('project')
 
         if args.show_deleted:
             fields.append('deletion_time')
 
     stacks = hc.stacks.list(**kwargs)
+    stacks = list(stacks)
+    for stk in stacks:
+        if hasattr(stk, 'project'):
+            fields.append('project')
+            break
     utils.print_list(stacks, fields, sortby_index=sortby_index)
 
 

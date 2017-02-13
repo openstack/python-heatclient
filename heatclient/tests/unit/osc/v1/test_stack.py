@@ -465,6 +465,9 @@ class TestStackList(TestStack):
         'deletion_time': '2015-10-21T07:50:00Z',
     }
 
+    data_with_project = copy.deepcopy(data)
+    data_with_project['project'] = 'test_project'
+
     def setUp(self):
         super(TestStackList, self).setUp()
         self.cmd = stack.ListStack(self.app, None)
@@ -507,6 +510,8 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_all_projects(self):
+        self.stack_client.list.return_value = [
+            stacks.Stack(None, self.data_with_project)]
         kwargs = copy.deepcopy(self.defaults)
         kwargs['global_tenant'] = True
         cols = copy.deepcopy(self.columns)
@@ -519,7 +524,23 @@ class TestStackList(TestStack):
         self.stack_client.list.assert_called_with(**kwargs)
         self.assertEqual(cols, columns)
 
+    def test_stack_list_with_project(self):
+        self.stack_client.list.return_value = [
+            stacks.Stack(None, self.data_with_project)]
+        kwargs = copy.deepcopy(self.defaults)
+        cols = copy.deepcopy(self.columns)
+        cols.insert(2, 'Project')
+        arglist = []
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
+        self.assertEqual(cols, columns)
+
     def test_stack_list_long(self):
+        self.stack_client.list.return_value = [
+            stacks.Stack(None, self.data_with_project)]
         kwargs = copy.deepcopy(self.defaults)
         kwargs['global_tenant'] = True
         cols = copy.deepcopy(self.columns)
