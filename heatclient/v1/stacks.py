@@ -208,6 +208,13 @@ class StackManager(StackChildManager):
         body = utils.get_response_body(resp)
         return body
 
+    def export(self, stack_id):
+        """Export data of a stack."""
+        stack_identifier = self._resolve_stack_id(stack_id)
+        resp = self.client.get('/stacks/%s/export' % stack_identifier)
+        body = utils.get_response_body(resp)
+        return body
+
     def snapshot(self, stack_id, name=None):
         """Snapshot a stack."""
         stack_identifier = self._resolve_stack_id(stack_id)

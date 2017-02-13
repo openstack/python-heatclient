@@ -874,6 +874,50 @@ class AbandonStack(format_utils.JsonFormat):
         return columns, data
 
 
+class ExportStack(format_utils.JsonFormat):
+    """Export stack data json."""
+
+    log = logging.getLogger(__name__ + '.ExportStack')
+
+    def get_parser(self, prog_name):
+        parser = super(ExportStack, self).get_parser(prog_name)
+        parser.add_argument(
+            'stack',
+            metavar='<stack>',
+            help=_('Name or ID of stack to export')
+        )
+        parser.add_argument(
+            '--output-file',
+            metavar='<output-file>',
+            help=_('File to output export data')
+        )
+
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('take_action(%s)', parsed_args)
+
+        client = self.app.client_manager.orchestration
+
+        try:
+            data_info = client.stacks.export(stack_id=parsed_args.stack)
+        except heat_exc.HTTPNotFound:
+            msg = _('Stack not found: %s') % parsed_args.stack
+            raise exc.CommandError(msg)
+
+        if parsed_args.output_file is not None:
+            try:
+                with open(parsed_args.output_file, 'w') as f:
+                    f.write(jsonutils.dumps(data_info, indent=2))
+                    return [], None
+            except IOError as e:
+                raise exc.CommandError(str(e))
+
+        data = list(six.itervalues(data_info))
+        columns = list(six.iterkeys(data_info))
+        return columns, data
+
+
 class OutputShowStack(command.ShowOne):
     """Show stack output."""
 
