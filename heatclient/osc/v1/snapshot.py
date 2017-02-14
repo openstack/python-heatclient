@@ -40,7 +40,7 @@ class ListSnapshot(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('take_action(%s)' % parsed_args)
+        self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._list_snapshot(heat_client, parsed_args)
 
@@ -80,7 +80,7 @@ class ShowSnapshot(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('take_action(%s)' % parsed_args)
+        self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._show_snapshot(heat_client, parsed_args.stack,
                                    parsed_args.snapshot)
@@ -119,7 +119,7 @@ class RestoreSnapshot(command.Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('take_action(%s)' % parsed_args)
+        self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._restore_snapshot(heat_client, parsed_args)
 
@@ -155,7 +155,7 @@ class CreateSnapshot(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('take_action(%s)' % parsed_args)
+        self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
 
         try:
@@ -195,7 +195,7 @@ class DeleteSnapshot(command.Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('take_action(%s)' % parsed_args)
+        self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         try:
             heat_client.stacks.snapshot_delete(parsed_args.stack,
