@@ -349,8 +349,12 @@ def _construct_http_client(endpoint=None, username=None, password=None,
     if session:
         if 'endpoint_override' not in kwargs and endpoint:
             kwargs['endpoint_override'] = endpoint
-        elif 'service_type' not in kwargs:
+
+        if 'service_type' not in kwargs:
             kwargs['service_type'] = 'orchestration'
+
+        if 'interface' not in kwargs and endpoint_type:
+            kwargs['interface'] = endpoint_type
 
         return SessionClient(session, auth=auth, **kwargs)
     else:
