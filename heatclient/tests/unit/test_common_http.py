@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import os
 import socket
 
 from keystoneauth1 import adapter
 import mock
-import mox
 from oslo_serialization import jsonutils
-import requests
 import six
 import testtools
 
@@ -30,138 +26,108 @@ from heatclient import exc
 from heatclient.tests.unit import fakes
 
 
+@mock.patch('heatclient.common.http.requests.request')
 class HttpClientTest(testtools.TestCase):
 
-    # Patch os.environ to avoid required auth info.
-    def setUp(self):
-        super(HttpClientTest, self).setUp()
-        self.m = mox.Mox()
-        self.m.StubOutWithMock(requests, 'request')
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_http_raw_request(self):
+    def test_http_raw_request(self, mock_request):
         headers = {'Content-Type': 'application/octet-stream',
                    'User-Agent': 'python-heatclient'}
 
         # Record a 200
-        mock_conn = http.requests.request('GET', 'http://example.com:8004',
-                                          allow_redirects=False,
-                                          headers=headers)
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/octet-stream'},
-                ''))
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/octet-stream'},
+            '')
         # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual('', ''.join([x for x in resp.content]))
+        mock_request.assert_called_with('GET', 'http://example.com:8004',
+                                        allow_redirects=False,
+                                        headers=headers)
 
-    def test_token_or_credentials(self):
+    def test_token_or_credentials(self, mock_request):
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
             {'content-type': 'application/octet-stream'},
             '')
 
+        mock_request.return_value = fake200
         # no token or credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(fake200)
-
-        # credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient',
-                     'X-Auth-Key': 'pass',
-                     'X-Auth-User': 'user'})
-        mock_conn.AndReturn(fake200)
-
-        # token suppresses credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient',
-                     'X-Auth-Token': 'abcd1234'})
-        mock_conn.AndReturn(fake200)
-
-        # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-
+        # credentials
         client.username = 'user'
         client.password = 'pass'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-
+        # token suppresses credentials
         client.auth_token = 'abcd1234'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
+        mock_request.assert_has_calls([
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient',
+                               'X-Auth-Key': 'pass',
+                               'X-Auth-User': 'user'}),
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient',
+                               'X-Auth-Token': 'abcd1234'})
+        ])
 
-    def test_include_pass(self):
+    def test_include_pass(self, mock_request):
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
             {'content-type': 'application/octet-stream'},
             '')
-
+        mock_request.return_value = fake200
         # no token or credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(fake200)
-
-        # credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient',
-                     'X-Auth-Key': 'pass',
-                     'X-Auth-User': 'user'})
-        mock_conn.AndReturn(fake200)
-
-        # token suppresses credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient',
-                     'X-Auth-Token': 'abcd1234',
-                     'X-Auth-Key': 'pass',
-                     'X-Auth-User': 'user'})
-        mock_conn.AndReturn(fake200)
-
-        # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-
+        # credentials
         client.username = 'user'
         client.password = 'pass'
         client.include_pass = True
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
-
+        # token suppresses credentials
         client.auth_token = 'abcd1234'
         resp = client.raw_request('GET', '')
         self.assertEqual(200, resp.status_code)
+        mock_request.assert_has_calls([
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient',
+                               'X-Auth-Key': 'pass',
+                               'X-Auth-User': 'user'}),
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/octet-stream',
+                               'User-Agent': 'python-heatclient',
+                               'X-Auth-Token': 'abcd1234',
+                               'X-Auth-Key': 'pass',
+                               'X-Auth-User': 'user'})
+        ])
 
-    def test_not_include_pass(self):
+    def test_not_include_pass(self, mock_request):
         # Record a 200
         fake500 = fakes.FakeHTTPResponse(
             500, 'ERROR',
@@ -169,21 +135,20 @@ class HttpClientTest(testtools.TestCase):
             '(HTTP 401)')
 
         # no token or credentials
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/octet-stream',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(fake500)
+        mock_request.return_value = fake500
 
         # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         e = self.assertRaises(exc.HTTPUnauthorized,
                               client.raw_request, 'GET', '')
         self.assertIn('Authentication failed', str(e))
+        mock_request.assert_called_with(
+            'GET', 'http://example.com:8004',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/octet-stream',
+                     'User-Agent': 'python-heatclient'})
 
-    def test_region_name(self):
+    def test_region_name(self, mock_request):
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -191,45 +156,55 @@ class HttpClientTest(testtools.TestCase):
             '')
 
         # Specify region name
-        mock_conn = http.requests.request(
+        mock_request.return_value = fake200
+
+        # Replay, create client, assert
+        client = http.HTTPClient('http://example.com:8004')
+        client.region_name = 'RegionOne'
+        resp = client.raw_request('GET', '')
+        self.assertEqual(200, resp.status_code)
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             allow_redirects=False,
             headers={'Content-Type': 'application/octet-stream',
                      'X-Region-Name': 'RegionOne',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(fake200)
 
-        # Replay, create client, assert
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004')
-        client.region_name = 'RegionOne'
-        resp = client.raw_request('GET', '')
-        self.assertEqual(200, resp.status_code)
-
-    def test_http_json_request(self):
+    def test_http_json_request(self, mock_request):
         # Record a 200
-        mock_conn = http.requests.request(
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/json'},
+            '{}')
+        # Replay, create client, assert
+        client = http.HTTPClient('http://example.com:8004')
+        resp, body = client.json_request('GET', '')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004')
-        resp, body = client.json_request('GET', '')
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual({}, body)
 
-    def test_http_json_request_argument_passed_to_requests(self):
+    def test_http_json_request_argument_passed_to_requests(self, mock_request):
         """Check that we have sent the proper arguments to requests."""
         # Record a 200
-        mock_conn = http.requests.request(
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/json'},
+            '{}')
+
+        client = http.HTTPClient('http://example.com:8004')
+        client.verify_cert = True
+        client.cert_file = 'RANDOM_CERT_FILE'
+        client.key_file = 'RANDOM_KEY_FILE'
+        client.auth_url = 'http://AUTH_URL'
+        resp, body = client.json_request('GET', '', data='text')
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual({}, body)
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             allow_redirects=False,
             cert=('RANDOM_CERT_FILE', 'RANDOM_KEY_FILE'),
@@ -239,410 +214,350 @@ class HttpClientTest(testtools.TestCase):
                      'Accept': 'application/json',
                      'X-Auth-Url': 'http://AUTH_URL',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004')
-        client.verify_cert = True
-        client.cert_file = 'RANDOM_CERT_FILE'
-        client.key_file = 'RANDOM_KEY_FILE'
-        client.auth_url = 'http://AUTH_URL'
-        resp, body = client.json_request('GET', '', data='text')
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual({}, body)
 
-    def test_http_json_request_w_req_body(self):
+    def test_http_json_request_w_req_body(self, mock_request):
         # Record a 200
-        mock_conn = http.requests.request(
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/json'},
+            '{}')
+        # Replay, create client, assert
+        client = http.HTTPClient('http://example.com:8004')
+        resp, body = client.json_request('GET', '', body='test-body')
+        self.assertEqual(200, resp.status_code)
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             body='test-body',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004')
-        resp, body = client.json_request('GET', '', body='test-body')
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual({}, body)
 
-    def test_http_json_request_non_json_resp_cont_type(self):
-        # Record a 200
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004', body='test-body',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'not/json'},
-                {}))
+    def test_http_json_request_non_json_resp_cont_type(self, mock_request):
+        # Record a 200i
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'not/json'},
+            '{}')
         # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '', body='test-body')
         self.assertEqual(200, resp.status_code)
         self.assertIsNone(body)
-
-    def test_http_json_request_invalid_json(self):
-        # Record a 200
-        mock_conn = http.requests.request(
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
+            body='test-body',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                'invalid-json'))
+
+    def test_http_json_request_invalid_json(self, mock_request):
+        # Record a 200
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/json'},
+            'invalid-json')
+
         # Replay, create client, assert
-        self.m.ReplayAll()
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual('invalid-json', body)
-
-    def test_http_manual_redirect_delete(self):
-        mock_conn = http.requests.request(
-            'DELETE', 'http://example.com:8004/foo',
+        mock_request.assert_called_with(
+            'GET', 'http://example.com:8004',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+
+    def test_http_manual_redirect_delete(self, mock_request):
+        mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
                 {'location': 'http://example.com:8004/foo/bar'},
-                ''))
-        mock_conn = http.requests.request(
-            'DELETE', 'http://example.com:8004/foo/bar',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+                ''),
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'application/json'},
-                '{}'))
-
-        self.m.ReplayAll()
+                'invalid-json')
+        ]
 
         client = http.HTTPClient('http://example.com:8004/foo')
         resp, body = client.json_request('DELETE', '')
 
-        self.assertEqual(200, resp.status_code)
+        mock_request.assert_has_calls([
+            mock.call('DELETE', 'http://example.com:8004/foo',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('DELETE', 'http://example.com:8004/foo/bar',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'})
+        ])
 
-    def test_http_manual_redirect_post(self):
-        mock_conn = http.requests.request(
-            'POST', 'http://example.com:8004/foo',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+    def test_http_manual_redirect_post(self, mock_request):
+        mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
                 {'location': 'http://example.com:8004/foo/bar'},
-                ''))
-        mock_conn = http.requests.request(
-            'POST', 'http://example.com:8004/foo/bar',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+                ''),
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'application/json'},
-                '{}'))
-
-        self.m.ReplayAll()
+                'invalid-json')
+        ]
 
         client = http.HTTPClient('http://example.com:8004/foo')
         resp, body = client.json_request('POST', '')
 
-        self.assertEqual(200, resp.status_code)
+        mock_request.assert_has_calls([
+            mock.call('POST', 'http://example.com:8004/foo',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('POST', 'http://example.com:8004/foo/bar',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'})
+        ])
 
-    def test_http_manual_redirect_put(self):
-        mock_conn = http.requests.request(
-            'PUT', 'http://example.com:8004/foo',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+    def test_http_manual_redirect_put(self, mock_request):
+        mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
                 {'location': 'http://example.com:8004/foo/bar'},
-                ''))
-        mock_conn = http.requests.request(
-            'PUT', 'http://example.com:8004/foo/bar',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+                ''),
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'application/json'},
-                '{}'))
-
-        self.m.ReplayAll()
+                'invalid-json')
+        ]
 
         client = http.HTTPClient('http://example.com:8004/foo')
         resp, body = client.json_request('PUT', '')
 
-        self.assertEqual(200, resp.status_code)
+        mock_request.assert_has_calls([
+            mock.call('PUT', 'http://example.com:8004/foo',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('PUT', 'http://example.com:8004/foo/bar',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'})
+        ])
 
-    def test_http_manual_redirect_put_uppercase(self):
-        mock_conn = http.requests.request(
-            'PUT', 'http://EXAMPLE.com:8004/foo',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+    def test_http_manual_redirect_put_uppercase(self, mock_request):
+        mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
                 {'location': 'http://example.com:8004/foo/bar'},
-                ''))
-        mock_conn = http.requests.request(
-            'PUT', 'http://example.com:8004/foo/bar',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+                ''),
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'application/json'},
-                '{}'))
-
-        self.m.ReplayAll()
-
+                'invalid-json')
+        ]
         client = http.HTTPClient('http://EXAMPLE.com:8004/foo')
         resp, body = client.json_request('PUT', '')
-
         self.assertEqual(200, resp.status_code)
 
-    def test_http_manual_redirect_error_without_location(self):
-        mock_conn = http.requests.request(
+        mock_request.assert_has_calls([
+            mock.call('PUT', 'http://EXAMPLE.com:8004/foo',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('PUT', 'http://example.com:8004/foo/bar',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'})
+        ])
+
+    def test_http_manual_redirect_error_without_location(self, mock_request):
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            302, 'Found',
+            {},
+            '')
+        client = http.HTTPClient('http://example.com:8004/foo')
+        self.assertRaises(exc.InvalidEndpoint,
+                          client.json_request, 'DELETE', '')
+        mock_request.assert_called_once_with(
             'DELETE', 'http://example.com:8004/foo',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                302, 'Found',
-                {},
-                ''))
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004/foo')
-        self.assertRaises(exc.InvalidEndpoint,
-                          client.json_request, 'DELETE', '')
 
-    def test_http_json_request_redirect(self):
+    def test_http_json_request_redirect(self, mock_request):
         # Record the 302
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+        mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
                 {'location': 'http://example.com:8004'},
-                ''))
-        # Record the following 200
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
+                ''),
             fakes.FakeHTTPResponse(
                 200, 'OK',
                 {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
+                '{}')
+        ]
         client = http.HTTPClient('http://example.com:8004')
         resp, body = client.json_request('GET', '')
         self.assertEqual(200, resp.status_code)
         self.assertEqual({}, body)
+        mock_request.assert_has_calls([
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'}),
+            mock.call('GET', 'http://example.com:8004',
+                      allow_redirects=False,
+                      headers={'Content-Type': 'application/json',
+                               'Accept': 'application/json',
+                               'User-Agent': 'python-heatclient'})
+        ])
 
-    def test_http_404_json_request(self):
+    def test_http_404_json_request(self, mock_request):
         # Record a 404
-        mock_conn = http.requests.request(
-            'GET', 'http://example.com:8004',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                404, 'OK', {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            404, 'OK', {'content-type': 'application/json'},
+            '{}')
         client = http.HTTPClient('http://example.com:8004')
         e = self.assertRaises(exc.HTTPNotFound, client.json_request, 'GET', '')
         # Assert that the raised exception can be converted to string
         self.assertIsNotNone(str(e))
-
-    def test_http_300_json_request(self):
-        # Record a 300
-        mock_conn = http.requests.request(
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'})
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                300, 'OK', {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
+
+    def test_http_300_json_request(self, mock_request):
+        # Record a 300
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            300, 'OK', {'content-type': 'application/json'},
+            '{}')
+        # Assert that the raised exception can be converted to string
         client = http.HTTPClient('http://example.com:8004')
         e = self.assertRaises(
             exc.HTTPMultipleChoices, client.json_request, 'GET', '')
-        # Assert that the raised exception can be converted to string
         self.assertIsNotNone(str(e))
+        mock_request.assert_called_with(
+            'GET', 'http://example.com:8004',
+            allow_redirects=False,
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': 'python-heatclient'})
 
-    def test_fake_json_request(self):
+    def test_fake_json_request(self, mock_request):
         headers = {'User-Agent': 'python-heatclient'}
-        mock_conn = http.requests.request('GET', 'fake://example.com:8004/',
-                                          allow_redirects=False,
-                                          headers=headers)
-        mock_conn.AndRaise(socket.gaierror)
-        self.m.ReplayAll()
-
+        mock_request.side_effect = [socket.gaierror]
         client = http.HTTPClient('fake://example.com:8004')
         self.assertRaises(exc.InvalidEndpoint,
                           client._http_request, "/", "GET")
 
-    def test_debug_curl_command(self):
-        self.m.StubOutWithMock(logging.Logger, 'debug')
+        mock_request.assert_called_with('GET', 'fake://example.com:8004/',
+                                        allow_redirects=False,
+                                        headers=headers)
 
-        ssl_connection_params = {'ca_file': 'TEST_CA',
-                                 'cert_file': 'TEST_CERT',
-                                 'key_file': 'TEST_KEY',
-                                 'insecure': 'TEST_NSA'}
+    def test_debug_curl_command(self, mock_request):
+        with mock.patch('logging.Logger.debug') as mock_logging_debug:
 
-        headers = {'key': 'value'}
+            ssl_connection_params = {'ca_file': 'TEST_CA',
+                                     'cert_file': 'TEST_CERT',
+                                     'key_file': 'TEST_KEY',
+                                     'insecure': 'TEST_NSA'}
 
-        mock_logging_debug = logging.Logger.debug(
-            "curl -g -i -X GET -H 'key: value' --key TEST_KEY "
-            "--cert TEST_CERT --cacert TEST_CA "
-            "-k -d 'text' http://foo/bar"
-        )
-        mock_logging_debug.AndReturn(None)
-        self.m.ReplayAll()
+            headers = {'key': 'value'}
+            mock_logging_debug.return_value = None
+            client = http.HTTPClient('http://foo')
+            client.ssl_connection_params = ssl_connection_params
+            client.log_curl_request('GET', '/bar', {'headers': headers,
+                                                    'data': 'text'})
+            mock_logging_debug.assert_called_with(
+                "curl -g -i -X GET -H 'key: value' --key TEST_KEY "
+                "--cert TEST_CERT --cacert TEST_CA "
+                "-k -d 'text' http://foo/bar"
+            )
 
-        client = http.HTTPClient('http://foo')
-        client.ssl_connection_params = ssl_connection_params
-        client.log_curl_request('GET', '/bar', {'headers': headers,
-                                                'data': 'text'})
-
-    def test_http_request_socket_error(self):
+    def test_http_request_socket_error(self, mock_request):
         headers = {'User-Agent': 'python-heatclient'}
-        mock_conn = http.requests.request('GET', 'http://example.com:8004/',
-                                          allow_redirects=False,
-                                          headers=headers)
-        mock_conn.AndRaise(socket.error)
-        self.m.ReplayAll()
+        mock_request.side_effect = [socket.error]
 
         client = http.HTTPClient('http://example.com:8004')
         self.assertRaises(exc.CommunicationError,
                           client._http_request, "/", "GET")
+        mock_request.assert_called_with('GET', 'http://example.com:8004/',
+                                        allow_redirects=False,
+                                        headers=headers)
 
-    def test_http_request_socket_timeout(self):
+    def test_http_request_socket_timeout(self, mock_request):
         headers = {'User-Agent': 'python-heatclient'}
-        mock_conn = http.requests.request('GET', 'http://example.com:8004/',
-                                          allow_redirects=False,
-                                          headers=headers)
-        mock_conn.AndRaise(socket.timeout)
-        self.m.ReplayAll()
+        mock_request.side_effect = [socket.timeout]
 
         client = http.HTTPClient('http://example.com:8004')
         self.assertRaises(exc.CommunicationError,
                           client._http_request, "/", "GET")
+        mock_request.assert_called_with('GET', 'http://example.com:8004/',
+                                        allow_redirects=False,
+                                        headers=headers)
 
-    def test_http_request_specify_timeout(self):
-        mock_conn = http.requests.request(
+    def test_http_request_specify_timeout(self, mock_request):
+        mock_request.return_value = fakes.FakeHTTPResponse(
+            200, 'OK',
+            {'content-type': 'application/json'},
+            '{}')
+        client = http.HTTPClient('http://example.com:8004', timeout='123')
+        resp, body = client.json_request('GET', '')
+        self.assertEqual(200, resp.status_code)
+        mock_request.assert_called_with(
             'GET', 'http://example.com:8004',
             allow_redirects=False,
             headers={'Content-Type': 'application/json',
                      'Accept': 'application/json',
                      'User-Agent': 'python-heatclient'},
             timeout=float(123))
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                '{}'))
-        # Replay, create client, assert
-        self.m.ReplayAll()
-        client = http.HTTPClient('http://example.com:8004', timeout='123')
-        resp, body = client.json_request('GET', '')
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual({}, body)
 
-    def test_get_system_ca_file(self):
+    def test_get_system_ca_file(self, mock_request):
         chosen = '/etc/ssl/certs/ca-certificates.crt'
-        self.m.StubOutWithMock(os.path, 'exists')
-        os.path.exists(chosen).AndReturn(chosen)
-        self.m.ReplayAll()
+        with mock.patch('os.path.exists') as mock_os:
+            mock_os.return_value = chosen
+            ca = http.get_system_ca_file()
+            self.assertEqual(chosen, ca)
+            mock_os.assert_called_once_with(chosen)
 
-        ca = http.get_system_ca_file()
-        self.assertEqual(chosen, ca)
-
-    def test_insecure_verify_cert_None(self):
+    def test_insecure_verify_cert_None(self, mock_request):
         client = http.HTTPClient('https://foo', insecure=True)
         self.assertFalse(client.verify_cert)
 
-    def test_passed_cert_to_verify_cert(self):
+    def test_passed_cert_to_verify_cert(self, mock_request):
         client = http.HTTPClient('https://foo', ca_file="NOWHERE")
         self.assertEqual("NOWHERE", client.verify_cert)
 
-        self.m.StubOutWithMock(http, 'get_system_ca_file')
-        http.get_system_ca_file().AndReturn("SOMEWHERE")
-        self.m.ReplayAll()
-        client = http.HTTPClient('https://foo')
-        self.assertEqual("SOMEWHERE", client.verify_cert)
+        with mock.patch('heatclient.common.http.get_system_ca_file') as gsf:
+            gsf.return_value = "SOMEWHERE"
+            client = http.HTTPClient('https://foo')
+            self.assertEqual("SOMEWHERE", client.verify_cert)
 
-    def test_curl_log_i18n_headers(self):
-        self.m.StubOutWithMock(logging.Logger, 'debug')
+    @mock.patch('logging.Logger.debug', return_value=None)
+    def test_curl_log_i18n_headers(self, mock_log, mock_request):
         kwargs = {'headers': {'Key': b'foo\xe3\x8a\x8e'}}
-
-        mock_logging_debug = logging.Logger.debug(
-            u"curl -g -i -X GET -H 'Key: foo㊎' http://somewhere"
-        )
-        mock_logging_debug.AndReturn(None)
-
-        self.m.ReplayAll()
 
         client = http.HTTPClient('http://somewhere')
         client.log_curl_request("GET", '', kwargs=kwargs)
+        mock_log.assert_called_once_with(
+            u"curl -g -i -X GET -H 'Key: foo㊎' http://somewhere")
 
 
 class SessionClientTest(testtools.TestCase):
