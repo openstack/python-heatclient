@@ -24,7 +24,6 @@ import six
 from six.moves.urllib import request
 
 from heatclient._i18n import _
-from heatclient._i18n import _LI
 from heatclient.common import event_utils
 from heatclient.common import format_utils
 from heatclient.common import hook_utils
@@ -689,16 +688,16 @@ class DeleteStack(command.Command):
                     _("Are you sure you want to delete this stack(s) [y/N]? "))
                 prompt_response = sys.stdin.readline().lower()
                 if not prompt_response.startswith('y'):
-                    self.log.info(_LI('User did not confirm stack delete so '
-                                      'taking no action.'))
+                    self.log.info('User did not confirm stack delete so '
+                                  'taking no action.')
                     return
         except KeyboardInterrupt:  # ctrl-c
-            self.log.info(_LI('User did not confirm stack delete '
-                              '(ctrl-c) so taking no action.'))
+            self.log.info('User did not confirm stack delete '
+                          '(ctrl-c) so taking no action.')
             return
         except EOFError:  # ctrl-d
-            self.log.info(_LI('User did not confirm stack delete '
-                              '(ctrl-d) so taking no action.'))
+            self.log.info('User did not confirm stack delete '
+                          '(ctrl-d) so taking no action.')
             return
 
         failure_count = 0

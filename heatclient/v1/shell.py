@@ -23,8 +23,6 @@ from six.moves.urllib import request
 import yaml
 
 from heatclient._i18n import _
-from heatclient._i18n import _LI
-from heatclient._i18n import _LW
 from heatclient.common import deployment_utils
 from heatclient.common import event_utils
 from heatclient.common import hook_utils
@@ -38,8 +36,8 @@ logger = logging.getLogger(__name__)
 
 
 def show_deprecated(deprecated, recommended):
-    logger.warning(_LW('"%(old)s" is deprecated, '
-                       'please use "%(new)s" instead'),
+    logger.warning('"%(old)s" is deprecated, '
+                   'please use "%(new)s" instead',
                    {'old': deprecated,
                     'new': recommended}
                    )
@@ -105,8 +103,8 @@ def do_stack_create(hc, args):
         env_paths=args.environment_file, env_list_tracker=env_files_list)
 
     if args.create_timeout:
-        logger.warning(_LW('%(arg1)s is deprecated, '
-                           'please use %(arg2)s instead'),
+        logger.warning('%(arg1)s is deprecated, '
+                       'please use %(arg2)s instead',
                        {
                            'arg1': '-c/--create-timeout',
                            'arg2': '-t/--timeout'})
@@ -192,8 +190,8 @@ def do_stack_adopt(hc, args):
         raise exc.CommandError('Invalid adopt-file, no data!')
 
     if args.create_timeout:
-        logger.warning(_LW('%(arg1)s is deprecated, '
-                           'please use %(arg2)s instead'),
+        logger.warning('%(arg1)s is deprecated, '
+                       'please use %(arg2)s instead',
                        {
                            'arg1': '-c/--create-timeout',
                            'arg2': '-t/--timeout'})
@@ -308,16 +306,16 @@ def do_stack_delete(hc, args):
                 _("Are you sure you want to delete this stack(s) [y/N]? "))
             prompt_response = sys.stdin.readline().lower()
             if not prompt_response.startswith('y'):
-                logger.info(_LI(
-                    'User did not confirm stack delete so taking no action.'))
+                logger.info(
+                    'User did not confirm stack delete so taking no action.')
                 return
     except KeyboardInterrupt:  # ctrl-c
-        logger.info(_LI(
-            'User did not confirm stack delete (ctrl-c) so taking no action.'))
+        logger.info(
+            'User did not confirm stack delete (ctrl-c) so taking no action.')
         return
     except EOFError:  # ctrl-d
-        logger.info(_LI(
-            'User did not confirm stack delete (ctrl-d) so taking no action.'))
+        logger.info(
+            'User did not confirm stack delete (ctrl-d) so taking no action.')
         return
 
     for sid in args.id:

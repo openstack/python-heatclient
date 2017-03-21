@@ -28,7 +28,6 @@ import six
 from six.moves.urllib import parse
 
 from heatclient._i18n import _
-from heatclient._i18n import _LW
 from heatclient.common import utils
 from heatclient import exc
 
@@ -67,7 +66,7 @@ def get_system_ca_file():
         if os.path.exists(ca):
             LOG.debug("Using ca file %s", ca)
             return ca
-    LOG.warning(_LW("System ca file could not be found."))
+    LOG.warning("System ca file could not be found.")
 
 
 class HTTPClient(object):

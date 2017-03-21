@@ -29,7 +29,6 @@ from six.moves.urllib import request
 import yaml
 
 from heatclient._i18n import _
-from heatclient._i18n import _LE
 from heatclient import exc
 
 LOG = logging.getLogger(__name__)
@@ -444,7 +443,7 @@ def get_response_body(resp):
         try:
             body = resp.json()
         except ValueError:
-            LOG.error(_LE('Could not decode response body as JSON'))
+            LOG.error('Could not decode response body as JSON')
     else:
         body = None
     return body

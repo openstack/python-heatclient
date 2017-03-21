@@ -15,7 +15,6 @@ import logging
 from oslo_utils import fnmatch
 
 from heatclient._i18n import _
-from heatclient._i18n import _LE
 from heatclient import exc
 
 logger = logging.getLogger(__name__)
@@ -29,8 +28,8 @@ def clear_hook(hc, stack_id, resource_name, hook_type):
             data={'unset_hook': hook_type})
     except exc.HTTPNotFound:
         logger.error(
-            _LE("Stack %(stack)s or resource %(resource)s "
-                "not found for hook %(hook_type)"),
+            "Stack %(stack)s or resource %(resource)s "
+            "not found for hook %(hook_type)",
             {'resource': resource_name, 'stack': stack_id,
              'hook_type': hook_type})
 
