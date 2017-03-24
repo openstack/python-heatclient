@@ -246,7 +246,9 @@ class ShowDeployment(command.ShowOne):
             data = heat_client.software_deployments.get(
                 deployment_id=parsed_args.deployment)
         except heat_exc.HTTPNotFound:
-            raise exc.CommandError(_('Software Deployment not found: %s') % id)
+            raise exc.CommandError(
+                _('Software Deployment not found: %s')
+                % parsed_args.deployment)
         else:
             columns = [
                 'id',
