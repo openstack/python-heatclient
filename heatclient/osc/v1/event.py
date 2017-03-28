@@ -175,6 +175,20 @@ class ListEvent(command.Lister):
         else:
             nested_depth = 0
 
+        if parsed_args.sort:
+            sorts = []
+            sort_keys = []
+            for sort in parsed_args.sort:
+                if sort.startswith(":"):
+                    sorts.append(":".join(["event_time", sort.lstrip(":")]))
+                else:
+                    sorts.append(sort)
+                    sort_keys.append(sort.split(":")[0])
+            kwargs['sort_keys'] = sort_keys
+
+            if ":" in parsed_args.sort[0]:
+                kwargs['sort_dir'] = parsed_args.sort[0].split(":")[1]
+
         if parsed_args.follow:
             if parsed_args.formatter != 'log':
                 msg = _('--follow can only be specified with --format log')
@@ -207,12 +221,6 @@ class ListEvent(command.Lister):
             limit=parsed_args.limit)
 
         if parsed_args.sort:
-            sorts = []
-            for sort in parsed_args.sort:
-                if sort.startswith(":"):
-                    sorts.append(":".join(["event_time", sort.lstrip(":")]))
-                else:
-                    sorts.append(sort)
             events = utils.sort_items(events, ','.join(sorts))
 
         if parsed_args.formatter == 'log':
