@@ -151,6 +151,15 @@ def _get_nested_events(hc, nested_depth, stack_id, event_args):
     return nested_events
 
 
+def _get_stack_name_from_links(event):
+    links = dict((l.get('rel'),
+                  l.get('href')) for l in getattr(event, 'links', []))
+    href = links.get('stack')
+    if not href:
+        return
+    return href.split('/stacks/', 1)[-1].split('/')[0]
+
+
 def _get_stack_events(hc, stack_id, event_args):
     event_args['stack_id'] = stack_id
     try:
@@ -160,9 +169,10 @@ def _get_stack_events(hc, stack_id, event_args):
         # just use the message that the server sent us.
         raise exc.CommandError(str(ex))
     else:
+        stack_name = stack_id.split("/")[0]
         # Show which stack the event comes from (for nested events)
         for e in events:
-            e.stack_name = stack_id.split("/")[0]
+            e.stack_name = _get_stack_name_from_links(e) or stack_name
         return events
 
 
