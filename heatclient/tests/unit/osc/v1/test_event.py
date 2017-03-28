@@ -194,7 +194,9 @@ class TestEventList(TestEvent):
 
         mock_sort_items.assert_called_with(mock.ANY,
                                            "resource_name:desc")
-        self.event_client.list.assert_called_with(**self.defaults)
+        self.event_client.list.assert_called_with(
+            filters={}, resource_name=None, sort_dir='desc',
+            sort_keys=['resource_name'], stack_id='my_stack')
         self.assertEqual(self.fields, columns)
 
     @mock.patch('osc_lib.utils.sort_items')
@@ -209,7 +211,9 @@ class TestEventList(TestEvent):
 
         mock_sort_items.assert_called_with(mock.ANY,
                                            "resource_name:desc,id:asc")
-        self.event_client.list.assert_called_with(**self.defaults)
+        self.event_client.list.assert_called_with(
+            filters={}, resource_name=None, sort_dir='desc',
+            sort_keys=['resource_name', 'id'], stack_id='my_stack')
         self.assertEqual(self.fields, columns)
 
     @mock.patch('osc_lib.utils.sort_items')
@@ -223,7 +227,9 @@ class TestEventList(TestEvent):
         columns, data = self.cmd.take_action(parsed_args)
 
         mock_sort_items.assert_called_with(mock.ANY, "event_time:desc")
-        self.event_client.list.assert_called_with(**self.defaults)
+        self.event_client.list.assert_called_with(
+            filters={}, resource_name=None, sort_dir='desc', sort_keys=[],
+            stack_id='my_stack')
         self.assertEqual(self.fields, columns)
 
     @mock.patch('time.sleep')
