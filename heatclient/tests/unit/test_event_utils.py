@@ -38,7 +38,9 @@ class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_event(event_id, resource_id,
                     resource_status='CREATE_COMPLETE'):
-        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"}],
+        ev_info = {"links": [
+                   {"href": "http://heat/foo", "rel": "self"},
+                   {"href": "http://heat/stacks/a", "rel": "stack"}],
                    "logical_resource_id": resource_id,
                    "physical_resource_id": resource_id,
                    "resource_name": resource_id,
@@ -72,7 +74,7 @@ class ShellTestEventUtils(testtools.TestCase):
             stack_id='astack/123', argfoo=123)
         self.assertEqual(1, len(evs))
         self.assertEqual('event1', evs[0].id)
-        self.assertEqual('astack', evs[0].stack_name)
+        self.assertEqual('a', evs[0].stack_name)
 
     def test_get_nested_events(self):
         resources = {'parent': self._mock_resource('resource1', 'foo/child1'),
