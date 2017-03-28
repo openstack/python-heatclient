@@ -47,8 +47,9 @@ class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_event(event_id, resource_id,
                     resource_status='CREATE_COMPLETE'):
-        ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
-                             {"href": "http://heat/stacks/a", "rel": "stack"}],
+        ev_info = {"links": [
+                   {"href": "http://heat/foo", "rel": "self"},
+                   {"href": "http://heat/stacks/astack", "rel": "stack"}],
                    "logical_resource_id": resource_id,
                    "physical_resource_id": resource_id,
                    "resource_name": resource_id,
