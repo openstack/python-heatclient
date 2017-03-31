@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 from six.moves.urllib import parse
 
 from heatclient._i18n import _
@@ -151,7 +150,7 @@ class StackManager(StackChildManager):
             filters = kwargs.pop('filters')
             params.update(filters)
 
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             if value:
                 params[key] = value
 

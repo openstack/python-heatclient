@@ -14,7 +14,6 @@
 #    under the License.
 
 from oslo_utils import encodeutils
-import six
 from six.moves.urllib import parse
 
 from heatclient.common import base
@@ -60,7 +59,7 @@ class ResourceManager(stacks.StackChildManager):
             filters = kwargs.pop('filters')
             params.update(filters)
 
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             if value:
                 params[key] = value
 

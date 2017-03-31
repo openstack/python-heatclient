@@ -10,7 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
 from six.moves.urllib import parse
 
 from heatclient.common import base
@@ -38,7 +37,7 @@ class SoftwareConfigManager(base.BaseManager):
         """
         qparams = {}
 
-        for opt, val in six.iteritems(kwargs):
+        for opt, val in kwargs.items():
             if val:
                 qparams[opt] = val
 

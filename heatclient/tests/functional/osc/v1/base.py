@@ -48,7 +48,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
         items = self.parser.listing(output)
         for item in items:
             obj[item['Field']] = six.text_type(item['Value'])
-        return dict((self._key_name(k), v) for k, v in six.iteritems(obj))
+        return dict((self._key_name(k), v) for k, v in obj.items())
 
     def _key_name(self, key):
         return key.lower().replace(' ', '_')
@@ -60,7 +60,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
             if item['ID'] == id:
                 obj = item
                 break
-        return dict((self._key_name(k), v) for k, v in six.iteritems(obj))
+        return dict((self._key_name(k), v) for k, v in obj.items())
 
     def _stack_create(self, name, template, parameters=[], wait=True):
         cmd = 'stack create ' + name
