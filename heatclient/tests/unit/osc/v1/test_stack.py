@@ -304,6 +304,16 @@ class TestStackUpdate(TestStack):
 
         self.stack_client.update.assert_called_with(**kwargs)
 
+    def test_stack_update_converge(self):
+        arglist = ['my_stack', '-t', self.template_path, '--converge']
+        kwargs = copy.deepcopy(self.defaults)
+        kwargs['converge'] = True
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.update.assert_called_with(**kwargs)
+
     def test_stack_update_pre_update(self):
         arglist = ['my_stack', '-t', self.template_path, '--pre-update', 'a']
         kwargs = copy.deepcopy(self.defaults)
