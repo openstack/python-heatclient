@@ -563,7 +563,7 @@ class ShellTestNoMox(TestCase):
             rsrc_eventid2=eventid2
         )
 
-        self.requests.get('http://heat.example.com/stacks/myStack%2F60f83b5e/'
+        self.requests.get('http://heat.example.com/stacks/myStack/60f83b5e/'
                           'resources/myDeployment/events',
                           headers={'Content-Type': 'application/json'},
                           json=resp_dict)
@@ -2622,9 +2622,9 @@ class ShellTestEvents(ShellBase):
         resource_name = 'testresource/1'
         self.mock_request_get(
             '/stacks/%s/resources/%s/events?sort_dir=asc' % (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')),
+                    resource_name))),
             resp_dict)
 
         self.m.ReplayAll()
@@ -2698,10 +2698,10 @@ class ShellTestEvents(ShellBase):
         self.mock_request_get(
             '/stacks/%s/resources/%s/events/%s' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), ''),
-                parse.quote(self.event_id_one, '')
+                    resource_name)),
+                parse.quote(self.event_id_one)
             ),
             resp_dict)
 
@@ -3281,9 +3281,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_get(
             '/stacks/%s/resources/%s?with_attr=attr_a&with_attr=attr_b' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ), resp_dict)
 
         self.m.ReplayAll()
@@ -3323,9 +3323,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_post(
             '/stacks/%s/resources/%s/signal' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             data={'message': 'Content'}
@@ -3345,9 +3345,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_post(
             '/stacks/%s/resources/%s/signal' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             data=None
@@ -3405,9 +3405,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_post(
             '/stacks/%s/resources/%s/signal' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             data={'message': 'Content'}
@@ -3430,9 +3430,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_patch(
             '/stacks/%s/resources/%s' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             req_headers=False,
@@ -3453,9 +3453,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_patch(
             '/stacks/%s/resources/%s' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             req_headers=False,
@@ -3476,9 +3476,9 @@ class ShellTestResources(ShellBase):
         self.mock_request_patch(
             '/stacks/%s/resources/%s' %
             (
-                parse.quote(stack_id, ''),
+                parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
-                    resource_name), '')
+                    resource_name))
             ),
             '',
             req_headers=False,

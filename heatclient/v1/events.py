@@ -63,8 +63,8 @@ class EventManager(stacks.StackChildManager):
         else:
             stack_id = self._resolve_stack_id(stack_id)
             url = '/stacks/%s/resources/%s/events' % (
-                parse.quote(stack_id, ''),
-                parse.quote(encodeutils.safe_encode(resource_name), ''))
+                parse.quote(stack_id),
+                parse.quote(encodeutils.safe_encode(resource_name)))
         if params:
             # convert to a sorted dict for python3 predictible order
             params = collections.OrderedDict(sorted(params.items()))
@@ -81,8 +81,8 @@ class EventManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s/events/%s' % (
-                  parse.quote(stack_id, ''),
-                  parse.quote(encodeutils.safe_encode(resource_name), ''),
+                  parse.quote(stack_id),
+                  parse.quote(encodeutils.safe_encode(resource_name)),
                   parse.quote(event_id, ''))
         resp = self.client.get(url_str)
         body = utils.get_response_body(resp)

@@ -79,8 +79,8 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s' % (
-                  parse.quote(stack_id, ''),
-                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id),
+                  parse.quote(encodeutils.safe_encode(resource_name)))
         if with_attr:
             params = {'with_attr': with_attr}
             url_str += '?%s' % parse.urlencode(params, True)
@@ -97,8 +97,8 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s/metadata' % (
-                  parse.quote(stack_id, ''),
-                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id),
+                  parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.get(url_str)
         body = utils.get_response_body(resp)
         return body.get('metadata')
@@ -111,8 +111,8 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s/signal' % (
-                  parse.quote(stack_id, ''),
-                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id),
+                  parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.post(url_str, data=data)
         body = utils.get_response_body(resp)
         return body
@@ -128,8 +128,8 @@ class ResourceManager(stacks.StackChildManager):
         """
         stack_id = self._resolve_stack_id(stack_id)
         url_str = '/stacks/%s/resources/%s' % (
-                  parse.quote(stack_id, ''),
-                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+                  parse.quote(stack_id),
+                  parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.patch(
             url_str,
             data={"mark_unhealthy": mark_unhealthy,
@@ -142,7 +142,7 @@ class ResourceManager(stacks.StackChildManager):
         """Deprecated in favor of generate_template in ResourceTypeManager."""
 
         url_str = '/resource_types/%s/template' % (
-                  parse.quote(encodeutils.safe_encode(resource_name), ''))
+                  parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.get(url_str)
         body = utils.get_response_body(resp)
         return body

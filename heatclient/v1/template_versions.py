@@ -41,7 +41,7 @@ class TemplateVersionManager(base.BaseManager):
         :param template_version: template version to get the functions for
         """
         url_str = '/template_versions/%s/functions' % (
-                  parse.quote(encodeutils.safe_encode(template_version), ''))
+                  parse.quote(encodeutils.safe_encode(template_version)))
 
         params = {}
         if 'with_condition_func' in kwargs:

@@ -44,7 +44,7 @@ class SoftwareDeploymentManager(base.BaseManager):
         :rtype: list of :class:`SoftwareDeployment`
         """
         url = '/software_deployments/metadata/%s' % parse.quote(
-            server_id, '')
+            server_id)
         resp = self.client.get(url)
         body = utils.get_response_body(resp)
         return body.get('metadata')
