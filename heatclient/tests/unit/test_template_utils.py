@@ -15,10 +15,9 @@ import base64
 import json
 import tempfile
 
-import mox
+import mock
 import six
 from six.moves.urllib import error
-from six.moves.urllib import request
 import testtools
 from testtools import matchers
 import yaml
@@ -32,30 +31,24 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     template_a = b'{"heat_template_version": "2013-05-23"}'
 
-    def setUp(self):
-        super(ShellEnvironmentTest, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
     def collect_links(self, env, content, url, env_base_url=''):
-
         jenv = yaml.safe_load(env)
         files = {}
         if url:
-            self.m.StubOutWithMock(request, 'urlopen')
-            request.urlopen(url).AndReturn(six.BytesIO(content))
-            request.urlopen(url).AndReturn(six.BytesIO(content))
-            self.m.ReplayAll()
+            def side_effect(args):
+                if url == args:
+                    return six.BytesIO(content)
+            with mock.patch('six.moves.urllib.request.urlopen') as mock_url:
+                mock_url.side_effect = side_effect
+                template_utils.resolve_environment_urls(
+                    jenv.get('resource_registry'), files, env_base_url)
+                self.assertEqual(content.decode('utf-8'), files[url])
+        else:
+            template_utils.resolve_environment_urls(
+                jenv.get('resource_registry'), files, env_base_url)
 
-        template_utils.resolve_environment_urls(
-            jenv.get('resource_registry'), files, env_base_url)
-        if url:
-            self.assertEqual(content.decode('utf-8'), files[url])
-
-    def test_ignore_env_keys(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_ignore_env_keys(self, mock_url):
         env_file = '/home/my/dir/env.yaml'
         env = b'''
         resource_registry:
@@ -64,9 +57,7 @@ class ShellEnvironmentTest(testtools.TestCase):
               hooks: pre_create
               restricted_actions: replace
         '''
-        request.urlopen('file://%s' % env_file).AndReturn(
-            six.BytesIO(env))
-        self.m.ReplayAll()
+        mock_url.return_value = six.BytesIO(env)
         _, env_dict = template_utils.process_environment_and_files(
             env_file)
         self.assertEqual(
@@ -74,24 +65,18 @@ class ShellEnvironmentTest(testtools.TestCase):
                 u'bar': {u'hooks': u'pre_create',
                          u'restricted_actions': u'replace'}}}},
             env_dict)
-        self.m.VerifyAll()
+        mock_url.assert_called_with('file://%s' % env_file)
 
-    def test_process_environment_file(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_file(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env = b'''
         resource_registry:
           "OS::Thingy": "file:///home/b/a.yaml"
         '''
-
-        request.urlopen('file://%s' % env_file).AndReturn(
-            six.BytesIO(env))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env), six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         files, env_dict = template_utils.process_environment_and_files(
             env_file)
@@ -101,10 +86,15 @@ class ShellEnvironmentTest(testtools.TestCase):
             env_dict)
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['file:///home/b/a.yaml'])
+        mock_url.assert_has_calls([
+            mock.call('file://%s' % env_file),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/a.yaml')
+        ])
 
-    def test_process_environment_relative_file(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_relative_file(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = b'''
@@ -112,13 +102,8 @@ class ShellEnvironmentTest(testtools.TestCase):
           "OS::Thingy": a.yaml
         '''
 
-        request.urlopen(env_url).AndReturn(
-            six.BytesIO(env))
-        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env), six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         self.assertEqual(
             env_url,
@@ -136,24 +121,23 @@ class ShellEnvironmentTest(testtools.TestCase):
             env_dict)
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['file:///home/my/dir/a.yaml'])
+        mock_url.assert_has_calls([
+            mock.call(env_url),
+            mock.call('file:///home/my/dir/a.yaml'),
+            mock.call('file:///home/my/dir/a.yaml')
+        ])
 
-    def test_process_environment_relative_file_up(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_relative_file_up(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = b'''
         resource_registry:
           "OS::Thingy": ../bar/a.yaml
         '''
-
-        request.urlopen(env_url).AndReturn(
-            six.BytesIO(env))
-        request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/my/bar/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env), six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         env_url = 'file://%s' % env_file
         self.assertEqual(
@@ -172,20 +156,22 @@ class ShellEnvironmentTest(testtools.TestCase):
             env_dict)
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['file:///home/my/bar/a.yaml'])
+        mock_url.assert_has_calls([
+            mock.call(env_url),
+            mock.call('file:///home/my/bar/a.yaml'),
+            mock.call('file:///home/my/bar/a.yaml')
+        ])
 
-    def test_process_environment_url(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_url(self, mock_url):
         env = b'''
         resource_registry:
             "OS::Thingy": "a.yaml"
         '''
         url = 'http://no.where/some/path/to/file.yaml'
         tmpl_url = 'http://no.where/some/path/to/a.yaml'
-
-        self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen(url).AndReturn(six.BytesIO(env))
-        request.urlopen(tmpl_url).AndReturn(six.BytesIO(self.template_a))
-        request.urlopen(tmpl_url).AndReturn(six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env), six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         files, env_dict = template_utils.process_environment_and_files(
             url)
@@ -193,30 +179,34 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual({'resource_registry': {'OS::Thingy': tmpl_url}},
                          env_dict)
         self.assertEqual(self.template_a.decode('utf-8'), files[tmpl_url])
+        mock_url.assert_has_calls([
+            mock.call(url),
+            mock.call(tmpl_url),
+            mock.call(tmpl_url)
+        ])
 
-    def test_process_environment_empty_file(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_empty_file(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file = '/home/my/dir/env.yaml'
         env = b''
-
-        request.urlopen('file://%s' % env_file).AndReturn(six.BytesIO(env))
-        self.m.ReplayAll()
+        mock_url.return_value = six.BytesIO(env)
 
         files, env_dict = template_utils.process_environment_and_files(
             env_file)
 
         self.assertEqual({}, env_dict)
         self.assertEqual({}, files)
+        mock_url.assert_called_with('file://%s' % env_file)
 
     def test_no_process_environment_and_files(self):
         files, env = template_utils.process_environment_and_files()
         self.assertEqual({}, env)
         self.assertEqual({}, files)
 
-    def test_process_multiple_environments_and_files(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_multiple_environments_and_files(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file1 = '/home/my/dir/env1.yaml'
         env_file2 = '/home/my/dir/env2.yaml'
 
@@ -233,19 +223,12 @@ class ShellEnvironmentTest(testtools.TestCase):
           "OS::Thingy2": "file:///home/b/b.yaml"
         '''
 
-        request.urlopen('file://%s' % env_file1).AndReturn(
-            six.BytesIO(env1))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file://%s' % env_file2).AndReturn(
-            six.BytesIO(env2))
-        request.urlopen('file:///home/b/b.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env1),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(env2),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         files, env = template_utils.process_multiple_environments_and_files(
             [env_file1, env_file2])
@@ -263,10 +246,18 @@ class ShellEnvironmentTest(testtools.TestCase):
                          files['file:///home/b/a.yaml'])
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['file:///home/b/b.yaml'])
+        mock_url.assert_has_calls([
+            mock.call('file://%s' % env_file1),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file://%s' % env_file2),
+            mock.call('file:///home/b/b.yaml'),
+            mock.call('file:///home/b/b.yaml')
+        ])
 
-    def test_process_multiple_environments_default_resources(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_multiple_environments_default_resources(self, mock_url):
 
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file1 = '/home/my/dir/env1.yaml'
         env_file2 = '/home/my/dir/env2.yaml'
 
@@ -286,28 +277,16 @@ class ShellEnvironmentTest(testtools.TestCase):
             resource2:
               "OS::Thingy4": "file:///home/b/b.yaml"
         '''
-
-        request.urlopen('file://%s' % env_file1).InAnyOrder().AndReturn(
-            six.BytesIO(env1))
-        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file://%s' % env_file2).InAnyOrder().AndReturn(
-            six.BytesIO(env2))
-        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/a.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/b.yaml').InAnyOrder().AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env1),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(env2),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         files, env = template_utils.process_multiple_environments_and_files(
             [env_file1, env_file2])
@@ -331,6 +310,19 @@ class ShellEnvironmentTest(testtools.TestCase):
                          files['file:///home/b/a.yaml'])
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['file:///home/b/b.yaml'])
+        mock_url.assert_has_calls([
+            mock.call('file://%s' % env_file1),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/b.yaml'),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/b.yaml'),
+            mock.call('file://%s' % env_file2),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/b.yaml'),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/b.yaml'),
+
+        ], any_order=True)
 
     def test_no_process_multiple_environments_and_files(self):
         files, env = template_utils.process_multiple_environments_and_files()
@@ -346,8 +338,6 @@ class ShellEnvironmentTest(testtools.TestCase):
         resource_registry:
           "OS::Thingy1": "b/a.yaml"
         '''
-
-        self.m.ReplayAll()
 
         self.object_requested = False
 
@@ -376,9 +366,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual(self.template_a.decode('utf-8'),
                          files['http://no.where/path/to/b/a.yaml'])
 
-    def test_process_multiple_environments_and_files_tracker(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_multiple_environments_and_files_tracker(self, mock_url):
         # Setup
-        self.m.StubOutWithMock(request, 'urlopen')
         env_file1 = '/home/my/dir/env1.yaml'
 
         env1 = b'''
@@ -387,13 +377,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         resource_registry:
           "OS::Thingy1": "file:///home/b/a.yaml"
         '''
-        request.urlopen('file://%s' % env_file1).AndReturn(
-            six.BytesIO(env1))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/b/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env1),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         # Test
         env_file_list = []
@@ -414,24 +400,25 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertIn('file:///home/my/dir/env1.yaml', files)
         self.assertEqual(expected_env,
                          json.loads(files['file:///home/my/dir/env1.yaml']))
+        mock_url.assert_has_calls([
+            mock.call('file://%s' % env_file1),
+            mock.call('file:///home/b/a.yaml'),
+            mock.call('file:///home/b/a.yaml'),
 
-    def test_process_environment_relative_file_tracker(self):
+        ])
 
-        self.m.StubOutWithMock(request, 'urlopen')
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_process_environment_relative_file_tracker(self, mock_url):
+
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = b'''
         resource_registry:
           "OS::Thingy": a.yaml
         '''
-
-        request.urlopen(env_url).AndReturn(
-            six.BytesIO(env))
-        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        request.urlopen('file:///home/my/dir/a.yaml').AndReturn(
-            six.BytesIO(self.template_a))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(env),
+                                six.BytesIO(self.template_a),
+                                six.BytesIO(self.template_a)]
 
         self.assertEqual(
             env_url,
@@ -454,6 +441,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.assertEqual(['file:///home/my/dir/env.yaml'], env_file_list)
         self.assertEqual(json.dumps(expected_env),
                          files['file:///home/my/dir/env.yaml'])
+        mock_url.assert_has_calls([
+            mock.call(env_url),
+            mock.call('file:///home/my/dir/a.yaml'),
+            mock.call('file:///home/my/dir/a.yaml'),
+
+        ])
 
     def test_global_files(self):
         url = 'file:///home/b/a.yaml'
@@ -538,13 +531,6 @@ class ShellEnvironmentTest(testtools.TestCase):
 
 class TestGetTemplateContents(testtools.TestCase):
 
-    def setUp(self):
-        super(TestGetTemplateContents, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
     def test_get_template_contents_file(self):
         with tempfile.NamedTemporaryFile() as tmpl_file:
             tmpl = (b'{"AWSTemplateFormatVersion" : "2010-09-09",'
@@ -611,23 +597,22 @@ class TestGetTemplateContents(testtools.TestCase):
                 matchers.MatchesRegex(
                     'Error parsing template file://%s ' % tmpl_file.name))
 
-    def test_get_template_contents_url(self):
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_get_template_contents_url(self, mock_url):
         tmpl = b'{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
-        self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen(url).AndReturn(six.BytesIO(tmpl))
-        self.m.ReplayAll()
+        mock_url.return_value = six.BytesIO(tmpl)
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_url=url)
         self.assertEqual({"AWSTemplateFormatVersion": "2010-09-09",
                           "foo": "bar"}, tmpl_parsed)
         self.assertEqual({}, files)
+        mock_url.assert_called_with(url)
 
     def test_get_template_contents_object(self):
         tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
-        self.m.ReplayAll()
 
         self.object_requested = False
 
@@ -652,7 +637,6 @@ class TestGetTemplateContents(testtools.TestCase):
                 '"FooBar": {'
                 '"type": "foo/bar.yaml"}}}')
         url = 'http://no.where/path/to/a.yaml'
-        self.m.ReplayAll()
 
         self.object_requested = False
 
@@ -685,15 +669,15 @@ class TestGetTemplateContents(testtools.TestCase):
                         [{'path': '/tmp/%s' % filename,
                           'content': {'get_file': url},
                           'encoding': 'b64'}]}}}}}
-        self.m.StubOutWithMock(request, 'urlopen')
-        raw_content = base64.decodestring(content)
-        response = six.BytesIO(raw_content)
-        request.urlopen(url).AndReturn(response)
-        self.m.ReplayAll()
-        files = {}
-        template_utils.resolve_template_get_files(
-            template, files, base_url)
-        self.assertEqual({url: content}, files)
+        with mock.patch('six.moves.urllib.request.urlopen') as mock_url:
+            raw_content = base64.decodestring(content)
+            response = six.BytesIO(raw_content)
+            mock_url.return_value = response
+            files = {}
+            template_utils.resolve_template_get_files(
+                template, files, base_url)
+            self.assertEqual({url: content}, files)
+            mock_url.assert_called_with(url)
 
     def test_get_zip_content(self):
         filename = 'heat.zip'
@@ -746,6 +730,7 @@ ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         self.check_non_utf8_content(filename=filename, content=content)
 
 
+@mock.patch('six.moves.urllib.request.urlopen')
 class TestTemplateGetFileFunctions(testtools.TestCase):
 
     hot_template = b'''heat_template_version: 2013-05-23
@@ -769,48 +754,20 @@ resources:
       ignored_none: {get_file: }
     '''
 
-    def setUp(self):
-        super(TestTemplateGetFileFunctions, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_hot_template(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    def test_hot_template(self, mock_url):
 
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
-        request.urlopen(url).AndReturn(
-            six.BytesIO(self.hot_template))
-        request.urlopen(
-            'http://localhost/bar.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(b'bar contents'))
-        request.urlopen(
-            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(b'foo contents'))
-        request.urlopen(
-            'file:///home/my/dir/baz/baz1.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(b'baz1 contents'))
-        request.urlopen(
-            'file:///home/my/dir/baz/baz2.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(b'baz2 contents'))
-        request.urlopen(
-            'file:///home/my/dir/baz/baz3.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(b'baz3 contents'))
-
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(self.hot_template),
+                                six.BytesIO(b'bar contents'),
+                                six.BytesIO(b'foo contents'),
+                                six.BytesIO(b'baz1 contents'),
+                                six.BytesIO(b'baz2 contents'),
+                                six.BytesIO(b'baz3 contents')]
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
 
-        self.assertEqual({
-            'http://localhost/bar.yaml': b'bar contents',
-            'file:///home/my/dir/foo.yaml': b'foo contents',
-            'file:///home/my/dir/baz/baz1.yaml': b'baz1 contents',
-            'file:///home/my/dir/baz/baz2.yaml': b'baz2 contents',
-            'file:///home/my/dir/baz/baz3.yaml': b'baz3 contents',
-        }, files)
         self.assertEqual({
             'heat_template_version': '2013-05-23',
             'resources': {
@@ -836,9 +793,16 @@ resources:
                 }
             }
         }, tmpl_parsed)
+        mock_url.assert_has_calls([
+            mock.call(url),
+            mock.call('http://localhost/bar.yaml'),
+            mock.call('file:///home/my/dir/foo.yaml'),
+            mock.call('file:///home/my/dir/baz/baz1.yaml'),
+            mock.call('file:///home/my/dir/baz/baz2.yaml'),
+            mock.call('file:///home/my/dir/baz/baz3.yaml')
+        ], any_order=True)
 
-    def test_hot_template_outputs(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    def test_hot_template_outputs(self, mock_url):
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
         foo_url = 'file:///home/my/dir/foo.yaml'
@@ -848,15 +812,17 @@ outputs:\n\
   contents:\n\
     value:\n\
       get_file: foo.yaml\n'''
-        request.urlopen(url).AndReturn(six.BytesIO(contents))
-        request.urlopen(foo_url).AndReturn(six.BytesIO(b'foo contents'))
-        self.m.ReplayAll()
+        mock_url.side_effect = [six.BytesIO(contents),
+                                six.BytesIO(b'foo contents')]
         files = template_utils.get_template_contents(
             template_file=tmpl_file)[0]
         self.assertEqual({foo_url: b'foo contents'}, files)
+        mock_url.assert_has_calls([
+            mock.call(url),
+            mock.call(foo_url)
+        ])
 
-    def test_hot_template_same_file(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    def test_hot_template_same_file(self, mock_url):
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
         foo_url = 'file:///home/my/dir/foo.yaml'
@@ -869,14 +835,17 @@ outputs:\n\
   template:\n\
     value:\n\
       get_file: foo.yaml\n'''
-        request.urlopen(url).AndReturn(six.BytesIO(contents))
+        mock_url.side_effect = [six.BytesIO(contents),
+                                six.BytesIO(b'foo contents')]
         # asserts that is fetched only once even though it is
         # referenced in the template twice
-        request.urlopen(foo_url).AndReturn(six.BytesIO(b'foo contents'))
-        self.m.ReplayAll()
         files = template_utils.get_template_contents(
             template_file=tmpl_file)[0]
         self.assertEqual({foo_url: b'foo contents'}, files)
+        mock_url.assert_has_calls([
+            mock.call(url),
+            mock.call(foo_url)
+        ])
 
 
 class TestTemplateTypeFunctions(testtools.TestCase):
@@ -909,38 +878,26 @@ parameters:
     type: string
     '''
 
-    def setUp(self):
-        super(TestTemplateTypeFunctions, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_hot_template(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_hot_template(self, mock_url):
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
-        request.urlopen(
-            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(self.foo_template))
-        request.urlopen(
-            'file:///home/my/dir/foo.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(self.foo_template))
-        request.urlopen(url).InAnyOrder().AndReturn(
-            six.BytesIO(self.hot_template))
-        request.urlopen(
-            'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(self.egg_template))
-        request.urlopen(
-            'file:///home/my/dir/spam/egg.yaml').InAnyOrder().AndReturn(
-                six.BytesIO(self.egg_template))
-        self.m.ReplayAll()
+
+        def side_effect(args):
+            if url == args:
+                return six.BytesIO(self.hot_template)
+            if 'file:///home/my/dir/foo.yaml' == args:
+                return six.BytesIO(self.foo_template)
+            if 'file:///home/my/dir/spam/egg.yaml' == args:
+                return six.BytesIO(self.egg_template)
+        mock_url.side_effect = side_effect
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
 
         self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get('file:///home/my/dir/foo.yaml')))
+
         self.assertEqual(
             yaml.safe_load(self.egg_template.decode('utf-8')),
             json.loads(files.get('file:///home/my/dir/spam/egg.yaml')))
@@ -968,6 +925,12 @@ parameters:
             }
         }, tmpl_parsed)
 
+        mock_url.assert_has_calls([
+            mock.call('file:///home/my/dir/foo.yaml'),
+            mock.call(url),
+            mock.call('file:///home/my/dir/spam/egg.yaml'),
+        ], any_order=True)
+
 
 class TestTemplateInFileFunctions(testtools.TestCase):
 
@@ -993,30 +956,21 @@ parameters:
     type: string
     '''
 
-    def setUp(self):
-        super(TestTemplateInFileFunctions, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_hot_template(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_hot_template(self, mock_url):
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
         foo_url = 'file:///home/my/dir/foo.yaml'
         bar_url = 'file:///home/my/dir/bar.yaml'
-        request.urlopen(url).InAnyOrder().AndReturn(
-            six.BytesIO(self.hot_template))
-        request.urlopen(foo_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(foo_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(bar_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.bar_template))
-        request.urlopen(bar_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.bar_template))
-        self.m.ReplayAll()
+
+        def side_effect(args):
+            if url == args:
+                return six.BytesIO(self.hot_template)
+            if foo_url == args:
+                return six.BytesIO(self.foo_template)
+            if bar_url == args:
+                return six.BytesIO(self.bar_template)
+        mock_url.side_effect = side_effect
 
         files, tmpl_parsed = template_utils.get_template_contents(
             template_file=tmpl_file)
@@ -1051,6 +1005,12 @@ parameters:
                 }
             }
         }, tmpl_parsed)
+
+        mock_url.assert_has_calls([
+            mock.call(foo_url),
+            mock.call(url),
+            mock.call(bar_url),
+        ], any_order=True)
 
 
 class TestNestedIncludes(testtools.TestCase):
@@ -1095,15 +1055,8 @@ parameters:
     type: string
     '''
 
-    def setUp(self):
-        super(TestNestedIncludes, self).setUp()
-        self.m = mox.Mox()
-
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
-    def test_env_nested_includes(self):
-        self.m.StubOutWithMock(request, 'urlopen')
+    @mock.patch('six.moves.urllib.request.urlopen')
+    def test_env_nested_includes(self, mock_url):
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = b'''
@@ -1118,35 +1071,24 @@ parameters:
         two_url = u'file:///home/my/dir/spam/two.yaml'
         three_url = u'file:///home/my/dir/spam/three.yaml'
 
-        request.urlopen(env_url).AndReturn(
-            six.BytesIO(env))
-        request.urlopen(template_url).AndReturn(
-            six.BytesIO(self.hot_template))
-        request.urlopen(template_url).AndReturn(
-            six.BytesIO(self.hot_template))
-
-        request.urlopen(foo_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(egg_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.egg_template))
-        request.urlopen(ham_url).InAnyOrder().AndReturn(
-            six.BytesIO(b'ham contents'))
-        request.urlopen(one_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(two_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(three_url).InAnyOrder().AndReturn(
-            six.BytesIO(b'three contents'))
-        request.urlopen(foo_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(egg_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.egg_template))
-        request.urlopen(one_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-        request.urlopen(two_url).InAnyOrder().AndReturn(
-            six.BytesIO(self.foo_template))
-
-        self.m.ReplayAll()
+        def side_effect(args):
+            if env_url == args:
+                return six.BytesIO(env)
+            if template_url == args:
+                return six.BytesIO(self.hot_template)
+            if foo_url == args:
+                return six.BytesIO(self.foo_template)
+            if egg_url == args:
+                return six.BytesIO(self.egg_template)
+            if ham_url == args:
+                return six.BytesIO(b'ham contents')
+            if one_url == args:
+                return six.BytesIO(self.foo_template)
+            if two_url == args:
+                return six.BytesIO(self.foo_template)
+            if three_url == args:
+                return six.BytesIO(b'three contents')
+        mock_url.side_effect = side_effect
 
         files, env_dict = template_utils.process_environment_and_files(
             env_file)
@@ -1201,3 +1143,13 @@ parameters:
                          json.loads(files.get(two_url)))
         self.assertEqual(b'three contents',
                          files.get(three_url))
+        mock_url.assert_has_calls([
+            mock.call(env_url),
+            mock.call(template_url),
+            mock.call(foo_url),
+            mock.call(egg_url),
+            mock.call(ham_url),
+            mock.call(one_url),
+            mock.call(two_url),
+            mock.call(three_url),
+        ], any_order=True)
