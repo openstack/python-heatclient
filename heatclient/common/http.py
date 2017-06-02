@@ -221,10 +221,10 @@ class HTTPClient(object):
             raise exc.CommunicationError(message=message)
 
         self.log_http_response(resp)
-
+        txt_content = encodeutils.safe_decode(resp.content, 'utf-8')
         if not ('X-Auth-Key' in kwargs['headers']) and (
                 resp.status_code == 401 or
-                (resp.status_code == 500 and "(HTTP 401)" in resp.content)):
+                (resp.status_code == 500 and "(HTTP 401)" in txt_content)):
             raise exc.HTTPUnauthorized(_("Authentication failed: %s")
                                        % resp.content)
         elif 400 <= resp.status_code < 600:
