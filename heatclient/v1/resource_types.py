@@ -68,7 +68,7 @@ class ResourceTypeManager(base.BaseManager):
         """
         url_str = '/%s/%s' % (
                   self.KEY,
-                  parse.quote(encodeutils.safe_encode(resource_type), ''))
+                  parse.quote(encodeutils.safe_encode(resource_type)))
         resp = self.client.get(url_str,
                                params={'with_description': with_description})
         body = utils.get_response_body(resp)
@@ -77,7 +77,7 @@ class ResourceTypeManager(base.BaseManager):
     def generate_template(self, resource_type, template_type='cfn'):
         url_str = '/%s/%s/template' % (
                   self.KEY,
-                  parse.quote(encodeutils.safe_encode(resource_type), ''))
+                  parse.quote(encodeutils.safe_encode(resource_type)))
         if template_type:
             url_str += '?%s' % parse.urlencode(
                 {'template_type': template_type}, True)

@@ -33,7 +33,7 @@ class EventManagerTest(testtools.TestCase):
             manager.list(stack_id, resource_name)
             # Make sure url is correct.
             manager._list.assert_called_once_with(
-                '/stacks/teststack%2Fabcd1234/'
+                '/stacks/teststack/abcd1234/'
                 'resources/testresource/events',
                 "events")
             mock_re.assert_called_once_with(stack_id)
@@ -50,7 +50,7 @@ class EventManagerTest(testtools.TestCase):
             manager.list(stack_id, resource_name)
             # Make sure url is correct.
             manager._list.assert_called_once_with(
-                '/stacks/teststack%2Fabcd1234/'
+                '/stacks/teststack/abcd1234/'
                 'resources/%E5%B7%A5%E4%BD%9C/'
                 'events', "events")
             mock_re.assert_called_once_with(stack_id)
@@ -88,7 +88,7 @@ class EventManagerTest(testtools.TestCase):
             url, param = args[0]
             self.assertEqual("events", param)
             base_url, query_params = utils.parse_query_url(url)
-            expected_base_url = ('/stacks/teststack%2Fabcd1234/'
+            expected_base_url = ('/stacks/teststack/abcd1234/'
                                  'resources/testresource/events')
             self.assertEqual(expected_base_url, base_url)
             expected_query_dict = {'marker': ['6d6935f4-0ae5'],
@@ -110,7 +110,7 @@ class EventManagerTest(testtools.TestCase):
 
             def json_request(self, *args, **kwargs):
                 expect = ('GET',
-                          '/stacks/teststack%2Fabcd1234/resources'
+                          '/stacks/teststack/abcd1234/resources'
                           '/testresource/events/1')
                 assert args == expect
                 return {}, {'event': []}
@@ -137,7 +137,7 @@ class EventManagerTest(testtools.TestCase):
 
             def json_request(self, *args, **kwargs):
                 expect = ('GET',
-                          '/stacks/teststack%2Fabcd1234/resources'
+                          '/stacks/teststack/abcd1234/resources'
                           '/%E5%B7%A5%E4%BD%9C/events/1')
                 assert args == expect
                 return {}, {'event': []}

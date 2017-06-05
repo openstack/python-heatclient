@@ -73,7 +73,7 @@ class ResourceManagerTest(testtools.TestCase):
         fields = {'stack_id': 'teststack',
                   'resource_name': 'testresource'}
         expect = ('GET',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/testresource')
         key = 'resource'
 
@@ -86,7 +86,7 @@ class ResourceManagerTest(testtools.TestCase):
                   'resource_name': 'testresource',
                   'with_attr': ['attr_a', 'attr_b']}
         expect = ('GET',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/testresource?with_attr=attr_a&with_attr=attr_b')
         key = 'resource'
 
@@ -98,7 +98,7 @@ class ResourceManagerTest(testtools.TestCase):
         fields = {'stack_id': 'teststack',
                   'resource_name': u'\u5de5\u4f5c'}
         expect = ('GET',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/%E5%B7%A5%E4%BD%9C')
         key = 'resource'
 
@@ -154,7 +154,7 @@ class ResourceManagerTest(testtools.TestCase):
         fields = {'stack_id': 'teststack',
                   'resource_name': 'testresource'}
         expect = ('GET',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/testresource/metadata')
         key = 'metadata'
 
@@ -192,7 +192,7 @@ class ResourceManagerTest(testtools.TestCase):
                   'resource_name': 'testresource',
                   'data': 'Some content'}
         expect = ('POST',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/testresource/signal')
         key = 'signal'
 
@@ -206,7 +206,7 @@ class ResourceManagerTest(testtools.TestCase):
                   'mark_unhealthy': 'True',
                   'resource_status_reason': 'Anything'}
         expect = ('PATCH',
-                  '/stacks/teststack%2Fabcd1234/resources'
+                  '/stacks/teststack/abcd1234/resources'
                   '/testresource')
         key = 'mark_unhealthy'
 
