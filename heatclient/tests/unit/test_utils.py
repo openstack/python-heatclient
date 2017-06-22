@@ -415,8 +415,7 @@ class TestURLFunctions(testtools.TestCase):
                          tmpl_url)
         self.assertEqual(utils.get_template_url(None, tmpl_url),
                          tmpl_url)
-        self.assertEqual(utils.get_template_url(None, None),
-                         None)
+        self.assertIsNone(utils.get_template_url(None, None))
 
     def test_base_url_for_url(self):
         self.assertEqual(
