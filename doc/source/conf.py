@@ -24,8 +24,6 @@
 # serve to show the default.
 
 import os
-import subprocess
-import warnings
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -38,7 +36,7 @@ exec(open(os.path.join("ext", "gen_ref.py")).read())
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'oslosphinx']
+extensions = ['sphinx.ext.autodoc', 'openstackdocstheme']
 
 # Add any paths that contain templates here, relative to this directory.
 if os.getenv('HUDSON_PUBLISH_DOCS'):
@@ -112,7 +110,7 @@ nitpicky = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # html_theme_path = ['.']
-# html_theme = '_theme'
+html_theme = 'openstackdocs'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -147,15 +145,7 @@ html_theme_options = {
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-# html_last_updated_fmt = '%b %d, %Y'
-git_cmd = ["git", "log", "--pretty=format:'%ad, commit %h'", "--date=local",
-           "-n1"]
-try:
-    html_last_updated_fmt = subprocess.Popen(
-        git_cmd, stdout=subprocess.PIPE).communicate()[0]
-except Exception:
-    warnings.warn('Cannot get last updated time from git repository. '
-                  'Not setting "html_last_updated_fmt".')
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 
 # If true, SmartyPants will be used to convert quotes and dashes to
@@ -197,7 +187,6 @@ except Exception:
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'python-heatclientdoc'
-
 
 # -- Options for LaTeX output -------------------------------------------------
 
@@ -273,3 +262,8 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
+
+# -- Options for openstackdocstheme -------------------------------------------
+repository_name = 'openstack/python-heatclient'
+bug_project = 'python-heatclient'
+bug_tag = ''
