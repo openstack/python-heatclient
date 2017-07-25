@@ -302,9 +302,9 @@ def do_stack_delete(hc, args):
 
     try:
         if not args.yes and sys.stdin.isatty():
-            sys.stdout.write(
-                _("Are you sure you want to delete this stack(s) [y/N]? "))
-            prompt_response = sys.stdin.readline().lower()
+            prompt_response = six.moves.input(
+                _("Are you sure you want to delete this stack(s) [y/N]? ")
+            ).lower()
             if not prompt_response.startswith('y'):
                 logger.info(
                     'User did not confirm stack delete so taking no action.')
