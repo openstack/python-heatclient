@@ -2064,6 +2064,7 @@ class ShellTestUserPass(ShellBase):
         mock_stdin.isatty.return_value = True
         mock_stdin.readline = mock.Mock()
         mock_stdin.readline.return_value = 'n'
+        mock_stdin.fileno.return_value = 0
         sys.stdin = mock_stdin
 
         self.mock_request_delete('/stacks/teststack2/2', None)
@@ -2075,7 +2076,7 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual(resp_text, resp)
         self.m.ReplayAll()
 
-        mock_stdin.readline.return_value = 'Y'
+        mock_stdin.readline.return_value = 'y'
         resp = self.shell('stack-delete teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
         self.assertRegex(resp, msg)
@@ -2090,6 +2091,7 @@ class ShellTestUserPass(ShellBase):
         mock_stdin.isatty.return_value = True
         mock_stdin.readline = mock.Mock()
         mock_stdin.readline.return_value = ''
+        mock_stdin.fileno.return_value = 0
         sys.stdin = mock_stdin
 
         self.mock_request_delete('/stacks/teststack2/2')
