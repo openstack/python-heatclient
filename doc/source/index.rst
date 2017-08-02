@@ -42,7 +42,7 @@ PROJECT_NAME also provide the domain information as `project_domain_(name|id)`.
 
 For more information on keystoneauth API, see `Using Sessions`_.
 
-.. _Using Sessions: http://docs.openstack.org/developer/keystoneauth/using-sessions.html
+.. _Using Sessions: https://docs.openstack.org/keystoneauth/latest/using-sessions.html
 
 Reference
 ---------
