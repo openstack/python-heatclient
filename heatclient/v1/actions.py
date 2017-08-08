@@ -48,6 +48,11 @@ class ActionManager(stacks.StackChildManager):
         body = {'cancel_update': None}
         self.client.post('/stacks/%s/actions' % stack_id, data=body)
 
+    def cancel_without_rollback(self, stack_id):
+        """Cancel running update of a stack."""
+        body = {'cancel_without_rollback': None}
+        self.client.post('/stacks/%s/actions' % stack_id, data=body)
+
     def check(self, stack_id):
         """Check a stack."""
         body = {'check': None}

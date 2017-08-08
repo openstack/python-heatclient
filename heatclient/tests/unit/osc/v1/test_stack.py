@@ -1221,6 +1221,18 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
     def test_stack_cancel(self):
         self._test_stack_action(2)
 
+    def test_stack_cancel_no_rollback(self):
+        self.action = self.mock_client.actions.cancel_without_rollback
+        arglist = ['my_stack', '--no-rollback']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+        columns, rows = self.cmd.take_action(parsed_args)
+        self.action.assert_called_once_with('my_stack')
+        self.mock_client.stacks.get.assert_called_with('my_stack')
+        self.assertEqual(2,
+                         self.mock_client.stacks.get.call_count)
+        self.assertEqual(self.columns, columns)
+        self.assertEqual(1, len(rows))
+
     def test_stack_cancel_multi(self):
         self._test_stack_action_multi(4)
 
