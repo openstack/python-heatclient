@@ -132,7 +132,7 @@ class HttpClientTest(testtools.TestCase):
         fake500 = fakes.FakeHTTPResponse(
             500, 'ERROR',
             {'content-type': 'application/octet-stream'},
-            '(HTTP 401)')
+            b'(HTTP 401)')
 
         # no token or credentials
         mock_request.return_value = fake500
