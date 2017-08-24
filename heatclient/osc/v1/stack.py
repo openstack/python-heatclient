@@ -1215,6 +1215,7 @@ class CancelStack(StackActionBase):
 
     Supported tasks for cancellation:
     * update
+    * create
     """
 
     log = logging.getLogger(__name__ + '.CancelStack')
@@ -1245,17 +1246,18 @@ class CancelStack(StackActionBase):
         heat_client = self.app.client_manager.orchestration
         if parsed_args.no_rollback:
             action = heat_client.actions.cancel_without_rollback
+            allowed_statuses = ['create_in_progress',
+                                'update_in_progress']
         else:
             action = heat_client.actions.cancel_update
+            allowed_statuses = ['update_in_progress']
         for stack in parsed_args.stack:
             try:
                 data = heat_client.stacks.get(stack_id=stack)
             except heat_exc.HTTPNotFound:
                 raise exc.CommandError('Stack not found: %s' % stack)
-
             status = getattr(data, 'stack_status').lower()
-            if status == 'update_in_progress':
-
+            if status in allowed_statuses:
                 data = _stack_action(
                     stack,
                     parsed_args,

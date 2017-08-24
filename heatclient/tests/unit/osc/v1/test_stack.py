@@ -1221,17 +1221,20 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
     def test_stack_cancel(self):
         self._test_stack_action(2)
 
-    def test_stack_cancel_no_rollback(self):
+    def _test_stack_cancel_no_rollback(self, call_count):
         self.action = self.mock_client.actions.cancel_without_rollback
         arglist = ['my_stack', '--no-rollback']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
         self.action.assert_called_once_with('my_stack')
         self.mock_client.stacks.get.assert_called_with('my_stack')
-        self.assertEqual(2,
+        self.assertEqual(call_count,
                          self.mock_client.stacks.get.call_count)
         self.assertEqual(self.columns, columns)
         self.assertEqual(1, len(rows))
+
+    def test_stack_cancel_no_rollback(self):
+        self._test_stack_cancel_no_rollback(2)
 
     def test_stack_cancel_multi(self):
         self._test_stack_action_multi(4)
@@ -1246,6 +1249,7 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
         self._test_stack_action_exception()
 
     def test_stack_cancel_unsupported_state(self):
+        self.stack.stack_status = "CREATE_COMPLETE"
         self.mock_client.stacks.get.return_value = self.stack
         error = self.assertRaises(exc.CommandError,
                                   self._test_stack_action,
@@ -1253,6 +1257,17 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
         self.assertEqual('Stack my_stack with status \'create_complete\' '
                          'not in cancelable state',
                          str(error))
+
+    def test_stack_cancel_create_in_progress(self):
+        self.stack.stack_status = "CREATE_IN_PROGRESS"
+        self.mock_client.stacks.get.return_value = self.stack
+        error = self.assertRaises(exc.CommandError,
+                                  self._test_stack_action,
+                                  2)
+        self.assertEqual('Stack my_stack with status \'create_in_progress\' '
+                         'not in cancelable state',
+                         str(error))
+        self._test_stack_cancel_no_rollback(3)
 
 
 class TestStackCheck(_TestStackCheckBase, TestStack):
