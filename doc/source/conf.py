@@ -39,10 +39,7 @@ exec(open(os.path.join("ext", "gen_ref.py")).read())
 extensions = ['sphinx.ext.autodoc', 'openstackdocstheme']
 
 # Add any paths that contain templates here, relative to this directory.
-if os.getenv('HUDSON_PUBLISH_DOCS'):
-    templates_path = ['_ga', '_templates']
-else:
-    templates_path = ['_templates']
+templates_path = []
 
 # The suffix of source filenames.
 source_suffix = '.rst'
