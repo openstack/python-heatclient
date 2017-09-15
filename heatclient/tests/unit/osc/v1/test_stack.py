@@ -335,6 +335,17 @@ class TestStackUpdate(TestStack):
         self.stack_client.preview_update.assert_called_with(**self.defaults)
         self.stack_client.update.assert_not_called()
 
+    def test_stack_update_dry_run_show_nested(self):
+        arglist = ['my_stack', '-t', self.template_path, '--dry-run',
+                   '--show-nested']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        self.cmd.take_action(parsed_args)
+
+        self.stack_client.preview_update.assert_called_with(
+            show_nested=True, **self.defaults)
+        self.stack_client.update.assert_not_called()
+
     @mock.patch('heatclient.common.event_utils.poll_for_events',
                 return_value=('UPDATE_COMPLETE',
                               'Stack my_stack UPDATE_COMPLETE'))
