@@ -1,0 +1,32 @@
+{
+  "files": {
+    "file://empty.yaml": "{\"heat_template_version\": \"2015-10-15\"}"
+  },
+  "status": "COMPLETE",
+  "name": "test",
+  "tags": null,
+  "stack_user_project_id": "8f51847805ee4994a1ac1d6d1a9bcd9b",
+  "environment": {
+    "event_sinks": [],
+    "parameter_defaults": {},
+    "parameters": {},
+    "resource_registry": {
+      "file://empty.yaml": "file://empty.yaml",
+      "resources": {}
+    }
+  },
+  "template": {
+    "heat_template_version": "2015-04-30",
+    "resources": {
+      "empty_child": {
+        "type": "file://empty.yaml"
+      }
+    }
+  },
+  "action": "CREATE",
+  "project_id": "02228cd21ae24ed7966768a9a41be507",
+  "id": "25b97c3b-2e9a-4222-bc30-da116ae74a08",
+  "resources": {
+    "empty_child": {}
+  }
+}
