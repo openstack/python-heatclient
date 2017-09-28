@@ -233,6 +233,10 @@ class UpdateStack(command.ShowOne):
                    'would be changed')
         )
         parser.add_argument(
+            '--show-nested', default=False, action="store_true",
+            help=_('Show nested stacks when performing --dry-run')
+        )
+        parser.add_argument(
             '--parameter', metavar='<key=value>',
             help=_('Parameter values used to create the stack. '
                    'This can be specified multiple times'),
@@ -335,6 +339,9 @@ class UpdateStack(command.ShowOne):
                 fields['disable_rollback'] = rollback == 'disabled'
 
         if parsed_args.dry_run:
+            if parsed_args.show_nested:
+                fields['show_nested'] = parsed_args.show_nested
+
             changes = client.stacks.preview_update(**fields)
 
             fields = ['state', 'resource_name', 'resource_type',
