@@ -198,6 +198,9 @@ def deep_update(old, new):
         if isinstance(v, collections.Mapping):
             r = deep_update(old.get(k, {}), v)
             old[k] = r
+        elif v is None and isinstance(old.get(k), collections.Mapping):
+            # Don't override empty data, to work around yaml syntax issue
+            pass
         else:
             old[k] = new[k]
     return old
