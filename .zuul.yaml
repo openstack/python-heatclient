@@ -1,0 +1,21 @@
+- job:
+    name: heatclient-functional
+    parent: legacy-dsvm-base
+    run: playbooks/devstack/functional-run.yaml
+    post-run: playbooks/devstack/functional-post.yaml
+    timeout: 4200
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/heat
+      - openstack/python-heatclient
+    vars:
+      branch_override: "default"
+
+- project:
+    name: openstack/python-heatclient
+    check:
+      jobs:
+        - heatclient-functional
+    gate:
+      jobs:
+        - heatclient-functional
