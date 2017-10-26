@@ -616,8 +616,8 @@ class TestGetTemplateContents(testtools.TestCase):
             exc.CommandError,
             template_utils.get_template_contents)
         self.assertEqual(
-            ('Need to specify exactly one of --template-file, '
-             '--template-url or --template-object'),
+            ('Need to specify exactly one of [--template-file, '
+             '--template-url or --template-object] or --existing'),
             str(ex))
 
     def test_get_template_contents_file_none_existing(self):

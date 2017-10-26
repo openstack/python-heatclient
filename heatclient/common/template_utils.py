@@ -74,11 +74,13 @@ def get_template_contents(template_file=None, template_url=None,
         return {}, None
     else:
         raise exc.CommandError(_('Need to specify exactly one of '
-                               '%(arg1)s, %(arg2)s or %(arg3)s') %
+                                 '[%(arg1)s, %(arg2)s or %(arg3)s]'
+                                 ' or %(arg4)s') %
                                {
                                    'arg1': '--template-file',
                                    'arg2': '--template-url',
-                                   'arg3': '--template-object'})
+                                   'arg3': '--template-object',
+                                   'arg4': '--existing'})
 
     if not tpl:
         raise exc.CommandError(_('Could not fetch template from %s')
