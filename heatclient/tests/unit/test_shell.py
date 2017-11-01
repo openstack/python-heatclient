@@ -774,7 +774,7 @@ class ShellTestUserPass(ShellBase):
         ]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
+        self.assertNotRegex(list_text, 'parent')
 
     def test_stack_list_show_nested(self):
         self.register_keystone_auth_fixture()
@@ -2918,7 +2918,7 @@ class ShellTestEventsNested(ShellBase):
         for r in required:
             self.assertRegex(list_text, r)
 
-        self.assertNotRegexpMatches(list_text, 'p_eventid1')
+        self.assertNotRegex(list_text, 'p_eventid1')
 
         self.assertRegex(list_text,
                          "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
@@ -2942,8 +2942,8 @@ class ShellTestEventsNested(ShellBase):
                     'stack_name', 'teststack', 'nested']
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'p_eventid2')
-        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+        self.assertNotRegex(list_text, 'p_eventid2')
+        self.assertNotRegex(list_text, 'n_eventid2')
 
         self.assertRegex(list_text,
                          "%s.*\n.*%s.*\n" % timestamps[:2])
@@ -3121,9 +3121,9 @@ class ShellTestHookFunctions(ShellBase):
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'p_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+        self.assertNotRegex(list_text, 'p_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_pre_update(self):
         self.register_keystone_auth_fixture()
@@ -3136,9 +3136,9 @@ class ShellTestHookFunctions(ShellBase):
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'p_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+        self.assertNotRegex(list_text, 'p_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_pre_delete(self):
         self.register_keystone_auth_fixture()
@@ -3151,9 +3151,9 @@ class ShellTestHookFunctions(ShellBase):
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'p_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid1')
-        self.assertNotRegexpMatches(list_text, 'n_eventid2')
+        self.assertNotRegex(list_text, 'p_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid1')
+        self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_bad_status(self):
         self.register_keystone_auth_fixture()
@@ -3887,13 +3887,13 @@ class ShellTestDeployment(ShellBase):
         ]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
+        self.assertNotRegex(list_text, 'parent')
 
         list_text = self.shell('deployment-list -s 123')
 
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
+        self.assertNotRegex(list_text, 'parent')
 
     def test_deploy_show(self):
         self.register_keystone_auth_fixture()
@@ -4227,7 +4227,7 @@ class ShellTestStandaloneToken(ShellTestUserPass):
         ]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
+        self.assertNotRegex(list_text, 'parent')
 
 
 class MockShellBase(TestCase):
@@ -4308,7 +4308,7 @@ class MockShellTestUserPass(MockShellBase):
         ]
         for r in required:
             self.assertRegex(list_text, r)
-        self.assertNotRegexpMatches(list_text, 'parent')
+        self.assertNotRegex(list_text, 'parent')
 
         if self.jreq_mock.call_args is None:
             self.assertEqual(1, self.session_jreq_mock.call_count)
