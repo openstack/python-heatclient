@@ -15,4 +15,4 @@ keystoneauth1>=3.2.0 # Apache-2.0
 python-swiftclient>=3.2.0 # Apache-2.0
 PyYAML>=3.10 # MIT
 requests>=2.14.2 # Apache-2.0
-six>=1.9.0 # MIT
+six>=1.10.0 # MIT
