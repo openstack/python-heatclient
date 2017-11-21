@@ -1001,11 +1001,6 @@ class OutputShowStack(command.ShowOne):
             msg = _('Output error: %s') % output['output_error']
             raise exc.CommandError(msg)
 
-        if (isinstance(output['output_value'], list) or
-                isinstance(output['output_value'], dict)):
-            output['output_value'] = heat_utils.json_formatter(
-                output['output_value'])
-
         return self.dict2columns(output)
 
 
