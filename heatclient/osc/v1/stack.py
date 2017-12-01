@@ -282,6 +282,11 @@ class UpdateStack(command.ShowOne):
             help=_('Wait until stack goes to UPDATE_COMPLETE or '
                    'UPDATE_FAILED')
         )
+        parser.add_argument(
+            '--converge',
+            action='store_true',
+            help=_('Stack update with observe on reality.')
+        )
 
         return parser
 
@@ -360,6 +365,9 @@ class UpdateStack(command.ShowOne):
                                             event_args={'sort_dir': 'desc'},
                                             limit=1)
             marker = events[0].id if events else None
+
+        if parsed_args.converge:
+            fields['converge'] = True
 
         client.stacks.update(**fields)
 
