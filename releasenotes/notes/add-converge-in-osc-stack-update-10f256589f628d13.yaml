@@ -1,6 +1,7 @@
 ---
 features:
-  - Adds '--converge' option for stack update with openstackclient. If
+  - |
+    Adds '--converge' option for stack update with openstackclient. If
     specified, existing resource attributes (which may have diverged) are
     compared with the resource properties in the template used for update.
 
