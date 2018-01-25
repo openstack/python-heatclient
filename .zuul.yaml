@@ -9,10 +9,9 @@
       - openstack/heat
       - openstack/python-heatclient
     vars:
-      branch_override: "default"
+      branch_override: default
 
 - project:
-    name: openstack/python-heatclient
     check:
       jobs:
         - heatclient-functional
