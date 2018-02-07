@@ -633,7 +633,8 @@ def do_stack_cancel_update(hc, args):
                   'keys.'))
 @utils.arg('-g', '--global-tenant', action='store_true', default=False,
            help=_('Display stacks from all tenants. Operation only authorized '
-                  'for users who match the policy in heat\'s policy.json.'))
+                  'for users who match the policy (default or explicitly '
+                  'configured in policy.json) in heat.'))
 @utils.arg('-o', '--show-owner', action='store_true', default=False,
            help=_('Display stack owner information. This is automatically '
                   'enabled when using %(arg)s.') % {'arg': '--global-tenant'})
