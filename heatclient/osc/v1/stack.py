@@ -59,9 +59,9 @@ class CreateStack(command.ShowOne):
             action='append',
             help=_('Name of a resource to set a pre-create hook to. Resources '
                    'in nested stacks can be set using slash as a separator: '
-                   'nested_stack/another/my_resource. You can use wildcards '
-                   'to match multiple stacks or resources: '
-                   'nested_stack/an*/*_resource. This can be specified '
+                   '``nested_stack/another/my_resource``. You can use '
+                   'wildcards to match multiple stacks or resources: '
+                   '``nested_stack/an*/*_resource``. This can be specified '
                    'multiple times')
         )
         parser.add_argument(
@@ -210,9 +210,9 @@ class UpdateStack(command.ShowOne):
             '--pre-update', metavar='<resource>', action='append',
             help=_('Name of a resource to set a pre-update hook to. Resources '
                    'in nested stacks can be set using slash as a separator: '
-                   'nested_stack/another/my_resource. You can use wildcards '
-                   'to match multiple stacks or resources: '
-                   'nested_stack/an*/*_resource. This can be specified '
+                   '``nested_stack/another/my_resource``. You can use '
+                   'wildcards to match multiple stacks or resources: '
+                   '``nested_stack/an*/*_resource``. This can be specified '
                    'multiple times')
         )
         parser.add_argument(
@@ -1217,6 +1217,7 @@ class CancelStack(StackActionBase):
     """Cancel current task for a stack.
 
     Supported tasks for cancellation:
+
     * update
     * create
     """
@@ -1379,9 +1380,9 @@ class StackHookClear(command.Command):
             nargs='+',
             help=_('Resource names with hooks to clear. Resources '
                    'in nested stacks can be set using slash as a separator: '
-                   'nested_stack/another/my_resource. You can use wildcards '
-                   'to match multiple stacks or resources: '
-                   'nested_stack/an*/*_resource')
+                   '``nested_stack/another/my_resource``. You can use '
+                   'wildcards to match multiple stacks or resources: '
+                   '``nested_stack/an*/*_resource``')
         )
         return parser
 

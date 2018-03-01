@@ -1,10 +1,11 @@
 Python bindings to the OpenStack Heat API
 =========================================
 
-This is a client for OpenStack Heat API. There's a Python API
-(the :mod:`heatclient` module), and a command-line script
-(installed as :program:`heat`).
+This is a client for OpenStack Heat API. There's a Python API (the
+:mod:`heatclient` module), a `python-openstackclient`_ plugin for command-line
+use, and a legacy command-line script (installed as :program:`heat`).
 
+==========
 Python API
 ==========
 
@@ -52,8 +53,28 @@ Reference
     ref/index
     ref/v1/index
 
-Command-line Tool
-=================
+============================
+OpenStackClient Command Line
+============================
+
+The preferred way of accessing Heat via the command line is using the
+python-heatclient's plugin for `python-openstackclient`_. Heat commands are
+available through the ``openstack`` CLI command when both python-heatclient and
+python-openstackclient are installed.
+
+.. toctree::
+    :maxdepth: 2
+
+    cli/index
+
+.. _python-openstackclient: https://docs.openstack.org/python-openstackclient
+
+========================
+Legacy Command-line Tool
+========================
+
+The ``heat`` command is provided as a legacy CLI option. Users should prefer
+using the python-openstackclient plugin via the ``openstack`` command instead.
 
 In order to use the CLI, you must provide your OpenStack username,
 password, tenant, and auth endpoint. Use the corresponding
@@ -79,20 +100,22 @@ Once you've configured your authentication parameters, you can run
 ``heat help`` to see a complete listing of available commands.
 
 Man Pages
-=========
+---------
 
 .. toctree::
     :maxdepth: 1
 
     man/heat
 
+
+============
 Contributing
 ============
 
-Code is hosted `on GitHub`_. Submit bugs to the Heat project on
-`Launchpad`_. Submit code to the openstack/python-heatclient project
-using `Gerrit`_.
+Code is mirrored `on GitHub`_. Submit bugs to the python-heatclient project on
+`Launchpad`_. Submit code to the openstack/python-heatclient project using
+`Gerrit`_.
 
 .. _on GitHub: https://github.com/openstack/python-heatclient
 .. _Launchpad: https://launchpad.net/python-heatclient
-.. _Gerrit: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _Gerrit: https://docs.openstack.org/infra/manual/developers.html#development-workflow
