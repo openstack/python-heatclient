@@ -47,6 +47,13 @@ class CreateStack(command.ShowOne):
             help=_('Path to the environment. Can be specified multiple times')
         )
         parser.add_argument(
+            '-s', '--files-container',
+            metavar='<files-container>',
+            help=_('Swift files container name. Local files other than '
+                   'root template would be ignored. If other files are not '
+                   'found in swift, heat engine would raise an error.')
+        )
+        parser.add_argument(
             '--timeout',
             metavar='<timeout>',
             type=int,
@@ -121,13 +128,15 @@ class CreateStack(command.ShowOne):
 
         tpl_files, template = template_utils.process_template_path(
             parsed_args.template,
-            object_request=http.authenticated_fetcher(client))
+            object_request=http.authenticated_fetcher(client),
+            fetch_child=parsed_args.files_container is None)
 
         env_files_list = []
         env_files, env = (
             template_utils.process_multiple_environments_and_files(
                 env_paths=parsed_args.environment,
-                env_list_tracker=env_files_list))
+                env_list_tracker=env_files_list,
+                fetch_env_files=parsed_args.files_container is None))
 
         parameters = heat_utils.format_all_parameters(
             parsed_args.parameter,
@@ -150,6 +159,9 @@ class CreateStack(command.ShowOne):
         # If one or more environments is found, pass the listing to the server
         if env_files_list:
             fields['environment_files'] = env_files_list
+
+        if parsed_args.files_container:
+            fields['files_container'] = parsed_args.files_container
 
         if parsed_args.tags:
             fields['tags'] = parsed_args.tags
@@ -200,6 +212,13 @@ class UpdateStack(command.ShowOne):
         parser.add_argument(
             '-t', '--template', metavar='<template>',
             help=_('Path to the template')
+        )
+        parser.add_argument(
+            '-s', '--files-container',
+            metavar='<files-container>',
+            help=_('Swift files container name. Local files other than '
+                   'root template would be ignored. If other files are not '
+                   'found in swift, heat engine would raise an error.')
         )
         parser.add_argument(
             '-e', '--environment', metavar='<environment>',
@@ -298,13 +317,15 @@ class UpdateStack(command.ShowOne):
         tpl_files, template = template_utils.process_template_path(
             parsed_args.template,
             object_request=http.authenticated_fetcher(client),
-            existing=parsed_args.existing)
+            existing=parsed_args.existing,
+            fetch_child=parsed_args.files_container is None)
 
         env_files_list = []
         env_files, env = (
             template_utils.process_multiple_environments_and_files(
                 env_paths=parsed_args.environment,
-                env_list_tracker=env_files_list))
+                env_list_tracker=env_files_list,
+                fetch_env_files=parsed_args.files_container is None))
 
         parameters = heat_utils.format_all_parameters(
             parsed_args.parameter,
@@ -327,6 +348,9 @@ class UpdateStack(command.ShowOne):
         # If one or more environments is found, pass the listing to the server
         if env_files_list:
             fields['environment_files'] = env_files_list
+
+        if parsed_args.files_container:
+            fields['files_container'] = parsed_args.files_container
 
         if parsed_args.tags:
             fields['tags'] = parsed_args.tags
