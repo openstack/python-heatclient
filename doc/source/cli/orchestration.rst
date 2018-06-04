@@ -12,10 +12,10 @@ orchestration
    :command: orchestration template function list
 
 .. autoprogram-cliff:: openstack.orchestration.v1
-   :command: orchestration resource_type list
+   :command: orchestration resource type list
 
 .. autoprogram-cliff:: openstack.orchestration.v1
-   :command: orchestration resource_type show
+   :command: orchestration resource type show
 
 .. autoprogram-cliff:: openstack.orchestration.v1
    :command: orchestration build info
