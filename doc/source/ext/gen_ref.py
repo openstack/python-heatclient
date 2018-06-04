@@ -37,7 +37,7 @@ def gen_ref(ver, title, names):
                    ".. toctree::\n"
                    "   :maxdepth: 1\n"
                    "\n") % {"title": title, "signs": "=" * len(title)})
-        for name in names:
+        for name, sec_title in names.items():
             idx.write("   %s\n" % name)
             rstpath = os.path.join(refdir, "%s.rst" % name)
             with open(rstpath, "w") as rst:
@@ -49,11 +49,15 @@ def gen_ref(ver, title, names):
                            "   :undoc-members:\n"
                            "   :show-inheritance:\n"
                            "   :noindex:\n")
-                          % {"title": name.capitalize(),
-                             "signs": "=" * len(name),
+                          % {"title": sec_title,
+                             "signs": "=" * len(sec_title),
                              "pkg": pkg, "name": name})
 
-gen_ref("", "Client Reference", ["client", "exc"])
+gen_ref("", "Client Reference", {"client": "Client", "exc": "Exceptions"})
 gen_ref("v1", "Version 1 API Reference",
-        ["stacks", "resources", "events", "actions",
-         "software_configs", "software_deployments"])
+        {"stacks": "Stacks",
+         "resources": "Resources",
+         "events": "Events",
+         "actions": "Actions",
+         "software_configs": "Software Configs",
+         "software_deployments": "Software Deployments"})
