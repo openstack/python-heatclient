@@ -279,7 +279,7 @@ class StackManager(StackChildManager):
             kwargs['params'] = {"resolve_outputs": False}
         resp = self.client.get('/stacks/%s' % stack_id, **kwargs)
         body = utils.get_response_body(resp)
-        return Stack(self, body.get('stack'))
+        return Stack(self, body.get('stack'), loaded=True)
 
     def template(self, stack_id):
         """Get template content for a specific stack as a parsed JSON object.
