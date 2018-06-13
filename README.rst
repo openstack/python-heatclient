@@ -15,10 +15,6 @@ python-heatclient
     :target: https://pypi.python.org/pypi/python-heatclient/
     :alt: Latest Version
 
-.. image:: https://img.shields.io/pypi/dm/python-heatclient.svg
-    :target: https://pypi.python.org/pypi/python-heatclient/
-    :alt: Downloads
-
 
 OpenStack Orchestration API Client Library
 
