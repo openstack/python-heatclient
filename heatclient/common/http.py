@@ -137,7 +137,10 @@ class HTTPClient(object):
         if 'data' in kwargs:
             curl.append('-d \'%s\'' % kwargs['data'])
 
-        curl.append('%s%s' % (self.endpoint, url))
+        if not parse.urlparse(url).netloc:
+            url = self.endpoint + url
+
+        curl.append(url)
         LOG.debug(' '.join(curl))
 
     @staticmethod
