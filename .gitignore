@@ -16,7 +16,7 @@ doc/build
 heatclient/versioninfo
 *.egg-info
 *.log
-.testrepository
+.stestr/
 
 # Files created by releasenotes build
 releasenotes/build
