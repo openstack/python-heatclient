@@ -12,6 +12,13 @@
       branch_override: default
 
 - project:
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - check-requirements
+      - openstackclient-plugin-jobs
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
     check:
       jobs:
         - heatclient-functional
@@ -20,3 +27,6 @@
       jobs:
         - heatclient-functional
         - openstack-tox-lower-constraints
+    post:
+      jobs:
+        - openstack-tox-cover
