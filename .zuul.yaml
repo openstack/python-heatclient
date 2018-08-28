@@ -9,13 +9,22 @@
       - openstack/heat
       - openstack/python-heatclient
     vars:
-      branch_override: "default"
+      branch_override: default
 
 - project:
-    name: openstack/python-heatclient
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - check-requirements
+      - openstackclient-plugin-jobs
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
     check:
       jobs:
         - heatclient-functional
     gate:
       jobs:
         - heatclient-functional
+    post:
+      jobs:
+        - openstack-tox-cover
