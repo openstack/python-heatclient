@@ -22,7 +22,6 @@ import mock
 import mox
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-from oslotest import mockpatch
 import requests
 from requests_mock.contrib import fixture as rm_fixture
 import six
@@ -123,7 +122,7 @@ class TestCase(testtools.TestCase):
     # NOTE(tlashchova): this overrides the testtools.TestCase.patch method
     # that does simple monkey-patching in favor of mock's patching
     def patch(self, target, **kwargs):
-        mockfixture = self.useFixture(mockpatch.Patch(target, **kwargs))
+        mockfixture = self.useFixture(fixtures.MockPatch(target, **kwargs))
         return mockfixture.mock
 
     def stack_list_resp_dict(self, show_nested=False):
