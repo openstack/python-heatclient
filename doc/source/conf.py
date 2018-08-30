@@ -262,5 +262,5 @@ texinfo_documents = [
 
 # -- Options for openstackdocstheme -------------------------------------------
 repository_name = 'openstack/python-heatclient'
-bug_project = 'python-heatclient'
-bug_tag = ''
+bug_project = '997'
+bug_tag = 'docs'
