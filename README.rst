@@ -37,7 +37,7 @@ provides a Python API (the ``heatclient`` module) and a command-line tool
 .. _Online Documentation: https://docs.openstack.org/python-heatclient/latest
 .. _Launchpad project: https://launchpad.net/python-heatclient
 .. _Blueprints: https://blueprints.launchpad.net/python-heatclient
-.. _Bugs: https://bugs.launchpad.net/python-heatclient
+.. _Bugs: https://storyboard.openstack.org/#!/project/openstack/python-heatclient
 .. _Source: https://git.openstack.org/cgit/openstack/python-heatclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/heat-specs/
