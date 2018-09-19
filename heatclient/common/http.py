@@ -358,6 +358,10 @@ def _construct_http_client(endpoint=None, username=None, password=None,
         if 'interface' not in kwargs and endpoint_type:
             kwargs['interface'] = endpoint_type
 
+        if 'region_name' in kwargs:
+            kwargs['additional_headers'] = {
+                'X-Region-Name': kwargs['region_name']}
+
         return SessionClient(session, auth=auth, **kwargs)
     else:
         return HTTPClient(endpoint=endpoint, username=username,
