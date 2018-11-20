@@ -185,6 +185,10 @@ def do_stack_adopt(hc, args):
 
     adopt_url = utils.normalise_file_path_to_url(args.adopt_file)
     adopt_data = request.urlopen(adopt_url).read()
+    yaml_adopt_data = yaml.safe_load(adopt_data) or {}
+
+    files = yaml_adopt_data.get('files', {})
+    files.update(env_files)
 
     if not len(adopt_data):
         raise exc.CommandError('Invalid adopt-file, no data!')
@@ -201,7 +205,7 @@ def do_stack_adopt(hc, args):
         'disable_rollback': not(args.enable_rollback),
         'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),
-        'files': dict(list(env_files.items())),
+        'files': files,
         'environment': env
     }
 

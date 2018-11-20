@@ -730,9 +730,12 @@ class TestStackDelete(TestStack):
 class TestStackAdopt(TestStack):
 
     adopt_file = 'heatclient/tests/test_templates/adopt.json'
+    adopt_with_files = ('heatclient/tests/test_templates/adopt_with_file.json')
 
     with open(adopt_file, 'r') as f:
         adopt_data = f.read()
+    with open(adopt_with_files, 'r') as f:
+        adopt_with_files_data = f.read()
 
     defaults = {
         'stack_name': 'my_stack',
@@ -740,6 +743,18 @@ class TestStackAdopt(TestStack):
         'adopt_stack_data': adopt_data,
         'parameters': {},
         'files': {},
+        'environment': {},
+        'timeout': None
+    }
+
+    child_stack_yaml = "{\"heat_template_version\": \"2015-10-15\"}"
+
+    expected_with_files = {
+        'stack_name': 'my_stack',
+        'disable_rollback': True,
+        'adopt_stack_data': adopt_with_files_data,
+        'parameters': {},
+        'files': {'file://empty.yaml': child_stack_yaml},
         'environment': {},
         'timeout': None
     }
@@ -776,8 +791,8 @@ class TestStackAdopt(TestStack):
                               'Stack my_stack ADOPT_COMPLETE'))
     def test_stack_adopt_wait(self, mock_poll):
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
-        self.stack_client.get.return_value = \
-            stacks.Stack(None, {'stack_status': 'ADOPT_COMPLETE'})
+        self.stack_client.get.return_value = stacks.Stack(
+            None, {'stack_status': 'ADOPT_COMPLETE'})
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.cmd.take_action(parsed_args)
@@ -791,11 +806,24 @@ class TestStackAdopt(TestStack):
                               'Stack my_stack ADOPT_FAILED'))
     def test_stack_adopt_wait_fail(self, mock_poll):
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
-        self.stack_client.get.return_value = \
-            stacks.Stack(None, {'stack_status': 'ADOPT_FAILED'})
+        self.stack_client.get.return_value = stacks.Stack(
+            None, {'stack_status': 'ADOPT_FAILED'})
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
+
+    def test_stack_adopt_with_adopt_files(self):
+        # Make sure when we adopt with files in adopt script, we will load
+        # those files as part of input when calling adopt.
+        arglist = ['my_stack', '--adopt-file', self.adopt_with_files]
+        cols = ['id', 'stack_name', 'description', 'creation_time',
+                'updated_time', 'stack_status', 'stack_status_reason']
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.create.assert_called_with(**self.expected_with_files)
+        self.assertEqual(cols, columns)
 
 
 class TestStackExport(TestStack):
@@ -1225,8 +1253,8 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
             self.mock_client.actions.cancel_update,
             'ROLLBACK'
         )
-        self.mock_client.stacks.get.return_value = \
-            self.stack_update_in_progress
+        self.mock_client.stacks.get.return_value = (
+            self.stack_update_in_progress)
 
     def test_stack_cancel(self):
         self._test_stack_action(2)
