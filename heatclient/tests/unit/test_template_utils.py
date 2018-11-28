@@ -11,11 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import json
 import tempfile
 
 import mock
+from oslo_serialization import base64
 import six
 from six.moves.urllib import error
 import testtools
@@ -715,7 +715,7 @@ class TestGetTemplateContents(testtools.TestCase):
                           'content': {'get_file': url},
                           'encoding': 'b64'}]}}}}}
         with mock.patch('six.moves.urllib.request.urlopen') as mock_url:
-            raw_content = base64.decodestring(content)
+            raw_content = base64.decode_as_bytes(content)
             response = six.BytesIO(raw_content)
             mock_url.return_value = response
             files = {}
@@ -732,8 +732,8 @@ t9SdXgLAAEE\n6AMAAATpAwAAaGVhdApQSwECHgMKAAAAAABGWVpEWzgLgQUAAAAF\
 AAAACAAYAAAAAAABAAAApIEA\nAAAAaGVhdC50eHRVVAUAAxRbDVN1eAsAAQToAwA\
 ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         # zip has '\0' in stream
-        self.assertIn(b'\0', base64.decodestring(content))
-        decoded_content = base64.decodestring(content)
+        self.assertIn(b'\0', base64.decode_as_bytes(content))
+        decoded_content = base64.decode_as_bytes(content)
         if six.PY3:
             self.assertRaises(UnicodeDecodeError, decoded_content.decode)
         else:
@@ -748,8 +748,8 @@ ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         filename = 'heat.utf16'
         content = b'//4tTkhTCgA=\n'
         # utf6 has '\0' in stream
-        self.assertIn(b'\0', base64.decodestring(content))
-        decoded_content = base64.decodestring(content)
+        self.assertIn(b'\0', base64.decode_as_bytes(content))
+        decoded_content = base64.decode_as_bytes(content)
         if six.PY3:
             self.assertRaises(UnicodeDecodeError, decoded_content.decode)
         else:
@@ -763,8 +763,8 @@ ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         filename = 'heat.gb18030'
         content = b'1tDO5wo=\n'
         # gb18030 has no '\0' in stream
-        self.assertNotIn('\0', base64.decodestring(content))
-        decoded_content = base64.decodestring(content)
+        self.assertNotIn('\0', base64.decode_as_bytes(content))
+        decoded_content = base64.decode_as_bytes(content)
         if six.PY3:
             self.assertRaises(UnicodeDecodeError, decoded_content.decode)
         else:
