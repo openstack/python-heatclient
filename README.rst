@@ -12,7 +12,7 @@ python-heatclient
 =================
 
 .. image:: https://img.shields.io/pypi/v/python-heatclient.svg
-    :target: https://pypi.python.org/pypi/python-heatclient/
+    :target: https://pypi.org/project/python-heatclient/
     :alt: Latest Version
 
 
@@ -33,7 +33,7 @@ provides a Python API (the ``heatclient`` module) and a command-line tool
 * `Template`_
 * `How to Contribute`_
 
-.. _PyPi: https://pypi.python.org/pypi/python-heatclient
+.. _PyPi: https://pypi.org/project/python-heatclient
 .. _Online Documentation: https://docs.openstack.org/python-heatclient/latest
 .. _Launchpad project: https://launchpad.net/python-heatclient
 .. _Blueprints: https://blueprints.launchpad.net/python-heatclient
