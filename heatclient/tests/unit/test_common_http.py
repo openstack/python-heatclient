@@ -637,7 +637,8 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(('', 'GET'), self.request.call_args_list[0][0])
         self.assertEqual(('ishere', 'GET'), self.request.call_args_list[1][0])
         for call in self.request.call_args_list:
-            self.assertEqual({'user_agent': 'python-heatclient',
+            self.assertEqual({'headers': {'Content-Type': 'application/json'},
+                              'user_agent': 'python-heatclient',
                               'raise_exc': False,
                               'redirect': True}, call[1])
 
@@ -668,7 +669,8 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(('http://no.where/ishere',
                           'GET'), self.request.call_args_list[1][0])
         for call in self.request.call_args_list:
-            self.assertEqual({'user_agent': 'python-heatclient',
+            self.assertEqual({'headers': {'Content-Type': 'application/json'},
+                              'user_agent': 'python-heatclient',
                               'raise_exc': False,
                               'redirect': True}, call[1])
 
@@ -750,6 +752,7 @@ class SessionClientTest(testtools.TestCase):
 
         self.assertEqual({'endpoint_override': 'http://no.where/',
                           'data': '"some_data"',
+                          'headers': {'Content-Type': 'application/json'},
                           'user_agent': 'python-heatclient',
                           'raise_exc': False}, self.request.call_args[1])
         self.assertEqual(200, resp.status_code)
@@ -774,6 +777,7 @@ class SessionClientTest(testtools.TestCase):
 
         self.assertEqual({'endpoint_override': 'http://no.where/',
                           'data': "{'files': test}}",
+                          'headers': {'Content-Type': 'application/json'},
                           'user_agent': 'python-heatclient',
                           'raise_exc': False}, self.request.call_args[1])
         self.assertEqual(200, resp.status_code)

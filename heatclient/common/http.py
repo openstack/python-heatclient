@@ -305,6 +305,9 @@ class SessionClient(adapter.LegacyJsonAdapter):
         redirect = kwargs.get('redirect')
         kwargs.setdefault('user_agent', USER_AGENT)
 
+        headers = kwargs.setdefault('headers', {})
+        headers.setdefault('Content-Type', 'application/json')
+
         if 'data' in kwargs:
             kwargs['data'] = jsonutils.dumps(kwargs['data'])
 
