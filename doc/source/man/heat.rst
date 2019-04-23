@@ -95,4 +95,4 @@ Please ask your OpenStack operator to enable this feature.
 BUGS
 ====
 
-Heat client is hosted in Launchpad so you can view current bugs at https://bugs.launchpad.net/python-heatclient/.
+Heat client is hosted in Launchpad so you can view current bugs at https://storyboard.openstack.org/#!/project/openstack/python-heatclient.
