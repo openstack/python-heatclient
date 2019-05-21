@@ -77,8 +77,7 @@ class HTTPMultipleChoices(HTTPException):
     code = 300
 
     def __str__(self):
-        self.details = _("Requested version of Heat API is not"
-                         "available.")
+        self.details = _("Requested version of Heat API is not available.")
         return (_("%(name)s (HTTP %(code)s) %(details)s") %
                 {
                 'name': reflection.get_class_name(self, fully_qualified=False),
