@@ -340,7 +340,7 @@ class ShowOutputDeployment(command.Command):
         if outputs:
             if parsed_args.all:
                 print('output_values:\n')
-                for k in outputs.keys():
+                for k in outputs:
                     format_utils.print_software_deployment_output(
                         data=outputs, name=k, long=parsed_args.long)
             else:

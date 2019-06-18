@@ -564,7 +564,7 @@ def do_stack_update(hc, args):
         fields = ['state', 'resource_name', 'resource_type',
                   'resource_identity']
 
-        for k in resource_changes.get("resource_changes", {}).keys():
+        for k in resource_changes.get("resource_changes", {}):
             for i in range(len(resource_changes["resource_changes"][k])):
                 resource_changes["resource_changes"][k][i]['state'] = k
 
