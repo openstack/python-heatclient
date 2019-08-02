@@ -72,7 +72,7 @@ class ResourceManager(stacks.StackChildManager):
     def get(self, stack_id, resource_name, with_attr=None):
         """Get the details for a specific resource.
 
-        :param stack_id: ID of stack containing the resource
+        :param stack_id: ID or name of stack containing the resource
         :param resource_name: ID of resource to get the details for
         :param with_attr: Attributes to show
         """
@@ -91,7 +91,7 @@ class ResourceManager(stacks.StackChildManager):
     def metadata(self, stack_id, resource_name):
         """Get the metadata for a specific resource.
 
-        :param stack_id: ID of stack containing the resource
+        :param stack_id: ID or name of stack containing the resource
         :param resource_name: ID of resource to get metadata for
         """
         stack_id = self._resolve_stack_id(stack_id)
@@ -105,7 +105,7 @@ class ResourceManager(stacks.StackChildManager):
     def signal(self, stack_id, resource_name, data=None):
         """Signal a specific resource.
 
-        :param stack_id: ID of stack containing the resource
+        :param stack_id: ID or name of stack containing the resource
         :param resource_name: ID of resource to send signal to
         """
         stack_id = self._resolve_stack_id(stack_id)
@@ -120,7 +120,7 @@ class ResourceManager(stacks.StackChildManager):
                        mark_unhealthy, resource_status_reason):
         """Mark a resource as healthy or unhealthy.
 
-        :param stack_id: ID of stack containing the resource
+        :param stack_id: ID or name of stack containing the resource
         :param resource_name: ID of resource
         :param mark_unhealthy: Mark resource unhealthy if set to True
         :param resource_status_reason: Reason for resource status change.

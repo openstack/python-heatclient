@@ -173,7 +173,10 @@ class StackManager(StackChildManager):
         return body
 
     def update(self, stack_id, **kwargs):
-        """Update a stack."""
+        """Update a stack.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         headers = self.client.credentials_headers()
         if kwargs.pop('existing', None):
             self.client.patch('/stacks/%s' % stack_id, data=kwargs,
@@ -183,7 +186,10 @@ class StackManager(StackChildManager):
                             headers=headers)
 
     def preview_update(self, stack_id, **kwargs):
-        """Preview a stack update."""
+        """Preview a stack update.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         headers = self.client.credentials_headers()
         path = '/stacks/%s/preview' % stack_identifier
@@ -197,25 +203,37 @@ class StackManager(StackChildManager):
         return body
 
     def delete(self, stack_id):
-        """Delete a stack."""
+        """Delete a stack.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         self._delete("/stacks/%s" % stack_id)
 
     def abandon(self, stack_id):
-        """Abandon a stack."""
+        """Abandon a stack.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.delete('/stacks/%s/abandon' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def export(self, stack_id):
-        """Export data of a stack."""
+        """Export data of a stack.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%s/export' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def snapshot(self, stack_id, name=None):
-        """Snapshot a stack."""
+        """Snapshot a stack.
+
+        :param stack_id: Stack name or ID to identifies the stack
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         data = {}
         if name:
@@ -270,7 +288,7 @@ class StackManager(StackChildManager):
     def get(self, stack_id, resolve_outputs=True):
         """Get the metadata for a specific stack.
 
-        :param stack_id: Stack ID to lookup
+        :param stack_id: Stack ID or name to lookup
         :param resolve_outputs: If True, then outputs for this
                stack will be resolved
         """
@@ -284,7 +302,7 @@ class StackManager(StackChildManager):
     def template(self, stack_id):
         """Get template content for a specific stack as a parsed JSON object.
 
-        :param stack_id: Stack ID to get the template for
+        :param stack_id: Stack ID or name to get the template for
         """
         resp = self.client.get('/stacks/%s/template' % stack_id)
         body = utils.get_response_body(resp)
@@ -293,7 +311,7 @@ class StackManager(StackChildManager):
     def environment(self, stack_id):
         """Returns the environment for an existing stack.
 
-        :param stack_id: identifies the stack
+        :param stack_id: Stack name or ID to identifies the stack
         :return:
         """
         resp = self.client.get('/stacks/%s/environment' % stack_id)
@@ -303,7 +321,7 @@ class StackManager(StackChildManager):
     def files(self, stack_id):
         """Returns the files for an existing stack.
 
-        :param stack_id: identifies the stack
+        :param stack_id: Stack name or ID to identifies the stack.
         :return:
         """
         resp = self.client.get('/stacks/%s/files' % stack_id)
