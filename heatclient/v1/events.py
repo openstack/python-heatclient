@@ -44,7 +44,7 @@ class EventManager(stacks.StackChildManager):
     def list(self, stack_id, resource_name=None, **kwargs):
         """Get a list of events.
 
-        :param stack_id: ID of stack the events belong to
+        :param stack_id: ID or name of stack the events belong to
         :param resource_name: Optional name of resources to filter events by
         :rtype: list of :class:`Event`
         """
@@ -74,7 +74,7 @@ class EventManager(stacks.StackChildManager):
     def get(self, stack_id, resource_name, event_id):
         """Get the details for a specific event.
 
-        :param stack_id: ID of stack containing the event
+        :param stack_id: ID or name of stack containing the event
         :param resource_name: ID of resource the event belongs to
         :param event_id: ID of event to get the details for
         """
