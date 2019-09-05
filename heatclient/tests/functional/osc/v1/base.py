@@ -15,6 +15,7 @@ import os
 import six
 from tempest.lib.cli import base
 from tempest.lib.cli import output_parser
+from tempest.lib import exceptions as tempest_exc
 
 
 class OpenStackClientTestBase(base.ClientTestBase):
@@ -81,7 +82,13 @@ class OpenStackClientTestBase(base.ClientTestBase):
         if wait:
             cmd += ' --wait'
         if id in self.openstack('stack list --short'):
-            self.openstack(cmd)
+            try:
+                self.openstack(cmd)
+            except tempest_exc.CommandFailed as e:
+                msg = "Stack not found: %s" % id
+                if msg in six.text_type(e.stdout):
+                    return
+                raise
 
     def _stack_suspend(self, id, wait=True):
         cmd = 'stack suspend ' + id
