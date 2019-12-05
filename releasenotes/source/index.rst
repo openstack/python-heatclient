@@ -7,6 +7,7 @@ Welcome to Python-heatclient releasenotes's documentation!
    :caption: Contents:
 
    unreleased
+   train
    stein
    rocky
    queens
