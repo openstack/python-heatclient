@@ -20,6 +20,41 @@ from heatclient.common import utils
 from heatclient.v1 import resources
 
 
+class FakeAPI(object):
+    """Fake API and ensure request url is correct."""
+
+    def __init__(self, expect, key):
+        self.expect = expect
+        self.key = key
+
+    def get(self, *args, **kwargs):
+        assert ('GET', args[0]) == self.expect
+
+    def json_request(self, *args, **kwargs):
+        assert args == self.expect
+        ret = self.key and {self.key: []} or {}
+        return {}, {self.key: ret}
+
+    def raw_request(self, *args, **kwargs):
+        assert args == self.expect
+        return {}
+
+    def head(self, url, **kwargs):
+        return self.json_request("HEAD", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.json_request("POST", url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.json_request("PUT", url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.raw_request("DELETE", url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.json_request("PATCH", url, **kwargs)
+
+
 class ResourceManagerTest(testtools.TestCase):
 
     def setUp(self):
@@ -28,38 +63,7 @@ class ResourceManagerTest(testtools.TestCase):
         self.addCleanup(self.m.UnsetStubs)
 
     def _base_test(self, expect, key):
-
-        class FakeAPI(object):
-            """Fake API and ensure request url is correct."""
-
-            def get(self, *args, **kwargs):
-                assert ('GET', args[0]) == expect
-
-            def json_request(self, *args, **kwargs):
-                assert args == expect
-                ret = key and {key: []} or {}
-                return {}, {key: ret}
-
-            def raw_request(self, *args, **kwargs):
-                assert args == expect
-                return {}
-
-            def head(self, url, **kwargs):
-                return self.json_request("HEAD", url, **kwargs)
-
-            def post(self, url, **kwargs):
-                return self.json_request("POST", url, **kwargs)
-
-            def put(self, url, **kwargs):
-                return self.json_request("PUT", url, **kwargs)
-
-            def delete(self, url, **kwargs):
-                return self.raw_request("DELETE", url, **kwargs)
-
-            def patch(self, url, **kwargs):
-                return self.json_request("PATCH", url, **kwargs)
-
-        manager = resources.ResourceManager(FakeAPI())
+        manager = resources.ResourceManager(FakeAPI(expect, key))
         self.m.StubOutWithMock(manager, '_resolve_stack_id')
         self.m.StubOutWithMock(utils, 'get_response_body')
         utils.get_response_body(mox.IgnoreArg()).AndReturn(
@@ -106,6 +110,21 @@ class ResourceManagerTest(testtools.TestCase):
         manager.get(**fields)
         self.m.VerifyAll()
 
+    def _test_list(self, fields, expect):
+        key = 'resources'
+
+        class FakeResponse(object):
+            def json(self):
+                return {key: {}}
+
+        class FakeClient(object):
+            def get(self, *args, **kwargs):
+                assert args[0] == expect
+                return FakeResponse()
+
+        manager = resources.ResourceManager(FakeClient())
+        manager.list(**fields)
+
     def test_list(self):
         self._test_list(
             fields={'stack_id': 'teststack'},
@@ -134,21 +153,6 @@ class ResourceManagerTest(testtools.TestCase):
                 'with_detail': True,
             }, True)
         )
-
-    def _test_list(self, fields, expect):
-        key = 'resources'
-
-        class FakeResponse(object):
-            def json(self):
-                return {key: {}}
-
-        class FakeClient(object):
-            def get(self, *args, **kwargs):
-                assert args[0] == expect
-                return FakeResponse()
-
-        manager = resources.ResourceManager(FakeClient())
-        manager.list(**fields)
 
     def test_metadata(self):
         fields = {'stack_id': 'teststack',
