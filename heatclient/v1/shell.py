@@ -1341,9 +1341,7 @@ def do_config_create(hc, args):
     }
     hc.stacks.validate(template=validate_template)
 
-    config['name'] = args.name
-
-    sc = hc.software_configs.create(**config)
+    sc = hc.software_configs.create(name=args.name, **config)
     print(jsonutils.dumps(sc.to_dict(), indent=2))
 
 
