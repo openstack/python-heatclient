@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mox
+import mock
 from six.moves.urllib import parse
 import testtools
 
@@ -57,21 +57,18 @@ class FakeAPI(object):
 
 class ResourceManagerTest(testtools.TestCase):
 
-    def setUp(self):
-        super(ResourceManagerTest, self).setUp()
-        self.m = mox.Mox()
-        self.addCleanup(self.m.UnsetStubs)
-
-    def _base_test(self, expect, key):
+    def _base_test(self, func, fields, expect, key):
         manager = resources.ResourceManager(FakeAPI(expect, key))
-        self.m.StubOutWithMock(manager, '_resolve_stack_id')
-        self.m.StubOutWithMock(utils, 'get_response_body')
-        utils.get_response_body(mox.IgnoreArg()).AndReturn(
-            {key: key and {key: []} or {}})
-        manager._resolve_stack_id('teststack').AndReturn('teststack/abcd1234')
-        self.m.ReplayAll()
 
-        return manager
+        with mock.patch.object(manager, '_resolve_stack_id') as mock_rslv, \
+                mock.patch.object(utils, 'get_response_body') as mock_resp:
+            mock_resp.return_value = {key: key and {key: []} or {}}
+            mock_rslv.return_value = 'teststack/abcd1234'
+
+            getattr(manager, func)(**fields)
+
+            mock_resp.assert_called_once_with(mock.ANY)
+            mock_rslv.assert_called_once_with('teststack')
 
     def test_get(self):
         fields = {'stack_id': 'teststack',
@@ -81,9 +78,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/testresource')
         key = 'resource'
 
-        manager = self._base_test(expect, key)
-        manager.get(**fields)
-        self.m.VerifyAll()
+        self._base_test('get', fields, expect, key)
 
     def test_get_with_attr(self):
         fields = {'stack_id': 'teststack',
@@ -94,9 +89,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/testresource?with_attr=attr_a&with_attr=attr_b')
         key = 'resource'
 
-        manager = self._base_test(expect, key)
-        manager.get(**fields)
-        self.m.VerifyAll()
+        self._base_test('get', fields, expect, key)
 
     def test_get_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
@@ -106,9 +99,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/%E5%B7%A5%E4%BD%9C')
         key = 'resource'
 
-        manager = self._base_test(expect, key)
-        manager.get(**fields)
-        self.m.VerifyAll()
+        self._base_test('get', fields, expect, key)
 
     def _test_list(self, fields, expect):
         key = 'resources'
@@ -162,9 +153,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/testresource/metadata')
         key = 'metadata'
 
-        manager = self._base_test(expect, key)
-        manager.metadata(**fields)
-        self.m.VerifyAll()
+        self._base_test('metadata', fields, expect, key)
 
     def test_generate_template(self):
         fields = {'resource_name': 'testresource'}
@@ -183,13 +172,13 @@ class ResourceManagerTest(testtools.TestCase):
                 return {}, {key: ret}
 
         manager = resources.ResourceManager(FakeAPI())
-        self.m.StubOutWithMock(utils, 'get_response_body')
-        utils.get_response_body(mox.IgnoreArg()).AndReturn(
-            {key: key and {key: []} or {}})
-        self.m.ReplayAll()
 
-        manager.generate_template(**fields)
-        self.m.VerifyAll()
+        with mock.patch.object(utils, 'get_response_body') as mock_resp:
+            mock_resp.return_value = {key: key and {key: []} or {}}
+
+            manager.generate_template(**fields)
+
+            mock_resp.assert_called_once_with(mock.ANY)
 
     def test_signal(self):
         fields = {'stack_id': 'teststack',
@@ -200,9 +189,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/testresource/signal')
         key = 'signal'
 
-        manager = self._base_test(expect, key)
-        manager.signal(**fields)
-        self.m.VerifyAll()
+        self._base_test('signal', fields, expect, key)
 
     def test_mark_unhealthy(self):
         fields = {'stack_id': 'teststack',
@@ -214,9 +201,7 @@ class ResourceManagerTest(testtools.TestCase):
                   '/testresource')
         key = 'mark_unhealthy'
 
-        manager = self._base_test(expect, key)
-        manager.mark_unhealthy(**fields)
-        self.m.VerifyAll()
+        self._base_test('mark_unhealthy', fields, expect, key)
 
 
 class ResourceStackNameTest(testtools.TestCase):
