@@ -19,10 +19,8 @@ import uuid
 import fixtures
 from keystoneauth1 import fixture as keystone_fixture
 import mock
-import mox
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import requests
 from requests_mock.contrib import fixture as rm_fixture
 import six
 from six.moves.urllib import parse
@@ -309,12 +307,6 @@ class ShellParamValidationTest(TestCase):
             err='Sorting key \'owner\' not one of')),
     ]
 
-    def setUp(self):
-        super(ShellParamValidationTest, self).setUp()
-        self.m = mox.Mox()
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
     def test_bad_parameters(self):
         self.register_keystone_auth_fixture()
         fake_env = {
@@ -335,22 +327,16 @@ class ShellParamValidationTest(TestCase):
 
 class ShellValidationTest(TestCase):
 
-    def setUp(self):
-        super(ShellValidationTest, self).setUp()
-        self.m = mox.Mox()
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
-
     def test_failed_auth(self):
         self.register_keystone_auth_fixture()
-        self.m.StubOutWithMock(http.SessionClient, 'request')
         failed_msg = 'Unable to authenticate user with credentials provided'
-        http.SessionClient.request(
-            '/stacks?', 'GET').AndRaise(exc.Unauthorized(failed_msg))
 
-        self.m.ReplayAll()
-        self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
-        self.shell_error('stack-list', failed_msg, exception=exc.Unauthorized)
+        with mock.patch.object(http.SessionClient, 'request',
+                               side_effect=exc.Unauthorized(failed_msg)) as sc:
+            self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
+            self.shell_error('stack-list', failed_msg,
+                             exception=exc.Unauthorized)
+            sc.assert_called_once_with('/stacks?', 'GET')
 
     def test_stack_create_validation(self):
         self.register_keystone_auth_fixture()
@@ -390,21 +376,37 @@ class ShellValidationTest(TestCase):
 
 class ShellBase(TestCase):
 
+    (JSON, RAW, SESSION) = ('json', 'raw', 'session')
+
     def setUp(self):
         super(ShellBase, self).setUp()
-        self.m = mox.Mox()
-        self.m.StubOutWithMock(http.HTTPClient, 'json_request')
-        self.m.StubOutWithMock(http.HTTPClient, 'raw_request')
-        self.m.StubOutWithMock(http.SessionClient, 'request')
+        self._calls = {self.JSON: [], self.RAW: [], self.SESSION: []}
+        self._results = {self.JSON: [], self.RAW: [], self.SESSION: []}
+        self.useFixture(fixtures.MockPatchObject(
+            http.HTTPClient,
+            'json_request',
+            side_effect=self._results[self.JSON]))
+        self.useFixture(fixtures.MockPatchObject(
+            http.HTTPClient,
+            'raw_request',
+            side_effect=self._results[self.RAW]))
+        self.useFixture(fixtures.MockPatchObject(
+            http.SessionClient,
+            'request',
+            side_effect=self._results[self.SESSION]))
         self.client = http.SessionClient
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
 
         # Some tests set exc.verbose = 1, so reset on cleanup
         def unset_exc_verbose():
             exc.verbose = 0
 
         self.addCleanup(unset_exc_verbose)
+
+    def tearDown(self):
+        http.HTTPClient.json_request.assert_has_calls(self._calls[self.JSON])
+        http.HTTPClient.raw_request.assert_has_calls(self._calls[self.RAW])
+        http.SessionClient.request.assert_has_calls(self._calls[self.SESSION])
+        super(ShellBase, self).tearDown()
 
     def shell(self, argstr):
         orig = sys.stdout
@@ -426,12 +428,15 @@ class ShellBase(TestCase):
     def mock_request_error(self, path, verb, error):
         raw = verb == 'DELETE'
         if self.client == http.SessionClient:
-            self.client.request(path, verb).AndRaise(error)
+            request = self.SESSION
+            self._expect_call(request, path, verb)
         else:
             if raw:
-                self.client.raw_request(verb, path).AndRaise(error)
+                request = self.RAW
             else:
-                self.client.json_request(verb, path).AndRaise(error)
+                request = self.JSON
+            self._expect_call(request, verb, path)
+        self._results[request].append(error)
 
     def mock_request_get(self, path, response, raw=False, **kwargs):
         self.mock_request(path, 'GET', response, raw=raw, **kwargs)
@@ -477,14 +482,20 @@ class ShellBase(TestCase):
 
         resp = fakes.FakeHTTPResponse(status_code, reason, headers, content)
         if self.client == http.SessionClient:
-            self.client.request(path, verb, **kwargs).AndReturn(resp)
+            request = self.SESSION
+            self._results[request].append(resp)
+            self._expect_call(request, path, verb, **kwargs)
         else:
             if raw:
-                self.client.raw_request(
-                    verb, path, **kwargs).AndReturn(resp)
+                request = self.RAW
+                self._results[request].append(resp)
             else:
-                self.client.json_request(
-                    verb, path, **kwargs).AndReturn((resp, response))
+                request = self.JSON
+                self._results[request].append((resp, response))
+            self._expect_call(request, verb, path, **kwargs)
+
+    def _expect_call(self, request, *args, **kwargs):
+        self._calls[request].append(mock.call(*args, **kwargs))
 
     def mock_stack_list(self, path=None, show_nested=False):
         if path is None:
@@ -494,11 +505,11 @@ class ShellBase(TestCase):
         self.mock_request_get(path, resp_dict)
 
 
-class ShellTestNoMox(TestCase):
+class ShellTestNoMoxBase(TestCase):
     # NOTE(dhu):  This class is reserved for no Mox usage.  Instead,
     # use requests_mock to expose errors from json_request.
     def setUp(self):
-        super(ShellTestNoMox, self).setUp()
+        super(ShellTestNoMoxBase, self).setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
@@ -528,6 +539,8 @@ class ShellTestNoMox(TestCase):
 
         return out
 
+
+class ShellTestNoMox(ShellTestNoMoxBase):
     # This function tests err msg handling
     def test_stack_create_parameter_missing_err_msg(self):
         self.register_keystone_auth_fixture()
@@ -602,52 +615,51 @@ class ShellTestEndpointType(TestCase):
 
     def setUp(self):
         super(ShellTestEndpointType, self).setUp()
-        self.m = mox.Mox()
-        self.m.StubOutWithMock(http, '_construct_http_client')
-        self.m.StubOutWithMock(heatclient.v1.shell, 'do_stack_list')
-        self.addCleanup(self.m.VerifyAll)
-        self.addCleanup(self.m.UnsetStubs)
+        self.useFixture(fixtures.MockPatchObject(http,
+                                                 '_construct_http_client'))
+        self.useFixture(fixtures.MockPatchObject(heatclient.v1.shell,
+                                                 'do_stack_list'))
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_endpoint_type_public_url(self):
         self.register_keystone_auth_fixture()
         kwargs = {
             'auth_url': 'http://keystone.example.com:5000/',
-            'session': mox.IgnoreArg(),
-            'auth': mox.IgnoreArg(),
+            'session': mock.ANY,
+            'auth': mock.ANY,
             'service_type': 'orchestration',
             'endpoint_type': 'publicURL',
             'region_name': '',
             'username': 'username',
             'password': 'password',
             'include_pass': False,
-            'endpoint_override': mox.IgnoreArg(),
+            'endpoint_override': mock.ANY,
         }
-        http._construct_http_client(**kwargs)
-        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
-        self.m.ReplayAll()
         heatclient.shell.main(('stack-list',))
+
+        http._construct_http_client.assert_called_once_with(**kwargs)
+        heatclient.v1.shell.do_stack_list.assert_called_once()
 
     def test_endpoint_type_admin_url(self):
         self.register_keystone_auth_fixture()
         kwargs = {
             'auth_url': 'http://keystone.example.com:5000/',
-            'session': mox.IgnoreArg(),
-            'auth': mox.IgnoreArg(),
+            'session': mock.ANY,
+            'auth': mock.ANY,
             'service_type': 'orchestration',
             'endpoint_type': 'adminURL',
             'region_name': '',
             'username': 'username',
             'password': 'password',
             'include_pass': False,
-            'endpoint_override': mox.IgnoreArg(),
+            'endpoint_override': mock.ANY,
         }
-        http._construct_http_client(**kwargs)
-        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
-        self.m.ReplayAll()
         heatclient.shell.main(('--os-endpoint-type=adminURL', 'stack-list',))
+
+        http._construct_http_client.assert_called_once_with(**kwargs)
+        heatclient.v1.shell.do_stack_list.assert_called_once()
 
     def test_endpoint_type_internal_url(self):
         self.register_keystone_auth_fixture()
@@ -655,21 +667,21 @@ class ShellTestEndpointType(TestCase):
                                                      'internalURL'))
         kwargs = {
             'auth_url': 'http://keystone.example.com:5000/',
-            'session': mox.IgnoreArg(),
-            'auth': mox.IgnoreArg(),
+            'session': mock.ANY,
+            'auth': mock.ANY,
             'service_type': 'orchestration',
             'endpoint_type': 'internalURL',
             'region_name': '',
             'username': 'username',
             'password': 'password',
             'include_pass': False,
-            'endpoint_override': mox.IgnoreArg(),
+            'endpoint_override': mock.ANY,
         }
-        http._construct_http_client(**kwargs)
-        heatclient.v1.shell.do_stack_list(mox.IgnoreArg(), mox.IgnoreArg())
 
-        self.m.ReplayAll()
         heatclient.shell.main(('stack-list',))
+
+        http._construct_http_client.assert_called_once_with(**kwargs)
+        heatclient.v1.shell.do_stack_list.assert_called_once()
 
 
 class ShellTestCommon(ShellBase):
@@ -707,7 +719,6 @@ class ShellTestCommon(ShellBase):
     def test_debug_switch_raises_error(self):
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.Unauthorized("FAIL"))
-        self.m.ReplayAll()
 
         args = ['--debug', 'stack-list']
         self.assertRaises(exc.Unauthorized, heatclient.shell.main, args)
@@ -716,16 +727,12 @@ class ShellTestCommon(ShellBase):
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.CommandError("FAIL"))
 
-        self.m.ReplayAll()
-
         args = ['-d', 'stack-list']
         self.assertRaises(exc.CommandError, heatclient.shell.main, args)
 
     def test_no_debug_switch_no_raises_errors(self):
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.Unauthorized("FAIL"))
-
-        self.m.ReplayAll()
 
         args = ['stack-list']
         self.assertRaises(SystemExit, heatclient.shell.main, args)
@@ -759,8 +766,6 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         list_text = self.shell('stack-list')
 
         required = [
@@ -783,8 +788,6 @@ class ShellTestUserPass(ShellBase):
         }, True)
         self.mock_stack_list(expected_url, show_nested=True)
 
-        self.m.ReplayAll()
-
         list_text = self.shell('stack-list'
                                ' --show-nested')
 
@@ -801,7 +804,6 @@ class ShellTestUserPass(ShellBase):
     def test_stack_list_show_owner(self):
         self.register_keystone_auth_fixture()
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         list_text = self.shell('stack-list --show-owner')
 
@@ -819,8 +821,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_error('/stacks/bad', 'GET',
                                 exc.HTTPBadRequest(message))
 
-        self.m.ReplayAll()
-
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: " + message, str(e))
 
@@ -829,8 +829,6 @@ class ShellTestUserPass(ShellBase):
         message = "The Stack (bad) could not be found."
         self.mock_request_error('/stacks/bad', 'GET',
                                 exc.HTTPBadRequest(message))
-
-        self.m.ReplayAll()
 
         exc.verbose = 1
 
@@ -842,7 +840,6 @@ class ShellTestUserPass(ShellBase):
         invalid_json = "ERROR: {Invalid JSON Error."
         self.mock_request_error('/stacks/bad', 'GET',
                                 exc.HTTPBadRequest(invalid_json))
-        self.m.ReplayAll()
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: " + invalid_json, str(e))
 
@@ -852,7 +849,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_error('/stacks/bad', 'GET',
                                 exc.HTTPBadRequest(message))
-        self.m.ReplayAll()
 
         e = self.assertRaises(exc.HTTPException, self.shell, "stack-show bad")
         self.assertEqual("ERROR: Internal Error", str(e))
@@ -862,7 +858,6 @@ class ShellTestUserPass(ShellBase):
         message = "The Stack (bad) could not be found."
         self.mock_request_error('/stacks/bad', 'GET',
                                 exc.HTTPBadRequest(message))
-        self.m.ReplayAll()
 
         exc.verbose = 1
 
@@ -880,8 +875,6 @@ class ShellTestUserPass(ShellBase):
             "tags": [u'tag1', u'tag2']
         }}
         self.mock_request_get('/stacks/teststack/1', resp_dict)
-
-        self.m.ReplayAll()
 
         list_text = self.shell('stack-show teststack/1')
 
@@ -909,8 +902,6 @@ class ShellTestUserPass(ShellBase):
         }}
         params = {'resolve_outputs': False}
         self.mock_request_get('/stacks/teststack/1', resp_dict, params=params)
-
-        self.m.ReplayAll()
 
         list_text = self.shell(
             'stack-show teststack/1 --no-resolve-outputs')
@@ -954,7 +945,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_get('/stacks/teststack/1/outputs/%s' % output_key,
                               find_output(output_key))
-        self.m.ReplayAll()
 
     def _error_output_fake_response(self, output_key):
 
@@ -971,16 +961,12 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_get('/stacks/teststack/1/outputs/%s' % output_key,
                               resp_dict)
 
-        self.m.ReplayAll()
-
     def test_template_show_cfn(self):
         self.register_keystone_auth_fixture()
         template_data = open(os.path.join(TEST_VAR_DIR,
                                           'minimal.template')).read()
         resp_dict = jsonutils.loads(template_data)
         self.mock_request_get('/stacks/teststack/template', resp_dict)
-
-        self.m.ReplayAll()
 
         show_text = self.shell('template-show teststack')
         required = [
@@ -1003,7 +989,6 @@ class ShellTestUserPass(ShellBase):
                      "Parameters": {}}
 
         self.mock_request_get('/stacks/teststack/template', resp_dict)
-        self.m.ReplayAll()
 
         show_text = self.shell('template-show teststack')
         required = [
@@ -1026,8 +1011,6 @@ class ShellTestUserPass(ShellBase):
                      "outputs": {}}
         self.mock_request_get('/stacks/teststack/template', resp_dict)
 
-        self.m.ReplayAll()
-
         show_text = self.shell('template-show teststack')
         required = [
             "heat_template_version: '2013-05-23'",
@@ -1044,9 +1027,7 @@ class ShellTestUserPass(ShellBase):
                      "parameters": {},
                      "resources": {},
                      "outputs": {}}
-        self.mock_request_post('/validate', resp_dict, data=mox.IgnoreArg())
-
-        self.m.ReplayAll()
+        self.mock_request_post('/validate', resp_dict, data=mock.ANY)
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         cmd = 'template-validate -f %s -P foo=bar' % template_file
@@ -1074,9 +1055,7 @@ class ShellTestUserPass(ShellBase):
             "tags": tags
         }}
         self.mock_request_post('/stacks/preview', resp_dict,
-                               data=mox.IgnoreArg(), req_headers=True)
-
-        self.m.ReplayAll()
+                               data=mock.ANY, req_headers=True)
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         cmd = ('stack-preview teststack '
@@ -1117,10 +1096,9 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_create(self):
         self.register_keystone_auth_fixture()
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
@@ -1150,7 +1128,7 @@ class ShellTestUserPass(ShellBase):
             "creation_time": "2012-10-25T01:58:47Z"
         }}
         self.mock_request_post('/stacks', stack_create_resp_dict,
-                               data=mox.IgnoreArg(), req_headers=True,
+                               data=mock.ANY, req_headers=True,
                                status_code=201)
         self.mock_stack_list()
 
@@ -1169,7 +1147,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
                               event_list_resp_dict)
         self.mock_request_get('/stacks/teststack2', stack_show_resp_dict)
-        self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
@@ -1208,7 +1185,7 @@ class ShellTestUserPass(ShellBase):
             "creation_time": "2012-10-25T01:58:47Z"
         }}
         self.mock_request_post('/stacks', stack_create_resp_dict,
-                               data=mox.IgnoreArg(), req_headers=True,
+                               data=mock.ANY, req_headers=True,
                                status_code=201)
         self.mock_stack_list()
 
@@ -1228,8 +1205,6 @@ class ShellTestUserPass(ShellBase):
                               event_list_resp_dict)
         self.mock_request_get('/stacks/teststack2', stack_show_resp_dict)
 
-        self.m.ReplayAll()
-
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
 
         e = self.assertRaises(exc.StackFailure, self.shell,
@@ -1243,14 +1218,13 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_create_param_file(self):
         self.register_keystone_auth_fixture()
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
 
-        self.m.StubOutWithMock(utils, 'read_url_content')
+        self.useFixture(fixtures.MockPatchObject(utils, 'read_url_content',
+                                                 return_value='xxxxxx'))
         url = 'file://%s/private_key.env' % TEST_VAR_DIR
-        utils.read_url_content(url).AndReturn('xxxxxx')
-        self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
@@ -1270,17 +1244,17 @@ class ShellTestUserPass(ShellBase):
 
         for r in required:
             self.assertRegex(create_text, r)
+        utils.read_url_content.assert_called_once_with(url)
 
     def test_stack_create_only_param_file(self):
         self.register_keystone_auth_fixture()
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
 
-        self.m.StubOutWithMock(utils, 'read_url_content')
+        self.useFixture(fixtures.MockPatchObject(utils, 'read_url_content',
+                                                 return_value='xxxxxx'))
         url = 'file://%s/private_key.env' % TEST_VAR_DIR
-        utils.read_url_content(url).AndReturn('xxxxxx')
-        self.m.ReplayAll()
 
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         create_text = self.shell(
@@ -1298,6 +1272,7 @@ class ShellTestUserPass(ShellBase):
 
         for r in required:
             self.assertRegex(create_text, r)
+        utils.read_url_content.assert_called_once_with(url)
 
     def test_stack_create_timeout(self):
         self.register_keystone_auth_fixture()
@@ -1318,8 +1293,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_post('/stacks', None, data=expected_data,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         create_text = self.shell(
             'stack-create teststack '
@@ -1361,8 +1334,6 @@ class ShellTestUserPass(ShellBase):
             data=expected_data)
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
@@ -1383,9 +1354,10 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_create_url(self):
         self.register_keystone_auth_fixture()
-        self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen('http://no.where/minimal.template').AndReturn(
-            six.StringIO('{"AWSTemplateFormatVersion" : "2010-09-09"}'))
+        url_content = six.StringIO(
+            '{"AWSTemplateFormatVersion" : "2010-09-09"}')
+        self.useFixture(fixtures.MockPatchObject(request, 'urlopen',
+                                                 return_value=url_content))
 
         expected_data = {
             'files': {},
@@ -1403,8 +1375,6 @@ class ShellTestUserPass(ShellBase):
                                status_code=201, req_headers=True)
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         create_text = self.shell(
             'stack-create teststack '
             '--template-url=http://no.where/minimal.template '
@@ -1420,6 +1390,8 @@ class ShellTestUserPass(ShellBase):
         ]
         for r in required:
             self.assertRegex(create_text, r)
+        request.urlopen.assert_called_once_with(
+            'http://no.where/minimal.template')
 
     def test_stack_create_object(self):
         self.register_keystone_auth_fixture()
@@ -1431,11 +1403,9 @@ class ShellTestUserPass(ShellBase):
             template_data,
             raw=True)
 
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         create_text = self.shell(
             'stack-create teststack2 '
@@ -1472,8 +1442,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_post('/stacks', None, data=expected_data,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         create_text = self.shell(
             'stack-create teststack '
@@ -1516,7 +1484,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_delete('/stacks/teststack/1/abandon',
                                  abandoned_stack)
 
-        self.m.ReplayAll()
         abandon_resp = self.shell('stack-abandon teststack/1')
         self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
 
@@ -1542,7 +1509,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_delete('/stacks/teststack/1/abandon',
                                  abandoned_stack)
-        self.m.ReplayAll()
 
         with tempfile.NamedTemporaryFile() as file_obj:
             self.shell('stack-abandon teststack/1 -O %s' % file_obj.name)
@@ -1551,11 +1517,9 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_adopt(self):
         self.register_keystone_auth_fixture()
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         adopt_data_file = os.path.join(TEST_VAR_DIR, 'adopt_stack_data.json')
         adopt_text = self.shell(
@@ -1577,10 +1541,9 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_adopt_with_environment(self):
         self.register_keystone_auth_fixture()
-        self.mock_request_post('/stacks', None, data=mox.IgnoreArg(),
+        self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         adopt_data_file = os.path.join(TEST_VAR_DIR, 'adopt_stack_data.json')
         environment_file = os.path.join(TEST_VAR_DIR, 'environment.json')
@@ -1592,14 +1555,12 @@ class ShellTestUserPass(ShellBase):
     def test_stack_adopt_without_data(self):
         self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
-        self.m.ReplayAll()
         self.shell_error('stack-adopt teststack ', failed_msg,
                          exception=exc.CommandError)
 
     def test_stack_adopt_empty_data_file(self):
         failed_msg = 'Invalid adopt-file, no data!'
         self.register_keystone_auth_fixture()
-        self.m.ReplayAll()
         with tempfile.NamedTemporaryFile() as file_obj:
             self.shell_error(
                 'stack-adopt teststack '
@@ -1615,14 +1576,13 @@ class ShellTestUserPass(ShellBase):
                          'environment': {},
                          'template': template_data,
                          'disable_rollback': False,
-                         'parameters': mox.IgnoreArg()
+                         'parameters': mock.ANY
                          }
         self.mock_request_put(
             '/stacks/teststack2/2',
             'The request is accepted for processing.',
             data=expected_data)
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2/2 '
@@ -1650,14 +1610,13 @@ class ShellTestUserPass(ShellBase):
                          'environment': {},
                          'template': template_data,
                          'disable_rollback': True,
-                         'parameters': mox.IgnoreArg()
+                         'parameters': mock.ANY
                          }
         self.mock_request_put(
             '/stacks/teststack2',
             'The request is accepted for processing.',
             data=expected_data)
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2 '
@@ -1678,7 +1637,6 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_update_fault_rollback_value(self):
         self.register_keystone_auth_fixture()
-        self.m.ReplayAll()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self.shell_error('stack-update teststack2/2 '
                          '--rollback Foo '
@@ -1695,14 +1653,13 @@ class ShellTestUserPass(ShellBase):
         expected_data = {'files': {},
                          'environment': {},
                          'template': template_data,
-                         'parameters': mox.IgnoreArg()
+                         'parameters': mock.ANY
                          }
         self.mock_request_put(
             '/stacks/teststack2',
             'The request is accepted for processing.',
             data=expected_data)
         self.mock_stack_list()
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2 '
@@ -1737,8 +1694,6 @@ class ShellTestUserPass(ShellBase):
         )
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
@@ -1770,8 +1725,6 @@ class ShellTestUserPass(ShellBase):
             data=expected_data
         )
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2/2 '
@@ -1808,8 +1761,6 @@ class ShellTestUserPass(ShellBase):
             data=expected_data
         )
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2/2 '
@@ -1851,8 +1802,6 @@ class ShellTestUserPass(ShellBase):
         )
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
@@ -1888,8 +1837,6 @@ class ShellTestUserPass(ShellBase):
         )
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--existing')
@@ -1920,8 +1867,6 @@ class ShellTestUserPass(ShellBase):
             data=expected_data
         )
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         update_text = self.shell(
             'stack-update teststack2/2 '
@@ -1988,8 +1933,6 @@ class ShellTestUserPass(ShellBase):
             self.mock_request_patch(path, resp_dict, data=expected_data)
         else:
             self.mock_request_put(path, resp_dict, data=expected_data)
-
-        self.m.ReplayAll()
 
     def test_stack_update_dry_run(self):
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
@@ -2071,12 +2014,9 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_delete('/stacks/teststack2/2', None)
 
-        self.m.ReplayAll()
-
         resp = self.shell('stack-delete teststack2/2')
         resp_text = 'Are you sure you want to delete this stack(s) [y/N]? '
         self.assertEqual(resp_text, resp)
-        self.m.ReplayAll()
 
         mock_stdin.readline.return_value = 'y'
         resp = self.shell('stack-delete teststack2/2')
@@ -2098,7 +2038,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_delete('/stacks/teststack2/2')
 
-        self.m.ReplayAll()
         # -y from the shell should skip the n/y prompt
         resp = self.shell('stack-delete -y teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
@@ -2108,7 +2047,6 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         self.mock_request_delete('/stacks/teststack2/2')
 
-        self.m.ReplayAll()
         resp = self.shell('stack-delete teststack2/2')
         msg = 'Request to delete stack teststack2/2 has been accepted.'
         self.assertRegex(resp, msg)
@@ -2118,7 +2056,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_delete('/stacks/teststack/1')
         self.mock_request_delete('/stacks/teststack2/2')
 
-        self.m.ReplayAll()
         resp = self.shell('stack-delete teststack/1 teststack2/2')
         msg1 = 'Request to delete stack teststack/1 has been accepted.'
         msg2 = 'Request to delete stack teststack2/2 has been accepted.'
@@ -2129,7 +2066,6 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks/teststack1/1', 'DELETE',
                                 exc.HTTPNotFound())
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell, 'stack-delete teststack1/1')
         self.assertIn('Unable to delete 1 of the 1 stacks.',
@@ -2139,7 +2075,6 @@ class ShellTestUserPass(ShellBase):
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks/teststack1/1', 'DELETE',
                                 exc.Forbidden())
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell, 'stack-delete teststack1/1')
         self.assertIn('Unable to delete 1 of the 1 stacks.',
@@ -2154,8 +2089,6 @@ class ShellTestUserPass(ShellBase):
             }
         }
         self.mock_request_get('/build_info', resp_dict)
-
-        self.m.ReplayAll()
 
         build_info_text = self.shell('build-info')
 
@@ -2180,7 +2113,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_post('/stacks/teststack/1/snapshots',
                                resp_dict, data={})
 
-        self.m.ReplayAll()
         resp = self.shell('stack-snapshot teststack/1')
         self.assertEqual(resp_dict, jsonutils.loads(resp))
 
@@ -2197,7 +2129,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_get('/stacks/teststack/1/snapshots', resp_dict)
 
-        self.m.ReplayAll()
         list_text = self.shell('snapshot-list teststack/1')
 
         required = [
@@ -2223,7 +2154,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_get('/stacks/teststack/1/snapshots/2', resp_dict)
 
-        self.m.ReplayAll()
         resp = self.shell('snapshot-show teststack/1 2')
         self.assertEqual(resp_dict, jsonutils.loads(resp))
 
@@ -2246,13 +2176,10 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_delete('/stacks/teststack/1/snapshots/2', resp_dict)
 
-        self.m.ReplayAll()
-
         resp = self.shell('snapshot-delete teststack/1 2')
         resp_text = ('Are you sure you want to delete the snapshot of '
                      'this stack [Y/N]?')
         self.assertEqual(resp_text, resp)
-        self.m.ReplayAll()
 
         mock_stdin.readline.return_value = 'Y'
         resp = self.shell('snapshot-delete teststack/1 2')
@@ -2279,7 +2206,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_delete('/stacks/teststack/1/snapshots/2', resp_dict)
 
-        self.m.ReplayAll()
         # -y from the shell should skip the n/y prompt
         resp = self.shell('snapshot-delete -y teststack/1 2')
         msg = _("Request to delete the snapshot 2 of the stack "
@@ -2295,7 +2221,6 @@ class ShellTestUserPass(ShellBase):
         }}
         self.mock_request_delete('/stacks/teststack/1/snapshots/2', resp_dict)
 
-        self.m.ReplayAll()
         resp = self.shell('snapshot-delete teststack/1 2')
         msg = _("Request to delete the snapshot 2 of the stack "
                 "teststack/1 has been accepted.")
@@ -2307,7 +2232,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_post('/stacks/teststack/1/snapshots/2/restore',
                                None, status_code=204)
 
-        self.m.ReplayAll()
         resp = self.shell('stack-restore teststack/1 2')
         self.assertEqual("", resp)
 
@@ -2324,7 +2248,6 @@ class ShellTestUserPass(ShellBase):
 
         self.mock_request_get('/stacks/teststack/1/outputs', resp_dict)
 
-        self.m.ReplayAll()
         list_text = self.shell('output-list teststack/1')
 
         required = [
@@ -2360,7 +2283,6 @@ class ShellTestUserPass(ShellBase):
                                 exc.HTTPNotFound())
         self.mock_request_get('/stacks/teststack/1', stack_dict)
 
-        self.m.ReplayAll()
         list_text = self.shell('output-list teststack/1')
 
         required = [
@@ -2393,7 +2315,6 @@ class ShellTestUserPass(ShellBase):
         self.mock_request_get('/stacks/teststack/1/outputs', resp_dict)
         self.mock_request_get('/stacks/teststack/1/outputs/key', resp_dict1)
 
-        self.m.ReplayAll()
         list_text = self.shell('output-show --with-detail teststack/1 --all')
         required = [
             'output_key',
@@ -2416,7 +2337,6 @@ class ShellTestUserPass(ShellBase):
         }}
         self.mock_request_get('/stacks/teststack/1/outputs/key', resp_dict)
 
-        self.m.ReplayAll()
         resp = self.shell('output-show --with-detail teststack/1 key')
         required = [
             'output_key',
@@ -2448,7 +2368,6 @@ class ShellTestUserPass(ShellBase):
                                 exc.HTTPNotFound())
         self.mock_request_get('/stacks/teststack/1', stack_dict)
 
-        self.m.ReplayAll()
         resp = self.shell('output-show --with-detail teststack/1 key')
         required = [
             'output_key',
@@ -2577,8 +2496,6 @@ class ShellTestActions(ShellBase):
             status_code=202)
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         update_text = self.shell('stack-cancel-update teststack2')
 
         required = [
@@ -2599,8 +2516,6 @@ class ShellTestActions(ShellBase):
             data=expected_data,
             status_code=202)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         check_text = self.shell('action-check teststack2')
 
@@ -2623,8 +2538,6 @@ class ShellTestActions(ShellBase):
             status_code=202)
         self.mock_stack_list()
 
-        self.m.ReplayAll()
-
         suspend_text = self.shell('action-suspend teststack2')
 
         required = [
@@ -2645,8 +2558,6 @@ class ShellTestActions(ShellBase):
             data=expected_data,
             status_code=202)
         self.mock_stack_list()
-
-        self.m.ReplayAll()
 
         resume_text = self.shell('action-resume teststack2')
 
@@ -2690,8 +2601,6 @@ class ShellTestEvents(ShellBase):
                     resource_name))),
             resp_dict)
 
-        self.m.ReplayAll()
-
         event_list_text = self.shell('event-list {0} --resource {1}'.format(
                                      stack_id, resource_name))
 
@@ -2724,7 +2633,6 @@ class ShellTestEvents(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
                               resp_dict)
-        self.m.ReplayAll()
 
         event_list_text = self.shell('event-list {0} --format log'.format(
             stack_id))
@@ -2768,8 +2676,6 @@ class ShellTestEvents(ShellBase):
             ),
             resp_dict)
 
-        self.m.ReplayAll()
-
         event_list_text = self.shell('event-show {0} {1} {2}'.format(
                                      stack_id, resource_name,
                                      self.event_id_one))
@@ -2811,8 +2717,6 @@ class ShellTestEventsNested(ShellBase):
         stack_id = 'teststack/1'
         resource_name = 'aResource'
 
-        self.m.ReplayAll()
-
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'event-list {0} --resource {1} --nested-depth 5'.format(
@@ -2838,7 +2742,6 @@ class ShellTestEventsNested(ShellBase):
 
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
                               resp_dict)
-        self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 0' % stack_id)
         required = ['id', 'eventid1', 'eventid2']
         for r in required:
@@ -2887,7 +2790,6 @@ class ShellTestEventsNested(ShellBase):
                          % stack_id)
         self._stub_event_list_response_old_api(
             stack_id, nested_id, timestamps, first_request)
-        self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1' % stack_id)
         required = ['id', 'p_eventid1', 'p_eventid2', 'n_eventid1',
                     'n_eventid2', 'stack_name', 'teststack', 'nested']
@@ -2910,7 +2812,6 @@ class ShellTestEventsNested(ShellBase):
                          '&sort_dir=asc' % stack_id)
         self._stub_event_list_response_old_api(
             stack_id, nested_id, timestamps, first_request)
-        self.m.ReplayAll()
         list_text = self.shell(
             'event-list %s --nested-depth 1 --marker n_eventid1' % stack_id)
         required = ['id', 'p_eventid2', 'n_eventid1', 'n_eventid2',
@@ -2935,7 +2836,6 @@ class ShellTestEventsNested(ShellBase):
                          '&sort_dir=asc' % stack_id)
         self._stub_event_list_response_old_api(
             stack_id, nested_id, timestamps, first_request)
-        self.m.ReplayAll()
         list_text = self.shell(
             'event-list %s --nested-depth 1 --limit 2' % stack_id)
         required = ['id', 'p_eventid1', 'n_eventid1',
@@ -2999,7 +2899,6 @@ class ShellTestEventsNested(ShellBase):
 
         url = '/stacks/%s/events?nested_depth=1&sort_dir=asc' % stack_id
         self.mock_request_get(url, ev_resp_dict)
-        self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1 --format log'
                                % stack_id)
         self.assertEqual('''\
@@ -3018,7 +2917,6 @@ class ShellTestEventsNested(ShellBase):
         url = ('/stacks/%s/events?marker=n_eventid1&nested_depth=1'
                '&sort_dir=asc' % stack_id)
         self.mock_request_get(url, ev_resp_dict)
-        self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1 --format log '
                                '--marker n_eventid1'
                                % stack_id)
@@ -3037,7 +2935,6 @@ class ShellTestEventsNested(ShellBase):
         url = ('/stacks/%s/events?limit=2&nested_depth=1&sort_dir=asc'
                % stack_id)
         self.mock_request_get(url, ev_resp_dict)
-        self.m.ReplayAll()
         list_text = self.shell('event-list %s --nested-depth 1 --format log '
                                '--limit 2'
                                % stack_id)
@@ -3115,7 +3012,6 @@ class ShellTestHookFunctions(ShellBase):
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
         self._stub_responses(stack_id, nested_id, 'CREATE')
-        self.m.ReplayAll()
         list_text = self.shell('hook-poll %s --nested-depth 1' % stack_id)
         hook_reason = 'CREATE paused until Hook pre-create is cleared'
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
@@ -3130,7 +3026,6 @@ class ShellTestHookFunctions(ShellBase):
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
         self._stub_responses(stack_id, nested_id, 'UPDATE')
-        self.m.ReplayAll()
         list_text = self.shell('hook-poll %s --nested-depth 1' % stack_id)
         hook_reason = 'UPDATE paused until Hook pre-update is cleared'
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
@@ -3145,7 +3040,6 @@ class ShellTestHookFunctions(ShellBase):
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
         self._stub_responses(stack_id, nested_id, 'DELETE')
-        self.m.ReplayAll()
         list_text = self.shell('hook-poll %s --nested-depth 1' % stack_id)
         hook_reason = 'DELETE paused until Hook pre-delete is cleared'
         required = ['id', 'p_eventid2', 'stack_name', 'teststack', hook_reason]
@@ -3159,7 +3053,6 @@ class ShellTestHookFunctions(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, status='COMPLETE')
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'hook-poll %s --nested-depth 1' % stack_id)
@@ -3169,7 +3062,6 @@ class ShellTestHookFunctions(ShellBase):
     def test_shell_nested_depth_invalid_value(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'hook-poll %s --nested-depth Z' % stack_id)
@@ -3179,7 +3071,6 @@ class ShellTestHookFunctions(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, status='COMPLETE')
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'hook-clear %s aresource' % stack_id)
@@ -3190,7 +3081,6 @@ class ShellTestHookFunctions(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, action='BADACTION')
-        self.m.ReplayAll()
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'hook-clear %s aresource' % stack_id)
@@ -3222,8 +3112,6 @@ class ShellTestResources(ShellBase):
             resp_dict["resources"][0]["resource_name"] = "aResource"
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
-
-        self.m.ReplayAll()
 
         resource_list_text = self.shell('resource-list {0}'.format(stack_id))
 
@@ -3259,8 +3147,6 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
 
-        self.m.ReplayAll()
-
         resource_list_text = self.shell('resource-list {0}'.format(stack_id))
 
         self.assertEqual('''\
@@ -3290,8 +3176,6 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources?%s' % (
             stack_id, query_args), resp_dict)
-
-        self.m.ReplayAll()
 
         shell_cmd = 'resource-list %s %s' % (stack_id, cmd_args)
 
@@ -3349,8 +3233,6 @@ class ShellTestResources(ShellBase):
                     resource_name))
             ), resp_dict)
 
-        self.m.ReplayAll()
-
         resource_show_text = self.shell(
             'resource-show {0} {1} --with-attr attr_a '
             '--with-attr attr_b'.format(
@@ -3394,8 +3276,6 @@ class ShellTestResources(ShellBase):
             data={'message': 'Content'}
         )
 
-        self.m.ReplayAll()
-
         text = self.shell(
             'resource-signal {0} {1} -D {{"message":"Content"}}'.format(
                 stack_id, resource_name))
@@ -3415,7 +3295,6 @@ class ShellTestResources(ShellBase):
             '',
             data=None
         )
-        self.m.ReplayAll()
 
         text = self.shell(
             'resource-signal {0} {1}'.format(stack_id, resource_name))
@@ -3425,8 +3304,6 @@ class ShellTestResources(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
-
-        self.m.ReplayAll()
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
@@ -3439,8 +3316,6 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         resource_name = 'aResource'
 
-        self.m.ReplayAll()
-
         error = self.assertRaises(
             exc.CommandError, self.shell,
             'resource-signal {0} {1} -D "message"'.format(
@@ -3451,8 +3326,6 @@ class ShellTestResources(ShellBase):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
-
-        self.m.ReplayAll()
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
@@ -3475,8 +3348,6 @@ class ShellTestResources(ShellBase):
             '',
             data={'message': 'Content'}
         )
-
-        self.m.ReplayAll()
 
         with tempfile.NamedTemporaryFile() as data_file:
             data_file.write(b'{"message":"Content"}')
@@ -3502,8 +3373,6 @@ class ShellTestResources(ShellBase):
             data={'mark_unhealthy': True,
                   'resource_status_reason': 'Any'})
 
-        self.m.ReplayAll()
-
         text = self.shell(
             'resource-mark-unhealthy {0} {1} Any'.format(
                 stack_id, resource_name))
@@ -3525,8 +3394,6 @@ class ShellTestResources(ShellBase):
             data={'mark_unhealthy': False,
                   'resource_status_reason': 'Any'})
 
-        self.m.ReplayAll()
-
         text = self.shell(
             'resource-mark-unhealthy --reset {0} {1} Any'.format(
                 stack_id, resource_name))
@@ -3547,8 +3414,6 @@ class ShellTestResources(ShellBase):
             req_headers=False,
             data={'mark_unhealthy': True,
                   'resource_status_reason': ''})
-
-        self.m.ReplayAll()
 
         text = self.shell(
             'resource-mark-unhealthy {0} {1}'.format(
@@ -3572,8 +3437,6 @@ class ShellTestResourceTypes(ShellBase):
             '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
             '?template_type=hot', resp_dict)
 
-        self.m.ReplayAll()
-
         show_text = self.shell(
             'resource-type-template -F yaml -t hot OS::Nova::KeyPair')
         required = [
@@ -3595,8 +3458,6 @@ class ShellTestResourceTypes(ShellBase):
         self.mock_request_get(
             '/resource_types/OS%3A%3ANova%3A%3AKeyPair/template'
             '?template_type=cfn', resp_dict)
-
-        self.m.ReplayAll()
 
         show_text = self.shell(
             'resource-type-template -F json OS::Nova::KeyPair')
@@ -3686,22 +3547,25 @@ class ShellTestConfig(ShellBase):
             'id': 'abcd'
         }}
 
-        self.m.StubOutWithMock(request, 'urlopen')
-        request.urlopen('file:///tmp/defn').AndReturn(
-            six.StringIO(yaml.safe_dump(definition, indent=2)))
-        request.urlopen('file:///tmp/config_script').AndReturn(
-            six.StringIO('the config script'))
+        output = [
+            six.StringIO(yaml.safe_dump(definition, indent=2)),
+            six.StringIO('the config script'),
+        ]
+        self.useFixture(fixtures.MockPatchObject(request, 'urlopen',
+                                                 side_effect=output))
 
         self.mock_request_post('/validate', resp_dict, data=validate_template)
         self.mock_request_post('/software_configs', resp_dict,
                                data=create_dict)
 
-        self.m.ReplayAll()
-
         text = self.shell('config-create -c /tmp/config_script '
                           '-g script -f /tmp/defn config_name')
 
         self.assertEqual(resp_dict['software_config'], jsonutils.loads(text))
+        request.urlopen.assert_has_calls([
+            mock.call('file:///tmp/defn'),
+            mock.call('file:///tmp/config_script'),
+        ])
 
     def test_config_show(self):
         self.register_keystone_auth_fixture()
@@ -3717,8 +3581,6 @@ class ShellTestConfig(ShellBase):
         self.mock_request_get('/software_configs/abcd', resp_dict)
         self.mock_request_error('/software_configs/abcde', 'GET',
                                 exc.HTTPNotFound())
-
-        self.m.ReplayAll()
 
         text = self.shell('config-show abcd')
 
@@ -3747,7 +3609,6 @@ class ShellTestConfig(ShellBase):
                                 exc.HTTPNotFound())
         self.mock_request_error('/software_configs/qwer', 'DELETE',
                                 exc.HTTPNotFound())
-        self.m.ReplayAll()
 
         self.assertEqual('', self.shell('config-delete abcd qwer'))
 
@@ -3825,8 +3686,6 @@ class ShellTestDeployment(ShellBase):
         self.mock_request_error('/software_configs/defgh', 'GET',
                                 exc.HTTPNotFound())
 
-        self.m.ReplayAll()
-
         text = self.shell('deployment-create -c defg -sinst01 xxx')
 
         required = [
@@ -3848,7 +3707,6 @@ class ShellTestDeployment(ShellBase):
 
         self.assertRaises(exc.CommandError, self.shell,
                           'deployment-create -c defgh -s inst01 yyy')
-        self.m.VerifyAll()
 
     def test_deploy_list(self):
         self.register_keystone_auth_fixture()
@@ -3871,8 +3729,6 @@ class ShellTestDeployment(ShellBase):
         }
         self.mock_request_get('/software_deployments?', resp_dict)
         self.mock_request_get('/software_deployments?server_id=123', resp_dict)
-
-        self.m.ReplayAll()
 
         list_text = self.shell('deployment-list')
 
@@ -3915,8 +3771,6 @@ class ShellTestDeployment(ShellBase):
         self.mock_request_get('/software_deployments/defg', resp_dict)
         self.mock_request_error('/software_deployments/defgh', 'GET',
                                 exc.HTTPNotFound())
-
-        self.m.ReplayAll()
 
         text = self.shell('deployment-show defg')
 
@@ -3974,8 +3828,6 @@ class ShellTestDeployment(ShellBase):
         _delete_request_success('defg')
         _delete_request_success('qwer')
 
-        self.m.ReplayAll()
-
         error = self.assertRaises(
             exc.CommandError, self.shell, 'deployment-delete defg qwer')
         self.assertIn('Unable to delete 2 of the 2 deployments.',
@@ -3999,8 +3851,6 @@ class ShellTestDeployment(ShellBase):
             {'id': 'defg'}
         ]}
         self.mock_request_get('/software_deployments/metadata/aaaa', resp_dict)
-
-        self.m.ReplayAll()
 
         build_info_text = self.shell('deployment-metadata-show aaaa')
 
@@ -4035,8 +3885,6 @@ class ShellTestDeployment(ShellBase):
                                 exc.HTTPNotFound())
         for a in range(9):
             self.mock_request_get('/software_deployments/defg', resp_dict)
-
-        self.m.ReplayAll()
 
         self.assertRaises(exc.CommandError, self.shell,
                           'deployment-output-show defgh result')
@@ -4097,8 +3945,6 @@ class ShellTestBuildInfo(ShellBase):
         }
         self.mock_request_get('/build_info', resp_dict)
 
-        self.m.ReplayAll()
-
         build_info_text = self.shell('build-info')
 
         required = [
@@ -4140,13 +3986,10 @@ class ShellTestUserPassKeystoneV3(ShellTestUserPass):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
 
-class ShellTestStandaloneToken(ShellTestUserPass):
-
-    # Rerun all ShellTestUserPass test in standalone mode, where we
-    # specify --os-no-client-auth, a token and Heat endpoint
+class StandaloneTokenMixin(object):
     def setUp(self):
         self.token = 'a_token'
-        super(ShellTestStandaloneToken, self).setUp()
+        super(StandaloneTokenMixin, self).setUp()
         self.client = http.HTTPClient
 
     def _set_fake_env(self):
@@ -4164,6 +4007,11 @@ class ShellTestStandaloneToken(ShellTestUserPass):
         }
         self.set_fake_env(fake_env)
 
+
+class ShellTestStandaloneToken(StandaloneTokenMixin, ShellTestUserPass):
+    # Rerun all ShellTestUserPass test in standalone mode, where we
+    # specify --os-no-client-auth, a token and Heat endpoint
+
     def test_bad_template_file(self):
         self.register_keystone_auth_fixture()
         failed_msg = 'Error parsing template '
@@ -4180,25 +4028,13 @@ class ShellTestStandaloneToken(ShellTestUserPass):
             self.shell_error("stack-create ts -f %s" % bad_json_file.name,
                              failed_msg, exception=exc.CommandError)
 
+
+class ShellTestStandaloneTokenArgs(StandaloneTokenMixin, ShellTestNoMoxBase):
+
     def test_commandline_args_passed_to_requests(self):
         """Check that we have sent the proper arguments to requests."""
         self.register_keystone_auth_fixture()
 
-        # we need a mock for 'request' to check whether proper arguments
-        # sent to request in the form of HTTP headers. So unset
-        # stubs(json_request, raw_request) and create a new mock for request.
-        self.m.UnsetStubs()
-        self.m.StubOutWithMock(requests, 'request')
-
-        # Record a 200
-        mock_conn = http.requests.request(
-            'GET', 'http://no.where/stacks?',
-            allow_redirects=False,
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'X-Auth-Token': self.token,
-                     'X-Auth-Url': BASE_URL,
-                     'User-Agent': 'python-heatclient'})
         resp_dict = {"stacks": [
             {
                 "id": "1",
@@ -4208,14 +4044,12 @@ class ShellTestStandaloneToken(ShellTestUserPass):
                 "stack_status": 'CREATE_COMPLETE',
                 "creation_time": "2014-10-15T01:58:47Z"
             }]}
-        mock_conn.AndReturn(
-            fakes.FakeHTTPResponse(
-                200, 'OK',
-                {'content-type': 'application/json'},
-                jsonutils.dumps(resp_dict)))
+        self.requests.get('http://no.where/stacks',
+                          status_code=200,
+                          headers={'Content-Type': 'application/json'},
+                          json=resp_dict)
 
         # Replay, create client, assert
-        self.m.ReplayAll()
         list_text = self.shell('stack-list')
         required = [
             'id',
@@ -4420,7 +4254,6 @@ class ShellTestManageService(ShellBase):
 
         exc.verbose = 1
 
-        self.m.ReplayAll()
         e = self.assertRaises(exc.HTTPException,
                               self.shell, "service-list")
         self.assertIn(message, str(e))
@@ -4442,7 +4275,6 @@ class ShellTestManageService(ShellBase):
         }
         self.mock_request_get('/services', resp_dict)
 
-        self.m.ReplayAll()
         services_text = self.shell('service-list')
 
         required = [
