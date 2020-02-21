@@ -170,7 +170,7 @@ def print_dict(d, formatters=None):
                                  caching=False, print_empty=False)
     pt.align = 'l'
 
-    for field in d.keys():
+    for field in d:
         if field in formatters:
             pt.add_row([field, formatters[field](d[field])])
         else:

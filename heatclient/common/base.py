@@ -435,7 +435,7 @@ class Resource(object):
 
     def __repr__(self):
         reprkeys = sorted(k
-                          for k in self.__dict__.keys()
+                          for k in self.__dict__
                           if k[0] != '_' and k != 'manager')
         info = ", ".join("%s=%s" % (k, getattr(self, k)) for k in reprkeys)
         class_name = reflection.get_class_name(self, fully_qualified=False)
