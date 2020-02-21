@@ -91,6 +91,14 @@ class CreateStack(command.ShowOne):
             help=_('Wait until stack goes to CREATE_COMPLETE or CREATE_FAILED')
         )
         parser.add_argument(
+            '--poll',
+            metavar='SECONDS',
+            type=int,
+            default=5,
+            help=_('Poll interval in seconds for use with --wait, '
+                   'defaults to 5.')
+        )
+        parser.add_argument(
             '--tags',
             metavar='<tag1,tag2...>',
             help=_('A list of tags to associate with the stack')
@@ -184,7 +192,8 @@ class CreateStack(command.ShowOne):
         stack = client.stacks.create(**fields)['stack']
         if parsed_args.wait:
             stack_status, msg = event_utils.poll_for_events(
-                client, parsed_args.name, action='CREATE')
+                client, parsed_args.name, action='CREATE',
+                poll_period=parsed_args.poll)
             if stack_status == 'CREATE_FAILED':
                 raise exc.CommandError(msg)
 
