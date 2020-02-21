@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Adds ``files-container`` option for stack create, update and
+    template validate with openstackclient. If specified, no local
+    files other than root template would be sent to heat engine.
+    Heat engine would try and download the all other files relative
+    to the ``files-container``, else raise an error.

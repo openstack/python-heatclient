@@ -27,7 +27,8 @@ from heatclient.common import utils
 from heatclient import exc
 
 
-def process_template_path(template_path, object_request=None, existing=False):
+def process_template_path(template_path, object_request=None,
+                          existing=False, fetch_child=True):
     """Read template from template path.
 
     Attempt to read template first as a file or url. If that is unsuccessful,
@@ -37,17 +38,20 @@ def process_template_path(template_path, object_request=None, existing=False):
     :param object_request: custom object request function used to get template
                            if local or uri path fails
     :param existing: if the current stack's template should be used
+    :param fetch_child: Whether to fetch the child templates
     :returns: get_file dict and template contents
     :raises: error.URLError
     """
     try:
         return get_template_contents(template_file=template_path,
-                                     existing=existing)
+                                     existing=existing,
+                                     fetch_child=fetch_child)
     except error.URLError as template_file_exc:
         try:
             return get_template_contents(template_object=template_path,
                                          object_request=object_request,
-                                         existing=existing)
+                                         existing=existing,
+                                         fetch_child=fetch_child)
         except exc.HTTPNotFound:
             # The initial exception gives the user better failure context.
             raise template_file_exc
@@ -55,7 +59,8 @@ def process_template_path(template_path, object_request=None, existing=False):
 
 def get_template_contents(template_file=None, template_url=None,
                           template_object=None, object_request=None,
-                          files=None, existing=False):
+                          files=None, existing=False,
+                          fetch_child=True):
 
     is_object = False
     # Transform a bare file path to a file:// URL.
@@ -93,12 +98,13 @@ def get_template_contents(template_file=None, template_url=None,
     except ValueError as e:
         raise exc.CommandError(_('Error parsing template %(url)s %(error)s') %
                                {'url': template_url, 'error': e})
-
-    tmpl_base_url = utils.base_url_for_url(template_url)
     if files is None:
         files = {}
-    resolve_template_get_files(template, files, tmpl_base_url, is_object,
-                               object_request)
+
+    if fetch_child:
+        tmpl_base_url = utils.base_url_for_url(template_url)
+        resolve_template_get_files(template, files, tmpl_base_url, is_object,
+                                   object_request)
     return files, template
 
 
@@ -212,7 +218,8 @@ def process_multiple_environments_and_files(env_paths=None, template=None,
                                             template_url=None,
                                             env_path_is_object=None,
                                             object_request=None,
-                                            env_list_tracker=None):
+                                            env_list_tracker=None,
+                                            fetch_env_files=True):
     """Reads one or more environment files.
 
     Reads in each specified environment file and returns a dictionary
@@ -239,6 +246,7 @@ def process_multiple_environments_and_files(env_paths=None, template=None,
     :type  env_list_tracker: list or None
     :return: tuple of files dict and a dict of the consolidated environment
     :rtype:  tuple
+    :param fetch_env_files: fetch env_files or leave it to server
     """
     merged_files = {}
     merged_env = {}
@@ -249,24 +257,28 @@ def process_multiple_environments_and_files(env_paths=None, template=None,
 
     if env_paths:
         for env_path in env_paths:
-            files, env = process_environment_and_files(
-                env_path=env_path,
-                template=template,
-                template_url=template_url,
-                env_path_is_object=env_path_is_object,
-                object_request=object_request,
-                include_env_in_files=include_env_in_files)
+            if fetch_env_files:
+                files, env = process_environment_and_files(
+                    env_path=env_path,
+                    template=template,
+                    template_url=template_url,
+                    env_path_is_object=env_path_is_object,
+                    object_request=object_request,
+                    include_env_in_files=include_env_in_files)
 
-            # 'files' looks like {"filename1": contents, "filename2": contents}
-            # so a simple update is enough for merging
-            merged_files.update(files)
+                # 'files' looks like:
+                # {"filename1": contents, "filename2": contents}
+                # so a simple update is enough for merging
+                merged_files.update(files)
 
-            # 'env' can be a deeply nested dictionary, so a simple update is
-            # not enough
-            merged_env = deep_update(merged_env, env)
+                # 'env' can be a deeply nested dictionary, so a simple
+                # update is not enough
+                merged_env = deep_update(merged_env, env)
+                env_url = utils.normalise_file_path_to_url(env_path)
+            else:
+                env_url = env_path
 
             if env_list_tracker is not None:
-                env_url = utils.normalise_file_path_to_url(env_path)
                 env_list_tracker.append(env_url)
 
     return merged_files, merged_env

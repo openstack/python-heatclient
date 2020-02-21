@@ -123,6 +123,13 @@ class Validate(format_utils.YamlFormat):
                    'specified multiple times')
         )
         parser.add_argument(
+            '-s', '--files-container',
+            metavar='<files-container>',
+            help=_('Swift files container name. Local files other than '
+                   'root template would be ignored. If other files are not '
+                   'found in swift, heat engine would raise an error.')
+        )
+        parser.add_argument(
             '--ignore-errors',
             metavar='<error1,error2,...>',
             help=_('List of heat errors to ignore')
@@ -145,11 +152,13 @@ class Validate(format_utils.YamlFormat):
 def _validate(heat_client, args):
     tpl_files, template = template_utils.process_template_path(
         args.template,
-        object_request=http.authenticated_fetcher(heat_client))
+        object_request=http.authenticated_fetcher(heat_client),
+        fetch_child=args.files_container is None)
 
     env_files_list = []
     env_files, env = template_utils.process_multiple_environments_and_files(
-        env_paths=args.environment, env_list_tracker=env_files_list)
+        env_paths=args.environment, env_list_tracker=env_files_list,
+        fetch_env_files=args.files_container is None)
 
     fields = {
         'template': template,
@@ -167,6 +176,9 @@ def _validate(heat_client, args):
 
     if args.show_nested:
         fields['show_nested'] = args.show_nested
+
+    if args.files_container:
+        fields['files_container'] = args.files_container
 
     validation = heat_client.stacks.validate(**fields)
     data = list(six.itervalues(validation))

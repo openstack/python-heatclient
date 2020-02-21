@@ -127,6 +127,18 @@ class ShellEnvironmentTest(testtools.TestCase):
             mock.call('file:///home/my/dir/a.yaml')
         ])
 
+    def test_process_multiple_environment_files_container(self):
+
+        env_list_tracker = []
+        env_paths = ['/home/my/dir/env.yaml']
+        files, env = template_utils.process_multiple_environments_and_files(
+            env_paths, env_list_tracker=env_list_tracker,
+            fetch_env_files=False)
+
+        self.assertEqual(env_paths, env_list_tracker)
+        self.assertEqual({}, files)
+        self.assertEqual({}, env)
+
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_relative_file_up(self, mock_url):
 
