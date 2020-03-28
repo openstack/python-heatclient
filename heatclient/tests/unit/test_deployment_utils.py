@@ -291,9 +291,9 @@ class TempURLSignalTest(testtools.TestCase):
                         '[a-f0-9]{3}-[a-f0-9]{12}')
         url = deployment_utils.create_temp_url(swift_client, 'bar', 60)
         self.assertFalse(swift_client.post_account.called)
-        regexp = ("http://fake-host.com:8080/v1/AUTH_demo/bar-%s"
-                  "/%s\?temp_url_sig=[0-9a-f]{40}&"
-                  "temp_url_expires=[0-9]{10}" % (uuid_pattern, uuid_pattern))
+        regexp = (r"http://fake-host.com:8080/v1/AUTH_demo/bar-%s"
+                  r"/%s\?temp_url_sig=[0-9a-f]{40}&"
+                  r"temp_url_expires=[0-9]{10}" % (uuid_pattern, uuid_pattern))
         self.assertThat(url, matchers.MatchesRegex(regexp))
 
         timeout = int(url.split('=')[-1])

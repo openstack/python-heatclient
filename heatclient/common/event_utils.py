@@ -182,9 +182,9 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
 
     if action:
         stop_status = ('%s_FAILED' % action, '%s_COMPLETE' % action)
-        stop_check = lambda a: a in stop_status
+        stop_check = lambda a: a in stop_status  # noqa: E731
     else:
-        stop_check = lambda a: a.endswith('_COMPLETE') or a.endswith('_FAILED')
+        stop_check = lambda a: a.endswith('_COMPLETE') or a.endswith('_FAILED')  # noqa E731
 
     no_event_polls = 0
     msg_template = _("\n Stack %(name)s %(status)s \n")

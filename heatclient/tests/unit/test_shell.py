@@ -557,7 +557,7 @@ class ShellTestNoMox(ShellTestNoMoxBase):
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
 
         self.shell_error('stack-create -f %s stack' % template_file,
-                         'The Parameter \(key_name\) was not provided.',
+                         r'The Parameter \(key_name\) was not provided.',
                          exception=exc.HTTPBadRequest)
 
     def test_event_list(self):
@@ -2437,7 +2437,7 @@ class ShellTestUserPass(ShellBase):
             '{',
             '"output_key": "output2"',
             '"description": "test output 2"',
-            '"output_value": \[',
+            r'"output_value": \[',
             '"output"',
             '"value"',
             '"2"',

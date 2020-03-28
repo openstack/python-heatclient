@@ -53,6 +53,7 @@ def gen_ref(ver, title, names):
                              "signs": "=" * len(sec_title),
                              "pkg": pkg, "name": name})
 
+
 gen_ref("", "Client Reference", {"client": "Client", "exc": "Exceptions"})
 gen_ref("v1", "Version 1 API Reference",
         {"stacks": "Stacks",

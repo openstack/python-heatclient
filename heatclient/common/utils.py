@@ -377,8 +377,8 @@ def format_parameter_file(param_files, template_file=None,
 
     param_file = {}
     for key, value in params.items():
-                param_file[key] = resolve_param_get_file(value,
-                                                         template_base_url)
+        param_file[key] = resolve_param_get_file(value,
+                                                 template_base_url)
     return param_file
 
 

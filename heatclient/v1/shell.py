@@ -728,7 +728,7 @@ def do_output_list(hc, args):
     utils.print_list(outputs['outputs'], fields, formatters=formatters)
 
 
-@utils.arg('id', metavar='<NAME or ID>',
+@utils.arg('id', metavar='<NAME or ID>',  # noqa: C901
            help=_('Name or ID of stack to query.'))
 @utils.arg('output', metavar='<OUTPUT NAME>', nargs='?', default=None,
            help=_('Name of an output to display.'))

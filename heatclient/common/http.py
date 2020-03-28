@@ -340,7 +340,7 @@ class SessionClient(adapter.LegacyJsonAdapter):
             raise exc.InvalidEndpoint(message=message)
         if (self.endpoint_override is not None and
                 location.lower().startswith(self.endpoint_override.lower())):
-                return location[len(self.endpoint_override):]
+            return location[len(self.endpoint_override):]
         else:
             return location
 
