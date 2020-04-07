@@ -12,7 +12,7 @@
 #
 #   Copyright 2015 IBM Corp.
 
-import mock
+from unittest import mock
 
 from heatclient import exc
 from heatclient.osc.v1 import template

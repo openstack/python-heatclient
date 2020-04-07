@@ -11,7 +11,7 @@
 #   under the License.
 #
 
-import mock
+from unittest import mock
 
 from heatclient.osc.v1 import build_info as osc_build_info
 from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes

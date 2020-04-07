@@ -13,8 +13,8 @@
 
 import copy
 import io
+from unittest import mock
 
-import mock
 from osc_lib import exceptions as exc
 from osc_lib import utils
 import six

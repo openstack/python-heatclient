@@ -14,7 +14,7 @@
 
 import collections
 
-import mock
+from unittest import mock
 
 from heatclient import exc
 from heatclient.osc.v1 import stack_failures
