@@ -13,8 +13,8 @@
 
 import json
 import tempfile
+from unittest import mock
 
-import mock
 from oslo_serialization import base64
 import six
 from six.moves.urllib import error

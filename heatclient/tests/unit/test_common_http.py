@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import socket
+from unittest import mock
 
 from keystoneauth1 import adapter
-import mock
 from oslo_serialization import jsonutils
 import six
 import testtools

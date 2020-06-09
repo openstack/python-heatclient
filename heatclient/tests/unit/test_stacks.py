@@ -10,7 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
+
 import testscenarios
 from testscenarios import scenarios as scnrs
 import testtools

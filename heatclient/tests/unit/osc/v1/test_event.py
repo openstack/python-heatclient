@@ -13,8 +13,8 @@
 #   Copyright 2015 IBM Corp.
 
 import copy
+from unittest import mock
 
-import mock
 import testscenarios
 
 from heatclient import exc

@@ -15,10 +15,10 @@
 #
 
 import os
+import sys
+from unittest import mock
 
 import fixtures
-import mock
-import sys
 import testtools
 
 from heatclient.tests.unit.osc import fakes

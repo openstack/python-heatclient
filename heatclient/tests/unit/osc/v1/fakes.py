@@ -13,7 +13,7 @@
 #   under the License.
 #
 
-import mock
+from unittest import mock
 
 from heatclient.tests.unit.osc import utils
 

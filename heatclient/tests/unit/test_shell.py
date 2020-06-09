@@ -14,11 +14,11 @@
 import os
 import sys
 import tempfile
+from unittest import mock
 import uuid
 
 import fixtures
 from keystoneauth1 import fixture as keystone_fixture
-import mock
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from requests_mock.contrib import fixture as rm_fixture
