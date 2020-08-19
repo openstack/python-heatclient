@@ -1,15 +1,21 @@
 - job:
     name: heatclient-functional
-    parent: legacy-dsvm-base
-    run: playbooks/devstack/functional-run.yaml
-    post-run: playbooks/devstack/functional-post.yaml
+    parent: devstack-tox-functional
     timeout: 4200
     required-projects:
-      - openstack/devstack-gate
       - openstack/heat
       - openstack/python-heatclient
     vars:
-      branch_override: default
+      openrc_enable_export: true
+      devstack_plugins:
+        heat: https://opendev.org/openstack/heat
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+      - ^doc/.*$
+      - ^.*\.rst$
+      - ^releasenotes/.*$
+      - ^heatclient/tests/.*$
 
 - project:
     templates:

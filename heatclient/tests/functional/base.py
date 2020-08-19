@@ -34,7 +34,8 @@ class ClientTestBase(base.ClientTestBase):
         return base.CLIClient(
             username=os.environ.get('OS_USERNAME'),
             password=os.environ.get('OS_PASSWORD'),
-            tenant_name=os.environ.get('OS_TENANT_NAME'),
+            tenant_name=os.environ.get('OS_PROJECT_NAME',
+                                       os.environ.get('OS_TENANT_NAME')),
             uri=os.environ.get('OS_AUTH_URL'),
             cli_dir=cli_dir)
 
