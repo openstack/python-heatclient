@@ -740,7 +740,7 @@ def do_output_list(hc, args):
 @utils.arg('--with-detail', default=False, action="store_true",
            help=_('Enable detail information presented, like '
                   'key and description.'))
-def do_output_show(hc, args):
+def do_output_show(hc, args):  # noqa: C901
     """Show a specific stack output."""
     show_deprecated('heat output-show', 'openstack stack output show')
 
