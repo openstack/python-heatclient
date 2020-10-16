@@ -420,7 +420,7 @@ def read_url_content(url):
         try:
             content.decode('utf-8')
         except ValueError:
-            content = base64.encodestring(content)
+            content = base64.encodebytes(content)
     return content
 
 
