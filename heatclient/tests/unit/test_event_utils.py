@@ -22,15 +22,35 @@ from heatclient.v1 import resources as hc_res
 class FakeWebSocket(object):
 
     def __init__(self, events):
+        """
+        Initialize events
+
+        Args:
+            self: (todo): write your description
+            events: (todo): write your description
+        """
         self.events = events
 
     def recv(self):
+        """
+        Receive the next message from the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.events.pop(0)
 
 
 class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_resource(resource_id, nested_id=None):
+        """
+        Mock_resource
+
+        Args:
+            resource_id: (str): write your description
+            nested_id: (str): write your description
+        """
         res_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
                               {"href": "http://heat/foo2", "rel": "resource"}],
                     "logical_resource_id": resource_id,
@@ -48,6 +68,14 @@ class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_event(event_id, resource_id,
                     resource_status='CREATE_COMPLETE'):
+        """
+        Process an event.
+
+        Args:
+            event_id: (int): write your description
+            resource_id: (str): write your description
+            resource_status: (str): write your description
+        """
         ev_info = {"links": [
                    {"href": "http://heat/foo", "rel": "self"},
                    {"href": "http://heat/stacks/astack", "rel": "stack"}],
@@ -63,6 +91,14 @@ class ShellTestEventUtils(testtools.TestCase):
     @staticmethod
     def _mock_stack_event(event_id, stack_name,
                           stack_status='CREATE_COMPLETE'):
+        """
+        Mock stack events.
+
+        Args:
+            event_id: (int): write your description
+            stack_name: (str): write your description
+            stack_status: (str): write your description
+        """
         stack_id = 'abcdef'
         ev_info = {"links": [{"href": "http://heat/foo", "rel": "self"},
                              {"href": "http://heat/stacks/%s/%s" % (stack_name,
@@ -78,7 +114,19 @@ class ShellTestEventUtils(testtools.TestCase):
         return hc_ev.Event(manager=None, info=ev_info)
 
     def test_get_nested_ids(self):
+        """
+        Return a list of stack ids.
+
+        Args:
+            self: (todo): write your description
+        """
         def list_stub(stack_id):
+            """
+            List stack stack stack.
+
+            Args:
+                stack_id: (str): write your description
+            """
             return [self._mock_resource('aresource', 'foo3/3id')]
         mock_client = mock.MagicMock()
         mock_client.resources.list.side_effect = list_stub
@@ -89,7 +137,20 @@ class ShellTestEventUtils(testtools.TestCase):
         self.assertEqual(['foo3/3id'], ids)
 
     def test_get_stack_events(self):
+        """
+        Get a list of stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         def event_stub(stack_id, argfoo):
+            """
+            Return a stack.
+
+            Args:
+                stack_id: (str): write your description
+                argfoo: (todo): write your description
+            """
             return [self._mock_event('event1', 'aresource')]
         mock_client = mock.MagicMock()
         mock_client.events.list.side_effect = event_stub
@@ -104,6 +165,12 @@ class ShellTestEventUtils(testtools.TestCase):
         self.assertEqual('astack', evs[0].stack_name)
 
     def test_get_nested_events(self):
+        """
+        Get a list of stack events.
+
+        Args:
+            self: (todo): write your description
+        """
         resources = {'parent': self._mock_resource('resource1', 'foo/child1'),
                      'foo/child1': self._mock_resource('res_child1',
                                                        'foo/child2'),
@@ -113,6 +180,12 @@ class ShellTestEventUtils(testtools.TestCase):
                                                        'foo/END')}
 
         def resource_list_stub(stack_id):
+            """
+            Stub
+
+            Args:
+                stack_id: (str): write your description
+            """
             return [resources[stack_id]]
         mock_client = mock.MagicMock()
         mock_client.resources.list.side_effect = resource_list_stub
@@ -122,6 +195,13 @@ class ShellTestEventUtils(testtools.TestCase):
                   'foo/child3': self._mock_event('event3', 'res_child3')}
 
         def event_list_stub(stack_id, argfoo):
+            """
+            Return a list of stack.
+
+            Args:
+                stack_id: (str): write your description
+                argfoo: (todo): write your description
+            """
             return [events[stack_id]]
         mock_client.events.list.side_effect = event_list_stub
 
@@ -162,6 +242,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events(self, ge):
+        """
+        Test for events on_poll.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
@@ -189,6 +276,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_same_name(self, ge):
+        """
+        Poll for events on_poll events.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_stack_event('1', 'mything', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
@@ -218,6 +312,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_with_marker(self, ge):
+        """
+        Poll for events on the poller.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_event('5', 'res_child1', 'CREATE_COMPLETE'),
             self._mock_event('6', 'res_child2', 'CREATE_COMPLETE'),
@@ -238,6 +339,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_in_progress_resource(self, ge):
+        """
+        Poll for progress events.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
@@ -251,6 +359,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_failed(self, ge):
+        """
+        Poll for events in - progress_event.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
@@ -270,6 +385,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_no_action(self, ge):
+        """
+        Poll for events on the plugin.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+        """
         ge.side_effect = [[
             self._mock_stack_event('1', 'astack', 'CREATE_IN_PROGRESS'),
             self._mock_event('2', 'res_child1', 'CREATE_IN_PROGRESS'),
@@ -289,6 +411,13 @@ class ShellTestEventUtils(testtools.TestCase):
 
     @mock.patch('heatclient.common.event_utils.get_events')
     def test_poll_for_events_stack_get(self, ge):
+        """
+        Get the current stack stack.
+
+        Args:
+            self: (todo): write your description
+            ge: (str): write your description
+        """
         mock_client = mock.MagicMock()
         mock_client.stacks.get.return_value.stack_status = 'CREATE_FAILED'
 
@@ -305,6 +434,12 @@ class ShellTestEventUtils(testtools.TestCase):
         self.assertEqual('\n Stack astack CREATE_FAILED \n', msg)
 
     def test_wait_for_events(self):
+        """
+        Waits for events to be executed.
+
+        Args:
+            self: (todo): write your description
+        """
         ws = FakeWebSocket([
             {'body': {
                 'timestamp': '2014-01-06T16:14:26Z',
@@ -318,6 +453,12 @@ class ShellTestEventUtils(testtools.TestCase):
         self.assertEqual('\n Stack mystack CREATE_COMPLETE \n', msg)
 
     def test_wait_for_events_failed(self):
+        """
+        Waits for failed.
+
+        Args:
+            self: (todo): write your description
+        """
         ws = FakeWebSocket([
             {'body': {
                 'timestamp': '2014-01-06T16:14:23Z',

@@ -19,9 +19,21 @@ from heatclient.common import utils
 
 class BuildInfo(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<BuildInfo %s>" % self._info
 
     def build_info(self):
+        """
+        Builds the build info.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.build_info()
 
 
@@ -29,6 +41,12 @@ class BuildInfoManager(base.BaseManager):
     resource_class = BuildInfo
 
     def build_info(self):
+        """
+        Builds a dictionary.
+
+        Args:
+            self: (todo): write your description
+        """
         resp = self.client.get('/build_info')
         body = utils.get_response_body(resp)
         return body

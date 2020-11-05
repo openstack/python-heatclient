@@ -25,6 +25,12 @@ load_tests = testscenarios.load_tests_apply_scenarios
 class YamlEnvironmentTest(testtools.TestCase):
 
     def test_minimal_yaml(self):
+        """
+        Parse the yaml file.
+
+        Args:
+            self: (todo): write your description
+        """
         yaml1 = ''
         yaml2 = '''
 parameter_defaults: {}
@@ -39,6 +45,12 @@ event_sinks: []
         self.assertEqual(tpl2, tpl1)
 
     def test_param_valid_strategy_section(self):
+        """
+        Validate the strategy section.
+
+        Args:
+            self: (todo): write your description
+        """
         yaml1 = ''
         yaml2 = '''
 parameters: {}
@@ -54,6 +66,12 @@ resource_registry: {}
         self.assertNotEqual(tpl1, tpl2)
 
     def test_wrong_sections(self):
+        """
+        Set the environment sections exist.
+
+        Args:
+            self: (todo): write your description
+        """
         env = '''
 parameters: {}
 resource_regis: {}
@@ -61,18 +79,36 @@ resource_regis: {}
         self.assertRaises(ValueError, environment_format.parse, env)
 
     def test_bad_yaml(self):
+        """
+        Test if the test yaml.
+
+        Args:
+            self: (todo): write your description
+        """
         env = '''
 parameters: }
 '''
         self.assertRaises(ValueError, environment_format.parse, env)
 
     def test_parse_string_environment(self):
+        """
+        Parse the test string.
+
+        Args:
+            self: (todo): write your description
+        """
         env = 'just string'
         expect = 'The environment is not a valid YAML mapping data type.'
         e = self.assertRaises(ValueError, environment_format.parse, env)
         self.assertIn(expect, str(e))
 
     def test_parse_document(self):
+        """
+        Parse the test document.
+
+        Args:
+            self: (todo): write your description
+        """
         env = '["foo", "bar"]'
         expect = 'The environment is not a valid YAML mapping data type.'
         e = self.assertRaises(ValueError, environment_format.parse, env)
@@ -89,6 +125,12 @@ class YamlParseExceptions(testtools.TestCase):
     ]
 
     def test_parse_to_value_exception(self):
+        """
+        Parse the test yamlists.
+
+        Args:
+            self: (todo): write your description
+        """
         text = 'not important'
 
         with mock.patch.object(yaml, 'load') as yaml_loader:
@@ -101,6 +143,12 @@ class YamlParseExceptions(testtools.TestCase):
 class DetailedYAMLParseExceptions(testtools.TestCase):
 
     def test_parse_to_value_exception(self):
+        """
+        Convert the test value to a test.
+
+        Args:
+            self: (todo): write your description
+        """
         yaml = """not important
 but very:
   - incorrect

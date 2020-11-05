@@ -31,6 +31,13 @@ class ResourceTypeShow(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ResourceTypeShow")
 
     def get_parser(self, prog_name):
+        """
+        Creates the argument parser. argument parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceTypeShow,
                        self).get_parser(prog_name)
         parser.add_argument(
@@ -52,6 +59,13 @@ class ResourceTypeShow(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a template action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         if parsed_args.template_type is not None and parsed_args.long:
@@ -63,6 +77,13 @@ class ResourceTypeShow(format_utils.YamlFormat):
 
 
 def _show_resourcetype(heat_client, parsed_args):
+    """
+    Show a resour.
+
+    Args:
+        heat_client: (todo): write your description
+        parsed_args: (todo): write your description
+    """
     try:
         if parsed_args.template_type:
             template_type = parsed_args.template_type.lower()
@@ -91,6 +112,13 @@ class ResourceTypeList(command.Lister):
     log = logging.getLogger(__name__ + '.ResourceTypeList')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceTypeList,
                        self).get_parser(prog_name)
         parser.add_argument(
@@ -112,6 +140,13 @@ class ResourceTypeList(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -119,6 +154,13 @@ class ResourceTypeList(command.Lister):
 
 
 def _list_resourcetypes(heat_client, parsed_args):
+    """
+    List resourcetypes.
+
+    Args:
+        heat_client: (todo): write your description
+        parsed_args: (todo): write your description
+    """
     resource_types = heat_client.resource_types.list(
         filters=heat_utils.format_parameters(parsed_args.filter),
         with_description=parsed_args.long

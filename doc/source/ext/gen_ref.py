@@ -22,6 +22,14 @@ sys.path.insert(0, BASE_DIR)
 
 
 def gen_ref(ver, title, names):
+    """
+    Generate a reference
+
+    Args:
+        ver: (todo): write your description
+        title: (str): write your description
+        names: (dict): write your description
+    """
     refdir = os.path.join(BASE_DIR, "ref")
     pkg = "heatclient"
     if ver:

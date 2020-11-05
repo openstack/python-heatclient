@@ -84,6 +84,12 @@ OS::Heat::RandomString" ];
 '''
 
     def setUp(self):
+        """
+        Set the list of this resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackResourceListDotFormat, self).setUp()
         self.resource_client = self.app.client_manager.orchestration.resources
         self.cmd = resource.ResourceList(self.app, None)
@@ -94,6 +100,12 @@ OS::Heat::RandomString" ];
             self.resources.append(v1_resources.Resource(None, r))
 
     def test_resource_list(self):
+        """
+        Emits a resource list.
+
+        Args:
+            self: (todo): write your description
+        """
         out = six.StringIO()
         formatter = resource_formatter.ResourceDotFormatter()
         formatter.emit_list(None, self.resources, out, None)

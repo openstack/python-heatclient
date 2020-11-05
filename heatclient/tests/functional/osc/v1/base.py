@@ -22,10 +22,22 @@ class OpenStackClientTestBase(base.ClientTestBase):
     """Command line client base functions."""
 
     def setUp(self):
+        """
+        Sets the output of the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(OpenStackClientTestBase, self).setUp()
         self.parser = output_parser
 
     def _get_clients(self):
+        """
+        Returns cli clients.
+
+        Args:
+            self: (todo): write your description
+        """
         cli_dir = os.environ.get(
             'OS_HEATCLIENT_EXEC_DIR',
             os.path.join(os.path.abspath('.'), '.tox/functional/bin'))
@@ -38,13 +50,33 @@ class OpenStackClientTestBase(base.ClientTestBase):
             cli_dir=cli_dir)
 
     def openstack(self, *args, **kwargs):
+        """
+        Opens a stack.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.clients.openstack(*args, **kwargs)
 
     def get_template_path(self, templ_name):
+        """
+        Returns the template path to use the template.
+
+        Args:
+            self: (todo): write your description
+            templ_name: (str): write your description
+        """
         return os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             '../../templates/%s' % templ_name)
 
     def show_to_dict(self, output):
+        """
+        Convert a dictionary to a dictionary.
+
+        Args:
+            self: (todo): write your description
+            output: (str): write your description
+        """
         obj = {}
         items = self.parser.listing(output)
         for item in items:
@@ -52,9 +84,24 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return dict((self._key_name(k), v) for k, v in obj.items())
 
     def _key_name(self, key):
+        """
+        Returns the key name for a key name.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         return key.lower().replace(' ', '_')
 
     def list_to_dict(self, output, id):
+        """
+        Convert a dict to a dictionary.
+
+        Args:
+            self: (todo): write your description
+            output: (str): write your description
+            id: (str): write your description
+        """
         obj = {}
         items = self.parser.listing(output)
         for item in items:
@@ -64,6 +111,16 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return dict((self._key_name(k), v) for k, v in obj.items())
 
     def _stack_create(self, name, template, parameters=[], wait=True):
+        """
+        Create a stack stack.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            template: (str): write your description
+            parameters: (todo): write your description
+            wait: (str): write your description
+        """
         cmd = 'stack create ' + name
         if template:
             cmd += ' -t ' + template
@@ -78,6 +135,14 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return stack
 
     def _stack_delete(self, id, wait=False):
+        """
+        Delete a stack stack
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            wait: (str): write your description
+        """
         cmd = 'stack delete ' + id + ' --yes'
         if wait:
             cmd += ' --wait'
@@ -91,6 +156,14 @@ class OpenStackClientTestBase(base.ClientTestBase):
                 raise
 
     def _stack_suspend(self, id, wait=True):
+        """
+        Suspendend a stack
+
+        Args:
+            self: (todo): write your description
+            id: (int): write your description
+            wait: (bool): write your description
+        """
         cmd = 'stack suspend ' + id
         if wait:
             cmd += ' --wait'
@@ -99,6 +172,14 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return stack
 
     def _stack_resume(self, id, wait=True):
+        """
+        Resume a stack.
+
+        Args:
+            self: (todo): write your description
+            id: (int): write your description
+            wait: (bool): write your description
+        """
         cmd = 'stack resume ' + id
         if wait:
             cmd += ' --wait'
@@ -107,6 +188,14 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return stack
 
     def _stack_snapshot_create(self, id, name):
+        """
+        Create a snapshot snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            name: (str): write your description
+        """
         cmd = 'stack snapshot create ' + id + ' --name ' + name
         snapshot_raw = self.openstack(cmd)
         snapshot = self.show_to_dict(snapshot_raw)
@@ -114,15 +203,38 @@ class OpenStackClientTestBase(base.ClientTestBase):
         return snapshot
 
     def _stack_snapshot_delete(self, id, snapshot_id):
+        """
+        Deletes snapshot
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            snapshot_id: (str): write your description
+        """
         cmd = 'stack snapshot delete ' + id + ' ' + snapshot_id
         if snapshot_id in self.openstack('stack snapshot list ' + id):
             self.openstack(cmd)
 
     def _stack_snapshot_restore(self, id, snapshot_id):
+        """
+        Open snapshot of the snapshot
+
+        Args:
+            self: (todo): write your description
+            id: (int): write your description
+            snapshot_id: (str): write your description
+        """
         cmd = 'stack snapshot restore ' + id + ' ' + snapshot_id
         self.openstack(cmd)
 
     def _stack_show(self, stack_id):
+        """
+        Show the current stack
+
+        Args:
+            self: (todo): write your description
+            stack_id: (int): write your description
+        """
         cmd = 'stack show ' + stack_id
         stack_raw = self.openstack(cmd)
         return self.show_to_dict(stack_raw)

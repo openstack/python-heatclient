@@ -24,6 +24,12 @@ from heatclient.v1 import build_info
 
 class BuildInfoManagerTest(testtools.TestCase):
     def setUp(self):
+        """
+        Sets the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildInfoManagerTest, self).setUp()
         self.client = mock.Mock()
         self.client.get.return_value = fakes.FakeHTTPResponse(
@@ -35,9 +41,21 @@ class BuildInfoManagerTest(testtools.TestCase):
         self.manager = build_info.BuildInfoManager(self.client)
 
     def test_build_info_makes_a_call_to_the_api(self):
+        """
+        Builds the build info about this build.
+
+        Args:
+            self: (todo): write your description
+        """
         self.manager.build_info()
         self.client.get.assert_called_once_with('/build_info')
 
     def test_build_info_returns_the_response_body(self):
+        """
+        Return information about the response.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.manager.build_info()
         self.assertEqual('body', response)

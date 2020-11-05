@@ -69,6 +69,12 @@ class TestCase(testtools.TestCase):
     tokenid = uuid.uuid4().hex
 
     def setUp(self):
+        """
+        Sets the variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestCase, self).setUp()
         self.requests = self.useFixture(rm_fixture.Fixture())
         # httpretty doesn't work as expected if http proxy environmen
@@ -78,6 +84,13 @@ class TestCase(testtools.TestCase):
         self.patch('heatclient.v1.shell.show_deprecated')
 
     def set_fake_env(self, fake_env):
+        """
+        Sets the environment variables for the environment.
+
+        Args:
+            self: (todo): write your description
+            fake_env: (todo): write your description
+        """
         client_env = ('OS_USERNAME', 'OS_PASSWORD', 'OS_TENANT_ID',
                       'OS_TENANT_NAME', 'OS_AUTH_URL', 'OS_REGION_NAME',
                       'OS_AUTH_TOKEN', 'OS_NO_CLIENT_AUTH', 'OS_SERVICE_TYPE',
@@ -88,11 +101,26 @@ class TestCase(testtools.TestCase):
                 fixtures.EnvironmentVariable(key, fake_env.get(key)))
 
     def shell_error(self, argstr, error_match, exception):
+        """
+        Handles an error.
+
+        Args:
+            self: (todo): write your description
+            argstr: (str): write your description
+            error_match: (todo): write your description
+            exception: (todo): write your description
+        """
         _shell = heatclient.shell.HeatShell()
         e = self.assertRaises(exception, _shell.main, argstr.split())
         self.assertRegex(e.__str__(), error_match)
 
     def register_keystone_v2_token_fixture(self):
+        """
+        Register a v2 v2 token.
+
+        Args:
+            self: (todo): write your description
+        """
         v2_token = keystone_fixture.V2Token(token_id=self.tokenid)
         service = v2_token.add_service('orchestration')
         service.add_endpoint('http://heat.example.com',
@@ -102,6 +130,12 @@ class TestCase(testtools.TestCase):
         self.requests.post('%s/tokens' % V2_URL, json=v2_token)
 
     def register_keystone_v3_token_fixture(self):
+        """
+        Register v3 v3 v3 v3 v3 token.
+
+        Args:
+            self: (todo): write your description
+        """
         v3_token = keystone_fixture.V3Token()
         service = v3_token.add_service('orchestration')
         service.add_standard_endpoints(public='http://heat.example.com',
@@ -112,6 +146,12 @@ class TestCase(testtools.TestCase):
                            headers={'X-Subject-Token': self.tokenid})
 
     def register_keystone_auth_fixture(self):
+        """
+        Register a new auth_keystone keystone authentication.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_v2_token_fixture()
         self.register_keystone_v3_token_fixture()
 
@@ -121,10 +161,25 @@ class TestCase(testtools.TestCase):
     # NOTE(tlashchova): this overrides the testtools.TestCase.patch method
     # that does simple monkey-patching in favor of mock's patching
     def patch(self, target, **kwargs):
+        """
+        Patch the given target.
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+        """
         mockfixture = self.useFixture(fixtures.MockPatch(target, **kwargs))
         return mockfixture.mock
 
     def stack_list_resp_dict(self, show_nested=False, include_project=False):
+        """
+        List stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            show_nested: (bool): write your description
+            include_project: (bool): write your description
+        """
         stack1 = {
             "id": "1",
             "stack_name": "teststack",
@@ -164,6 +219,17 @@ class TestCase(testtools.TestCase):
             rsrc_eventid1="7fecaeed-d237-4559-93a5-92d5d9111205",
             rsrc_eventid2="e953547a-18f8-40a7-8e63-4ec4f509648b",
             final_state="COMPLETE"):
+        """
+        Return a list of events.
+
+        Args:
+            self: (todo): write your description
+            stack_name: (str): write your description
+            resource_name: (str): write your description
+            rsrc_eventid1: (todo): write your description
+            rsrc_eventid2: (todo): write your description
+            final_state: (str): write your description
+        """
 
         action = "CREATE"
         rn = resource_name if resource_name else "testresource"
@@ -251,6 +317,12 @@ class EnvVarTest(TestCase):
     ]
 
     def test_missing_auth(self):
+        """
+        .. version of missing environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
 
         fake_env = {
             'OS_USERNAME': 'username',
@@ -275,6 +347,12 @@ class EnvVarTestToken(TestCase):
     ]
 
     def test_missing_auth(self):
+        """
+        Manage the environment authentication
+
+        Args:
+            self: (todo): write your description
+        """
 
         fake_env = {
             'OS_AUTH_TOKEN': 'atoken',
@@ -308,6 +386,12 @@ class ShellParamValidationTest(TestCase):
     ]
 
     def test_bad_parameters(self):
+        """
+        Determine command parameters
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         fake_env = {
             'OS_USERNAME': 'username',
@@ -328,6 +412,12 @@ class ShellParamValidationTest(TestCase):
 class ShellValidationTest(TestCase):
 
     def test_failed_auth(self):
+        """
+        Authenticates the authentication.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         failed_msg = 'Unable to authenticate user with credentials provided'
 
@@ -339,6 +429,12 @@ class ShellValidationTest(TestCase):
             sc.assert_called_once_with('/stacks?', 'GET')
 
     def test_stack_create_validation(self):
+        """
+        Create stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
         self.shell_error(
@@ -350,6 +446,12 @@ class ShellValidationTest(TestCase):
             exception=exc.CommandError)
 
     def test_stack_create_with_paramfile_validation(self):
+        """
+        Creates a stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
         self.shell_error(
@@ -362,6 +464,12 @@ class ShellValidationTest(TestCase):
             exception=exc.CommandError)
 
     def test_stack_create_validation_keystone_v3(self):
+        """
+        Determine stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
         self.shell_error(
@@ -379,6 +487,12 @@ class ShellBase(TestCase):
     (JSON, RAW, SESSION) = ('json', 'raw', 'session')
 
     def setUp(self):
+        """
+        Sets the results of this class.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellBase, self).setUp()
         self._calls = {self.JSON: [], self.RAW: [], self.SESSION: []}
         self._results = {self.JSON: [], self.RAW: [], self.SESSION: []}
@@ -398,17 +512,35 @@ class ShellBase(TestCase):
 
         # Some tests set exc.verbose = 1, so reset on cleanup
         def unset_exc_verbose():
+            """
+            Unset the exception traceback.
+
+            Args:
+            """
             exc.verbose = 0
 
         self.addCleanup(unset_exc_verbose)
 
     def tearDown(self):
+        """
+        Tear down the client.
+
+        Args:
+            self: (todo): write your description
+        """
         http.HTTPClient.json_request.assert_has_calls(self._calls[self.JSON])
         http.HTTPClient.raw_request.assert_has_calls(self._calls[self.RAW])
         http.SessionClient.request.assert_has_calls(self._calls[self.SESSION])
         super(ShellBase, self).tearDown()
 
     def shell(self, argstr):
+        """
+        Execute a shell.
+
+        Args:
+            self: (todo): write your description
+            argstr: (str): write your description
+        """
         orig = sys.stdout
         try:
             sys.stdout = six.StringIO()
@@ -426,6 +558,15 @@ class ShellBase(TestCase):
         return out
 
     def mock_request_error(self, path, verb, error):
+        """
+        Makes a http request and return value.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            verb: (bool): write your description
+            error: (todo): write your description
+        """
         raw = verb == 'DELETE'
         if self.client == http.SessionClient:
             request = self.SESSION
@@ -439,30 +580,88 @@ class ShellBase(TestCase):
         self._results[request].append(error)
 
     def mock_request_get(self, path, response, raw=False, **kwargs):
+        """
+        Perform a request.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            response: (todo): write your description
+            raw: (bool): write your description
+        """
         self.mock_request(path, 'GET', response, raw=raw, **kwargs)
 
     def mock_request_delete(self, path, response=None):
+        """
+        Make a delete request.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            response: (todo): write your description
+        """
         self.mock_request(path, 'DELETE', response, raw=True, status_code=204)
 
     def mock_request_post(self, path, response, req_headers=False,
                           status_code=200, **kwargs):
+        """
+        Make a post request.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            response: (todo): write your description
+            req_headers: (todo): write your description
+            status_code: (int): write your description
+        """
         self.mock_request(path, 'POST', response=response, raw=False,
                           status_code=status_code, req_headers=req_headers,
                           **kwargs)
 
     def mock_request_put(self, path, response, status_code=202, **kwargs):
+        """
+        Makes a request.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            response: (todo): write your description
+            status_code: (int): write your description
+        """
         self.mock_request(path, 'PUT', response=response, raw=False,
                           status_code=status_code, req_headers=True,
                           **kwargs)
 
     def mock_request_patch(self, path, response, req_headers=True,
                            status_code=202, **kwargs):
+        """
+        Make a mock patch.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            response: (todo): write your description
+            req_headers: (todo): write your description
+            status_code: (int): write your description
+        """
         self.mock_request(path, 'PATCH', response=response, raw=False,
                           status_code=status_code, req_headers=req_headers,
                           **kwargs)
 
     def mock_request(self, path, verb, response=None, raw=False,
                      status_code=200, req_headers=False, **kwargs):
+        """
+        Make an http request.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            verb: (bool): write your description
+            response: (todo): write your description
+            raw: (bool): write your description
+            status_code: (int): write your description
+            req_headers: (dict): write your description
+        """
         kwargs = dict(kwargs)
         if req_headers:
             if self.client is http.HTTPClient:
@@ -495,9 +694,24 @@ class ShellBase(TestCase):
             self._expect_call(request, verb, path, **kwargs)
 
     def _expect_call(self, request, *args, **kwargs):
+        """
+        Expect the given call to call.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         self._calls[request].append(mock.call(*args, **kwargs))
 
     def mock_stack_list(self, path=None, show_nested=False):
+        """
+        Mock_stack
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            show_nested: (bool): write your description
+        """
         if path is None:
             path = '/stacks?'
 
@@ -509,10 +723,22 @@ class ShellTestNoMoxBase(TestCase):
     # NOTE(dhu):  This class is reserved for no Mox usage.  Instead,
     # use requests_mock to expose errors from json_request.
     def setUp(self):
+        """
+        Sets the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestNoMoxBase, self).setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
+        """
+        Set the fake environment variables for the fake environment.
+
+        Args:
+            self: (todo): write your description
+        """
         self.set_fake_env({
             'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
@@ -523,6 +749,13 @@ class ShellTestNoMoxBase(TestCase):
         })
 
     def shell(self, argstr):
+        """
+        Execute a shell.
+
+        Args:
+            self: (todo): write your description
+            argstr: (str): write your description
+        """
         orig = sys.stdout
         try:
             sys.stdout = six.StringIO()
@@ -543,6 +776,12 @@ class ShellTestNoMoxBase(TestCase):
 class ShellTestNoMox(ShellTestNoMoxBase):
     # This function tests err msg handling
     def test_stack_create_parameter_missing_err_msg(self):
+        """
+        Test for missing stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"error":
@@ -561,6 +800,12 @@ class ShellTestNoMox(ShellTestNoMoxBase):
                          exception=exc.HTTPBadRequest)
 
     def test_event_list(self):
+        """
+        Get list of eventid1 event.
+
+        Args:
+            self: (todo): write your description
+        """
         eventid1 = uuid.uuid4().hex
         eventid2 = uuid.uuid4().hex
         self.register_keystone_auth_fixture()
@@ -605,6 +850,12 @@ class ShellTestNoMox(ShellTestNoMoxBase):
 class ShellTestNoMoxV3(ShellTestNoMox):
 
     def _set_fake_env(self):
+        """
+        Sets the environment variables for the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         fake_env_kwargs = {'OS_NO_CLIENT_AUTH': 'True',
                            'HEAT_URL': 'http://heat.example.com'}
         fake_env_kwargs.update(FAKE_ENV_KEYSTONE_V3)
@@ -614,6 +865,12 @@ class ShellTestNoMoxV3(ShellTestNoMox):
 class ShellTestEndpointType(TestCase):
 
     def setUp(self):
+        """
+        Sets the mock for this connection.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestEndpointType, self).setUp()
         self.useFixture(fixtures.MockPatchObject(http,
                                                  '_construct_http_client'))
@@ -622,6 +879,12 @@ class ShellTestEndpointType(TestCase):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_endpoint_type_public_url(self):
+        """
+        Test if public endpoint type public_endpoint_public_url
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         kwargs = {
             'auth_url': 'http://keystone.example.com:5000/',
@@ -642,6 +905,12 @@ class ShellTestEndpointType(TestCase):
         heatclient.v1.shell.do_stack_list.assert_called_once()
 
     def test_endpoint_type_admin_url(self):
+        """
+        Type endpoint type endpoint endpoint
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         kwargs = {
             'auth_url': 'http://keystone.example.com:5000/',
@@ -662,6 +931,12 @@ class ShellTestEndpointType(TestCase):
         heatclient.v1.shell.do_stack_list.assert_called_once()
 
     def test_endpoint_type_internal_url(self):
+        """
+        Register type endpoint type endpoint type endpoint
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.useFixture(fixtures.EnvironmentVariable('OS_ENDPOINT_TYPE',
                                                      'internalURL'))
@@ -687,14 +962,32 @@ class ShellTestEndpointType(TestCase):
 class ShellTestCommon(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestCommon, self).setUp()
         self.client = http.SessionClient
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_help_unknown_command(self):
+        """
+        Test if the help command is not help for a help command.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(exc.CommandError, self.shell, 'help foofoo')
 
     def test_help(self):
+        """
+        Test for help
+
+        Args:
+            self: (todo): write your description
+        """
         required = [
             '^usage: heat',
             '(?m)^See "heat help COMMAND" for help on a specific command',
@@ -705,6 +998,12 @@ class ShellTestCommon(ShellBase):
                 self.assertRegex(help_text, r)
 
     def test_command_help(self):
+        """
+        Print the help
+
+        Args:
+            self: (todo): write your description
+        """
         output = self.shell('help help')
         self.assertIn('usage: heat help [<subcommand>]', output)
         subcommands = list(self.subcommands)
@@ -717,6 +1016,12 @@ class ShellTestCommon(ShellBase):
             self.assertRegex(output1, '^usage: heat %s' % command)
 
     def test_debug_switch_raises_error(self):
+        """
+        This method to make_debug.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.Unauthorized("FAIL"))
 
@@ -724,6 +1029,12 @@ class ShellTestCommon(ShellBase):
         self.assertRaises(exc.Unauthorized, heatclient.shell.main, args)
 
     def test_dash_d_switch_raises_error(self):
+        """
+        Test for the dashboard.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.CommandError("FAIL"))
 
@@ -731,6 +1042,12 @@ class ShellTestCommon(ShellBase):
         self.assertRaises(exc.CommandError, heatclient.shell.main, args)
 
     def test_no_debug_switch_no_raises_errors(self):
+        """
+        Test if you want to be sent.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks?', 'GET', exc.Unauthorized("FAIL"))
 
@@ -738,6 +1055,12 @@ class ShellTestCommon(ShellBase):
         self.assertRaises(SystemExit, heatclient.shell.main, args)
 
     def test_help_on_subcommand(self):
+        """
+        Test for subcommand
+
+        Args:
+            self: (todo): write your description
+        """
         required = [
             '^usage: heat stack-list',
             "(?m)^List the user's stacks",
@@ -754,15 +1077,33 @@ class ShellTestCommon(ShellBase):
 class ShellTestUserPass(ShellBase):
 
     def setUp(self):
+        """
+        Sets the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestUserPass, self).setUp()
         if self.client is None:
             self.client = http.SessionClient
         self._set_fake_env()
 
     def _set_fake_env(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_stack_list(self):
+        """
+        Register stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_stack_list()
 
@@ -782,6 +1123,12 @@ class ShellTestUserPass(ShellBase):
         self.assertNotRegex(list_text, 'parent')
 
     def test_stack_list_show_nested(self):
+        """
+        Show list of stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_url = '/stacks?%s' % parse.urlencode({
             'show_nested': True,
@@ -802,6 +1149,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_stack_list_show_owner(self):
+        """
+        List the list of - test stack names.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_stack_list()
 
@@ -815,6 +1168,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_parsable_error(self):
+        """
+        Register the authentication error.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
 
@@ -825,6 +1184,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("ERROR: " + message, str(e))
 
     def test_parsable_verbose(self):
+        """
+        This function will be called with the authentication
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
         self.mock_request_error('/stacks/bad', 'GET',
@@ -836,6 +1201,12 @@ class ShellTestUserPass(ShellBase):
         self.assertIn(message, str(e))
 
     def test_parsable_malformed_error(self):
+        """
+        Test for authentication
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         invalid_json = "ERROR: {Invalid JSON Error."
         self.mock_request_error('/stacks/bad', 'GET',
@@ -844,6 +1215,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("ERROR: " + invalid_json, str(e))
 
     def test_parsable_malformed_error_missing_message(self):
+        """
+        Determine if the error message.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         message = 'Internal Error'
 
@@ -854,6 +1231,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("ERROR: Internal Error", str(e))
 
     def test_parsable_malformed_error_missing_traceback(self):
+        """
+        Determine if the request to be sent.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         message = "The Stack (bad) could not be found."
         self.mock_request_error('/stacks/bad', 'GET',
@@ -866,6 +1249,12 @@ class ShellTestUserPass(ShellBase):
                          str(e))
 
     def test_stack_show(self):
+        """
+        Show stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
@@ -893,6 +1282,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_stack_show_without_outputs(self):
+        """
+        Show stack stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
@@ -919,6 +1314,13 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def _output_fake_response(self, output_key):
+        """
+        Generate the output_key
+
+        Args:
+            self: (todo): write your description
+            output_key: (str): write your description
+        """
 
         outputs = [
             {
@@ -939,6 +1341,12 @@ class ShellTestUserPass(ShellBase):
         ]
 
         def find_output(key):
+            """
+            Find the output of a key.
+
+            Args:
+                key: (str): write your description
+            """
             for out in outputs:
                 if out['output_key'] == key:
                     return {'output': out}
@@ -947,6 +1355,13 @@ class ShellTestUserPass(ShellBase):
                               find_output(output_key))
 
     def _error_output_fake_response(self, output_key):
+        """
+        : param output_key : : return :
+
+        Args:
+            self: (todo): write your description
+            output_key: (str): write your description
+        """
 
         resp_dict = {
             "output": {
@@ -962,6 +1377,12 @@ class ShellTestUserPass(ShellBase):
                               resp_dict)
 
     def test_template_show_cfn(self):
+        """
+        Show the cfn template
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_data = open(os.path.join(TEST_VAR_DIR,
                                           'minimal.template')).read()
@@ -981,6 +1402,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(show_text, r)
 
     def test_template_show_cfn_unicode(self):
+        """
+        Register cfn cfn cfn template
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"AWSTemplateFormatVersion": "2010-09-09",
                      "Description": u"test\u2665",
@@ -1004,6 +1431,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(show_text, r)
 
     def test_template_show_hot(self):
+        """
+        Show the hot_request
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
@@ -1022,6 +1455,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(show_text, r)
 
     def test_template_validate(self):
+        """
+        Test if the authentication
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
@@ -1043,6 +1482,15 @@ class ShellTestUserPass(ShellBase):
 
     def _test_stack_preview(self, timeout=None, enable_rollback=False,
                             tags=None):
+        """
+        Generate help
+
+        Args:
+            self: (todo): write your description
+            timeout: (float): write your description
+            enable_rollback: (bool): write your description
+            tags: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"stack": {
             "id": "1",
@@ -1086,15 +1534,39 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(preview_text, r)
 
     def test_stack_preview(self):
+        """
+        Test if the current preview.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_preview()
 
     def test_stack_preview_timeout(self):
+        """
+        Test if the current preview_preview_timeout
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_preview(300, True)
 
     def test_stack_preview_tags(self):
+        """
+        Test for preview tags.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_preview(tags='tag1,tag2')
 
     def test_stack_create(self):
+        """
+        Create stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
@@ -1119,6 +1591,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(create_text, r)
 
     def test_create_success_with_poll(self):
+        """
+        Create a failure of stack responses
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         stack_create_resp_dict = {"stack": {
@@ -1177,6 +1655,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(create_text, r)
 
     def test_create_failed_with_poll(self):
+        """
+        Create failed failed failure.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_create_resp_dict = {"stack": {
             "id": "teststack2/2",
@@ -1217,6 +1701,12 @@ class ShellTestUserPass(ShellBase):
                          str(e))
 
     def test_stack_create_param_file(self):
+        """
+        Create stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
@@ -1247,6 +1737,12 @@ class ShellTestUserPass(ShellBase):
         utils.read_url_content.assert_called_once_with(url)
 
     def test_stack_create_only_param_file(self):
+        """
+        Create stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
@@ -1275,6 +1771,12 @@ class ShellTestUserPass(ShellBase):
         utils.read_url_content.assert_called_once_with(url)
 
     def test_stack_create_timeout(self):
+        """
+        Create a stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1313,6 +1815,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(create_text, r)
 
     def test_stack_update_timeout(self):
+        """
+        Update stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1353,6 +1861,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_create_url(self):
+        """
+        Create stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         url_content = six.StringIO(
             '{"AWSTemplateFormatVersion" : "2010-09-09"}')
@@ -1394,6 +1908,12 @@ class ShellTestUserPass(ShellBase):
             'http://no.where/minimal.template')
 
     def test_stack_create_object(self):
+        """
+        Create a stack object
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1424,6 +1944,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(create_text, r)
 
     def test_stack_create_with_tags(self):
+        """
+        Create stack tags
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1462,6 +1988,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(create_text, r)
 
     def test_stack_abandon(self):
+        """
+        Test stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         abandoned_stack = {
@@ -1488,6 +2020,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual(abandoned_stack, jsonutils.loads(abandon_resp))
 
     def test_stack_abandon_with_outputfile(self):
+        """
+        : return :
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         abandoned_stack = {
@@ -1516,6 +2054,12 @@ class ShellTestUserPass(ShellBase):
             self.assertEqual(abandoned_stack, result)
 
     def test_stack_adopt(self):
+        """
+        Register stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
@@ -1540,6 +2084,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(adopt_text, r)
 
     def test_stack_adopt_with_environment(self):
+        """
+        Test stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_post('/stacks', None, data=mock.ANY,
                                status_code=201, req_headers=True)
@@ -1553,12 +2103,24 @@ class ShellTestUserPass(ShellBase):
             '--environment-file=%s' % (adopt_data_file, environment_file))
 
     def test_stack_adopt_without_data(self):
+        """
+        Register the stack stack stack needs to use.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         failed_msg = 'Need to specify --adopt-file'
         self.shell_error('stack-adopt teststack ', failed_msg,
                          exception=exc.CommandError)
 
     def test_stack_adopt_empty_data_file(self):
+        """
+        Returns the stack stack stack to be written to the stack
+
+        Args:
+            self: (todo): write your description
+        """
         failed_msg = 'Invalid adopt-file, no data!'
         self.register_keystone_auth_fixture()
         with tempfile.NamedTemporaryFile() as file_obj:
@@ -1568,6 +2130,12 @@ class ShellTestUserPass(ShellBase):
                 failed_msg, exception=exc.CommandError)
 
     def test_stack_update_enable_rollback(self):
+        """
+        Update the stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         with open(template_file, 'rb') as f:
@@ -1602,6 +2170,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_disable_rollback(self):
+        """
+        Update stack stack ::
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         with open(template_file, 'rb') as f:
@@ -1636,6 +2210,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_fault_rollback_value(self):
+        """
+        Update the stack traceback
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self.shell_error('stack-update teststack2/2 '
@@ -1646,6 +2226,12 @@ class ShellTestUserPass(ShellBase):
                          )
 
     def test_stack_update_rollback_default(self):
+        """
+        Update the stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         with open(template_file, 'rb') as f:
@@ -1678,6 +2264,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_parameters(self):
+        """
+        Update existing stack stack with configuration
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1710,6 +2302,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_patched_existing_parameters(self):
+        """
+        Update stack stack stack ini configuration
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1743,6 +2341,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_and_default_parameters(self):
+        """
+        Generate stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1783,6 +2387,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_patched_and_default_parameters(self):
+        """
+        Generate stack stack stack_keystone
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1824,6 +2434,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_existing_template(self):
+        """
+        Update stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_data = {
             'files': {},
@@ -1851,6 +2467,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_update_with_tags(self):
+        """
+        Update stack stack tags
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         template_data = open(template_file).read()
@@ -1887,6 +2509,15 @@ class ShellTestUserPass(ShellBase):
 
     def _setup_stubs_update_dry_run(self, template_file, existing=False,
                                     show_nested=False):
+        """
+        Setup stubs template.
+
+        Args:
+            self: (todo): write your description
+            template_file: (str): write your description
+            existing: (dict): write your description
+            show_nested: (bool): write your description
+        """
         self.register_keystone_auth_fixture()
 
         template_data = open(template_file).read()
@@ -1935,6 +2566,12 @@ class ShellTestUserPass(ShellBase):
             self.mock_request_put(path, resp_dict, data=expected_data)
 
     def test_stack_update_dry_run(self):
+        """
+        Update the app_file
+
+        Args:
+            self: (todo): write your description
+        """
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self._setup_stubs_update_dry_run(template_file)
         update_preview_text = self.shell(
@@ -1956,6 +2593,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_preview_text, r)
 
     def test_stack_update_dry_run_show_nested(self):
+        """
+        Update the app_update_run.
+
+        Args:
+            self: (todo): write your description
+        """
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self._setup_stubs_update_dry_run(template_file, show_nested=True)
         update_preview_text = self.shell(
@@ -1978,6 +2621,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(update_preview_text, r)
 
     def test_stack_update_dry_run_patch(self):
+        """
+        Generate cfgubs.
+
+        Args:
+            self: (todo): write your description
+        """
         template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
         self._setup_stubs_update_dry_run(template_file, existing=True)
         update_preview_text = self.shell(
@@ -2003,6 +2652,13 @@ class ShellTestUserPass(ShellBase):
     # sys.stdin untouched for later tests
     @mock.patch('sys.stdin', new_callable=six.StringIO)
     def test_stack_delete_prompt_with_tty(self, ms):
+        """
+        Delete stack stack.
+
+        Args:
+            self: (todo): write your description
+            ms: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         mock_stdin = mock.Mock()
         mock_stdin.isatty = mock.Mock()
@@ -2027,6 +2683,13 @@ class ShellTestUserPass(ShellBase):
     # sys.stdin untouched for later tests
     @mock.patch('sys.stdin', new_callable=six.StringIO)
     def test_stack_delete_prompt_with_tty_y(self, ms):
+        """
+        Delete stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            ms: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         mock_stdin = mock.Mock()
         mock_stdin.isatty = mock.Mock()
@@ -2044,6 +2707,12 @@ class ShellTestUserPass(ShellBase):
         self.assertRegex(resp, msg)
 
     def test_stack_delete(self):
+        """
+        Delete the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_delete('/stacks/teststack2/2')
 
@@ -2052,6 +2721,12 @@ class ShellTestUserPass(ShellBase):
         self.assertRegex(resp, msg)
 
     def test_stack_delete_multiple(self):
+        """
+        Deletes stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_delete('/stacks/teststack/1')
         self.mock_request_delete('/stacks/teststack2/2')
@@ -2063,6 +2738,12 @@ class ShellTestUserPass(ShellBase):
         self.assertRegex(resp, msg2)
 
     def test_stack_delete_failed_on_notfound(self):
+        """
+        Delete stack stack on stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks/teststack1/1', 'DELETE',
                                 exc.HTTPNotFound())
@@ -2072,6 +2753,12 @@ class ShellTestUserPass(ShellBase):
                       str(error))
 
     def test_stack_delete_failed_on_forbidden(self):
+        """
+        Delete stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_error('/stacks/teststack1/1', 'DELETE',
                                 exc.Forbidden())
@@ -2081,6 +2768,12 @@ class ShellTestUserPass(ShellBase):
                       str(error))
 
     def test_build_info(self):
+        """
+        Register build information.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {
             'build_info': {
@@ -2103,6 +2796,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(build_info_text, r)
 
     def test_stack_snapshot(self):
+        """
+        Register snapshot snapshot snapshot of the snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"snapshot": {
@@ -2117,6 +2816,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual(resp_dict, jsonutils.loads(resp))
 
     def test_snapshot_list(self):
+        """
+        Register snapshot of snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"snapshots": [{
@@ -2145,6 +2850,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_snapshot_show(self):
+        """
+        Show snapshot details.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"snapshot": {
@@ -2161,6 +2872,13 @@ class ShellTestUserPass(ShellBase):
     # sys.stdin untouched for later tests
     @mock.patch('sys.stdin', new_callable=six.StringIO)
     def test_snapshot_delete_prompt_with_tty(self, ms):
+        """
+        Delete snapshot snapshot ::
+
+        Args:
+            self: (todo): write your description
+            ms: (str): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"snapshot": {
             "id": "2",
@@ -2191,6 +2909,13 @@ class ShellTestUserPass(ShellBase):
     # sys.stdin untouched for later tests
     @mock.patch('sys.stdin', new_callable=six.StringIO)
     def test_snapshot_delete_prompt_with_tty_y(self, ms):
+        """
+        Delete snapshot snapshot
+
+        Args:
+            self: (todo): write your description
+            ms: (str): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"snapshot": {
             "id": "2",
@@ -2213,6 +2938,12 @@ class ShellTestUserPass(ShellBase):
         self.assertRegex(resp, msg)
 
     def test_snapshot_delete(self):
+        """
+        Delete snapshot snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"snapshot": {
@@ -2227,6 +2958,12 @@ class ShellTestUserPass(ShellBase):
         self.assertRegex(resp, msg)
 
     def test_stack_restore(self):
+        """
+        Restore stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self.mock_request_post('/stacks/teststack/1/snapshots/2/restore',
@@ -2236,6 +2973,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual("", resp)
 
     def test_output_list(self):
+        """
+        Register the list of the output devices
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"outputs": [{
@@ -2262,6 +3005,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_list_api_400_error(self):
+        """
+        Test for bad test output to make_keystone.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         outputs = [{
             "output_key": "key",
@@ -2297,6 +3046,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show_all(self):
+        """
+        Register the ::
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {'outputs': [
@@ -2328,6 +3083,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show(self):
+        """
+        .. version of the app
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {"output": {
@@ -2350,6 +3111,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(resp, r)
 
     def test_output_show_api_400_error(self):
+        """
+        Test for api keystone test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         output = {
             "output_key": "key",
@@ -2381,6 +3148,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(resp, r)
 
     def test_output_show_output1_with_detail(self):
+        """
+        Show the ::
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output1')
@@ -2397,6 +3170,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show_output1(self):
+        """
+        Manage the app output.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output1')
@@ -2404,6 +3183,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual('value1\n', list_text)
 
     def test_output_show_output2_raw(self):
+        """
+        Show test test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
@@ -2412,6 +3197,12 @@ class ShellTestUserPass(ShellBase):
                          list_text)
 
     def test_output_show_output2_raw_with_detail(self):
+        """
+        Show the raw test headers
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
@@ -2429,6 +3220,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show_output2_json(self):
+        """
+        Show the json output of the app
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
@@ -2447,6 +3244,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show_output2_json_with_detail(self):
+        """
+        Show the json output of the app
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output2')
@@ -2464,6 +3267,12 @@ class ShellTestUserPass(ShellBase):
             self.assertRegex(list_text, r)
 
     def test_output_show_unicode_output(self):
+        """
+        Test if the test output.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         self._output_fake_response('output_uni')
@@ -2471,6 +3280,12 @@ class ShellTestUserPass(ShellBase):
         self.assertEqual(u'test\u2665\n', list_text)
 
     def test_output_show_error(self):
+        """
+        Register the error to be sent.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self._error_output_fake_response('output1')
         error = self.assertRaises(
@@ -2483,10 +3298,22 @@ class ShellTestUserPass(ShellBase):
 class ShellTestActions(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestActions, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_stack_cancel_update(self):
+        """
+        Register the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_data = {'cancel_update': None}
         self.mock_request_post(
@@ -2508,6 +3335,12 @@ class ShellTestActions(ShellBase):
             self.assertRegex(update_text, r)
 
     def test_stack_check(self):
+        """
+        Register stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_data = {'check': None}
         self.mock_request_post(
@@ -2529,6 +3362,12 @@ class ShellTestActions(ShellBase):
             self.assertRegex(check_text, r)
 
     def test_stack_suspend(self):
+        """
+        Register stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_data = {'suspend': None}
         self.mock_request_post(
@@ -2550,6 +3389,12 @@ class ShellTestActions(ShellBase):
             self.assertRegex(suspend_text, r)
 
     def test_stack_resume(self):
+        """
+        Resume stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         expected_data = {'resume': None}
         self.mock_request_post(
@@ -2574,6 +3419,12 @@ class ShellTestActions(ShellBase):
 class ShellTestEvents(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestEvents, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
@@ -2586,6 +3437,12 @@ class ShellTestEvents(ShellBase):
             event_id_two='43b68bae-ed5d-4aed-a99f-0b3d39c2418a'))]
 
     def test_event_list(self):
+        """
+        Test for event list.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = self.event_list_resp_dict(
             resource_name="aResource",
@@ -2623,6 +3480,12 @@ class ShellTestEvents(ShellBase):
             self.assertRegex(event_list_text, r)
 
     def test_stack_event_list_log(self):
+        """
+        Register event log events
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = self.event_list_resp_dict(
             resource_name="aResource",
@@ -2645,6 +3508,12 @@ class ShellTestEvents(ShellBase):
         self.assertEqual(expected, event_list_text)
 
     def test_event_show(self):
+        """
+        Show the details
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"event":
                      {"event_time": "2013-12-05T14:14:30Z",
@@ -2709,10 +3578,22 @@ class ShellTestEvents(ShellBase):
 
 class ShellTestEventsNested(ShellBase):
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestEventsNested, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_shell_nested_depth_invalid_xor(self):
+        """
+        Test if the shell shell doesn t ignored
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -2725,6 +3606,12 @@ class ShellTestEventsNested(ShellBase):
                       str(error))
 
     def test_shell_nested_depth_invalid_value(self):
+        """
+        Test if the resource isvalidator
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -2735,6 +3622,12 @@ class ShellTestEventsNested(ShellBase):
         self.assertIn('--nested-depth invalid value Z', str(error))
 
     def test_shell_nested_depth_zero(self):
+        """
+        Test for zero zero zero zero zero zero.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"events": [{"id": 'eventid1'},
                                 {"id": 'eventid2'}]}
@@ -2749,6 +3642,16 @@ class ShellTestEventsNested(ShellBase):
 
     def _stub_event_list_response_old_api(self, stack_id, nested_id,
                                           timestamps, first_request):
+        """
+        Stub
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            nested_id: (int): write your description
+            timestamps: (todo): write your description
+            first_request: (todo): write your description
+        """
         # Stub events for parent stack
         ev_resp_dict = {"events": [{"id": "p_eventid1",
                                     "event_time": timestamps[0]},
@@ -2779,6 +3682,12 @@ class ShellTestEventsNested(ShellBase):
                               nev_resp_dict)
 
     def test_shell_nested_depth_old_api(self):
+        """
+        Test if a nested shell has a shell.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2801,6 +3710,12 @@ class ShellTestEventsNested(ShellBase):
                          "%s.*\n.*%s.*\n.*%s.*\n.*%s" % timestamps)
 
     def test_shell_nested_depth_marker_old_api(self):
+        """
+        Test if the shell_nested.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2825,6 +3740,12 @@ class ShellTestEventsNested(ShellBase):
                          "%s.*\n.*%s.*\n.*%s.*" % timestamps[1:])
 
     def test_shell_nested_depth_limit_old_api(self):
+        """
+        Test if the shell_nested api.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -2849,6 +3770,12 @@ class ShellTestEventsNested(ShellBase):
                          "%s.*\n.*%s.*\n" % timestamps[:2])
 
     def _nested_events(self):
+        """
+        Return a list of event information.
+
+        Args:
+            self: (todo): write your description
+        """
         links = [
             {"rel": "self"},
             {"rel": "resource"},
@@ -2892,6 +3819,12 @@ class ShellTestEventsNested(ShellBase):
         ]
 
     def test_shell_nested_depth(self):
+        """
+        Register the nested depth is running.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_events = self._nested_events()
@@ -2909,6 +3842,12 @@ class ShellTestEventsNested(ShellBase):
 ''', list_text)
 
     def test_shell_nested_depth_marker(self):
+        """
+        Register the shell doesn tqual_depth_marker.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_events = self._nested_events()
@@ -2927,6 +3866,12 @@ class ShellTestEventsNested(ShellBase):
 ''', list_text)
 
     def test_shell_nested_depth_limit(self):
+        """
+        Test if the depth - depth depth
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_events = self._nested_events()
@@ -2946,11 +3891,26 @@ class ShellTestEventsNested(ShellBase):
 
 class ShellTestHookFunctions(ShellBase):
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestHookFunctions, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _stub_stack_response(self, stack_id, action='CREATE',
                              status='IN_PROGRESS'):
+        """
+        Stub
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            action: (str): write your description
+            status: (str): write your description
+        """
         # Stub parent stack show for status
         resp_dict = {"stack": {
             "id": stack_id.split("/")[1],
@@ -2961,6 +3921,15 @@ class ShellTestHookFunctions(ShellBase):
         self.mock_request_get('/stacks/teststack/1', resp_dict)
 
     def _stub_responses(self, stack_id, nested_id, action='CREATE'):
+        """
+        Stub
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            nested_id: (str): write your description
+            action: (str): write your description
+        """
         action_reason = 'Stack %s started' % action
         hook_reason = ('%s paused until Hook pre-%s is cleared' %
                        (action, action.lower()))
@@ -3008,6 +3977,12 @@ class ShellTestHookFunctions(ShellBase):
                               nev_resp_dict)
 
     def test_hook_poll_pre_create(self):
+        """
+        Test for pre - pre - pre - pre - pre - hook.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -3022,6 +3997,12 @@ class ShellTestHookFunctions(ShellBase):
         self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_pre_update(self):
+        """
+        Test for pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - print hook.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -3036,6 +4017,12 @@ class ShellTestHookFunctions(ShellBase):
         self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_pre_delete(self):
+        """
+        Test if pre - pre - pre - pre - hook
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         nested_id = 'nested/2'
@@ -3050,6 +4037,12 @@ class ShellTestHookFunctions(ShellBase):
         self.assertNotRegex(list_text, 'n_eventid2')
 
     def test_hook_poll_bad_status(self):
+        """
+        Test for bad status of the current stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, status='COMPLETE')
@@ -3060,6 +4053,12 @@ class ShellTestHookFunctions(ShellBase):
                       str(error))
 
     def test_shell_nested_depth_invalid_value(self):
+        """
+        Check if the test test test test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         error = self.assertRaises(
@@ -3068,6 +4067,12 @@ class ShellTestHookFunctions(ShellBase):
         self.assertIn('--nested-depth invalid value Z', str(error))
 
     def test_hook_poll_clear_bad_status(self):
+        """
+        Determine the status of an error stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, status='COMPLETE')
@@ -3078,6 +4083,12 @@ class ShellTestHookFunctions(ShellBase):
                       str(error))
 
     def test_hook_poll_clear_bad_action(self):
+        """
+        Determine whether the bad action is set.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         self._stub_stack_response(stack_id, action='BADACTION')
@@ -3091,10 +4102,23 @@ class ShellTestHookFunctions(ShellBase):
 class ShellTestResources(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestResources, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _test_resource_list(self, with_resource_name):
+        """
+        Register resource resource resource to resource.
+
+        Args:
+            self: (todo): write your description
+            with_resource_name: (str): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"resources": [
                      {"links": [{"href": "http://heat.example.com:8004/foo",
@@ -3136,12 +4160,30 @@ class ShellTestResources(ShellBase):
             self.assertRegex(resource_list_text, r)
 
     def test_resource_list(self):
+        """
+        Lists all resource list.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_resource_list(True)
 
     def test_resource_list_no_resource_name(self):
+        """
+        Test if the resource name of the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_resource_list(False)
 
     def test_resource_list_empty(self):
+        """
+        Test if the resource has been empty resource
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"resources": []}
         stack_id = 'teststack/1'
@@ -3162,6 +4204,15 @@ class ShellTestResources(ShellBase):
 
     def _test_resource_list_more_args(self, query_args, cmd_args,
                                       response_args):
+        """
+        Test if resource args
+
+        Args:
+            self: (todo): write your description
+            query_args: (dict): write your description
+            cmd_args: (dict): write your description
+            response_args: (dict): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"resources": [{
             "resource_name": "foobar",
@@ -3185,24 +4236,48 @@ class ShellTestResources(ShellBase):
             self.assertRegex(resource_list_text, field)
 
     def test_resource_list_nested(self):
+        """
+        Test if resource list.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_resource_list_more_args(
             query_args='nested_depth=99',
             cmd_args='--nested-depth 99',
             response_args=['resource_name', 'foobar', 'stack_name', 'foo'])
 
     def test_resource_list_filter(self):
+        """
+        Filter resource filter list of all resource resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_resource_list_more_args(
             query_args='name=foobar',
             cmd_args='--filter name=foobar',
             response_args=['resource_name', 'foobar'])
 
     def test_resource_list_detail(self):
+        """
+        Get list of resource resources.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_resource_list_more_args(
             query_args=parse.urlencode({'with_detail': True}, True),
             cmd_args='--with-detail',
             response_args=['resource_name', 'foobar', 'stack_name', 'foo'])
 
     def test_resource_show_with_attrs(self):
+        """
+        Show resource attributes.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"resource":
                      {"description": "",
@@ -3262,6 +4337,12 @@ class ShellTestResources(ShellBase):
             self.assertRegex(resource_show_text, r)
 
     def test_resource_signal(self):
+        """
+        Test if the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3282,6 +4363,12 @@ class ShellTestResources(ShellBase):
         self.assertEqual("", text)
 
     def test_resource_signal_no_data(self):
+        """
+        Test if the resource resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3301,6 +4388,12 @@ class ShellTestResources(ShellBase):
         self.assertEqual("", text)
 
     def test_resource_signal_no_json(self):
+        """
+        Test if the resource in the resource resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3312,6 +4405,12 @@ class ShellTestResources(ShellBase):
         self.assertIn('Data should be in JSON format', str(error))
 
     def test_resource_signal_no_dict(self):
+        """
+        Register the resource resource resource resource resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3323,6 +4422,12 @@ class ShellTestResources(ShellBase):
         self.assertEqual('Data should be a JSON dict', str(error))
 
     def test_resource_signal_both_data(self):
+        """
+        Test if the resource resource resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3335,6 +4440,12 @@ class ShellTestResources(ShellBase):
                          str(error))
 
     def test_resource_signal_data_file(self):
+        """
+        Register a new resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3358,6 +4469,12 @@ class ShellTestResources(ShellBase):
             self.assertEqual("", text)
 
     def test_resource_mark_unhealthy(self):
+        """
+        Mark unhealthy unhealthy unhealthy unhealthy.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3379,6 +4496,12 @@ class ShellTestResources(ShellBase):
         self.assertEqual("", text)
 
     def test_resource_mark_unhealthy_reset(self):
+        """
+        Reset unhealthy resource unhealthy unhealthy
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3400,6 +4523,12 @@ class ShellTestResources(ShellBase):
         self.assertEqual("", text)
 
     def test_resource_mark_unhealthy_no_reason(self):
+        """
+        Test to unhealthy unhealthy.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
         resource_name = 'aResource'
@@ -3423,10 +4552,22 @@ class ShellTestResources(ShellBase):
 
 class ShellTestResourceTypes(ShellBase):
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestResourceTypes, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
     def test_resource_type_template_yaml(self):
+        """
+        Register the resource type template type
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"heat_template_version": "2013-05-23",
                      "parameters": {},
@@ -3449,6 +4590,12 @@ class ShellTestResourceTypes(ShellBase):
             self.assertRegex(show_text, r)
 
     def test_resource_type_template_json(self):
+        """
+        Register a new resource type template with_type
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {"AWSTemplateFormatVersion": "2013-05-23",
                      "Parameters": {},
@@ -3476,6 +4623,12 @@ class ShellTestResourceTypes(ShellBase):
 class ShellTestConfig(ShellBase):
 
     def setUp(self):
+        """
+        Sets the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestConfig, self).setUp()
         self._set_fake_env()
 
@@ -3484,6 +4637,12 @@ class ShellTestConfig(ShellBase):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_config_create(self):
+        """
+        Create a new config.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         definition = {
@@ -3568,6 +4727,12 @@ class ShellTestConfig(ShellBase):
         ])
 
     def test_config_show(self):
+        """
+        Show test configuration
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {'software_config': {
             'inputs': [],
@@ -3602,6 +4767,12 @@ class ShellTestConfig(ShellBase):
         self.assertRaises(exc.CommandError, self.shell, 'config-show abcde')
 
     def test_config_delete(self):
+        """
+        Perform configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.mock_request_delete('/software_configs/abcd')
         self.mock_request_delete('/software_configs/qwer')
@@ -3621,6 +4792,12 @@ class ShellTestConfig(ShellBase):
 class ShellTestDeployment(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestDeployment, self).setUp()
         self.client = http.SessionClient
         self._set_fake_env()
@@ -3630,6 +4807,12 @@ class ShellTestDeployment(ShellBase):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_deploy_create(self):
+        """
+        Create deploy deploy deploy deploy
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         self.patch(
             'heatclient.common.deployment_utils.build_derived_config_params')
@@ -3709,6 +4892,12 @@ class ShellTestDeployment(ShellBase):
                           'deployment-create -c defgh -s inst01 yyy')
 
     def test_deploy_list(self):
+        """
+        Deploy the deployment list of the deployment
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {
@@ -3752,6 +4941,12 @@ class ShellTestDeployment(ShellBase):
         self.assertNotRegex(list_text, 'parent')
 
     def test_deploy_show(self):
+        """
+        Show the deployment todo.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {'software_deployment': {
             'status': 'COMPLETE',
@@ -3790,6 +4985,12 @@ class ShellTestDeployment(ShellBase):
                           'deployment-show defgh')
 
     def test_deploy_delete(self):
+        """
+        Deletes the deploy request. deploy.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
 
         deploy_resp_dict = {'software_deployment': {
@@ -3797,16 +4998,34 @@ class ShellTestDeployment(ShellBase):
         }}
 
         def _get_deployment_request_except(id):
+            """
+            Get request to get the deployment request.
+
+            Args:
+                id: (str): write your description
+            """
             self.mock_request_error('/software_deployments/%s' % id, 'GET',
                                     exc.HTTPNotFound())
 
         def _delete_deployment_request_except(id):
+            """
+            Deletes the deployment request.
+
+            Args:
+                id: (str): write your description
+            """
             self.mock_request_get('/software_deployments/%s' % id,
                                   deploy_resp_dict)
             self.mock_request_error('/software_deployments/%s' % id, 'DELETE',
                                     exc.HTTPNotFound())
 
         def _delete_config_request_except(id):
+            """
+            Deletes the configuration request.
+
+            Args:
+                id: (str): write your description
+            """
             self.mock_request_get('/software_deployments/%s' % id,
                                   deploy_resp_dict)
             self.mock_request_delete('/software_deployments/%s' % id)
@@ -3814,6 +5033,12 @@ class ShellTestDeployment(ShellBase):
                                     'DELETE', exc.HTTPNotFound())
 
         def _delete_request_success(id):
+            """
+            Handles the delete request.
+
+            Args:
+                id: (str): write your description
+            """
             self.mock_request_get('/software_deployments/%s' % id,
                                   deploy_resp_dict)
             self.mock_request_delete('/software_deployments/%s' % id)
@@ -3845,6 +5070,12 @@ class ShellTestDeployment(ShellBase):
         self.assertEqual('', self.shell('deployment-delete defg qwer'))
 
     def test_deploy_metadata(self):
+        """
+        Deploy the deployment metadata
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {'metadata': [
             {'id': 'abcd'},
@@ -3863,6 +5094,12 @@ class ShellTestDeployment(ShellBase):
             self.assertRegex(build_info_text, r)
 
     def test_deploy_output_show(self):
+        """
+        Show the ::
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {'software_deployment': {
             'status': 'COMPLETE',
@@ -3928,6 +5165,12 @@ class ShellTestDeployment(ShellBase):
 class ShellTestBuildInfo(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestBuildInfo, self).setUp()
         self._set_fake_env()
 
@@ -3936,6 +5179,12 @@ class ShellTestBuildInfo(ShellBase):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_build_info(self):
+        """
+        Register build information.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {
             'build_info': {
@@ -3962,10 +5211,22 @@ class ShellTestToken(ShellTestUserPass):
 
     # Rerun all ShellTestUserPass test with token auth
     def setUp(self):
+        """
+        Set token as the token.
+
+        Args:
+            self: (todo): write your description
+        """
         self.token = 'a_token'
         super(ShellTestToken, self).setUp()
 
     def _set_fake_env(self):
+        """
+        Sets up the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_TENANT_ID': 'tenant_id',
@@ -3983,16 +5244,34 @@ class ShellTestToken(ShellTestUserPass):
 class ShellTestUserPassKeystoneV3(ShellTestUserPass):
 
     def _set_fake_env(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
 
 class StandaloneTokenMixin(object):
     def setUp(self):
+        """
+        Set token.
+
+        Args:
+            self: (todo): write your description
+        """
         self.token = 'a_token'
         super(StandaloneTokenMixin, self).setUp()
         self.client = http.HTTPClient
 
     def _set_fake_env(self):
+        """
+        Set up the environment variables for an environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_NO_CLIENT_AUTH': 'True',
@@ -4013,6 +5292,12 @@ class ShellTestStandaloneToken(StandaloneTokenMixin, ShellTestUserPass):
     # specify --os-no-client-auth, a token and Heat endpoint
 
     def test_bad_template_file(self):
+        """
+        Register your json file as json
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         failed_msg = 'Error parsing template '
 
@@ -4067,6 +5352,12 @@ class ShellTestStandaloneTokenArgs(StandaloneTokenMixin, ShellTestNoMoxBase):
 class MockShellBase(TestCase):
 
     def setUp(self):
+        """
+        Sets the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         super(MockShellBase, self).setUp()
         self.jreq_mock = self.patch(
             'heatclient.common.http.HTTPClient.json_request')
@@ -4075,11 +5366,23 @@ class MockShellBase(TestCase):
 
         # Some tests set exc.verbose = 1, so reset on cleanup
         def unset_exc_verbose():
+            """
+            Unset the exception traceback.
+
+            Args:
+            """
             exc.verbose = 0
 
         self.addCleanup(unset_exc_verbose)
 
     def shell(self, argstr):
+        """
+        Execute a shell.
+
+        Args:
+            self: (todo): write your description
+            argstr: (str): write your description
+        """
         orig = sys.stdout
         try:
             sys.stdout = six.StringIO()
@@ -4100,13 +5403,31 @@ class MockShellBase(TestCase):
 class MockShellTestUserPass(MockShellBase):
 
     def setUp(self):
+        """
+        Sets the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(MockShellTestUserPass, self).setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_stack_list_with_args(self):
+        """
+        Register stack stack stack args
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = self.stack_list_resp_dict(include_project=True)
         resp = fakes.FakeHTTPResponse(
@@ -4173,10 +5494,22 @@ class MockShellTestToken(MockShellTestUserPass):
 
     # Rerun all ShellTestUserPass test with token auth
     def setUp(self):
+        """
+        Set the token.
+
+        Args:
+            self: (todo): write your description
+        """
         self.token = 'a_token'
         super(MockShellTestToken, self).setUp()
 
     def _set_fake_env(self):
+        """
+        Sets up the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_TENANT_ID': 'tenant_id',
@@ -4194,6 +5527,12 @@ class MockShellTestToken(MockShellTestUserPass):
 class MockShellTestUserPassKeystoneV3(MockShellTestUserPass):
 
     def _set_fake_env(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
 
@@ -4202,10 +5541,22 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
     # Rerun all ShellTestUserPass test in standalone mode, where we
     # specify --os-no-client-auth, a token and Heat endpoint
     def setUp(self):
+        """
+        Sets the token.
+
+        Args:
+            self: (todo): write your description
+        """
         self.token = 'a_token'
         super(MockShellTestStandaloneToken, self).setUp()
 
     def _set_fake_env(self):
+        """
+        Set up the environment variables for an environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         fake_env = {
             'OS_AUTH_TOKEN': self.token,
             'OS_NO_CLIENT_AUTH': 'True',
@@ -4224,6 +5575,12 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
 class ShellTestManageService(ShellBase):
 
     def setUp(self):
+        """
+        Sets the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ShellTestManageService, self).setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
@@ -4232,6 +5589,14 @@ class ShellTestManageService(ShellBase):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _test_error_case(self, code, message):
+        """
+        : param code : : return :
+
+        Args:
+            self: (todo): write your description
+            code: (int): write your description
+            message: (str): write your description
+        """
         self.register_keystone_auth_fixture()
 
         resp_dict = {
@@ -4259,6 +5624,12 @@ class ShellTestManageService(ShellBase):
         self.assertIn(message, str(e))
 
     def test_service_list(self):
+        """
+        Register a service list of the service.
+
+        Args:
+            self: (todo): write your description
+        """
         self.register_keystone_auth_fixture()
         resp_dict = {
             'services': [
@@ -4285,11 +5656,23 @@ class ShellTestManageService(ShellBase):
             self.assertRegex(services_text, r)
 
     def test_service_list_503(self):
+        """
+        A test test test test test for test.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_error_case(
             message='All heat engines are down',
             code=503)
 
     def test_service_list_403(self):
+        """
+        A test test for a test.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_error_case(
             message=('You are not authorized to '
                      'complete this action'),

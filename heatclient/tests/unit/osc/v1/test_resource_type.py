@@ -21,6 +21,12 @@ from heatclient.v1 import resource_types
 
 class TestResourceType(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the application s client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResourceType, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
 
@@ -28,12 +34,24 @@ class TestResourceType(orchestration_fakes.TestOrchestrationv1):
 class TestResourceTypeShow(TestResourceType):
 
     def setUp(self):
+        """
+        Set the resource type for this resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResourceTypeShow, self).setUp()
         self.cmd = resource_type.ResourceTypeShow(self.app, None)
         self.mock_client.resource_types.get.return_value = {}
         self.mock_client.resource_types.generate_template.return_value = {}
 
     def test_resourcetype_show(self):
+        """
+        Resourcetype
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -41,6 +59,12 @@ class TestResourceTypeShow(TestResourceType):
             'OS::Heat::None', False)
 
     def test_resourcetype_show_json(self):
+        """
+        Show a resource json resource
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--format', 'json']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -49,12 +73,24 @@ class TestResourceTypeShow(TestResourceType):
             'OS::Heat::None', False)
 
     def test_resourcetype_show_error_get(self):
+        """
+        Show an unspecetypepe.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.mock_client.resource_types.get.side_effect = heat_exc.HTTPNotFound
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resourcetype_show_error_template(self):
+        """
+        Resourcetype command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'hot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -63,6 +99,12 @@ class TestResourceTypeShow(TestResourceType):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resourcetype_show_template_hot(self):
+        """
+        Resourcetype template.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'Hot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -72,6 +114,12 @@ class TestResourceTypeShow(TestResourceType):
                'template_type': 'hot'})
 
     def test_resourcetype_show_template_cfn(self):
+        """
+        Show cfg template template template.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'cfn']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -81,6 +129,12 @@ class TestResourceTypeShow(TestResourceType):
                'template_type': 'cfn'})
 
     def test_resourcetype_show_template_cfn_yaml(self):
+        """
+        Show template yaml template yaml template.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'Cfn',
                    '--format', 'yaml']
@@ -91,12 +145,24 @@ class TestResourceTypeShow(TestResourceType):
                'template_type': 'cfn'})
 
     def test_resourcetype_show_invalid_template_type(self):
+        """
+        Check that the template template command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'abc']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resourcetype_show_with_description(self):
+        """
+        Resourcetype command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None', '--long']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -104,6 +170,12 @@ class TestResourceTypeShow(TestResourceType):
             'OS::Heat::None', True)
 
     def test_resourcetype_show_long_and_template_type_error(self):
+        """
+        Show a resourcetype command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['OS::Heat::None',
                    '--template-type', 'cfn',
                    '--long']
@@ -130,11 +202,23 @@ class TestTypeList(TestResourceType):
     ]
 
     def setUp(self):
+        """
+        Set a list of resource types.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestTypeList, self).setUp()
         self.cmd = resource_type.ResourceTypeList(self.app, None)
         self.mock_client.resource_types.list.return_value = self.list_response
 
     def test_resourcetype_list(self):
+        """
+        Resourcetype argument.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
@@ -145,6 +229,12 @@ class TestTypeList(TestResourceType):
         self.assertEqual(self.expected_rows, rows)
 
     def test_resourcetype_list_filter(self):
+        """
+        Resourcetype devices.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--filter', 'name=B']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
@@ -155,6 +245,12 @@ class TestTypeList(TestResourceType):
         self.assertEqual(self.expected_rows, rows)
 
     def test_resourcetype_list_filters(self):
+        """
+        Resour filters have_resour.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--filter', 'name=B', '--filter', 'version=123']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
@@ -165,6 +261,12 @@ class TestTypeList(TestResourceType):
         self.assertEqual(self.expected_rows, rows)
 
     def test_resourcetype_list_with_description(self):
+        """
+        Resourcetype command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--long']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)

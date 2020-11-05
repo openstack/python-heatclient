@@ -25,6 +25,13 @@ class ListStackFailures(command.Command):
     """Show information about failed stack resources."""
 
     def take_action(self, parsed_args):
+        """
+        Take a list of failed.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.heat_client = self.app.client_manager.orchestration
         failures = self._build_failed_resources(parsed_args.stack)
         deployment_failures = self._build_software_deployments(failures)
@@ -32,6 +39,13 @@ class ListStackFailures(command.Command):
                              long=parsed_args.long)
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListStackFailures, self).get_parser(prog_name)
         parser.add_argument(
             'stack',

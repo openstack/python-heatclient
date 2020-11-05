@@ -24,6 +24,12 @@ from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
 
     def setUp(self):
+        """
+        Set stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ListStackFailuresTest, self).setUp()
         self.cmd = stack_failures.ListStackFailures(self.app, None)
         self.cmd.heat_client = self.app.client_manager.orchestration
@@ -90,6 +96,12 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
             self.failed_deployment)
 
     def test_build_failed_none(self):
+        """
+        Test for failed failed failure.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack = mock.MagicMock(id='123', status='COMPLETE',
                                     stack_name='stack')
         failures = self.cmd._build_failed_resources('stack')
@@ -97,6 +109,12 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
         self.assertEqual(expected, failures)
 
     def test_build_failed_resources(self):
+        """
+        Test if the failed failed.
+
+        Args:
+            self: (todo): write your description
+        """
         self.resource_client.list.side_effect = [[
             # resource-list stack
             self.failed_template_resource,
@@ -114,6 +132,12 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
         self.assertEqual(expected, failures)
 
     def test_build_failed_resources_not_found(self):
+        """
+        Determine the failed failed.
+
+        Args:
+            self: (todo): write your description
+        """
         self.resource_client.list.side_effect = [[
             # resource-list stack
             self.failed_template_resource,
@@ -130,6 +154,12 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
         self.assertEqual(expected, failures)
 
     def test_build_software_deployments(self):
+        """
+        Deploy deployments to deployments.
+
+        Args:
+            self: (todo): write your description
+        """
         resources = {
             'stack.my_server': self.working_resource,
             'stack.my_deployment': self.failed_deployment_resource
@@ -140,6 +170,12 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
         }, deployments)
 
     def test_build_software_deployments_not_found(self):
+        """
+        Test to deployments to the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         resources = {
             'stack.my_server': self.working_resource,
             'stack.my_deployment': self.failed_deployment_resource
@@ -149,12 +185,24 @@ class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
         self.assertEqual({}, deployments)
 
     def test_build_software_deployments_no_resources(self):
+        """
+        Builds all deployments to the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         resources = {}
         self.software_deployments_client.get.side_effect = exc.HTTPNotFound()
         deployments = self.cmd._build_software_deployments(resources)
         self.assertEqual({}, deployments)
 
     def test_list_stack_failures(self):
+        """
+        List stack stack stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.resource_client.list.side_effect = [[
             # resource-list stack
             self.failed_template_resource,
@@ -208,6 +256,12 @@ stack.my_deployment:
 ''')
 
     def test_list_stack_failures_long(self):
+        """
+        List stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.resource_client.list.side_effect = [[
             # resource-list stack
             self.failed_template_resource,

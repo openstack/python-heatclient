@@ -20,6 +20,12 @@ from heatclient.v1 import actions
 class ActionManagerTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the safe to set the inputed action.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ActionManagerTest, self).setUp()
 
     def _base_test(self, expect_args, expect_kwargs):
@@ -28,6 +34,12 @@ class ActionManagerTest(testtools.TestCase):
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):
+                """
+                A json request
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert expect_args == args
                 assert expect_kwargs['data'] == kwargs['data']
                 return fakes.FakeHTTPResponse(
@@ -37,6 +49,12 @@ class ActionManagerTest(testtools.TestCase):
                     {}), {}
 
             def raw_request(self, *args, **kwargs):
+                """
+                Make a raw request.
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert expect_args == args
                 return fakes.FakeHTTPResponse(
                     '200',
@@ -45,26 +63,68 @@ class ActionManagerTest(testtools.TestCase):
                     {})
 
             def head(self, url, **kwargs):
+                """
+                Make a head request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 resp, body = self.json_request("HEAD", url, **kwargs)
                 return resp
 
             def get(self, url, **kwargs):
+                """
+                Make a get request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (todo): write your description
+                """
                 resp, body = self.json_request("GET", url, **kwargs)
                 return resp
 
             def post(self, url, **kwargs):
+                """
+                Make a post request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (todo): write your description
+                """
                 resp, body = self.json_request("POST", url, **kwargs)
                 return resp
 
             def put(self, url, **kwargs):
+                """
+                Make a put request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (todo): write your description
+                """
                 resp, body = self.json_request("PUT", url, **kwargs)
                 return resp
 
             def delete(self, url, **kwargs):
+                """
+                Make a delete request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 resp, body = self.raw_request("DELETE", url, **kwargs)
                 return resp
 
             def patch(self, url, **kwargs):
+                """
+                Sends a patch request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 resp, body = self.json_request("PATCH", url, **kwargs)
                 return resp
 
@@ -72,6 +132,12 @@ class ActionManagerTest(testtools.TestCase):
         return manager
 
     def test_suspend(self):
+        """
+        Synchronously run the manager
+
+        Args:
+            self: (todo): write your description
+        """
         fields = {'stack_id': 'teststack%2Fabcd1234'}
         expect_args = ('POST',
                        '/stacks/teststack%2Fabcd1234/actions')
@@ -81,6 +147,12 @@ class ActionManagerTest(testtools.TestCase):
         manager.suspend(**fields)
 
     def test_resume(self):
+        """
+        Resume the test.
+
+        Args:
+            self: (todo): write your description
+        """
         fields = {'stack_id': 'teststack%2Fabcd1234'}
         expect_args = ('POST',
                        '/stacks/teststack%2Fabcd1234/actions')
@@ -90,6 +162,12 @@ class ActionManagerTest(testtools.TestCase):
         manager.resume(**fields)
 
     def test_cancel_update(self):
+        """
+        Cancel the test.
+
+        Args:
+            self: (todo): write your description
+        """
         fields = {'stack_id': 'teststack%2Fabcd1234'}
         expect_args = ('POST',
                        '/stacks/teststack%2Fabcd1234/actions')
@@ -99,6 +177,12 @@ class ActionManagerTest(testtools.TestCase):
         manager.cancel_update(**fields)
 
     def test_cancel_without_rollback(self):
+        """
+        Cancel the rollback
+
+        Args:
+            self: (todo): write your description
+        """
         fields = {'stack_id': 'teststack%2Fabcd1234'}
         expect_args = ('POST',
                        '/stacks/teststack%2Fabcd1234/actions')
@@ -108,6 +192,12 @@ class ActionManagerTest(testtools.TestCase):
         manager.cancel_without_rollback(**fields)
 
     def test_check(self):
+        """
+        Perform test check
+
+        Args:
+            self: (todo): write your description
+        """
         fields = {'stack_id': 'teststack%2Fabcd1234'}
         expect_args = ('POST',
                        '/stacks/teststack%2Fabcd1234/actions')

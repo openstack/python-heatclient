@@ -23,30 +23,60 @@ from heatclient.v1 import stacks
 class BaseTest(testtools.TestCase):
 
     def test_two_resources_with_same_id_are_not_equal(self):
+        """
+        Test if two resources of two resources.
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with same ID: never equal if their info is not equal
         r1 = base.Resource(None, {'id': 1, 'name': 'hi'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
         self.assertNotEqual(r1, r2)
 
     def test_two_resources_with_same_id_and_info_are_equal(self):
+        """
+        Determine if the two two resources.
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with same ID: equal if their info is equal
         r1 = base.Resource(None, {'id': 1, 'name': 'hello'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
         self.assertEqual(r1, r2)
 
     def test_two_resources_with_diff_type_are_not_equal(self):
+        """
+        Assigns the two resource resources exist_resources.
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resoruces of different types: never equal
         r1 = base.Resource(None, {'id': 1})
         r2 = events.Event(None, {'id': 1})
         self.assertNotEqual(r1, r2)
 
     def test_two_resources_with_no_id_are_equal(self):
+        """
+        Determine if two resources have the same number
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with no ID: equal if their info is equal
         r1 = base.Resource(None, {'name': 'joe', 'age': 12})
         r2 = base.Resource(None, {'name': 'joe', 'age': 12})
         self.assertEqual(r1, r2)
 
     def test_is_same_object(self):
+        """
+        Test if the two objects.
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with same type and same ID: is same object
         r1 = base.Resource(None, {'id': 1, 'name': 'hi'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
@@ -54,6 +84,12 @@ class BaseTest(testtools.TestCase):
         self.assertTrue(r2.is_same_obj(r1))
 
     def test_is_diff_object_with_diff_id(self):
+        """
+        Check if the difference between two objects are the same as a diffs
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with same type and different ID: is different object
         r1 = base.Resource(None, {'id': 1, 'name': 'hello'})
         r2 = base.Resource(None, {'id': 2, 'name': 'hello'})
@@ -61,6 +97,12 @@ class BaseTest(testtools.TestCase):
         self.assertFalse(r2.is_same_obj(r1))
 
     def test_is_diff_object_with_diff_type(self):
+        """
+        Determine the difference between two diffs
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with different types: is different object
         r1 = events.Event(None, {'id': 1})
         r2 = stacks.Stack(None, {'id': 1})
@@ -68,6 +110,12 @@ class BaseTest(testtools.TestCase):
         self.assertFalse(r2.is_same_obj(r1))
 
     def test_is_diff_object_with_no_id(self):
+        """
+        Compare the difference between two objects
+
+        Args:
+            self: (todo): write your description
+        """
         # Two resources with no ID: is different object
         r1 = base.Resource(None, {'name': 'joe', 'age': 12})
         r2 = base.Resource(None, {'name': 'joe', 'age': 12})

@@ -20,6 +20,12 @@ from heatclient.tests.unit.osc import utils
 
 class TestOrchestrationv1(utils.TestCommand):
     def setUp(self):
+        """
+        Set the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestOrchestrationv1, self).setUp()
 
         self.app.client_manager.orchestration = mock.MagicMock()

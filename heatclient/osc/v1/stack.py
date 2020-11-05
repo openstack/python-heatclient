@@ -40,6 +40,13 @@ class CreateStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.CreateStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(CreateStack, self).get_parser(prog_name)
         parser.add_argument(
             '-e', '--environment',
@@ -131,6 +138,13 @@ class CreateStack(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Run an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -218,6 +232,13 @@ class UpdateStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.UpdateStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(UpdateStack, self).get_parser(prog_name)
         parser.add_argument(
             '-t', '--template', metavar='<template>',
@@ -320,6 +341,13 @@ class UpdateStack(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Processes an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -422,6 +450,13 @@ class ShowStack(command.ShowOne):
     log = logging.getLogger(__name__ + ".ShowStack")
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -435,6 +470,13 @@ class ShowStack(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single stack.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -446,6 +488,16 @@ class ShowStack(command.ShowOne):
 
 def _show_stack(heat_client, stack_id, format='', short=False,
                 resolve_outputs=True):
+    """
+    Show stack stack.
+
+    Args:
+        heat_client: (todo): write your description
+        stack_id: (int): write your description
+        format: (str): write your description
+        short: (bool): write your description
+        resolve_outputs: (bool): write your description
+    """
     try:
         _resolve_outputs = not short and resolve_outputs
         data = heat_client.stacks.get(stack_id=stack_id,
@@ -498,6 +550,13 @@ class ListStack(command.Lister):
     log = logging.getLogger(__name__ + '.ListStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListStack, self).get_parser(prog_name)
         parser.add_argument(
             '--deleted',
@@ -571,6 +630,13 @@ class ListStack(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -583,6 +649,13 @@ class EnvironmentShowStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(EnvironmentShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -592,6 +665,13 @@ class EnvironmentShowStack(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take actions from the server and return the action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -616,6 +696,13 @@ class ListFileStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
+        """
+        Returns a parser object for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListFileStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -625,6 +712,13 @@ class ListFileStack(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take the specified action from the client.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -639,6 +733,12 @@ class ListFileStack(format_utils.YamlFormat):
 
 
 def _list(client, args=None):
+    """
+    List tags.
+
+    Args:
+        client: (todo): write your description
+    """
     kwargs = {}
     columns = [
         'ID',
@@ -707,6 +807,13 @@ class DeleteStack(command.Command):
     log = logging.getLogger(__name__ + ".DeleteStack")
 
     def get_parser(self, prog_name):
+        """
+        Returns a parser for the command line.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(DeleteStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -727,6 +834,13 @@ class DeleteStack(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -801,6 +915,13 @@ class AdoptStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.AdoptStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command line arguments.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(AdoptStack, self).get_parser(prog_name)
         parser.add_argument(
             'name',
@@ -845,6 +966,13 @@ class AdoptStack(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Perform actions request.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -886,6 +1014,13 @@ class AbandonStack(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + '.AbandonStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser for the command line parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(AbandonStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -901,6 +1036,13 @@ class AbandonStack(format_utils.JsonFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a list of the current server.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -930,6 +1072,13 @@ class ExportStack(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + '.ExportStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ExportStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -945,6 +1094,13 @@ class ExportStack(format_utils.JsonFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a pipeline from the server.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -974,6 +1130,13 @@ class OutputShowStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.OutputShowStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(OutputShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -995,6 +1158,13 @@ class OutputShowStack(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -1054,6 +1224,13 @@ class OutputListStack(command.Lister):
     log = logging.getLogger(__name__ + '.OutputListStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(OutputListStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -1063,6 +1240,13 @@ class OutputListStack(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a list of the actions.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -1091,6 +1275,13 @@ class TemplateShowStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + '.TemplateShowStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates a parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(TemplateShowStack, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -1100,6 +1291,13 @@ class TemplateShowStack(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -1119,6 +1317,15 @@ class StackActionBase(command.Lister):
     log = logging.getLogger(__name__ + '.StackActionBase')
 
     def _get_parser(self, prog_name, stack_help, wait_help):
+        """
+        Creates a parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+            stack_help: (todo): write your description
+            wait_help: (todo): write your description
+        """
         parser = super(StackActionBase, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -1134,6 +1341,15 @@ class StackActionBase(command.Lister):
         return parser
 
     def _take_action(self, parsed_args, action, action_name=None):
+        """
+        Handles a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+            action: (str): write your description
+            action_name: (str): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _stacks_action(
@@ -1145,6 +1361,15 @@ class StackActionBase(command.Lister):
 
 
 def _stacks_action(parsed_args, heat_client, action, action_name=None):
+    """
+    Parse actions dict.
+
+    Args:
+        parsed_args: (todo): write your description
+        heat_client: (todo): write your description
+        action: (str): write your description
+        action_name: (str): write your description
+    """
     rows = []
     columns = [
         'ID',
@@ -1161,6 +1386,16 @@ def _stacks_action(parsed_args, heat_client, action, action_name=None):
 
 
 def _stack_action(stack, parsed_args, heat_client, action, action_name=None):
+    """
+    Stack a stack stack.
+
+    Args:
+        stack: (dict): write your description
+        parsed_args: (todo): write your description
+        heat_client: (todo): write your description
+        action: (str): write your description
+        action_name: (str): write your description
+    """
     if parsed_args.wait:
         # find the last event to use as the marker
         events = event_utils.get_events(heat_client,
@@ -1195,6 +1430,13 @@ class SuspendStack(StackActionBase):
     log = logging.getLogger(__name__ + '.SuspendStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the given name.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         return self._get_parser(
             prog_name,
             _('Stack(s) to suspend (name or ID)'),
@@ -1202,6 +1444,13 @@ class SuspendStack(StackActionBase):
         )
 
     def take_action(self, parsed_args):
+        """
+        Handles an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.suspend,
@@ -1215,6 +1464,13 @@ class ResumeStack(StackActionBase):
     log = logging.getLogger(__name__ + '.ResumeStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the given name.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         return self._get_parser(
             prog_name,
             _('Stack(s) to resume (name or ID)'),
@@ -1222,6 +1478,13 @@ class ResumeStack(StackActionBase):
         )
 
     def take_action(self, parsed_args):
+        """
+        Handles an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.resume,
@@ -1235,6 +1498,13 @@ class CheckStack(StackActionBase):
     log = logging.getLogger(__name__ + '.CheckStack')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the given name.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         return self._get_parser(
             prog_name,
             _('Stack(s) to check update (name or ID)'),
@@ -1242,6 +1512,13 @@ class CheckStack(StackActionBase):
         )
 
     def take_action(self, parsed_args):
+        """
+        Handles an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return self._take_action(
             parsed_args,
             self.app.client_manager.orchestration.actions.check,
@@ -1261,6 +1538,13 @@ class CancelStack(StackActionBase):
     log = logging.getLogger(__name__ + '.CancelStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates a parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = self._get_parser(
             prog_name,
             _('Stack(s) to cancel (name or ID)'),
@@ -1274,6 +1558,13 @@ class CancelStack(StackActionBase):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         rows = []
         columns = [
@@ -1320,6 +1611,13 @@ class StackHookPoll(command.Lister):
     log = logging.getLogger(__name__ + '.StackHookPoll')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(StackHookPoll, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -1334,6 +1632,13 @@ class StackHookPoll(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Perform action action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _hook_poll(
@@ -1389,6 +1694,13 @@ class StackHookClear(command.Command):
     log = logging.getLogger(__name__ + '.StackHookClear')
 
     def get_parser(self, prog_name):
+        """
+        Create a parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(StackHookClear, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -1423,6 +1735,13 @@ class StackHookClear(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Perform a http post request.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _hook_clear(

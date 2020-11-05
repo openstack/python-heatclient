@@ -25,6 +25,18 @@ from heatclient.v1 import software_configs
 
 def build_derived_config_params(action, source, name, input_values,
                                 server_id, signal_transport, signal_id=None):
+    """
+    Builds a mutator configs
+
+    Args:
+        action: (str): write your description
+        source: (dict): write your description
+        name: (str): write your description
+        input_values: (dict): write your description
+        server_id: (str): write your description
+        signal_transport: (todo): write your description
+        signal_id: (str): write your description
+    """
 
     if isinstance(source, software_configs.SoftwareConfig):
         source = source.to_dict()
@@ -93,6 +105,15 @@ def build_derived_config_params(action, source, name, input_values,
 
 
 def create_temp_url(swift_client, name, timeout, container=None):
+    """
+    Create a temporary url.
+
+    Args:
+        swift_client: (todo): write your description
+        name: (str): write your description
+        timeout: (float): write your description
+        container: (str): write your description
+    """
 
     container = container or '%(name)s-%(uuid)s' % {
         'name': name, 'uuid': uuid.uuid4()}
@@ -117,6 +138,12 @@ def create_temp_url(swift_client, name, timeout, container=None):
 
 
 def build_signal_id(hc, args):
+    """
+    Build a swift id.
+
+    Args:
+        hc: (int): write your description
+    """
     if args.signal_transport != 'TEMP_URL_SIGNAL':
         return
 
@@ -131,6 +158,13 @@ def build_signal_id(hc, args):
 
 
 def create_swift_client(auth, session, args):
+    """
+    Creates a swift client.
+
+    Args:
+        auth: (todo): write your description
+        session: (todo): write your description
+    """
     auth_token = auth.get_token(session)
     endpoint = auth.get_endpoint(session,
                                  service_type='object-store',

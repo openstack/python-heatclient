@@ -22,6 +22,14 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 
 def mock_stack(manager, stack_name, stack_id):
+    """
+    Mock a stack. stack. stack. stack. stack. stack_stack. stack. stack. stack. stack. stack_stack. stack
+
+    Args:
+        manager: (todo): write your description
+        stack_name: (str): write your description
+        stack_id: (int): write your description
+    """
     return stacks.Stack(manager, {
         "id": stack_id,
         "stack_name": stack_name,
@@ -54,6 +62,12 @@ class StackStatusActionTest(testtools.TestCase):
     ])
 
     def test_status_action(self):
+        """
+        Evaluates status of the actions.
+
+        Args:
+            self: (todo): write your description
+        """
         stack_status = '%s_%s' % (self.action, self.status)
         stack = mock_stack(None, 'stack_1', 'abcd1234')
         stack.stack_status = stack_status
@@ -64,6 +78,12 @@ class StackStatusActionTest(testtools.TestCase):
 class StackIdentifierTest(testtools.TestCase):
 
     def test_stack_identifier(self):
+        """
+        Test if the stack is running.
+
+        Args:
+            self: (todo): write your description
+        """
         stack = mock_stack(None, 'the_stack', 'abcd1234')
         self.assertEqual('the_stack/abcd1234', stack.identifier)
 
@@ -71,48 +91,96 @@ class StackIdentifierTest(testtools.TestCase):
 class StackOperationsTest(testtools.TestCase):
 
     def test_delete_stack(self):
+        """
+        Deletes the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.delete()
         manager.delete.assert_called_once_with('the_stack/abcd1234')
 
     def test_abandon_stack(self):
+        """
+        Abandon stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.abandon()
         manager.abandon.assert_called_once_with('the_stack/abcd1234')
 
     def test_get_stack(self):
+        """
+        Get the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.get()
         manager.get.assert_called_once_with('the_stack/abcd1234')
 
     def test_update_stack(self):
+        """
+        Update the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.update()
         manager.update.assert_called_once_with('the_stack/abcd1234')
 
     def test_create_stack(self):
+        """
+        Create a stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack = stack.create()
         manager.create.assert_called_once_with('the_stack/abcd1234')
 
     def test_preview_stack(self):
+        """
+        Test that the preview stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack = stack.preview()
         manager.preview.assert_called_once_with()
 
     def test_snapshot(self):
+        """
+        Test the snapshot of the snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot('foo')
         manager.snapshot.assert_called_once_with('the_stack/abcd1234', 'foo')
 
     def test_snapshot_show(self):
+        """
+        Show snapshot snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_show('snap1234')
@@ -120,6 +188,12 @@ class StackOperationsTest(testtools.TestCase):
             'the_stack/abcd1234', 'snap1234')
 
     def test_snapshot_delete(self):
+        """
+        Delete snapshot of snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_delete('snap1234')
@@ -127,6 +201,12 @@ class StackOperationsTest(testtools.TestCase):
             'the_stack/abcd1234', 'snap1234')
 
     def test_restore(self):
+        """
+        Restore the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.restore('snap1234')
@@ -134,18 +214,36 @@ class StackOperationsTest(testtools.TestCase):
             'the_stack/abcd1234', 'snap1234')
 
     def test_snapshot_list(self):
+        """
+        Test the snapshot of snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.snapshot_list()
         manager.snapshot_list.assert_called_once_with('the_stack/abcd1234')
 
     def test_output_list(self):
+        """
+        List of the test stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.output_list()
         manager.output_list.assert_called_once_with('the_stack/abcd1234')
 
     def test_output_show(self):
+        """
+        Show the test output of the test.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'the_stack', 'abcd1234')
         stack.output_show('out123')
@@ -153,12 +251,24 @@ class StackOperationsTest(testtools.TestCase):
                                                     'out123')
 
     def test_environment_show(self):
+        """
+        Perform environment.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'env_stack', 'env1')
         stack.environment()
         manager.environment.assert_called_once_with('env_stack/env1')
 
     def test_files_show(self):
+        """
+        Show the test files.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = mock.MagicMock()
         stack = mock_stack(manager, 'files_stack', 'files1')
         stack.files()
@@ -186,11 +296,27 @@ class StackManagerNoPaginationTest(testtools.TestCase):
     limit = 50
 
     def mock_manager(self):
+        """
+        Return a context manager.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = stacks.StackManager(None)
         manager._list = mock.MagicMock()
 
         def mock_list(*args, **kwargs):
+            """
+            Mock_list
+
+            Args:
+            """
             def results():
+                """
+                Return a generator that yields the results.
+
+                Args:
+                """
                 for i in range(0, self.total):
                     stack_name = 'stack_%s' % (i + 1)
                     stack_id = 'abcd1234-%s' % (i + 1)
@@ -202,6 +328,12 @@ class StackManagerNoPaginationTest(testtools.TestCase):
         return manager
 
     def test_stack_list_no_pagination(self):
+        """
+        Test stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = self.mock_manager()
 
         results = list(manager.list())
@@ -286,10 +418,23 @@ class StackManagerPaginationTest(testtools.TestCase):
     limit = 50
 
     def mock_manager(self):
+        """
+        Returns a list of the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = stacks.StackManager(None)
         manager._list = mock.MagicMock()
 
         def mock_list(arg_url, arg_response_key):
+            """
+            Returns a list of indexes
+
+            Args:
+                arg_url: (str): write your description
+                arg_response_key: (str): write your description
+            """
             try:
                 result = self.results[self.result_index]
             except IndexError:
@@ -305,6 +450,11 @@ class StackManagerPaginationTest(testtools.TestCase):
                 self.assertIn(offset_string, arg_url)
 
             def results():
+                """
+                Yield a generator of the stack.
+
+                Args:
+                """
 
                 for i in range(*result):
                     self.limit -= 1
@@ -318,6 +468,12 @@ class StackManagerPaginationTest(testtools.TestCase):
         return manager
 
     def test_stack_list_pagination(self):
+        """
+        Test for pagination results.
+
+        Args:
+            self: (todo): write your description
+        """
         manager = self.mock_manager()
 
         list_params = {'limit': self.limit}
@@ -346,6 +502,12 @@ class StackManagerPaginationTest(testtools.TestCase):
 class StackManagerValidateTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         super(StackManagerValidateTest, self).setUp()
 
         self.mock_response = mock.MagicMock()
@@ -358,6 +520,12 @@ class StackManagerValidateTest(testtools.TestCase):
         self.manager = stacks.StackManager(self.mock_client)
 
     def test_validate_show_nested(self):
+        """
+        Return the test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         # Test
         result = self.manager.validate(**{'show_nested': True})
 
@@ -367,6 +535,12 @@ class StackManagerValidateTest(testtools.TestCase):
             '/validate', params={'show_nested': True})
 
     def test_validate_show_nested_false(self):
+        """
+        Show the test test test for this test.
+
+        Args:
+            self: (todo): write your description
+        """
         # Test
         result = self.manager.validate(**{'show_nested': False})
 
@@ -376,6 +550,12 @@ class StackManagerValidateTest(testtools.TestCase):
             '/validate')
 
     def test_validate_show_nested_default(self):
+        """
+        Validate the test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         # Test
         result = self.manager.validate()
 
@@ -385,6 +565,12 @@ class StackManagerValidateTest(testtools.TestCase):
             '/validate')
 
     def test_validate_ignore_errors(self):
+        """
+        Test that the test validation errors.
+
+        Args:
+            self: (todo): write your description
+        """
         self.manager.validate(ignore_errors='99001,99002')
         self.mock_client.post.assert_called_once_with(
             '/validate', params={'ignore_errors': '99001,99002'})

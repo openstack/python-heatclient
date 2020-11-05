@@ -36,6 +36,13 @@ class yaml_dumper(yaml_dumper_base):
 
 
 def _construct_yaml_str(self, node):
+    """
+    Parse a yaml string.
+
+    Args:
+        self: (todo): write your description
+        node: (todo): write your description
+    """
     # Override the default string handling function
     # to always return unicode objects
     return self.construct_scalar(node)

@@ -23,6 +23,12 @@ from heatclient.v1 import events
 class EventManagerTest(testtools.TestCase):
 
     def test_list_event(self):
+        """
+        Returns a list of the event.
+
+        Args:
+            self: (todo): write your description
+        """
         stack_id = 'teststack',
         resource_name = 'testresource'
         manager = events.EventManager(None)
@@ -40,6 +46,12 @@ class EventManagerTest(testtools.TestCase):
             mock_re.assert_called_once_with(stack_id)
 
     def test_list_event_with_unicode_resource_name(self):
+        """
+        Returns a list of events.
+
+        Args:
+            self: (todo): write your description
+        """
         stack_id = 'teststack',
         resource_name = u'\u5de5\u4f5c'
         manager = events.EventManager(None)
@@ -57,6 +69,12 @@ class EventManagerTest(testtools.TestCase):
             mock_re.assert_called_once_with(stack_id)
 
     def test_list_event_with_none_resource_name(self):
+        """
+        Stores the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         stack_id = 'teststack',
         manager = events.EventManager(None)
         manager._list = mock.MagicMock()
@@ -66,6 +84,12 @@ class EventManagerTest(testtools.TestCase):
                                               'events', "events")
 
     def test_list_event_with_kwargs(self):
+        """
+        List all event arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         stack_id = 'teststack',
         resource_name = 'testresource'
         kwargs = {'limit': 2,
@@ -110,6 +134,12 @@ class EventManagerTest(testtools.TestCase):
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):
+                """
+                Return json data
+
+                Args:
+                    self: (todo): write your description
+                """
                 expect = ('GET',
                           '/stacks/teststack/abcd1234/resources'
                           '/testresource/events/1')
@@ -117,6 +147,12 @@ class EventManagerTest(testtools.TestCase):
                 return {}, {'event': []}
 
             def get(self, *args, **kwargs):
+                """
+                Wrapper for get () method.
+
+                Args:
+                    self: (todo): write your description
+                """
                 pass
 
         manager = events.EventManager(FakeAPI())
@@ -137,6 +173,12 @@ class EventManagerTest(testtools.TestCase):
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):
+                """
+                Return json data
+
+                Args:
+                    self: (todo): write your description
+                """
                 expect = ('GET',
                           '/stacks/teststack/abcd1234/resources'
                           '/%E5%B7%A5%E4%BD%9C/events/1')
@@ -144,6 +186,12 @@ class EventManagerTest(testtools.TestCase):
                 return {}, {'event': []}
 
             def get(self, *args, **kwargs):
+                """
+                Wrapper for get () method.
+
+                Args:
+                    self: (todo): write your description
+                """
                 pass
 
         manager = events.EventManager(FakeAPI())

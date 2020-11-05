@@ -50,6 +50,12 @@ def arg(*args, **kwargs):
     ...     pass
     """
     def _decorator(func):
+        """
+        Decorator to add a function to a function.
+
+        Args:
+            func: (todo): write your description
+        """
         add_arg(func, *args, **kwargs)
         return func
     return _decorator
@@ -130,7 +136,19 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
 
 
 def link_formatter(links):
+    """
+    Returns a linkatter for a link.
+
+    Args:
+        links: (todo): write your description
+    """
     def format_link(l):
+        """
+        Formats a link.
+
+        Args:
+            l: (dict): write your description
+        """
         if 'rel' in l:
             return "%s (%s)" % (l.get('href', ''), l.get('rel', ''))
         else:
@@ -139,6 +157,12 @@ def link_formatter(links):
 
 
 def resource_nested_identifier(rsrc):
+    """
+    Return the identifier for the identifier.
+
+    Args:
+        rsrc: (todo): write your description
+    """
     nested_link = [l for l in rsrc.links or []
                    if l.get('rel') == 'nested']
     if nested_link:
@@ -148,23 +172,54 @@ def resource_nested_identifier(rsrc):
 
 
 def json_formatter(js):
+    """
+    Formats json formatted string.
+
+    Args:
+        js: (todo): write your description
+    """
     return jsonutils.dumps(js, indent=2, ensure_ascii=False,
                            separators=(', ', ': '))
 
 
 def yaml_formatter(js):
+    """
+    Convert js - formatted formatter to yaml.
+
+    Args:
+        js: (todo): write your description
+    """
     return yaml.safe_dump(js, default_flow_style=False)
 
 
 def text_wrap_formatter(d):
+    """
+    Wrap text in - placeatter.
+
+    Args:
+        d: (todo): write your description
+    """
     return '\n'.join(textwrap.wrap(d or '', 55))
 
 
 def newline_list_formatter(r):
+    """
+    Format a list of - line formatter.
+
+    Args:
+        r: (todo): write your description
+    """
     return '\n'.join(r or [])
 
 
 def print_dict(d, formatters=None):
+    """
+    Print a dict
+
+    Args:
+        d: (str): write your description
+        formatters: (str): write your description
+    """
     formatters = formatters or {}
     pt = prettytable.PrettyTable(['Property', 'Value'],
                                  caching=False, print_empty=False)
@@ -181,12 +236,26 @@ def print_dict(d, formatters=None):
 class EventLogContext(object):
 
     def __init__(self):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+        """
         # key is a stack id or the name of the nested stack, value is a tuple
         # of the parent stack id, and the name of the resource in the parent
         # stack
         self.id_to_res_info = {}
 
     def prepend_paths(self, resource_path, stack_id):
+        """
+        Prepend paths to the stack.
+
+        Args:
+            self: (todo): write your description
+            resource_path: (str): write your description
+            stack_id: (str): write your description
+        """
         if stack_id not in self.id_to_res_info:
             return
         stack_id, res_name = self.id_to_res_info.get(stack_id)
@@ -200,12 +269,24 @@ class EventLogContext(object):
             resource_path.insert(0, res_name)
 
     def build_resource_name(self, event):
+        """
+        Build the resource name.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         res_name = getattr(event, 'resource_name')
 
         # Contribute this event to self.id_to_res_info to assist with
         # future calls to build_resource_name
 
         def get_stack_id():
+            """
+            Return the stack id of the stack.
+
+            Args:
+            """
             if getattr(event, 'stack_id', None) is not None:
                 return event.stack_id
             for l in getattr(event, 'links', []):
@@ -354,6 +435,15 @@ def format_parameters(params, parse_semicolon=True):
 
 def format_all_parameters(params, param_files,
                           template_file=None, template_url=None):
+    """
+    Format a list of parameters.
+
+    Args:
+        params: (dict): write your description
+        param_files: (str): write your description
+        template_file: (str): write your description
+        template_url: (str): write your description
+    """
     parameters = {}
     parameters.update(format_parameters(params))
     parameters.update(format_parameter_file(
@@ -383,6 +473,13 @@ def format_parameter_file(param_files, template_file=None,
 
 
 def resolve_param_get_file(file, base_url):
+    """
+    Resolve the file.
+
+    Args:
+        file: (str): write your description
+        base_url: (str): write your description
+    """
     if base_url and not base_url.endswith('/'):
         base_url = base_url + '/'
     str_url = parse.urljoin(base_url, file)
@@ -400,17 +497,36 @@ def format_output(output, format='yaml'):
 
 
 def parse_query_url(url):
+    """
+    Parse a url query string.
+
+    Args:
+        url: (str): write your description
+    """
     base_url, query_params = url.split('?')
     return base_url, parse.parse_qs(query_params)
 
 
 def get_template_url(template_file=None, template_url=None):
+    """
+    Return the url of a template.
+
+    Args:
+        template_file: (str): write your description
+        template_url: (str): write your description
+    """
     if template_file:
         template_url = normalise_file_path_to_url(template_file)
     return template_url
 
 
 def read_url_content(url):
+    """
+    Read the content from url.
+
+    Args:
+        url: (str): write your description
+    """
     try:
         content = request.urlopen(url).read()
     except error.URLError:
@@ -425,12 +541,24 @@ def read_url_content(url):
 
 
 def base_url_for_url(url):
+    """
+    Return the base url for a given url.
+
+    Args:
+        url: (str): write your description
+    """
     parsed = parse.urlparse(url)
     parsed_dir = os.path.dirname(parsed.path)
     return parse.urljoin(url, parsed_dir)
 
 
 def normalise_file_path_to_url(path):
+    """
+    Normalise a path to a url.
+
+    Args:
+        path: (str): write your description
+    """
     if parse.urlparse(path).scheme:
         return path
     path = os.path.abspath(path)
@@ -438,6 +566,12 @@ def normalise_file_path_to_url(path):
 
 
 def get_response_body(resp):
+    """
+    Get the content - type response body.
+
+    Args:
+        resp: (todo): write your description
+    """
     body = resp.content
     if 'application/json' in resp.headers.get('content-type', ''):
         try:

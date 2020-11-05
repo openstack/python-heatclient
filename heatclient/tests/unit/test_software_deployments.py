@@ -21,6 +21,12 @@ from heatclient.v1 import software_deployments
 class SoftwareDeploymentTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the deployments.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareDeploymentTest, self).setUp()
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.deployment = software_deployments.SoftwareDeployment(
@@ -28,12 +34,24 @@ class SoftwareDeploymentTest(testtools.TestCase):
         self.deployment_id = deployment_id
 
     def test_delete(self):
+        """
+        Deletes the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         self.deployment.manager.delete.return_value = None
         self.assertIsNone(self.deployment.delete())
         kwargs = self.deployment.manager.delete.call_args[1]
         self.assertEqual(self.deployment_id, kwargs['deployment_id'])
 
     def test_update(self):
+        """
+        Updates the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             "<SoftwareDeployment {'id': '%s'}>" % self.deployment_id,
             str(self.deployment))
@@ -48,11 +66,23 @@ class SoftwareDeploymentTest(testtools.TestCase):
 class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareDeploymentManagerTest, self).setUp()
         self.manager = software_deployments.SoftwareDeploymentManager(
             mock.MagicMock())
 
     def test_list(self):
+        """
+        Executes a test test test test
+
+        Args:
+            self: (todo): write your description
+        """
         server_id = 'fc01f89f-e151-4dc5-9c28-543c0d20ed6a'
         self.manager.client.json_request.return_value = (
             {},
@@ -66,6 +96,13 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_metadata(self, mock_utils):
+        """
+        Get the metadata of a mock.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         server_id = 'fc01f89f-e151-4dc5-9c28-543c0d20ed6a'
         metadata = {
             'group1': [{'foo': 'bar'}],
@@ -82,6 +119,13 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_get(self, mock_utils):
+        """
+        Get a test.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'
@@ -113,6 +157,13 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_create(self, mock_utils):
+        """
+        Creates a mock.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'
@@ -136,6 +187,12 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
         self.assertEqual({'data': body}, kwargs)
 
     def test_delete(self):
+        """
+        Deploy a test.
+
+        Args:
+            self: (todo): write your description
+        """
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.manager.delete(deployment_id)
         call_args = self.manager.client.delete.call_args
@@ -144,6 +201,13 @@ class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_update(self, mock_utils):
+        """
+        Update an existing mock.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         config_id = 'd00ba4aa-db33-42e1-92f4-2a6469260107'
         server_id = 'fb322564-7927-473d-8aad-68ae7fbf2abf'

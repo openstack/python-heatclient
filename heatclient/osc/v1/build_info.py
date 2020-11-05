@@ -28,10 +28,24 @@ class BuildInfo(command.ShowOne):
     log = logging.getLogger(__name__ + ".BuildInfo")
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the given name.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(BuildInfo, self).get_parser(prog_name)
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration

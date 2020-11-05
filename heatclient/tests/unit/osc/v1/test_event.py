@@ -27,6 +27,12 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 class TestEvent(fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets up the event loop.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestEvent, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.event_client = self.app.client_manager.orchestration.events
@@ -56,10 +62,22 @@ class TestEventShow(TestEvent):
     }
 
     def setUp(self):
+        """
+        Sets the event to set the event loop.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestEventShow, self).setUp()
         self.cmd = event.ShowEvent(self.app, None)
 
     def test_event_show(self):
+        """
+        Execute test test.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--format', self.format, 'my_stack', 'my_resource', '1234']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.event_client.get.return_value = events.Event(None, self.response)
@@ -73,6 +91,13 @@ class TestEventShow(TestEvent):
         })
 
     def _test_not_found(self, error):
+        """
+        Test if a command and raise an error.
+
+        Args:
+            self: (todo): write your description
+            error: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', '1234']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         ex = self.assertRaises(exc.CommandError, self.cmd.take_action,
@@ -80,16 +105,34 @@ class TestEventShow(TestEvent):
         self.assertIn(error, str(ex))
 
     def test_event_show_stack_not_found(self):
+        """
+        Test if the current stack has been closed.
+
+        Args:
+            self: (todo): write your description
+        """
         error = 'Stack not found'
         self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
 
     def test_event_show_resource_not_found(self):
+        """
+        Test if the resource has an error.
+
+        Args:
+            self: (todo): write your description
+        """
         error = 'Resource not found'
         self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
 
     def test_event_show_event_not_found(self):
+        """
+        Test if the event that was closed.
+
+        Args:
+            self: (todo): write your description
+        """
         error = 'Event not found'
         self.stack_client.get.side_effect = exc.HTTPNotFound(error)
         self._test_not_found(error)
@@ -122,6 +165,13 @@ class TestEventList(TestEvent):
         }
 
         def __getattr__(self, key):
+            """
+            Return the value of the given key.
+
+            Args:
+                self: (todo): write your description
+                key: (str): write your description
+            """
             try:
                 return self.data[key]
             except KeyError:
@@ -129,6 +179,12 @@ class TestEventList(TestEvent):
                 raise AttributeError
 
     def setUp(self):
+        """
+        Sets the event list.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestEventList, self).setUp()
         self.cmd = event.ListEvent(self.app, None)
         self.event = self.MockEvent()
@@ -136,6 +192,12 @@ class TestEventList(TestEvent):
         self.resource_client.list.return_value = {}
 
     def test_event_list_defaults(self):
+        """
+        Test the default test event of event.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--format', 'table']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -145,6 +207,12 @@ class TestEventList(TestEvent):
         self.assertEqual(self.fields, columns)
 
     def test_event_list_resource_nested_depth(self):
+        """
+        Test if a list of resource.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--resource', 'my_resource',
                    '--nested-depth', '3', '--format', 'table']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -152,6 +220,12 @@ class TestEventList(TestEvent):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_event_list_logical_resource_id(self):
+        """
+        Test if the logical logical event.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--format', 'table']
         del self.event.data['resource_name']
         cols = copy.deepcopy(self.fields)
@@ -166,6 +240,12 @@ class TestEventList(TestEvent):
         self.event.data['resource_name'] = 'resource1'
 
     def test_event_list_nested_depth(self):
+        """
+        The event list of nested event types.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--nested-depth', '3', '--format', 'table']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['nested_depth'] = 3
@@ -184,6 +264,13 @@ class TestEventList(TestEvent):
 
     @mock.patch('osc_lib.utils.sort_items')
     def test_event_list_sort(self, mock_sort_items):
+        """
+        Sort a sort of sort_items.
+
+        Args:
+            self: (todo): write your description
+            mock_sort_items: (todo): write your description
+        """
         arglist = ['my_stack', '--sort', 'resource_name:desc',
                    '--format', 'table']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -201,6 +288,13 @@ class TestEventList(TestEvent):
 
     @mock.patch('osc_lib.utils.sort_items')
     def test_event_list_sort_multiple(self, mock_sort_items):
+        """
+        Sort multiple sort_items
+
+        Args:
+            self: (todo): write your description
+            mock_sort_items: (todo): write your description
+        """
         arglist = ['my_stack', '--sort', 'resource_name:desc',
                    '--sort', 'id:asc', '--format', 'table']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -218,6 +312,13 @@ class TestEventList(TestEvent):
 
     @mock.patch('osc_lib.utils.sort_items')
     def test_event_list_sort_default_key(self, mock_sort_items):
+        """
+        Sort the sort key
+
+        Args:
+            self: (todo): write your description
+            mock_sort_items: (todo): write your description
+        """
         arglist = ['my_stack', '--sort', ':desc',
                    '--format', 'table']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -234,6 +335,13 @@ class TestEventList(TestEvent):
 
     @mock.patch('time.sleep')
     def test_event_list_follow(self, sleep):
+        """
+        Test for a list of events.
+
+        Args:
+            self: (todo): write your description
+            sleep: (bool): write your description
+        """
         sleep.side_effect = [None, KeyboardInterrupt()]
         arglist = ['--follow', 'my_stack']
         expected = (
@@ -258,6 +366,12 @@ class TestEventList(TestEvent):
         self.assertEqual(expected, self.fake_stdout.make_string())
 
     def test_event_list_log_format(self):
+        """
+        Log the log format.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         expected = ('2015-11-13 10:02:17 [resource1]: CREATE_COMPLETE  '
                     'state changed\n')

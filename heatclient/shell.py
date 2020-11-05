@@ -38,6 +38,13 @@ osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 class HeatShell(object):
 
     def _append_global_identity_args(self, parser):
+        """
+        Add command line arguments.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         # FIXME(gyee): these are global identity (Keystone) arguments which
         # should be consistent and shared by all service clients. Therefore,
         # they should be provided by python-keystoneclient. We will need to
@@ -243,6 +250,12 @@ class HeatShell(object):
                             help=argparse.SUPPRESS)
 
     def get_base_parser(self):
+        """
+        Return a base argument parser.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = argparse.ArgumentParser(
             prog='heat',
             description=__doc__.strip(),
@@ -343,6 +356,13 @@ class HeatShell(object):
         return parser
 
     def get_subcommand_parser(self, version):
+        """
+        Creates a subcommand
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+        """
         parser = self.get_base_parser()
 
         self.subcommands = {}
@@ -356,6 +376,13 @@ class HeatShell(object):
         return parser
 
     def _add_bash_completion_subparser(self, subparsers):
+        """
+        Add a subcommands to the subparser.
+
+        Args:
+            self: (todo): write your description
+            subparsers: (todo): write your description
+        """
         subparser = subparsers.add_parser(
             'bash_completion',
             add_help=False,
@@ -365,6 +392,14 @@ class HeatShell(object):
         subparser.set_defaults(func=self.do_bash_completion)
 
     def _find_actions(self, subparsers, actions_module):
+        """
+        Finds the sub - commands.
+
+        Args:
+            self: (todo): write your description
+            subparsers: (todo): write your description
+            actions_module: (str): write your description
+        """
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
             # I prefer to be hyphen-separated instead of underscores.
             command = attr[3:].replace('_', '-')
@@ -387,6 +422,13 @@ class HeatShell(object):
             subparser.set_defaults(func=callback)
 
     def _setup_logging(self, debug):
+        """
+        Setup logging.
+
+        Args:
+            self: (todo): write your description
+            debug: (bool): write your description
+        """
         log_lvl = logging.DEBUG if debug else logging.WARNING
         logging.basicConfig(
             format="%(levelname)s (%(module)s) %(message)s",
@@ -395,10 +437,23 @@ class HeatShell(object):
         logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
 
     def _setup_verbose(self, verbose):
+        """
+        Setup the verbose level.
+
+        Args:
+            self: (todo): write your description
+            verbose: (bool): write your description
+        """
         if verbose:
             exc.verbose = 1
 
     def _get_keystone_session(self, **kwargs):
+        """
+        Return a session object.
+
+        Args:
+            self: (todo): write your description
+        """
         # first create a Keystone session
         cacert = kwargs.pop('cacert', None)
         cert = kwargs.pop('cert', None)
@@ -422,6 +477,13 @@ class HeatShell(object):
         return kssession.Session(verify=verify, cert=cert, timeout=timeout)
 
     def main(self, argv):
+        """
+        Main function.
+
+        Args:
+            self: (todo): write your description
+            argv: (str): write your description
+        """
         # Parse args once to find version
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
@@ -594,12 +656,24 @@ class HeatShell(object):
 
 class HelpFormatter(argparse.HelpFormatter):
     def start_section(self, heading):
+        """
+        Start section section.
+
+        Args:
+            self: (todo): write your description
+            heading: (str): write your description
+        """
         # Title-case the headings
         heading = '%s%s' % (heading[0].upper(), heading[1:])
         super(HelpFormatter, self).start_section(heading)
 
 
 def main(args=None):
+    """
+    Main entry point.
+
+    Args:
+    """
     try:
         if args is None:
             args = sys.argv[1:]

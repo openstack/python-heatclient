@@ -25,6 +25,12 @@ from heatclient.v1 import software_deployments
 
 class TestDeployment(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeployment, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.config_client = self.mock_client.software_configs
@@ -108,6 +114,12 @@ class TestDeploymentCreate(TestDeployment):
     }
 
     def setUp(self):
+        """
+        Configure the deployment container.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentCreate, self).setUp()
         self.cmd = software_deployment.CreateDeployment(self.app, None)
         self.config_client.create.return_value = \
@@ -120,6 +132,13 @@ class TestDeploymentCreate(TestDeployment):
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
     def test_deployment_create(self, mock_build):
+        """
+        Create a deployments on the deployment.
+
+        Args:
+            self: (todo): write your description
+            mock_build: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id]
         expected_cols = ('action', 'config_id', 'id',  'input_values',
                          'server_id', 'signal_id', 'status', 'status_reason')
@@ -138,6 +157,13 @@ class TestDeploymentCreate(TestDeployment):
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
     def test_deployment_create_with_config(self, mock_build):
+        """
+        Deploy a deployment to deploy_build.
+
+        Args:
+            self: (todo): write your description
+            mock_build: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--config', self.config_id]
         config = copy.deepcopy(self.config_defaults)
@@ -153,6 +179,12 @@ class TestDeploymentCreate(TestDeployment):
             **self.deploy_defaults)
 
     def test_deployment_create_config_not_found(self):
+        """
+        Create deployment command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--config', 'bad_id']
         self.config_client.get.side_effect = heat_exc.HTTPNotFound
@@ -161,6 +193,12 @@ class TestDeploymentCreate(TestDeployment):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_deployment_create_no_signal(self):
+        """
+        Create a new deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--signal-transport', 'NO_SIGNAL']
         config = copy.deepcopy(self.config_defaults)
@@ -177,6 +215,13 @@ class TestDeploymentCreate(TestDeployment):
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
     def test_deployment_create_invalid_signal_transport(self, mock_build):
+        """
+        Create deploy deploy deploy deploy deploy request to deploy
+
+        Args:
+            self: (todo): write your description
+            mock_build: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--signal-transport', 'A']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -187,6 +232,13 @@ class TestDeploymentCreate(TestDeployment):
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
     def test_deployment_create_input_value(self, mock_build):
+        """
+        Deploy the deploymentment
+
+        Args:
+            self: (todo): write your description
+            mock_build: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--input-value', 'foo=bar']
         config = copy.deepcopy(self.config_defaults)
@@ -203,6 +255,13 @@ class TestDeploymentCreate(TestDeployment):
     @mock.patch('heatclient.common.deployment_utils.build_signal_id',
                 return_value='signal_id')
     def test_deployment_create_action(self, mock_build):
+        """
+        Create a new deployment
+
+        Args:
+            self: (todo): write your description
+            mock_build: (todo): write your description
+        """
         arglist = ['my_deploy', '--server', self.server_id,
                    '--action', 'DELETE']
         config = copy.deepcopy(self.config_defaults)
@@ -220,10 +279,22 @@ class TestDeploymentCreate(TestDeployment):
 class TestDeploymentDelete(TestDeployment):
 
     def setUp(self):
+        """
+        Sets the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentDelete, self).setUp()
         self.cmd = software_deployment.DeleteDeployment(self.app, None)
 
     def test_deployment_delete_success(self):
+        """
+        Deploy an existing deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['test_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -231,6 +302,12 @@ class TestDeploymentDelete(TestDeployment):
             deployment_id='test_deployment')
 
     def test_deployment_delete_multiple(self):
+        """
+        Delete the deployment deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['test_deployment', 'test_deployment2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -239,6 +316,12 @@ class TestDeploymentDelete(TestDeployment):
              mock.call(deployment_id='test_deployment2')])
 
     def test_deployment_delete_not_found(self):
+        """
+        Delete deploy deploy deploy command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['test_deployment', 'test_deployment2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.sd_client.delete.side_effect = heat_exc.HTTPNotFound()
@@ -247,6 +330,12 @@ class TestDeploymentDelete(TestDeployment):
         self.assertIn("Unable to delete 2 of the 2 deployments.", str(error))
 
     def test_deployment_config_delete_failed(self):
+        """
+        Delete deploy deploy deploy deploy deploy deploy command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['test_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.config_client.delete.side_effect = heat_exc.HTTPNotFound()
@@ -284,11 +373,23 @@ class TestDeploymentList(TestDeployment):
     }
 
     def setUp(self):
+        """
+        Set the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentList, self).setUp()
         self.cmd = software_deployment.ListDeployment(self.app, None)
         self.sd_client.list = mock.MagicMock(return_value=[self.data])
 
     def test_deployment_list(self):
+        """
+        Test if the deployment command
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -296,6 +397,12 @@ class TestDeploymentList(TestDeployment):
         self.assertEqual(self.columns, columns)
 
     def test_deployment_list_server(self):
+        """
+        Test to deployment server.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = {}
         kwargs['server_id'] = 'ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5'
         arglist = ['--server', 'ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5']
@@ -305,6 +412,12 @@ class TestDeploymentList(TestDeployment):
         self.assertEqual(self.columns, columns)
 
     def test_deployment_list_long(self):
+        """
+        List deployment deployment commands
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = {}
         cols = ['id', 'config_id', 'server_id', 'action', 'status',
                 'creation_time', 'status_reason']
@@ -332,10 +445,22 @@ class TestDeploymentShow(TestDeployment):
     }}
 
     def setUp(self):
+        """
+        Sets the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentShow, self).setUp()
         self.cmd = software_deployment.ShowDeployment(self.app, None)
 
     def test_deployment_show(self):
+        """
+        Show the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_deployment']
         cols = ['id', 'server_id', 'config_id', 'creation_time',
                 'updated_time', 'status', 'status_reason',
@@ -351,6 +476,12 @@ class TestDeploymentShow(TestDeployment):
         self.assertEqual(cols, columns)
 
     def test_deployment_show_long(self):
+        """
+        Show deployment info.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_deployment', '--long']
         cols = ['id', 'server_id', 'config_id', 'creation_time',
                 'updated_time', 'status', 'status_reason',
@@ -366,6 +497,12 @@ class TestDeploymentShow(TestDeployment):
         self.assertEqual(cols, columns)
 
     def test_deployment_not_found(self):
+        """
+        Test if deploy deploy deploy deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_deployment']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.sd_client.get.side_effect = heat_exc.HTTPNotFound()
@@ -378,11 +515,23 @@ class TestDeploymentShow(TestDeployment):
 class TestDeploymentMetadataShow(TestDeployment):
 
     def setUp(self):
+        """
+        Sets the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentMetadataShow, self).setUp()
         self.cmd = software_deployment.ShowMetadataDeployment(self.app, None)
         self.sd_client.metadata.return_value = {}
 
     def test_deployment_show_metadata(self):
+        """
+        Show the deployment metadata
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['ec14c864-096e-4e27-bb8a-2c2b4dc6f3f5']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -406,10 +555,22 @@ class TestDeploymentOutputShow(TestDeployment):
     }
 
     def setUp(self):
+        """
+        Set deploys the deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeploymentOutputShow, self).setUp()
         self.cmd = software_deployment.ShowOutputDeployment(self.app, None)
 
     def test_deployment_output_show(self):
+        """
+        Show the output of an output command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all', '--long']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.sd_client.get.return_value = \
@@ -421,6 +582,12 @@ class TestDeploymentOutputShow(TestDeployment):
             })
 
     def test_deployment_output_show_invalid(self):
+        """
+        Show the command line arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         error = self.assertRaises(
@@ -431,6 +598,12 @@ class TestDeploymentOutputShow(TestDeployment):
                       str(error))
 
     def test_deployment_output_show_not_found(self):
+        """
+        Show the deployment command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['85c3a507-351b-4b28-a7d8-531c8d53f4e6', '--all']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.sd_client.get.side_effect = heat_exc.HTTPNotFound()

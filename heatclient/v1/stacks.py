@@ -23,51 +23,155 @@ from heatclient import exc
 
 class Stack(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<Stack %s>" % self._info
 
     def preview(self, **fields):
+        """
+        Return the preview of a preview.
+
+        Args:
+            self: (todo): write your description
+            fields: (list): write your description
+        """
         return self.manager.preview(**fields)
 
     def create(self, **fields):
+        """
+        Creates a new object.
+
+        Args:
+            self: (int): write your description
+            fields: (list): write your description
+        """
         return self.manager.create(self.identifier, **fields)
 
     def update(self, **fields):
+        """
+        Update the object.
+
+        Args:
+            self: (todo): write your description
+            fields: (list): write your description
+        """
         self.manager.update(self.identifier, **fields)
 
     def delete(self):
+        """
+        Deletes the manager.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.delete(self.identifier)
 
     def abandon(self):
+        """
+        Abandon. abbreviation.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.abandon(self.identifier)
 
     def snapshot(self, name=None):
+        """
+        Returns a snapshot of the specified snapshot.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.manager.snapshot(self.identifier, name)
 
     def snapshot_show(self, snapshot_id):
+        """
+        Returns a snapshot of a specific snapshot.
+
+        Args:
+            self: (todo): write your description
+            snapshot_id: (str): write your description
+        """
         return self.manager.snapshot_show(self.identifier, snapshot_id)
 
     def snapshot_delete(self, snapshot_id):
+        """
+        Deletes a snapshot.
+
+        Args:
+            self: (todo): write your description
+            snapshot_id: (str): write your description
+        """
         return self.manager.snapshot_delete(self.identifier, snapshot_id)
 
     def restore(self, snapshot_id):
+        """
+        Restore a snapshot.
+
+        Args:
+            self: (todo): write your description
+            snapshot_id: (str): write your description
+        """
         return self.manager.restore(self.identifier, snapshot_id)
 
     def snapshot_list(self):
+        """
+        Returns a snapshot of the snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.snapshot_list(self.identifier)
 
     def output_list(self):
+        """
+        Returns the list of outputs.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.output_list(self.identifier)
 
     def output_show(self, output_key):
+        """
+        Show an output key.
+
+        Args:
+            self: (todo): write your description
+            output_key: (str): write your description
+        """
         return self.manager.output_show(self.identifier, output_key)
 
     def environment(self):
+        """
+        Returns the environment.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.environment(self.identifier)
 
     def files(self):
+        """
+        The identifier : class :.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.files(self.identifier)
 
     def get(self):
+        """
+        Returns the details of this manager.
+
+        Args:
+            self: (todo): write your description
+        """
         # set_loaded() first ... so if we have to bail, we know we tried.
         self._loaded = True
         if not hasattr(self.manager, 'get'):
@@ -79,27 +183,58 @@ class Stack(base.Resource):
 
     @property
     def action(self):
+        """
+        Return the current action.
+
+        Args:
+            self: (todo): write your description
+        """
         s = self.stack_status
         # Return everything before the first underscore
         return s[:s.index('_')]
 
     @property
     def status(self):
+        """
+        Return the current status of the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         s = self.stack_status
         # Return everything after the first underscore
         return s[s.index('_') + 1:]
 
     @property
     def identifier(self):
+        """
+        Return the identifier of the identifier.
+
+        Args:
+            self: (todo): write your description
+        """
         return '%s/%s' % (self.stack_name, self.id)
 
 
 class StackChildManager(base.BaseManager):
     @property
     def api(self):
+        """
+        Return the api.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.client
 
     def _resolve_stack_id(self, stack_id):
+        """
+        Resolve the stack id.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (int): write your description
+        """
         # if the id already has a slash in it,
         # then it is already {stack_name}/{stack_id}
         if stack_id.find('/') > 0:
@@ -244,6 +379,14 @@ class StackManager(StackChildManager):
         return body
 
     def snapshot_show(self, stack_id, snapshot_id):
+        """
+        Returns the details of a specific snapshot.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            snapshot_id: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%s/snapshots/%s' % (stack_identifier,
                                                             snapshot_id))
@@ -251,6 +394,14 @@ class StackManager(StackChildManager):
         return body
 
     def snapshot_delete(self, stack_id, snapshot_id):
+        """
+        Deletes a snapshot.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            snapshot_id: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.delete('/stacks/%s/snapshots/%s' %
                                   (stack_identifier, snapshot_id))
@@ -258,6 +409,14 @@ class StackManager(StackChildManager):
         return body
 
     def restore(self, stack_id, snapshot_id):
+        """
+        Restores a snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            snapshot_id: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.post('/stacks/%s/snapshots/%s/restore' %
                                 (stack_identifier, snapshot_id))
@@ -265,18 +424,40 @@ class StackManager(StackChildManager):
         return body
 
     def snapshot_list(self, stack_id):
+        """
+        Returns the snapshot of a stack.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%s/snapshots' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def output_list(self, stack_id):
+        """
+        List the outputs of a stack.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%s/outputs' % stack_identifier)
         body = utils.get_response_body(resp)
         return body
 
     def output_show(self, stack_id, output_key):
+        """
+        Shows information of an existing stack.
+
+        Args:
+            self: (todo): write your description
+            stack_id: (str): write your description
+            output_key: (str): write your description
+        """
         stack_identifier = self._resolve_stack_id(stack_id)
         resp = self.client.get('/stacks/%(id)s/outputs/%(key)s' % {
             'id': stack_identifier,

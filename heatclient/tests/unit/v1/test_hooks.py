@@ -21,6 +21,12 @@ import heatclient.v1.shell as shell
 
 class TestHooks(testtools.TestCase):
     def setUp(self):
+        """
+        Set the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestHooks, self).setUp()
         self.client = mock.Mock()
         nested_stack = mock.Mock()
@@ -46,6 +52,12 @@ class TestHooks(testtools.TestCase):
         type(self.args).poll = mock.PropertyMock(return_value=None)
 
     def test_create_hooks_in_args(self):
+        """
+        Create pre - pre - pre - hook.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_create = mock.PropertyMock(
             return_value=['bp', 'another_bp'])
 
@@ -60,6 +72,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_create_nested_hooks_in_args(self):
+        """
+        Create a nested nested nested nested nested nested nested nested nested - dictionaries.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_create = mock.PropertyMock(
             return_value=['nested/bp', 'super/nested/bp'])
 
@@ -80,6 +98,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_create_hooks_in_env_and_args(self):
+        """
+        Create the arguments in - memory.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_create = mock.PropertyMock(return_value=[
             'nested_a/bp',
             'bp_a',
@@ -134,6 +158,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_update_hooks_in_args(self):
+        """
+        Update pre - pre - pre - pre - pre - test.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_update = mock.PropertyMock(
             return_value=['bp', 'another_bp'])
 
@@ -148,6 +178,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_update_nested_hooks_in_args(self):
+        """
+        Update nested nested nested nested nested dictionaries.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_update = mock.PropertyMock(
             return_value=['nested/bp', 'super/nested/bp'])
 
@@ -168,6 +204,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_update_hooks_in_env_and_args(self):
+        """
+        Update the environment with arguments in - place.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).pre_update = mock.PropertyMock(return_value=[
             'nested_a/bp',
             'bp_a',
@@ -222,6 +264,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual(expected_hooks, actual_hooks)
 
     def test_clear_all_hooks(self):
+        """
+        Clear all hooks
+
+        Args:
+            self: (todo): write your description
+        """
         hook_utils.get_hook_type_via_status = mock.Mock(
             return_value='pre-create')
         type(self.args).hook = mock.PropertyMock(
@@ -240,6 +288,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual('mystack', payload_pre_create['stack_id'])
 
     def test_clear_pre_create_hooks(self):
+        """
+        Clear pre - pre - pre - pre - pre - pre - hook.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).hook = mock.PropertyMock(
             return_value=['bp'])
         type(self.args).pre_create = mock.PropertyMock(return_value=True)
@@ -255,6 +309,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual('mystack', payload['stack_id'])
 
     def test_clear_pre_update_hooks(self):
+        """
+        Clear pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - hook.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).hook = mock.PropertyMock(
             return_value=['bp'])
         type(self.args).pre_update = mock.PropertyMock(return_value=True)
@@ -270,6 +330,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual('mystack', payload['stack_id'])
 
     def test_clear_pre_delete_hooks(self):
+        """
+        Clears pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - pre - pre -
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).hook = mock.PropertyMock(
             return_value=['bp'])
         type(self.args).pre_delete = mock.PropertyMock(return_value=True)
@@ -285,6 +351,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual('mystack', payload['stack_id'])
 
     def test_clear_nested_hook(self):
+        """
+        Clears the nested nested mapping.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).hook = mock.PropertyMock(
             return_value=['a/b/bp'])
         type(self.args).pre_create = mock.PropertyMock(return_value=True)
@@ -310,6 +382,12 @@ class TestHooks(testtools.TestCase):
         self.assertEqual('nested_id', payload['stack_id'])
 
     def test_clear_wildcard_hooks(self):
+        """
+        Clears hook hooks.
+
+        Args:
+            self: (todo): write your description
+        """
         type(self.args).hook = mock.PropertyMock(
             return_value=['a/*b/bp*'])
         type(self.args).pre_create = mock.PropertyMock(return_value=True)

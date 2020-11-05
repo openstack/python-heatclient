@@ -18,6 +18,12 @@ from heatclient.common import base
 
 class Service(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<Service %s>" % self._info
 
 

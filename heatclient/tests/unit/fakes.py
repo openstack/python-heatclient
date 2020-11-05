@@ -23,6 +23,16 @@ class FakeHTTPResponse(object):
     version = 1.1
 
     def __init__(self, status_code, reason, headers, content):
+        """
+        Initialize the http response.
+
+        Args:
+            self: (todo): write your description
+            status_code: (int): write your description
+            reason: (str): write your description
+            headers: (list): write your description
+            content: (str): write your description
+        """
         self.headers = headers
         self.content = content
         self.status_code = status_code
@@ -30,18 +40,52 @@ class FakeHTTPResponse(object):
         self.raw = FakeRaw()
 
     def getheader(self, name, default=None):
+        """
+        Gets a response header.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            default: (todo): write your description
+        """
         return self.headers.get(name, default)
 
     def getheaders(self):
+        """
+        Returns the headers.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.headers.items()
 
     def read(self, amt=None):
+        """
+        Reads the content from the stream.
+
+        Args:
+            self: (todo): write your description
+            amt: (str): write your description
+        """
         b = self.content
         self.content = None
         return b
 
     def iter_content(self, chunksize):
+        """
+        Iterate over the content.
+
+        Args:
+            self: (todo): write your description
+            chunksize: (int): write your description
+        """
         return self.content
 
     def json(self):
+        """
+        Returns the content - formatted as json.
+
+        Args:
+            self: (todo): write your description
+        """
         return jsonutils.loads(self.content)

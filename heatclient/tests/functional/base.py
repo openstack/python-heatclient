@@ -27,6 +27,12 @@ class ClientTestBase(base.ClientTestBase):
     """
 
     def _get_clients(self):
+        """
+        Returns cli clients.
+
+        Args:
+            self: (todo): write your description
+        """
         cli_dir = os.environ.get(
             'OS_HEATCLIENT_EXEC_DIR',
             os.path.join(os.path.abspath('.'), '.tox/functional/bin'))
@@ -40,4 +46,10 @@ class ClientTestBase(base.ClientTestBase):
             cli_dir=cli_dir)
 
     def heat(self, *args, **kwargs):
+        """
+        Name :
+
+        Args:
+            self: (todo): write your description
+        """
         return self.clients.heat(*args, **kwargs)

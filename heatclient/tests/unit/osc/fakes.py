@@ -21,12 +21,31 @@ import six
 
 class FakeStdout(object):
     def __init__(self):
+        """
+        Initialize the content.
+
+        Args:
+            self: (todo): write your description
+        """
         self.content = []
 
     def write(self, text):
+        """
+        Writes text to the file.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         self.content.append(text)
 
     def make_string(self):
+        """
+        Make a string from the input string.
+
+        Args:
+            self: (todo): write your description
+        """
         result = ''
         for line in self.content:
             result = result + line
@@ -35,6 +54,16 @@ class FakeStdout(object):
 
 class FakeResponse(requests.Response):
     def __init__(self, headers={}, status_code=200, data=None, encoding=None):
+        """
+        Sets the http headers.
+
+        Args:
+            self: (todo): write your description
+            headers: (list): write your description
+            status_code: (int): write your description
+            data: (todo): write your description
+            encoding: (str): write your description
+        """
         super(FakeResponse, self).__init__()
 
         self.status_code = status_code

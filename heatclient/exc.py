@@ -23,9 +23,22 @@ verbose = 0
 class BaseException(Exception):
     """An error occurred."""
     def __init__(self, message=None):
+        """
+        Initialize message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         self.message = message
 
     def __str__(self):
+        """
+        Return the string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.message or self.__class__.__doc__
 
 
@@ -46,6 +59,14 @@ class HTTPException(BaseException):
     code = 'N/A'
 
     def __init__(self, message=None, code=None):
+        """
+        Initialize the error message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            code: (int): write your description
+        """
         super(HTTPException, self).__init__(message)
         try:
             self.error = jsonutils.loads(message)
@@ -64,6 +85,12 @@ class HTTPException(BaseException):
             self.code = code
 
     def __str__(self):
+        """
+        Return the traceback of the traceback.
+
+        Args:
+            self: (todo): write your description
+        """
         message = self.error['error'].get('message', 'Internal Error')
         if verbose:
             traceback = self.error['error'].get('traceback', '')
@@ -77,6 +104,12 @@ class HTTPMultipleChoices(HTTPException):
     code = 300
 
     def __str__(self):
+        """
+        Return a string representation of this class
+
+        Args:
+            self: (todo): write your description
+        """
         self.details = _("Requested version of Heat API is not available.")
         return (_("%(name)s (HTTP %(code)s) %(details)s") %
                 {

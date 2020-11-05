@@ -24,6 +24,12 @@ from heatclient.v1 import software_configs
 
 class TestConfig(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the client configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestConfig, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
 
@@ -31,11 +37,23 @@ class TestConfig(orchestration_fakes.TestOrchestrationv1):
 class TestDeleteConfig(TestConfig):
 
     def setUp(self):
+        """
+        Sets the application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestDeleteConfig, self).setUp()
         self.cmd = software_config.DeleteConfig(self.app, None)
         self.mock_delete = self.mock_client.software_configs.delete
 
     def test_config_delete(self):
+        """
+        Delete the configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['id_123']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -43,6 +61,12 @@ class TestDeleteConfig(TestConfig):
             config_id='id_123')
 
     def test_config_delete_multi(self):
+        """
+        Delete the test config set.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['id_123', 'id_456']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -51,6 +75,12 @@ class TestDeleteConfig(TestConfig):
              mock.call(config_id='id_456')])
 
     def test_config_delete_not_found(self):
+        """
+        Delete the test config.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['id_123', 'id_456', 'id_789']
         self.mock_client.software_configs.delete.side_effect = [
             None, heat_exc.HTTPNotFound, None]
@@ -68,24 +98,48 @@ class TestDeleteConfig(TestConfig):
 class TestListConfig(TestConfig):
 
     def setUp(self):
+        """
+        Configure application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestListConfig, self).setUp()
         self.cmd = software_config.ListConfig(self.app, None)
         self.mock_client.software_configs.list.return_value = [
             software_configs.SoftwareConfig(None, {})]
 
     def test_config_list(self):
+        """
+        Test the configuration of the arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.mock_client.software_configs.list.assert_called_once_with()
 
     def test_config_list_limit(self):
+        """
+        Test for config commands
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--limit', '3']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.mock_client.software_configs.list.assert_called_with(limit='3')
 
     def test_config_list_marker(self):
+        """
+        Test if a list of the specified configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--marker', 'id123']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -96,12 +150,24 @@ class TestListConfig(TestConfig):
 class TestCreateConfig(TestConfig):
 
     def setUp(self):
+        """
+        Configure the application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestCreateConfig, self).setUp()
         self.cmd = software_config.CreateConfig(self.app, None)
         self.mock_client.software_configs.create.return_value = \
             software_configs.SoftwareConfig(None, {})
 
     def test_config_create(self):
+        """
+        Create a test config.
+
+        Args:
+            self: (todo): write your description
+        """
         properties = {
             'config': '',
             'group': 'Heat::Ungrouped',
@@ -124,6 +190,12 @@ class TestCreateConfig(TestConfig):
             **properties)
 
     def test_config_create_group(self):
+        """
+        Create a : meth : class :.
+
+        Args:
+            self: (todo): write your description
+        """
         properties = {
             'config': '',
             'group': 'group',
@@ -147,6 +219,13 @@ class TestCreateConfig(TestConfig):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_config_create_config_file(self, urlopen):
+        """
+        Create a test config file.
+
+        Args:
+            self: (todo): write your description
+            urlopen: (str): write your description
+        """
         properties = {
             'config': 'config',
             'group': 'Heat::Ungrouped',
@@ -174,6 +253,13 @@ class TestCreateConfig(TestConfig):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_config_create_definition_file(self, urlopen):
+        """
+        Create a test config definition.
+
+        Args:
+            self: (todo): write your description
+            urlopen: (str): write your description
+        """
         definition = {
             'inputs': [
                 {'name': 'input'},
@@ -235,12 +321,24 @@ class TestConfigShow(TestConfig):
     response = dict(zip(columns, data))
 
     def setUp(self):
+        """
+        Configure the application.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestConfigShow, self).setUp()
         self.cmd = software_config.ShowConfig(self.app, None)
         self.mock_client.software_configs.get.return_value = \
             software_configs.SoftwareConfig(None, self.response)
 
     def test_config_show(self):
+        """
+        Show configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['96dfee3f-27b7-42ae-a03e-966226871ae6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -251,6 +349,12 @@ class TestConfigShow(TestConfig):
         self.assertEqual(self.data, data)
 
     def test_config_show_config_only(self):
+        """
+        Test if the config.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--config-only', '96dfee3f-27b7-42ae-a03e-966226871ae6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -261,6 +365,12 @@ class TestConfigShow(TestConfig):
         self.assertIsNone(data)
 
     def test_config_show_not_found(self):
+        """
+        Test if a test.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['96dfee3f-27b7-42ae-a03e-966226871ae6']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.mock_client.software_configs.get.side_effect = \

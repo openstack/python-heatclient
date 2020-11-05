@@ -26,27 +26,61 @@ data = ['abcde', ['fg', 'hi', 'jk'], {'lmnop': 'qrstu'}]
 
 class ShowJson(format_utils.JsonFormat):
     def take_action(self, parsed_args):
+        """
+        Parse the action
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return columns, data
 
 
 class ShowYaml(format_utils.YamlFormat):
     def take_action(self, parsed_args):
+        """
+        Parse the action
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return columns, data
 
 
 class ShowShell(format_utils.ShellFormat):
     def take_action(self, parsed_args):
+        """
+        Parse the action
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return columns, data
 
 
 class ShowValue(format_utils.ValueFormat):
     def take_action(self, parsed_args):
+        """
+        Parse the action
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         return columns, data
 
 
 class TestFormats(utils.TestCommand):
 
     def test_json_format(self):
+        """
+        Test json format.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cmd = ShowJson(self.app, None)
         parsed_args = self.check_parser(self.cmd, [], [])
         expected = json.dumps(dict(zip(columns, data)), indent=2)
@@ -56,6 +90,12 @@ class TestFormats(utils.TestCommand):
         self.assertEqual(expected, self.app.stdout.make_string().rstrip())
 
     def test_yaml_format(self):
+        """
+        Format yaml format.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cmd = ShowYaml(self.app, None)
         parsed_args = self.check_parser(self.cmd, [], [])
         expected = yaml.safe_dump(dict(zip(columns, data)),
@@ -66,6 +106,12 @@ class TestFormats(utils.TestCommand):
         self.assertEqual(expected, self.app.stdout.make_string())
 
     def test_shell_format(self):
+        """
+        Runs a test command.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cmd = ShowShell(self.app, None)
         parsed_args = self.check_parser(self.cmd, [], [])
         expected = '''\
@@ -79,6 +125,12 @@ col3="{'lmnop': 'qrstu'}"
         self.assertEqual(expected, self.app.stdout.make_string())
 
     def test_value_format(self):
+        """
+        Format the test value.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cmd = ShowValue(self.app, None)
         parsed_args = self.check_parser(self.cmd, [], [])
         expected = '''\
@@ -92,6 +144,12 @@ abcde
         self.assertEqual(expected, self.app.stdout.make_string())
 
     def test_indent_and_truncate(self):
+        """
+        Generate indentation and indentation and indentation.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertIsNone(format_utils.indent_and_truncate(None))
         self.assertIsNone(format_utils.indent_and_truncate(None,
                                                            truncate=True))
@@ -128,6 +186,12 @@ abcde
                 truncate_postfix='truncated'))
 
     def test_print_software_deployment_output(self):
+        """
+        Prints the deployment information.
+
+        Args:
+            self: (todo): write your description
+        """
         out = six.StringIO()
         format_utils.print_software_deployment_output(
             {'deploy_stdout': ''}, out=out, name='deploy_stdout')

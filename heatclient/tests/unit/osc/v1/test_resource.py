@@ -24,6 +24,12 @@ from heatclient.v1 import resources as v1_resources
 
 class TestResource(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResource, self).setUp()
         self.resource_client = self.app.client_manager.orchestration.resources
 
@@ -49,12 +55,24 @@ class TestStackResourceShow(TestResource):
     }
 
     def setUp(self):
+        """
+        Sets the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackResourceShow, self).setUp()
         self.cmd = resource.ResourceShow(self.app, None)
         self.resource_client.get.return_value = v1_resources.Resource(
             None, self.response)
 
     def test_resource_show(self):
+        """
+        Executes the resource details.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -67,6 +85,12 @@ class TestStackResourceShow(TestResource):
             self.assertIn(self.response[key], data)
 
     def test_resource_show_with_attr(self):
+        """
+        Executes a resource
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource',
                    '--with-attr', 'foo', '--with-attr', 'bar']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -80,6 +104,12 @@ class TestStackResourceShow(TestResource):
             self.assertIn(self.response[key], data)
 
     def test_resource_show_not_found(self):
+        """
+        Test if the resource not allowed.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'bad_resource']
         self.resource_client.get.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -117,12 +147,24 @@ class TestStackResourceList(TestResource):
             'CREATE_COMPLETE', '2016-02-01T20:20:53']
 
     def setUp(self):
+        """
+        Set the list of the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackResourceList, self).setUp()
         self.cmd = resource.ResourceList(self.app, None)
         self.resource_client.list.return_value = [
             v1_resources.Resource(None, self.response)]
 
     def test_resource_list(self):
+        """
+        Test the resource list
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -137,6 +179,12 @@ class TestStackResourceList(TestResource):
         self.assertEqual(tuple(self.data), list(data)[0])
 
     def test_resource_list_not_found(self):
+        """
+        Test if a resource exist in resource list exist.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['bad_stack']
         self.resource_client.list.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -144,6 +192,12 @@ class TestStackResourceList(TestResource):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_resource_list_with_detail(self):
+        """
+        List resource with resource with resource with resource
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--long']
         cols = copy.deepcopy(self.columns)
         cols.append('stack_name')
@@ -162,6 +216,12 @@ class TestStackResourceList(TestResource):
         self.assertEqual(tuple(out), list(data)[0])
 
     def test_resource_list_nested_depth(self):
+        """
+        Nested resource list of nested lists
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--nested-depth', '3']
         cols = copy.deepcopy(self.columns)
         cols.append('stack_name')
@@ -180,6 +240,12 @@ class TestStackResourceList(TestResource):
         self.assertEqual(tuple(out), list(data)[0])
 
     def test_resource_list_no_resource_name(self):
+        """
+        List all resource name of a resource name
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         resp = copy.deepcopy(self.response)
         del resp['resource_name']
@@ -201,6 +267,12 @@ class TestStackResourceList(TestResource):
         self.assertEqual(cols, columns)
 
     def test_resource_list_filter(self):
+        """
+        Filter resource resource list
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--filter', 'name=my_resource']
         out = copy.deepcopy(self.data)
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -218,11 +290,23 @@ class TestStackResourceList(TestResource):
 class TestResourceMetadata(TestResource):
 
     def setUp(self):
+        """
+        Sets the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResourceMetadata, self).setUp()
         self.cmd = resource.ResourceMetadata(self.app, None)
         self.resource_client.metadata.return_value = {}
 
     def test_resource_metadata(self):
+        """
+        Test if resource metadata is set.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -232,6 +316,12 @@ class TestResourceMetadata(TestResource):
         })
 
     def test_resource_metadata_yaml(self):
+        """
+        Test if yaml metadata
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', '--format', 'yaml']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -241,6 +331,12 @@ class TestResourceMetadata(TestResource):
         })
 
     def test_resource_metadata_error(self):
+        """
+        Test if the metadata for the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.resource_client.metadata.side_effect = heat_exc.HTTPNotFound
@@ -254,10 +350,22 @@ class TestResourceMetadata(TestResource):
 class TestResourceSignal(TestResource):
 
     def setUp(self):
+        """
+        Sets the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResourceSignal, self).setUp()
         self.cmd = resource.ResourceSignal(self.app, None)
 
     def test_resource_signal(self):
+        """
+        Test if a resource signal
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -267,6 +375,12 @@ class TestResourceSignal(TestResource):
         })
 
     def test_resource_signal_error(self):
+        """
+        Test if a resource error.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.resource_client.signal.side_effect = heat_exc.HTTPNotFound
@@ -277,6 +391,12 @@ class TestResourceSignal(TestResource):
                          str(error))
 
     def test_resource_signal_data(self):
+        """
+        Test for resource data.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource',
                    '--data', '{"message":"Content"}']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -288,6 +408,12 @@ class TestResourceSignal(TestResource):
         })
 
     def test_resource_signal_data_not_json(self):
+        """
+        Test the http post - rpc method is json format
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', '--data', '{']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         error = self.assertRaises(exc.CommandError,
@@ -296,6 +422,12 @@ class TestResourceSignal(TestResource):
         self.assertIn('Data should be in JSON format', str(error))
 
     def test_resource_signal_data_and_file_error(self):
+        """
+        Test for resource test test.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource',
                    '--data', '{}', '--data-file', 'file']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -307,6 +439,13 @@ class TestResourceSignal(TestResource):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_resource_signal_file(self, urlopen):
+        """
+        Test if the resource file exists.
+
+        Args:
+            self: (todo): write your description
+            urlopen: (str): write your description
+        """
         data = mock.Mock()
         data.read.side_effect = ['{"message":"Content"}']
         urlopen.return_value = data
@@ -323,11 +462,23 @@ class TestResourceSignal(TestResource):
 
 class TestResourceMarkUnhealthy(TestResource):
     def setUp(self):
+        """
+        Sets the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestResourceMarkUnhealthy, self).setUp()
         self.cmd = resource.ResourceMarkUnhealthy(self.app, None)
         self.resource_client.mark_unhealthy = mock.Mock()
 
     def test_resource_mark_unhealthy(self):
+        """
+        Test whether the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', 'reason']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -339,6 +490,12 @@ class TestResourceMarkUnhealthy(TestResource):
         })
 
     def test_resource_mark_unhealthy_reset(self):
+        """
+        !
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', '--reset']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -350,6 +507,12 @@ class TestResourceMarkUnhealthy(TestResource):
         })
 
     def test_resource_mark_unhealthy_not_found(self):
+        """
+        Test if the resource exist.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_resource', '--reset']
         self.resource_client.mark_unhealthy.side_effect = (
             heat_exc.HTTPNotFound)

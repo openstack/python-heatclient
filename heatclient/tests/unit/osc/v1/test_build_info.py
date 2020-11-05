@@ -27,6 +27,12 @@ class TestBuildInfo(orchestration_fakes.TestOrchestrationv1):
     }
 
     def setUp(self):
+        """
+        Set the mock build.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestBuildInfo, self).setUp()
         self.cmd = osc_build_info.BuildInfo(self.app, None)
         self.mock_client = self.app.client_manager.orchestration
@@ -34,6 +40,12 @@ class TestBuildInfo(orchestration_fakes.TestOrchestrationv1):
             return_value=self.response)
 
     def test_build_info(self):
+        """
+        Test build info.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)

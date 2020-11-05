@@ -35,6 +35,13 @@ class DeleteConfig(command.Command):
     log = logging.getLogger(__name__ + ".DeleteConfig")
 
     def get_parser(self, prog_name):
+        """
+        Creates a parser for the given program.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(DeleteConfig, self).get_parser(prog_name)
         parser.add_argument(
             'config',
@@ -45,6 +52,13 @@ class DeleteConfig(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -52,6 +66,12 @@ class DeleteConfig(command.Command):
 
 
 def _delete_config(heat_client, args):
+    """
+    Delete heat config
+
+    Args:
+        heat_client: (todo): write your description
+    """
     failure_count = 0
 
     for config_id in args.config:
@@ -77,6 +97,13 @@ class ListConfig(command.Lister):
     log = logging.getLogger(__name__ + ".ListConfig")
 
     def get_parser(self, prog_name):
+        """
+        Returns a parser object for this parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListConfig, self).get_parser(prog_name)
         parser.add_argument(
             '--limit',
@@ -91,12 +118,25 @@ class ListConfig(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an instance.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _list_config(heat_client, parsed_args)
 
 
 def _list_config(heat_client, args):
+    """
+    List all configs.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     kwargs = {}
     if args.limit:
         kwargs['limit'] = args.limit
@@ -114,6 +154,13 @@ class CreateConfig(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + ".CreateConfig")
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for this parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(CreateConfig, self).get_parser(prog_name)
         parser.add_argument(
             'name',
@@ -140,12 +187,25 @@ class CreateConfig(format_utils.JsonFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _create_config(heat_client, parsed_args)
 
 
 def _create_config(heat_client, args):
+    """
+    Create a config.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     config = {
         'group': args.group,
         'config': ''
@@ -192,6 +252,13 @@ class ShowConfig(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ShowConfig")
 
     def get_parser(self, prog_name):
+        """
+        Creates a parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowConfig, self).get_parser(prog_name)
         parser.add_argument(
             'config',
@@ -207,6 +274,13 @@ class ShowConfig(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         return _show_config(heat_client, config_id=parsed_args.config,
@@ -214,6 +288,14 @@ class ShowConfig(format_utils.YamlFormat):
 
 
 def _show_config(heat_client, config_id, config_only):
+    """
+    Show the config.
+
+    Args:
+        heat_client: (todo): write your description
+        config_id: (str): write your description
+        config_only: (dict): write your description
+    """
     try:
         sc = heat_client.software_configs.get(config_id=config_id)
     except heat_exc.HTTPNotFound:

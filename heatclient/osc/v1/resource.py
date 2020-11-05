@@ -34,6 +34,13 @@ class ResourceShow(command.ShowOne):
     log = logging.getLogger(__name__ + '.ResourceShowStack')
 
     def get_parser(self, prog_name):
+        """
+        Creates the argument parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceShow, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -54,6 +61,13 @@ class ResourceShow(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Perform a put request.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -78,9 +92,22 @@ class ResourceList(command.Lister):
 
     @property
     def formatter_namespace(self):
+        """
+        Formats the namespace.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'heatclient.resource.formatter.list'
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceList, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -112,6 +139,13 @@ class ResourceList(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action on - statement.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -154,6 +188,13 @@ class ResourceMetadata(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + ".ResourceMetadata")
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for this parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceMetadata, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -167,6 +208,13 @@ class ResourceMetadata(format_utils.JsonFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a : class.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -174,6 +222,12 @@ class ResourceMetadata(format_utils.JsonFormat):
 
 
 def _resource_metadata(heat_client, args):
+    """
+    Get metadata for the metadata.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     fields = {'stack_id': args.stack,
               'resource_name': args.resource}
     try:
@@ -195,6 +249,13 @@ class ResourceSignal(command.Command):
     log = logging.getLogger(__name__ + ".ResourceSignal")
 
     def get_parser(self, prog_name):
+        """
+        Creates the argument parser. argument parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceSignal, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -219,6 +280,13 @@ class ResourceSignal(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -226,6 +294,12 @@ class ResourceSignal(command.Command):
 
 
 def _resource_signal(heat_client, args):
+    """
+    Normalize a heat signal.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     fields = {'stack_id': args.stack,
               'resource_name': args.resource}
     data = args.data
@@ -262,6 +336,13 @@ class ResourceMarkUnhealthy(command.Command):
     log = logging.getLogger(__name__ + ".ResourceMarkUnhealthy")
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ResourceMarkUnhealthy, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -288,6 +369,13 @@ class ResourceMarkUnhealthy(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Perform a delete request.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration

@@ -27,45 +27,116 @@ class ResourceTypeManagerTest(testtools.TestCase):
             """Fake API and ensure request url is correct."""
 
             def get(self, *args, **kwargs):
+                """
+                Return the first argument.
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert ('GET', args[0]) == expect
 
             def json_request(self, *args, **kwargs):
+                """
+                Return json data
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert args == expect
                 ret = key and {key: []} or {}
                 return {}, {key: ret}
 
             def raw_request(self, *args, **kwargs):
+                """
+                Convenience method.
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert args == expect
                 return {}
 
             def head(self, url, **kwargs):
+                """
+                Make a head request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 return self.json_request("HEAD", url, **kwargs)
 
             def post(self, url, **kwargs):
+                """
+                Make a post request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (todo): write your description
+                """
                 return self.json_request("POST", url, **kwargs)
 
             def put(self, url, **kwargs):
+                """
+                Make a put request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (todo): write your description
+                """
                 return self.json_request("PUT", url, **kwargs)
 
             def delete(self, url, **kwargs):
+                """
+                Make a delete request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 return self.raw_request("DELETE", url, **kwargs)
 
             def patch(self, url, **kwargs):
+                """
+                Sends a patch request.
+
+                Args:
+                    self: (todo): write your description
+                    url: (str): write your description
+                """
                 return self.json_request("PATCH", url, **kwargs)
 
         manager = resource_types.ResourceTypeManager(FakeAPI())
         return manager
 
     def test_list_types(self):
+        """
+        Return a dictionary of the resource types.
+
+        Args:
+            self: (todo): write your description
+        """
         key = 'resource_types'
         expect = ('GET', '/resource_types')
 
         class FakeResponse(object):
             def json(self):
+                """
+                Return a json - serialization.
+
+                Args:
+                    self: (todo): write your description
+                """
                 return {key: {}}
 
         class FakeClient(object):
             def get(self, *args, **kwargs):
+                """
+                See : class instance.
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert ('GET', args[0]) == expect
                 return FakeResponse()
 
@@ -73,6 +144,12 @@ class ResourceTypeManagerTest(testtools.TestCase):
         manager.list()
 
     def test_list_types_with_filters(self):
+        """
+        Return a list of the mock types.
+
+        Args:
+            self: (todo): write your description
+        """
         filters = {'name': 'OS::Keystone::*',
                    'version': '5.0.0',
                    'support_status': 'SUPPORTED'}
@@ -96,6 +173,13 @@ class ResourceTypeManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_get(self, mock_utils):
+        """
+        Gets the test.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         key = 'resource_types'
         resource_type = 'OS::Nova::KeyPair'
         expect = ('GET', '/resource_types/OS%3A%3ANova%3A%3AKeyPair')
@@ -105,6 +189,13 @@ class ResourceTypeManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_generate_template(self, mock_utils):
+        """
+        Generate a test template.
+
+        Args:
+            self: (todo): write your description
+            mock_utils: (todo): write your description
+        """
         key = 'resource_types'
         resource_type = 'OS::Nova::KeyPair'
         template_type = 'cfn'

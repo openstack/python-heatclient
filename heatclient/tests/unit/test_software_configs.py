@@ -21,6 +21,12 @@ from heatclient.v1 import software_configs
 class SoftwareConfigTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareConfigTest, self).setUp()
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.config = software_configs.SoftwareConfig(mock.MagicMock(),
@@ -28,12 +34,24 @@ class SoftwareConfigTest(testtools.TestCase):
         self.config_id = config_id
 
     def test_delete(self):
+        """
+        Deletes the test configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         self.config.manager.delete.return_value = None
         self.assertIsNone(self.config.delete())
         kwargs = self.config.manager.delete.call_args[1]
         self.assertEqual(self.config_id, kwargs['config_id'])
 
     def test_data(self):
+        """
+        Test the test data. test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             "<SoftwareConfig {'id': '%s'}>" % self.config_id, str(self.config))
         self.config.manager.data.return_value = None
@@ -45,10 +63,22 @@ class SoftwareConfigTest(testtools.TestCase):
 class SoftwareConfigManagerTest(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the mock configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareConfigManagerTest, self).setUp()
         self.manager = software_configs.SoftwareConfigManager(mock.MagicMock())
 
     def test_list(self):
+        """
+        List all test configurations
+
+        Args:
+            self: (todo): write your description
+        """
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.manager.client.json_request.return_value = (
             {},
@@ -61,6 +91,13 @@ class SoftwareConfigManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_get(self, mock_body):
+        """
+        Executes a test.
+
+        Args:
+            self: (todo): write your description
+            mock_body: (todo): write your description
+        """
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         data = {
             'id': config_id,
@@ -83,6 +120,13 @@ class SoftwareConfigManagerTest(testtools.TestCase):
 
     @mock.patch.object(utils, 'get_response_body')
     def test_create(self, mock_body):
+        """
+        Create a test.
+
+        Args:
+            self: (todo): write your description
+            mock_body: (todo): write your description
+        """
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         body = {
             'name': 'config_mysql',
@@ -104,6 +148,12 @@ class SoftwareConfigManagerTest(testtools.TestCase):
         self.assertEqual({'data': body}, kargs)
 
     def test_delete(self):
+        """
+        Deletes the test.
+
+        Args:
+            self: (todo): write your description
+        """
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.manager.delete(config_id)
         call_args = self.manager.client.delete.call_args

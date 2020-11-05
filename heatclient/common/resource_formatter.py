@@ -20,6 +20,13 @@ from cliff.formatters import base
 class ResourceDotInfo(object):
 
     def __init__(self, res):
+        """
+        Initialize the graph
+
+        Args:
+            self: (todo): write your description
+            res: (todo): write your description
+        """
         self.resource = res
         links = {l['rel']: l['href'] for l in res.links}
         self.nested_dot_id = self.dot_id(links.get('nested'), 'stack')
@@ -39,9 +46,26 @@ class ResourceDotInfo(object):
 
 class ResourceDotFormatter(base.ListFormatter):
     def add_argument_group(self, parser):
+        """
+        Add an argparse argument group.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         pass
 
     def emit_list(self, column_names, data, stdout, parsed_args):
+        """
+        Emit a list of column_names.
+
+        Args:
+            self: (todo): write your description
+            column_names: (str): write your description
+            data: (list): write your description
+            stdout: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         writer = ResourceDotWriter(data, stdout)
         writer.write()
 
@@ -49,6 +73,14 @@ class ResourceDotFormatter(base.ListFormatter):
 class ResourceDotWriter(object):
 
     def __init__(self, data, stdout):
+        """
+        Initialize the resource.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+            stdout: (todo): write your description
+        """
         self.resources_by_stack = collections.defaultdict(
             collections.OrderedDict)
         self.resources_by_dot_id = collections.OrderedDict()
@@ -66,6 +98,12 @@ class ResourceDotWriter(object):
                 self.nested_stack_ids.append(rinfo.nested_dot_id)
 
     def write(self):
+        """
+        Write the graph ascii file.
+
+        Args:
+            self: (todo): write your description
+        """
         stdout = self.stdout
 
         stdout.write('digraph G {\n')
@@ -81,12 +119,24 @@ class ResourceDotWriter(object):
         stdout.write('}\n')
 
     def write_root_nodes(self):
+        """
+        Writes a list of nodes. graph.
+
+        Args:
+            self: (todo): write your description
+        """
         for stack_dot_id in set(self.resources_by_stack.keys()).difference(
                 self.nested_stack_ids):
             resources = self.resources_by_stack[stack_dot_id]
             self.write_nodes(resources, 2)
 
     def write_subgraphs(self):
+        """
+        Write all the subgraphs to the graph.
+
+        Args:
+            self: (todo): write your description
+        """
         for dot_id, rinfo in self.resources_by_dot_id.items():
             if rinfo.nested_dot_id:
                 resources = self.resources_by_stack[rinfo.nested_dot_id]
@@ -94,6 +144,14 @@ class ResourceDotWriter(object):
                     self.write_subgraph(resources, rinfo)
 
     def write_nodes(self, resources, indent):
+        """
+        Writes the nodes in the graph.
+
+        Args:
+            self: (todo): write your description
+            resources: (dict): write your description
+            indent: (int): write your description
+        """
         stdout = self.stdout
         spaces = ' ' * indent
         for rinfo in resources.values():
@@ -109,6 +167,14 @@ class ResourceDotWriter(object):
         stdout.write('\n')
 
     def write_subgraph(self, resources, nested_resource):
+        """
+        Writes a graph to a graph.
+
+        Args:
+            self: (todo): write your description
+            resources: (dict): write your description
+            nested_resource: (todo): write your description
+        """
         stdout = self.stdout
         stack_dot_id = nested_resource.nested_dot_id
         nested_name = nested_resource.resource.resource_name
@@ -118,6 +184,12 @@ class ResourceDotWriter(object):
         stdout.write('  }\n\n')
 
     def write_required_by_edges(self):
+        """
+        Write out the dot graph to the dot language.
+
+        Args:
+            self: (todo): write your description
+        """
         stdout = self.stdout
         for dot_id, rinfo in self.resources_by_dot_id.items():
             r = rinfo.resource
@@ -136,6 +208,12 @@ class ResourceDotWriter(object):
         stdout.write('\n')
 
     def write_nested_stack_edges(self):
+        """
+        Write out the stack of the current stack.
+
+        Args:
+            self: (todo): write your description
+        """
         stdout = self.stdout
         for dot_id, rinfo in self.resources_by_dot_id.items():
             if rinfo.nested_dot_id:

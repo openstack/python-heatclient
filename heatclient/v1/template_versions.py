@@ -19,9 +19,21 @@ from heatclient.common import base
 
 class TemplateVersion(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<TemplateVersion %s>" % self._info
 
     def data(self, **kwargs):
+        """
+        The data for the : class.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.data(self, **kwargs)
 
 

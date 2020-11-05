@@ -18,15 +18,40 @@ DEFAULT_PAGE_SIZE = 20
 
 class Action(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<Action %s>" % self._info
 
     def update(self, **fields):
+        """
+        Update this object.
+
+        Args:
+            self: (todo): write your description
+            fields: (list): write your description
+        """
         self.manager.update(self, **fields)
 
     def delete(self):
+        """
+        Deletes the resource.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.delete(self)
 
     def data(self, **kwargs):
+        """
+        The data for the : class.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.data(self, **kwargs)
 
 

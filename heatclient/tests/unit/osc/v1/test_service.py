@@ -49,12 +49,24 @@ class TestServiceList(orchestration_fakes.TestOrchestrationv1):
                'Topic', 'Updated At', 'Status']
 
     def setUp(self):
+        """
+        Make a list.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestServiceList, self).setUp()
         self.cmd = osc_service.ListService(self.app, None)
         self.mock_client = self.app.client_manager.orchestration
         self.mock_client.services.list.return_value = self.response
 
     def test_service_list(self):
+        """
+        Handles a service.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)

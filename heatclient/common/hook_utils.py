@@ -21,6 +21,15 @@ logger = logging.getLogger(__name__)
 
 
 def clear_hook(hc, stack_id, resource_name, hook_type):
+    """
+    Clear the current hook.
+
+    Args:
+        hc: (todo): write your description
+        stack_id: (str): write your description
+        resource_name: (str): write your description
+        hook_type: (str): write your description
+    """
     try:
         hc.resources.signal(
             stack_id=stack_id,
@@ -36,6 +45,16 @@ def clear_hook(hc, stack_id, resource_name, hook_type):
 
 def clear_wildcard_hooks(hc, stack_id, stack_patterns, hook_type,
                          resource_pattern):
+    """
+    Clearses the stack_id.
+
+    Args:
+        hc: (int): write your description
+        stack_id: (str): write your description
+        stack_patterns: (todo): write your description
+        hook_type: (str): write your description
+        resource_pattern: (str): write your description
+    """
     if stack_patterns:
         for resource in hc.resources.list(stack_id):
             res_name = resource.resource_name
@@ -55,6 +74,13 @@ def clear_wildcard_hooks(hc, stack_id, stack_patterns, hook_type,
 
 
 def get_hook_type_via_status(hc, stack_id):
+    """
+    Returns a stacktype for the given stack.
+
+    Args:
+        hc: (todo): write your description
+        stack_id: (str): write your description
+    """
     # Figure out if the hook should be pre-create, pre-update or
     # pre-delete based on the stack status, also sanity assertions
     # that we're in-progress.

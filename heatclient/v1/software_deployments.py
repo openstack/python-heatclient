@@ -18,12 +18,31 @@ from heatclient.common import utils
 
 class SoftwareDeployment(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<SoftwareDeployment %s>" % self._info
 
     def update(self, **fields):
+        """
+        Update this deployment.
+
+        Args:
+            self: (todo): write your description
+            fields: (list): write your description
+        """
         self.manager.update(deployment_id=self.id, **fields)
 
     def delete(self):
+        """
+        Deletes this deployment.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.delete(deployment_id=self.id)
 
 

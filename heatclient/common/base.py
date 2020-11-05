@@ -213,6 +213,12 @@ class ManagerWithFind(BaseManager):
 
     @abc.abstractmethod
     def list(self):
+        """
+        List all the list
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def find(self, **kwargs):
@@ -303,6 +309,12 @@ class CrudManager(BaseManager):
         return kwargs
 
     def create(self, **kwargs):
+        """
+        Create a new object.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = self._filter_kwargs(kwargs)
         return self._post(
             self.build_url(**kwargs),
@@ -310,12 +322,24 @@ class CrudManager(BaseManager):
             self.key)
 
     def get(self, **kwargs):
+        """
+        Return a resource.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = self._filter_kwargs(kwargs)
         return self._get(
             self.build_url(**kwargs),
             self.key)
 
     def head(self, **kwargs):
+        """
+        Send http head request.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = self._filter_kwargs(kwargs)
         return self._head(self.build_url(**kwargs))
 
@@ -343,6 +367,12 @@ class CrudManager(BaseManager):
         return self._put(self.build_url(base_url=base_url, **kwargs))
 
     def update(self, **kwargs):
+        """
+        This method filter.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = self._filter_kwargs(kwargs)
         params = kwargs.copy()
         params.pop('%s_id' % self.key)
@@ -353,6 +383,12 @@ class CrudManager(BaseManager):
             self.key)
 
     def delete(self, **kwargs):
+        """
+        Endpoint : class.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = self._filter_kwargs(kwargs)
 
         return self._delete(
@@ -392,12 +428,26 @@ class Extension(HookableMixin):
     manager_class = None
 
     def __init__(self, name, module):
+        """
+        Initialize a module.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            module: (str): write your description
+        """
         super(Extension, self).__init__()
         self.name = name
         self.module = module
         self._parse_extension_module()
 
     def _parse_extension_module(self):
+        """
+        Parses the extension_extension.
+
+        Args:
+            self: (todo): write your description
+        """
         self.manager_class = None
         for attr_name, attr_value in self.module.__dict__.items():
             if attr_name in self.SUPPORTED_HOOKS:
@@ -410,6 +460,12 @@ class Extension(HookableMixin):
                     pass
 
     def __repr__(self):
+        """
+        Return a human - friendly name.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<Extension '%s'>" % self.name
 
 
@@ -434,6 +490,12 @@ class Resource(object):
         self._loaded = loaded
 
     def __repr__(self):
+        """
+        Return a repr representation of this class.
+
+        Args:
+            self: (todo): write your description
+        """
         reprkeys = sorted(k
                           for k in self.__dict__
                           if k[0] != '_' and k != 'manager')
@@ -451,6 +513,13 @@ class Resource(object):
         return None
 
     def _add_details(self, info):
+        """
+        Add details to the instance
+
+        Args:
+            self: (todo): write your description
+            info: (dict): write your description
+        """
         for (k, v) in info.items():
             try:
                 setattr(self, k, v)
@@ -460,6 +529,13 @@ class Resource(object):
                 pass
 
     def __getattr__(self, k):
+        """
+        Return the value of a given attribute.
+
+        Args:
+            self: (todo): write your description
+            k: (str): write your description
+        """
         if k not in self.__dict__:
             # NOTE(bcwaldon): disallow lazy-loading if already loaded once
             if not self.is_loaded():
@@ -488,6 +564,13 @@ class Resource(object):
                 {'x_request_id': self.manager.client.last_request_id})
 
     def __eq__(self, other):
+        """
+        Determine if two values.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if not isinstance(other, Resource):
             return NotImplemented
         # two resources of different types are not equal
@@ -496,6 +579,13 @@ class Resource(object):
         return self._info == other._info
 
     def __ne__(self, other):
+        """
+        Determine if self and false otherwise.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return not self.__eq__(other)
 
     def is_same_obj(self, other):
@@ -506,10 +596,29 @@ class Resource(object):
         return False
 
     def is_loaded(self):
+        """
+        : return : true or false otherwise.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._loaded
 
     def set_loaded(self, val):
+        """
+        Sets the current value.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._loaded = val
 
     def to_dict(self):
+        """
+        Returns a dict representation of this record.
+
+        Args:
+            self: (todo): write your description
+        """
         return copy.deepcopy(self._info)

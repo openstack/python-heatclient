@@ -26,9 +26,21 @@ from heatclient.v1 import resources as hc_res
 class ShellTest(testtools.TestCase):
 
     def test_format_parameter_none(self):
+        """
+        Returns the : attribute of the value.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual({}, utils.format_parameters(None))
 
     def test_format_parameters(self):
+        """
+        Test if the test parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters([
             'InstanceType=m1.large;DBUsername=wp;'
             'DBPassword=verybadpassword;KeyName=heat_key;'
@@ -41,6 +53,12 @@ class ShellTest(testtools.TestCase):
                           }, p)
 
     def test_format_parameters_split(self):
+        """
+        Split the test test parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters([
             'KeyName=heat_key;'
             'DnsSecKey=hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/wwC7a4oAONQ/fDV5ct'
@@ -52,6 +70,12 @@ class ShellTest(testtools.TestCase):
                           'UpstreamDNS': '8.8.8.8'}, p)
 
     def test_format_parameters_multiple(self):
+        """
+        Set the format_format of the format.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters([
             'KeyName=heat_key',
             'DnsSecKey=hsgx1m31PbamNF4WEcHlwjIlCGgifOdoB58/wwC7a4oAONQ/fDV5ct'
@@ -63,6 +87,12 @@ class ShellTest(testtools.TestCase):
                           'UpstreamDNS': '8.8.8.8'}, p)
 
     def test_format_parameters_multiple_semicolon_values(self):
+        """
+        The format of - specific values in the format expected values.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters([
             'KeyName=heat_key',
             'DnsSecKey=hsgx1m31;PbaNF4WEcHlwj;IlCGgfOdoB;58/ww7a4oAO;NQ/fD==',
@@ -73,12 +103,24 @@ class ShellTest(testtools.TestCase):
                           'UpstreamDNS': '8.8.8.8'}, p)
 
     def test_format_parameters_parse_semicolon_false(self):
+        """
+        Test if the test parameters are valid.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters(
             ['KeyName=heat_key;UpstreamDNS=8.8.8.8;a=b'],
             parse_semicolon=False)
         self.assertEqual({'KeyName': 'heat_key;UpstreamDNS=8.8.8.8;a=b'}, p)
 
     def test_format_parameters_multiple_values_per_pamaters(self):
+        """
+        Set the pamaters_per_parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         p = utils.format_parameters([
             'status=COMPLETE',
             'status=FAILED'])
@@ -87,6 +129,12 @@ class ShellTest(testtools.TestCase):
         self.assertIn('FAILED', p['status'])
 
     def test_format_parameter_bad_parameter(self):
+        """
+        Assigns_bad_format parameter to be used value.
+
+        Args:
+            self: (todo): write your description
+        """
         params = ['KeyName=heat_key;UpstreamDNS8.8.8.8']
         ex = self.assertRaises(exc.CommandError,
                                utils.format_parameters, params)
@@ -94,6 +142,12 @@ class ShellTest(testtools.TestCase):
                          'Use the key=value format.', str(ex))
 
     def test_format_multiple_bad_parameter(self):
+        """
+        Test if there s a single bad bad value.
+
+        Args:
+            self: (todo): write your description
+        """
         params = ['KeyName=heat_key', 'UpstreamDNS8.8.8.8']
         ex = self.assertRaises(exc.CommandError,
                                utils.format_parameters, params)
@@ -101,6 +155,12 @@ class ShellTest(testtools.TestCase):
                          'Use the key=value format.', str(ex))
 
     def test_link_formatter(self):
+        """
+        Test for formatter
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual('', utils.link_formatter(None))
         self.assertEqual('', utils.link_formatter([]))
         self.assertEqual(
@@ -120,6 +180,12 @@ class ShellTest(testtools.TestCase):
                 {}]))
 
     def test_resource_nested_identifier(self):
+        """
+        Test if nested nested resource identifier is valid.
+
+        Args:
+            self: (todo): write your description
+        """
         rsrc_info = {'resource_name': 'aresource',
                      'links': [{'href': u'http://foo/name/id/resources/0',
                                 'rel': u'self'},
@@ -131,6 +197,12 @@ class ShellTest(testtools.TestCase):
         self.assertEqual('n_name/n_id', utils.resource_nested_identifier(rsrc))
 
     def test_resource_nested_identifier_none(self):
+        """
+        Stores the identifier of nested dictionaries
+
+        Args:
+            self: (todo): write your description
+        """
         rsrc_info = {'resource_name': 'aresource',
                      'links': [{'href': u'http://foo/name/id/resources/0',
                                 'rel': u'self'},
@@ -140,6 +212,12 @@ class ShellTest(testtools.TestCase):
         self.assertIsNone(utils.resource_nested_identifier(rsrc))
 
     def test_json_formatter(self):
+        """
+        Test for json formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual('null', utils.json_formatter(None))
         self.assertEqual('{}', utils.json_formatter({}))
         self.assertEqual('{\n  "foo": "bar"\n}',
@@ -148,12 +226,24 @@ class ShellTest(testtools.TestCase):
                          utils.json_formatter({"Uni": u"test\u2665"}))
 
     def test_yaml_formatter(self):
+        """
+        Formats yaml formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual('null\n...\n', utils.yaml_formatter(None))
         self.assertEqual('{}\n', utils.yaml_formatter({}))
         self.assertEqual('foo: bar\n',
                          utils.yaml_formatter({"foo": "bar"}))
 
     def test_text_wrap_formatter(self):
+        """
+        Wrap text formatting.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual('', utils.text_wrap_formatter(None))
         self.assertEqual('', utils.text_wrap_formatter(''))
         self.assertEqual('one two three',
@@ -165,12 +255,24 @@ class ShellTest(testtools.TestCase):
                  'eight nine ten eleven twelve')))
 
     def test_newline_list_formatter(self):
+        """
+        Handles new formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual('', utils.newline_list_formatter(None))
         self.assertEqual('', utils.newline_list_formatter([]))
         self.assertEqual('one\ntwo',
                          utils.newline_list_formatter(['one', 'two']))
 
     def test_event_log_formatter(self):
+        """
+        Test for log formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         event1 = {'event_time': '2015-09-28T12:12:12',
                   'id': '123456789',
                   'resource_name': 'res_name',
@@ -192,6 +294,12 @@ class ShellTest(testtools.TestCase):
         self.assertEqual('', utils.event_log_formatter([]))
 
     def test_event_log_formatter_resource_path_old_heat(self):
+        """
+        Formats the event log formatter
+
+        Args:
+            self: (todo): write your description
+        """
 
         events = [{
             'resource_name': 'nested',
@@ -263,6 +371,12 @@ CREATE_IN_PROGRESS  state changed'''
         self.assertEqual(expected, utils.event_log_formatter(events_list))
 
     def test_event_log_formatter_resource_path(self):
+        """
+        Generate the resource path
+
+        Args:
+            self: (todo): write your description
+        """
 
         events = [{
             'resource_name': 'nested',
@@ -337,9 +451,21 @@ CREATE_IN_PROGRESS  state changed'''
 class ShellTestParameterFiles(testtools.TestCase):
 
     def test_format_parameter_file_none(self):
+        """
+        Assigns the first file exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual({}, utils.format_parameter_file(None))
 
     def test_format_parameter_file(self):
+        """
+        Returns a file contents of - file.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl_file = '/opt/stack/template.yaml'
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         utils.read_url_content = mock.MagicMock()
@@ -352,6 +478,12 @@ class ShellTestParameterFiles(testtools.TestCase):
                           }, p)
 
     def test_format_parameter_file_no_template(self):
+        """
+        Reads the test for a test.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl_file = None
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         utils.read_url_content = mock.MagicMock()
@@ -363,6 +495,12 @@ class ShellTestParameterFiles(testtools.TestCase):
                           }, p)
 
     def test_format_all_parameters(self):
+        """
+        Generate a test parameters for a test.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl_file = '/opt/stack/template.yaml'
         contents = 'DBUsername=wp\nDBPassword=verybadpassword'
         params = ['KeyName=heat_key;UpstreamDNS=8.8.8.8']
@@ -379,36 +517,72 @@ class ShellTestParameterFiles(testtools.TestCase):
 class TestURLFunctions(testtools.TestCase):
 
     def setUp(self):
+        """
+        Sets the mock.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestURLFunctions, self).setUp()
         self.m = mock.MagicMock()
 
         self.addCleanup(self.m.UnsetStubs)
 
     def test_normalise_file_path_to_url_relative(self):
+        """
+        Normalize the url to a file.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             'file://%s/foo' % os.getcwd(),
             utils.normalise_file_path_to_url(
                 'foo'))
 
     def test_normalise_file_path_to_url_absolute(self):
+        """
+        Normalise the absolute url to the absolute path.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             'file:///tmp/foo',
             utils.normalise_file_path_to_url(
                 '/tmp/foo'))
 
     def test_normalise_file_path_to_url_file(self):
+        """
+        Normalize the url path to a test file.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             'file:///tmp/foo',
             utils.normalise_file_path_to_url(
                 'file:///tmp/foo'))
 
     def test_normalise_file_path_to_url_http(self):
+        """
+        Normalize the url file to be normalized.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             'http://localhost/foo',
             utils.normalise_file_path_to_url(
                 'http://localhost/foo'))
 
     def test_get_template_url(self):
+        """
+        Returns the url for the template template.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl_file = '/opt/stack/template.yaml'
         tmpl_url = 'file:///opt/stack/template.yaml'
         self.assertEqual(utils.get_template_url(tmpl_file, None),
@@ -418,6 +592,12 @@ class TestURLFunctions(testtools.TestCase):
         self.assertIsNone(utils.get_template_url(None, None))
 
     def test_base_url_for_url(self):
+        """
+        Set the base url.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertEqual(
             'file:///foo/bar',
             utils.base_url_for_url(

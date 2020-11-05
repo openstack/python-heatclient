@@ -23,10 +23,23 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
     """
 
     def setUp(self):
+        """
+        Sets the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(OpenStackClientStackTest, self).setUp()
         self.stack_name = utils.rand_name(name='test-stack')
 
     def _stack_create_minimal(self, from_url=False):
+        """
+        Creates a stack stack.
+
+        Args:
+            self: (todo): write your description
+            from_url: (str): write your description
+        """
         if from_url:
             template = config.HEAT_MINIMAL_HOT_TEMPLATE_URL
         else:
@@ -36,16 +49,34 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
                                   parameters=parameters)
 
     def test_stack_create_minimal_from_file(self):
+        """
+        Create stack stack name of the stack file
+
+        Args:
+            self: (todo): write your description
+        """
         stack = self._stack_create_minimal()
         self.assertEqual(self.stack_name, stack['stack_name'])
         self.assertEqual("CREATE_COMPLETE", stack['stack_status'])
 
     def test_stack_create_minimal_from_url(self):
+        """
+        Create stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         stack = self._stack_create_minimal(from_url=True)
         self.assertEqual(self.stack_name, stack['stack_name'])
         self.assertEqual("CREATE_COMPLETE", stack['stack_status'])
 
     def test_stack_suspend_resume(self):
+        """
+        Resume stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         stack = self._stack_create_minimal()
         stack = self._stack_suspend(stack['id'])
         self.assertEqual(self.stack_name, stack['stack_name'])
@@ -55,6 +86,12 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         self.assertEqual("RESUME_COMPLETE", stack['stack_status'])
 
     def test_stack_snapshot_create_restore(self):
+        """
+        Create a snapshot of the snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         snapshot_name = utils.rand_name(name='test-stack-snapshot')
         stack = self._stack_create_minimal()
         snapshot = self._stack_snapshot_create(stack['id'], snapshot_name)
@@ -62,12 +99,24 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         self._stack_snapshot_restore(stack['id'], snapshot['id'])
 
     def test_stack_delete(self):
+        """
+        Delete the stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         stack = self._stack_create_minimal()
         self._stack_delete(stack['id'])
         stacks_raw = self.openstack('stack list')
         self.assertNotIn(stack['id'], stacks_raw)
 
     def test_stack_snapshot_delete(self):
+        """
+        Test the snapshot of the snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         snapshot_name = utils.rand_name(name='test-stack-snapshot')
         stack = self._stack_create_minimal()
         snapshot = self._stack_snapshot_create(stack['id'], snapshot_name)
@@ -77,6 +126,12 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
         self.assertNotIn(snapshot['id'], stacks_raw)
 
     def test_stack_show(self):
+        """
+        Show stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         stack = self._stack_create_minimal()
         stack_info = self._stack_show(stack['id'])
         stack_props = {k: v for k, v in stack_info.items()

@@ -22,6 +22,12 @@ from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 
 class TestStack(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStack, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks
@@ -29,11 +35,23 @@ class TestStack(orchestration_fakes.TestOrchestrationv1):
 
 class TestListSnapshot(TestStack):
     def setUp(self):
+        """
+        Set the snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestListSnapshot, self).setUp()
         self.cmd = snapshot.ListSnapshot(self.app, None)
         self.stack_client.snapshot_list.return_value = {'snapshots': []}
 
     def test_snapshot_list(self):
+        """
+        Test snapshot of snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -41,6 +59,12 @@ class TestListSnapshot(TestStack):
             stack_id='my_stack')
 
     def test_snapshot_list_error(self):
+        """
+        Test if snapshot snapshot snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack_client.snapshot_list.side_effect = heat_exc.HTTPNotFound()
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -54,10 +78,22 @@ class TestListSnapshot(TestStack):
 
 class TestSnapshotShow(TestStack):
     def setUp(self):
+        """
+        Sets the snapshot to true.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestSnapshotShow, self).setUp()
         self.cmd = snapshot.ShowSnapshot(self.app, None)
 
     def test_snapshot_show(self):
+        """
+        Show details of snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot_show.return_value = {}
@@ -66,6 +102,12 @@ class TestSnapshotShow(TestStack):
             'my_stack', 'snapshot_id')
 
     def test_snapshot_not_found(self):
+        """
+        Test if snapshot snapshot of snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot_show.side_effect = heat_exc.HTTPNotFound()
@@ -77,10 +119,22 @@ class TestSnapshotShow(TestStack):
 
 class TestRestoreSnapshot(TestStack):
     def setUp(self):
+        """
+        Sets the app.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestRestoreSnapshot, self).setUp()
         self.cmd = snapshot.RestoreSnapshot(self.app, None)
 
     def test_snapshot_restore(self):
+        """
+        Test if snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'my_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -88,6 +142,12 @@ class TestRestoreSnapshot(TestStack):
             snapshot_id='my_snapshot', stack_id='my_stack')
 
     def test_snapshot_restore_error(self):
+        """
+        Test if snapshot of snapshot snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack_client.restore.side_effect = heat_exc.HTTPNotFound()
         arglist = ['my_stack', 'my_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -110,10 +170,22 @@ class TestSnapshotCreate(TestStack):
     }
 
     def setUp(self):
+        """
+        Sets the command.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestSnapshotCreate, self).setUp()
         self.cmd = snapshot.CreateSnapshot(self.app, None)
 
     def test_snapshot_create(self):
+        """
+        Create snapshot snapshot snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--name', 'test_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot.return_value = self.get_response
@@ -122,6 +194,12 @@ class TestSnapshotCreate(TestStack):
             'my_stack', 'test_snapshot')
 
     def test_snapshot_create_no_name(self):
+        """
+        Create a snapshot snapshot of the snapshot.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot.return_value = self.get_response
@@ -130,6 +208,12 @@ class TestSnapshotCreate(TestStack):
             'my_stack', None)
 
     def test_snapshot_create_error(self):
+        """
+        Create snapshot snapshot command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--name', 'test_snapshot']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot.side_effect = heat_exc.HTTPNotFound
@@ -141,10 +225,22 @@ class TestSnapshotCreate(TestStack):
 
 class TestSnapshotDelete(TestStack):
     def setUp(self):
+        """
+        Sets the snapshot of this app.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestSnapshotDelete, self).setUp()
         self.cmd = snapshot.DeleteSnapshot(self.app, None)
 
     def test_snapshot_delete(self):
+        """
+        Delete snapshot snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -152,6 +248,12 @@ class TestSnapshotDelete(TestStack):
             'my_stack', 'snapshot_id')
 
     def test_snapshot_delete_not_found(self):
+        """
+        Delete snapshot snapshot snapshot
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.snapshot_delete.side_effect = heat_exc.HTTPNotFound()
@@ -162,6 +264,13 @@ class TestSnapshotDelete(TestStack):
 
     @mock.patch('sys.stdin', spec=six.StringIO)
     def test_snapshot_delete_prompt(self, mock_stdin):
+        """
+        Delete snapshot snapshot
+
+        Args:
+            self: (todo): write your description
+            mock_stdin: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         mock_stdin.isatty.return_value = True
         mock_stdin.readline.return_value = 'y'
@@ -175,6 +284,13 @@ class TestSnapshotDelete(TestStack):
 
     @mock.patch('sys.stdin', spec=six.StringIO)
     def test_snapshot_delete_prompt_no(self, mock_stdin):
+        """
+        Delete snapshot snapshot snapshot
+
+        Args:
+            self: (todo): write your description
+            mock_stdin: (todo): write your description
+        """
         arglist = ['my_stack', 'snapshot_id']
         mock_stdin.isatty.return_value = True
         mock_stdin.readline.return_value = 'n'

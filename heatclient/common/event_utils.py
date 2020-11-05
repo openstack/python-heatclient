@@ -23,6 +23,16 @@ from heatclient.v1 import events as events_mod
 
 def get_hook_events(hc, stack_id, event_args, nested_depth=0,
                     hook_type='pre-create'):
+    """
+    Get events for the stack.
+
+    Args:
+        hc: (todo): write your description
+        stack_id: (str): write your description
+        event_args: (todo): write your description
+        nested_depth: (int): write your description
+        hook_type: (str): write your description
+    """
     if hook_type == 'pre-create':
         stack_action_reason = 'Stack CREATE started'
         hook_event_reason = 'CREATE paused until Hook pre-create is cleared'
@@ -67,6 +77,17 @@ def get_hook_events(hc, stack_id, event_args, nested_depth=0,
 
 def get_events(hc, stack_id, event_args, nested_depth=0,
                marker=None, limit=None):
+    """
+    Return a list of events from a stack.
+
+    Args:
+        hc: (str): write your description
+        stack_id: (str): write your description
+        event_args: (str): write your description
+        nested_depth: (int): write your description
+        marker: (str): write your description
+        limit: (str): write your description
+    """
     event_args = dict(event_args)
     if marker:
         event_args['marker'] = marker
@@ -122,6 +143,13 @@ def get_events(hc, stack_id, event_args, nested_depth=0,
 
 
 def _get_nested_ids(hc, stack_id):
+    """
+    Returns a list of dictionaries.
+
+    Args:
+        hc: (str): write your description
+        stack_id: (str): write your description
+    """
     nested_ids = []
     try:
         resources = hc.resources.list(stack_id=stack_id)
@@ -135,6 +163,15 @@ def _get_nested_ids(hc, stack_id):
 
 
 def _get_nested_events(hc, nested_depth, stack_id, event_args):
+    """
+    Get a list of events from the stack.
+
+    Args:
+        hc: (str): write your description
+        nested_depth: (int): write your description
+        stack_id: (str): write your description
+        event_args: (todo): write your description
+    """
     # FIXME(shardy): this is very inefficient, we should add nested_depth to
     # the event_list API in a future heat version, but this will be required
     # until kilo heat is EOL.
@@ -152,6 +189,12 @@ def _get_nested_events(hc, nested_depth, stack_id, event_args):
 
 
 def _get_stack_name_from_links(event):
+    """
+    Get the stack name of a list.
+
+    Args:
+        event: (str): write your description
+    """
     links = dict((l.get('rel'),
                   l.get('href')) for l in getattr(event, 'links', []))
     href = links.get('stack')
@@ -161,6 +204,14 @@ def _get_stack_name_from_links(event):
 
 
 def _get_stack_events(hc, stack_id, event_args):
+    """
+    Get events from stack_id
+
+    Args:
+        hc: (str): write your description
+        stack_id: (str): write your description
+        event_args: (todo): write your description
+    """
     event_args['stack_id'] = stack_id
     try:
         events = hc.events.list(**event_args)
@@ -193,6 +244,12 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
     event_log_context = utils.EventLogContext()
 
     def is_stack_event(event):
+        """
+        Checks if event is an event
+
+        Args:
+            event: (todo): write your description
+        """
         if getattr(event, 'resource_name', '') != stack_name:
             return False
 

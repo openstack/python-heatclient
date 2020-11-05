@@ -26,6 +26,12 @@ from heatclient.tests.unit.osc import fakes
 
 class TestCase(testtools.TestCase):
     def setUp(self):
+        """
+        Sets up the test variables.
+
+        Args:
+            self: (todo): write your description
+        """
         testtools.TestCase.setUp(self)
 
         if (os.environ.get("OS_STDOUT_CAPTURE") == "True" or
@@ -61,6 +67,12 @@ class TestCommand(TestCase):
     """Test cliff command classes"""
 
     def setUp(self):
+        """
+        Sets the application to be run ().
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestCommand, self).setUp()
         # Build up a fake app
         self.fake_stdout = fakes.FakeStdout()
@@ -70,6 +82,14 @@ class TestCommand(TestCase):
         self.app.stderr = sys.stderr
 
     def check_parser(self, cmd, args, verify_args):
+        """
+        Parse command and arguments.
+
+        Args:
+            self: (todo): write your description
+            cmd: (todo): write your description
+            verify_args: (todo): write your description
+        """
         cmd_parser = cmd.get_parser('check_parser')
         try:
             parsed_args = cmd_parser.parse_args(args)

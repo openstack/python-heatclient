@@ -21,15 +21,34 @@ from heatclient.common import utils
 
 class ResourceType(base.Resource):
     def __repr__(self):
+        """
+        Return a repr representation of - repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         if isinstance(self._info, six.string_types):
             return "<ResourceType %s>" % self._info
         else:
             return "<ResourceType %s>" % self._info.get('resource_type')
 
     def data(self, **kwargs):
+        """
+        The data for the : class.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.manager.data(self, **kwargs)
 
     def _add_details(self, info):
+        """
+        Add details to the resource
+
+        Args:
+            self: (todo): write your description
+            info: (dict): write your description
+        """
         if isinstance(info, six.string_types):
             self.resource_type = info
         elif isinstance(info, dict):
@@ -75,6 +94,14 @@ class ResourceTypeManager(base.BaseManager):
         return body
 
     def generate_template(self, resource_type, template_type='cfn'):
+        """
+        Generate a template.
+
+        Args:
+            self: (todo): write your description
+            resource_type: (str): write your description
+            template_type: (str): write your description
+        """
         url_str = '/%s/%s/template' % (
                   self.KEY,
                   parse.quote(encodeutils.safe_encode(resource_type)))

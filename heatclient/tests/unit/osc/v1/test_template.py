@@ -22,6 +22,12 @@ from heatclient.v1 import template_versions
 
 class TestTemplate(fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the template template.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestTemplate, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.template_versions = self.mock_client.template_versions
@@ -30,12 +36,25 @@ class TestTemplate(fakes.TestOrchestrationv1):
 class TestTemplateVersionList(TestTemplate):
 
     def _stub_versions_list(self, ret_data):
+        """
+        Stub
+
+        Args:
+            self: (todo): write your description
+            ret_data: (bool): write your description
+        """
         tv1 = template_versions.TemplateVersion(None, ret_data[0])
         tv2 = template_versions.TemplateVersion(None, ret_data[1])
         self.template_versions.list.return_value = [tv1, tv2]
         self.cmd = template.VersionList(self.app, None)
 
     def test_version_list(self):
+        """
+        Execute versions of - packages version.
+
+        Args:
+            self: (todo): write your description
+        """
         ret_data = [
             {'version': 'HOT123', 'type': 'hot'},
             {'version': 'CFN456', 'type': 'cfn'}]
@@ -48,6 +67,12 @@ class TestTemplateVersionList(TestTemplate):
         self.assertEqual([('HOT123', 'hot'), ('CFN456', 'cfn')], list(data))
 
     def test_version_list_with_aliases(self):
+        """
+        Return list of aliases
+
+        Args:
+            self: (todo): write your description
+        """
         ret_data = [
             {'version': 'HOT123', 'type': 'hot', 'aliases': ['releasex']},
             {'version': 'CFN456', 'type': 'cfn', 'aliases': ['releasey']}]
@@ -70,6 +95,12 @@ class TestTemplateFunctionList(TestTemplate):
     ]
 
     def setUp(self):
+        """
+        Sets the template.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestTemplateFunctionList, self).setUp()
         self.tv1 = template_versions.TemplateVersion(None, self.defaults[0])
         self.tv2 = template_versions.TemplateVersion(None, self.defaults[1])
@@ -79,6 +110,12 @@ class TestTemplateFunctionList(TestTemplate):
         self.cmd = template.FunctionList(self.app, None)
 
     def test_function_list(self):
+        """
+        Return a list of arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['version1']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.template_versions.get.return_value = [self.tv1, self.tv2]
@@ -89,6 +126,12 @@ class TestTemplateFunctionList(TestTemplate):
                          list(data))
 
     def test_function_list_with_condition_func(self):
+        """
+        Test if the condition with condition condition
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['version1', '--with_conditions']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.template_versions.get.return_value = [self.tv1, self.tv2,
@@ -102,6 +145,12 @@ class TestTemplateFunctionList(TestTemplate):
                          list(data))
 
     def test_function_list_not_found(self):
+        """
+        Test if the function call.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['bad_version']
         self.template_versions.get.side_effect = exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -122,12 +171,24 @@ class TestTemplateValidate(TestTemplate):
     }
 
     def setUp(self):
+        """
+        Set the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestTemplateValidate, self).setUp()
         self.stack_client = self.app.client_manager.orchestration.stacks
         self.stack_client.validate = mock.MagicMock(return_value={})
         self.cmd = template.Validate(self.app, None)
 
     def test_validate(self):
+        """
+        Perform validation of the command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['-t', self.template_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -137,6 +198,12 @@ class TestTemplateValidate(TestTemplate):
         self.assertEqual([], data)
 
     def test_validate_env(self):
+        """
+        Perform the env env.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['-t', self.template_path, '-e', self.env_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -149,6 +216,12 @@ class TestTemplateValidate(TestTemplate):
         self.assertEqual([], data)
 
     def test_validate_nested(self):
+        """
+        Validate the test data.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['-t', self.template_path, '--show-nested']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, data = self.cmd.take_action(parsed_args)
@@ -159,6 +232,12 @@ class TestTemplateValidate(TestTemplate):
         self.assertEqual([], data)
 
     def test_validate_parameter(self):
+        """
+        Check if the test command
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['-t', self.template_path,
                    '--parameter', 'key1=value1',
                    '--parameter', 'key2=value2']
@@ -171,6 +250,12 @@ class TestTemplateValidate(TestTemplate):
         self.assertEqual([], data)
 
     def test_validate_ignore_errors(self):
+        """
+        Check if the validation of the command.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['-t', self.template_path,
                    '--ignore-errors', 'err1,err2']
         parsed_args = self.check_parser(self.cmd, arglist, [])

@@ -21,15 +21,39 @@ from heatclient.v1 import services
 
 class ManageServiceTest(testtools.TestCase):
     def setUp(self):
+        """
+        Sets the service to the given service.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ManageServiceTest, self).setUp()
 
     def test_service_list(self):
+        """
+        Returns a json - rpc request.
+
+        Args:
+            self: (todo): write your description
+        """
         class FakeResponse(object):
             def json(self):
+                """
+                Returns the json representation of this : class :.
+
+                Args:
+                    self: (todo): write your description
+                """
                 return {'services': []}
 
         class FakeClient(object):
             def get(self, *args, **kwargs):
+                """
+                See : meth : meth : get
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert args[0] == ('/services')
                 return FakeResponse()
 
@@ -37,9 +61,21 @@ class ManageServiceTest(testtools.TestCase):
         self.assertEqual([], manager.list())
 
     def test_service_list_403(self):
+        """
+        Test if a service service has a service.
+
+        Args:
+            self: (todo): write your description
+        """
         class FakeClient403(object):
 
             def get(self, *args, **kwargs):
+                """
+                Wrapper around get ().
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert args[0] == ('/services')
                 raise exc.HTTPForbidden()
 
@@ -48,8 +84,20 @@ class ManageServiceTest(testtools.TestCase):
                           manager.list)
 
     def test_service_list_503(self):
+        """
+        Test for a list of a service.
+
+        Args:
+            self: (todo): write your description
+        """
         class FakeClient503(object):
             def get(self, *args, **kwargs):
+                """
+                Return an item.
+
+                Args:
+                    self: (todo): write your description
+                """
                 assert args[0] == ('/services')
                 raise exc.HTTPServiceUnavailable()
 

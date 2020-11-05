@@ -42,6 +42,11 @@ def authenticated_fetcher(hc):
     """A wrapper around the heat client object to fetch a template."""
 
     def _do(*args, **kwargs):
+        """
+        Make a http request.
+
+        Args:
+        """
         if isinstance(hc.http_client, SessionClient):
             method, url = args
             return hc.http_client.request(url, method, **kwargs).content
@@ -72,6 +77,13 @@ def get_system_ca_file():
 class HTTPClient(object):
 
     def __init__(self, endpoint, **kwargs):
+        """
+        Initialize the api certificate.
+
+        Args:
+            self: (todo): write your description
+            endpoint: (str): write your description
+        """
         self.endpoint = endpoint
         self.auth_url = kwargs.get('auth_url')
         self.auth_token = kwargs.get('token')
@@ -104,6 +116,14 @@ class HTTPClient(object):
         self.last_request_id = None
 
     def safe_header(self, name, value):
+        """
+        Safely encode a header.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (todo): write your description
+        """
         if name in SENSITIVE_HEADERS:
             # because in python3 byte string handling is ... ug
             v = value.encode('utf-8')
@@ -115,6 +135,14 @@ class HTTPClient(object):
                     encodeutils.safe_decode(value))
 
     def log_curl_request(self, method, url, kwargs):
+        """
+        Send a request to the api.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            url: (str): write your description
+        """
         curl = ['curl -g -i -X %s' % method]
 
         for (key, value) in kwargs['headers'].items():
@@ -145,6 +173,12 @@ class HTTPClient(object):
 
     @staticmethod
     def log_http_response(resp):
+        """
+        Log an http response.
+
+        Args:
+            resp: (todo): write your description
+        """
         status = (resp.raw.version / 10.0, resp.status_code, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
         dump.extend(['%s: %s' % (k, v) for k, v in resp.headers.items()])
@@ -247,6 +281,12 @@ class HTTPClient(object):
         return resp
 
     def credentials_headers(self):
+        """
+        Returns a dictionary of credentials.
+
+        Args:
+            self: (todo): write your description
+        """
         creds = {}
         # NOTE(dhu): (shardy) When deferred_auth_method=password, Heat
         # encrypts and stores username/password.  For Keystone v3, the
@@ -261,6 +301,14 @@ class HTTPClient(object):
         return creds
 
     def json_request(self, method, url, **kwargs):
+        """
+        Make an http request.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            url: (str): write your description
+        """
         kwargs.setdefault('headers', {})
         kwargs['headers'].setdefault('Content-Type', 'application/json')
         kwargs['headers'].setdefault('Accept', 'application/json')
@@ -273,31 +321,89 @@ class HTTPClient(object):
         return resp, body
 
     def raw_request(self, method, url, **kwargs):
+        """
+        Make an http request.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            url: (str): write your description
+        """
         kwargs.setdefault('headers', {})
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
         return self._http_request(url, method, **kwargs)
 
     def client_request(self, method, url, **kwargs):
+        """
+        Make an http request.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            url: (str): write your description
+        """
         resp, body = self.json_request(method, url, **kwargs)
         return resp
 
     def head(self, url, **kwargs):
+        """
+        Make a head request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+        """
         return self.client_request("HEAD", url, **kwargs)
 
     def get(self, url, **kwargs):
+        """
+        Make a get request.
+
+        Args:
+            self: (todo): write your description
+            url: (todo): write your description
+        """
         return self.client_request("GET", url, **kwargs)
 
     def post(self, url, **kwargs):
+        """
+        Make a post request.
+
+        Args:
+            self: (todo): write your description
+            url: (todo): write your description
+        """
         return self.client_request("POST", url, **kwargs)
 
     def put(self, url, **kwargs):
+        """
+        Sends a put request.
+
+        Args:
+            self: (todo): write your description
+            url: (todo): write your description
+        """
         return self.client_request("PUT", url, **kwargs)
 
     def delete(self, url, **kwargs):
+        """
+        Make a delete request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+        """
         return self.raw_request("DELETE", url, **kwargs)
 
     def patch(self, url, **kwargs):
+        """
+        Sends a patch request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+        """
         return self.client_request("PATCH", url, **kwargs)
 
 
@@ -305,6 +411,14 @@ class SessionClient(adapter.LegacyJsonAdapter):
     """HTTP client based on Keystone client session."""
 
     def request(self, url, method, **kwargs):
+        """
+        Make a http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            method: (str): write your description
+        """
         redirect = kwargs.get('redirect')
         kwargs.setdefault('user_agent', USER_AGENT)
 
@@ -332,9 +446,22 @@ class SessionClient(adapter.LegacyJsonAdapter):
         return resp
 
     def credentials_headers(self):
+        """
+        Return a dict of the http header.
+
+        Args:
+            self: (todo): write your description
+        """
         return {}
 
     def strip_endpoint(self, location):
+        """
+        Strip the endpoint.
+
+        Args:
+            self: (todo): write your description
+            location: (str): write your description
+        """
         if location is None:
             message = _("Location not returned with 302")
             raise exc.InvalidEndpoint(message=message)
@@ -348,6 +475,17 @@ class SessionClient(adapter.LegacyJsonAdapter):
 def _construct_http_client(endpoint=None, username=None, password=None,
                            include_pass=None, endpoint_type=None,
                            auth_url=None, **kwargs):
+    """
+    Create an http client.
+
+    Args:
+        endpoint: (str): write your description
+        username: (str): write your description
+        password: (str): write your description
+        include_pass: (bool): write your description
+        endpoint_type: (str): write your description
+        auth_url: (str): write your description
+    """
     session = kwargs.pop('session', None)
     auth = kwargs.pop('auth', None)
 

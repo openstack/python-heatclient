@@ -35,6 +35,12 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 class TestStack(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
+        """
+        Sets the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStack, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks
@@ -55,6 +61,12 @@ class TestStackCreate(TestStack):
     }
 
     def setUp(self):
+        """
+        Stores stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackCreate, self).setUp()
         self.cmd = stack.CreateStack(self.app, None)
         self.stack_client.create.return_value = {'stack': {'id': '1234'}}
@@ -65,6 +77,12 @@ class TestStackCreate(TestStack):
         stack._authenticated_fetcher = mock.MagicMock()
 
     def test_stack_create_defaults(self):
+        """
+        Create stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -73,6 +91,12 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**self.defaults)
 
     def test_stack_create_with_env(self):
+        """
+        Create a new stack. env
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '-e', self.env_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -83,6 +107,12 @@ class TestStackCreate(TestStack):
         self.assertIn(self.env_path, args.get('environment_files')[0])
 
     def test_stack_create_rollback(self):
+        """
+        Create a rollback of the stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--enable-rollback']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['disable_rollback'] = False
@@ -93,6 +123,12 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**kwargs)
 
     def test_stack_create_parameters(self):
+        """
+        Create stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         template_path = ('/'.join(self.template_path.split('/')[:-1]) +
                          '/parameters.yaml')
         arglist = ['my_stack', '-t', template_path, '--parameter', 'p1=a',
@@ -108,6 +144,12 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**kwargs)
 
     def test_stack_create_tags(self):
+        """
+        Create stack tags.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--tags', 'tag1,tag2']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['tags'] = 'tag1,tag2'
@@ -118,6 +160,12 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**kwargs)
 
     def test_stack_create_timeout(self):
+        """
+        Test stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--timeout', '60']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['timeout_mins'] = 60
@@ -128,6 +176,12 @@ class TestStackCreate(TestStack):
         self.stack_client.create.assert_called_with(**kwargs)
 
     def test_stack_create_pre_create(self):
+        """
+        Create stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--pre-create', 'a']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['environment'] = {
@@ -143,6 +197,13 @@ class TestStackCreate(TestStack):
                 return_value=('CREATE_COMPLETE',
                               'Stack my_stack CREATE_COMPLETE'))
     def test_stack_create_wait(self, mock_poll):
+        """
+        Create stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -158,6 +219,13 @@ class TestStackCreate(TestStack):
                 return_value=('CREATE_COMPLETE',
                               'Stack my_stack CREATE_COMPLETE'))
     def test_stack_create_wait_with_poll(self, mock_poll):
+        """
+        Create stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--wait',
                    '--poll', '10']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -174,12 +242,25 @@ class TestStackCreate(TestStack):
                 return_value=('CREATE_FAILED',
                               'Stack my_stack CREATE_FAILED'))
     def test_stack_create_wait_fail(self, mock_wait):
+        """
+        Create a stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_wait: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_stack_create_dry_run(self):
+        """
+        Create a stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--dry-run']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -204,6 +285,12 @@ class TestStackUpdate(TestStack):
     }
 
     def setUp(self):
+        """
+        Configure stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackUpdate, self).setUp()
         self.cmd = stack.UpdateStack(self.app, None)
         self.stack_client.update.return_value = {'stack': {'id': '1234'}}
@@ -217,6 +304,12 @@ class TestStackUpdate(TestStack):
             'stack_status': 'create_complete'}
 
     def test_stack_update_defaults(self):
+        """
+        Update stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -225,6 +318,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**self.defaults)
 
     def test_stack_update_with_env(self):
+        """
+        Update the stack with the current stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '-e', self.env_path]
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -235,6 +334,12 @@ class TestStackUpdate(TestStack):
         self.assertIn(self.env_path, args.get('environment_files')[0])
 
     def test_stack_update_rollback_enabled(self):
+        """
+        Update rollback stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--rollback',
                    'enabled']
         kwargs = copy.deepcopy(self.defaults)
@@ -246,6 +351,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_rollback_disabled(self):
+        """
+        Update rollback of rollback
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--rollback',
                    'disabled']
         kwargs = copy.deepcopy(self.defaults)
@@ -257,6 +368,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_rollback_keep(self):
+        """
+        Update the stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--rollback',
                    'keep']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -267,6 +384,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**self.defaults)
 
     def test_stack_update_rollback_invalid(self):
+        """
+        Update the stack back to the previous stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--rollback', 'foo']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['disable_rollback'] = False
@@ -277,6 +400,12 @@ class TestStackUpdate(TestStack):
         self.assertEqual("--rollback invalid value: foo", six.text_type(ex))
 
     def test_stack_update_parameters(self):
+        """
+        Update stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         template_path = ('/'.join(self.template_path.split('/')[:-1]) +
                          '/parameters.yaml')
         arglist = ['my_stack', '-t', template_path, '--parameter', 'p1=a',
@@ -292,6 +421,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_clear_parameters(self):
+        """
+        Update stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--clear-parameter',
                    'a']
         kwargs = copy.deepcopy(self.defaults)
@@ -303,6 +438,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_tags(self):
+        """
+        Update stack tags
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--tags', 'tag1,tag2']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['tags'] = 'tag1,tag2'
@@ -313,6 +454,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_timeout(self):
+        """
+        Update stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--timeout', '60']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['timeout_mins'] = 60
@@ -323,6 +470,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_converge(self):
+        """
+        Update stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--converge']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['converge'] = True
@@ -333,6 +486,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_pre_update(self):
+        """
+        Update stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--pre-update', 'a']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['environment'] = {
@@ -345,6 +504,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_existing(self):
+        """
+        Update stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--existing']
         kwargs = copy.deepcopy(self.defaults)
         kwargs['existing'] = True
@@ -355,6 +520,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_called_with(**kwargs)
 
     def test_stack_update_dry_run(self):
+        """
+        Update stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--dry-run']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -364,6 +535,12 @@ class TestStackUpdate(TestStack):
         self.stack_client.update.assert_not_called()
 
     def test_stack_update_dry_run_show_nested(self):
+        """
+        Update the stack of stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--dry-run',
                    '--show-nested']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -379,6 +556,14 @@ class TestStackUpdate(TestStack):
                               'Stack my_stack UPDATE_COMPLETE'))
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def test_stack_update_wait(self, ge, mock_poll):
+        """
+        Update stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.get.return_value = mock.MagicMock(
@@ -395,6 +580,14 @@ class TestStackUpdate(TestStack):
                               'Stack my_stack UPDATE_FAILED'))
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def test_stack_update_wait_fail(self, ge, mock_poll):
+        """
+        Update stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '-t', self.template_path, '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.stack_client.get.return_value = mock.MagicMock(
@@ -444,12 +637,24 @@ class TestStackShow(TestStack):
     }
 
     def setUp(self):
+        """
+        Set the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackShow, self).setUp()
         self.cmd = stack.ShowStack(self.app, None)
         self.stack_client.get.return_value = stacks.Stack(
             None, self.get_response)
 
     def test_stack_show(self):
+        """
+        Show stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--format', self.format, 'my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -459,6 +664,12 @@ class TestStackShow(TestStack):
         })
 
     def test_stack_show_explicit_no_resolve(self):
+        """
+        Show stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--no-resolve-outputs', '--format', self.format, 'my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -468,6 +679,12 @@ class TestStackShow(TestStack):
         })
 
     def test_stack_show_short(self):
+        """
+        Show stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         expected = ['id', 'stack_name', 'description', 'creation_time',
                     'updated_time', 'stack_status', 'stack_status_reason']
 
@@ -508,12 +725,24 @@ class TestStackList(TestStack):
     data_with_project['project'] = 'test_project'
 
     def setUp(self):
+        """
+        Set stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackList, self).setUp()
         self.cmd = stack.ListStack(self.app, None)
         self.stack_client.list.return_value = [stacks.Stack(None, self.data)]
         utils.get_dict_properties = mock.MagicMock(return_value='')
 
     def test_stack_list_defaults(self):
+        """
+        Test stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = []
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -523,6 +752,12 @@ class TestStackList(TestStack):
         self.assertEqual(self.columns, columns)
 
     def test_stack_list_nested(self):
+        """
+        Test stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = copy.deepcopy(self.defaults)
         kwargs['show_nested'] = True
         cols = copy.deepcopy(self.columns)
@@ -536,6 +771,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_deleted(self):
+        """
+        Test stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = copy.deepcopy(self.defaults)
         kwargs['show_deleted'] = True
         cols = copy.deepcopy(self.columns)
@@ -549,6 +790,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_all_projects(self):
+        """
+        Test stack stack stack stack stack stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack_client.list.return_value = [
             stacks.Stack(None, self.data_with_project)]
         kwargs = copy.deepcopy(self.defaults)
@@ -564,6 +811,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_with_project(self):
+        """
+        Test stack stack stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack_client.list.return_value = [
             stacks.Stack(None, self.data_with_project)]
         kwargs = copy.deepcopy(self.defaults)
@@ -578,6 +831,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_long(self):
+        """
+        Test stack long long stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack_client.list.return_value = [
             stacks.Stack(None, self.data_with_project)]
         kwargs = copy.deepcopy(self.defaults)
@@ -594,6 +853,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_short(self):
+        """
+        Test stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         cols = ['ID', 'Stack Name', 'Stack Status']
         arglist = ['--short']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -604,6 +869,12 @@ class TestStackList(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_list_sort(self):
+        """
+        Sort stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--sort', 'stack_name:desc,id']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -613,12 +884,24 @@ class TestStackList(TestStack):
         self.assertEqual(self.columns, columns)
 
     def test_stack_list_sort_invalid_key(self):
+        """
+        Sort stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--sort', 'bad_key']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_stack_list_tags(self):
+        """
+        Test stack tags.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = copy.deepcopy(self.defaults)
         kwargs['tags'] = 'tag1,tag2'
         arglist = ['--tags', 'tag1,tag2']
@@ -630,6 +913,12 @@ class TestStackList(TestStack):
         self.assertEqual(self.columns, columns)
 
     def test_stack_list_tags_mode(self):
+        """
+        Test stack stack stack mode.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs = copy.deepcopy(self.defaults)
         kwargs['not_tags'] = 'tag1,tag2'
         arglist = ['--tags', 'tag1,tag2', '--tag-mode', 'not']
@@ -641,6 +930,12 @@ class TestStackList(TestStack):
         self.assertEqual(self.columns, columns)
 
     def test_stack_list_tags_bad_mode(self):
+        """
+        Test stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['--tags', 'tag1,tag2', '--tag-mode', 'bad_mode']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -650,11 +945,23 @@ class TestStackList(TestStack):
 class TestStackDelete(TestStack):
 
     def setUp(self):
+        """
+        Set the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackDelete, self).setUp()
         self.cmd = stack.DeleteStack(self.app, None)
         self.stack_client.get.side_effect = heat_exc.HTTPNotFound
 
     def test_stack_delete(self):
+        """
+        Delete stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['stack1', 'stack2', 'stack3']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -665,6 +972,12 @@ class TestStackDelete(TestStack):
         self.stack_client.delete.assert_any_call('stack3')
 
     def test_stack_delete_not_found(self):
+        """
+        Delete stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.delete.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -672,6 +985,12 @@ class TestStackDelete(TestStack):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_stack_delete_forbidden(self):
+        """
+        Delete stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.delete.side_effect = heat_exc.Forbidden
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -679,6 +998,12 @@ class TestStackDelete(TestStack):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_stack_delete_one_found_one_not_found(self):
+        """
+        Delete one stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['stack1', 'stack2']
         self.stack_client.delete.side_effect = [None, heat_exc.HTTPNotFound]
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -695,6 +1020,14 @@ class TestStackDelete(TestStack):
                               'Stack my_stack DELETE_COMPLETE'))
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def test_stack_delete_wait(self, mock_get_event, mock_poll, ):
+        """
+        Handles stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_get_event: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['stack1', 'stack2', 'stack3', '--wait']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -705,6 +1038,14 @@ class TestStackDelete(TestStack):
     @mock.patch('heatclient.common.event_utils.poll_for_events')
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def test_stack_delete_wait_fail(self, mock_get_event, mock_poll):
+        """
+        Delete stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_get_event: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         mock_poll.side_effect = [['DELETE_COMPLETE',
                                   'Stack my_stack DELETE_COMPLETE'],
                                  ['DELETE_FAILED',
@@ -722,6 +1063,13 @@ class TestStackDelete(TestStack):
 
     @mock.patch('sys.stdin', spec=six.StringIO)
     def test_stack_delete_prompt(self, mock_stdin):
+        """
+        Delete the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_stdin: (todo): write your description
+        """
         arglist = ['my_stack']
         mock_stdin.isatty.return_value = True
         mock_stdin.readline.return_value = 'y'
@@ -734,6 +1082,13 @@ class TestStackDelete(TestStack):
 
     @mock.patch('sys.stdin', spec=six.StringIO)
     def test_stack_delete_prompt_no(self, mock_stdin):
+        """
+        Delete the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_stdin: (todo): write your description
+        """
         arglist = ['my_stack']
         mock_stdin.isatty.return_value = True
         mock_stdin.readline.return_value = 'n'
@@ -778,11 +1133,23 @@ class TestStackAdopt(TestStack):
     }
 
     def setUp(self):
+        """
+        Set the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackAdopt, self).setUp()
         self.cmd = stack.AdoptStack(self.app, None)
         self.stack_client.create.return_value = {'stack': {'id': '1234'}}
 
     def test_stack_adopt_defaults(self):
+        """
+        Test stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--adopt-file', self.adopt_file]
         cols = ['id', 'stack_name', 'description', 'creation_time',
                 'updated_time', 'stack_status', 'stack_status_reason']
@@ -794,6 +1161,12 @@ class TestStackAdopt(TestStack):
         self.assertEqual(cols, columns)
 
     def test_stack_adopt_enable_rollback(self):
+        """
+        Enable stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--adopt-file', self.adopt_file,
                    '--enable-rollback']
         kwargs = copy.deepcopy(self.defaults)
@@ -808,6 +1181,13 @@ class TestStackAdopt(TestStack):
                 return_value=('ADOPT_COMPLETE',
                               'Stack my_stack ADOPT_COMPLETE'))
     def test_stack_adopt_wait(self, mock_poll):
+        """
+        Wait for stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
         self.stack_client.get.return_value = stacks.Stack(
             None, {'stack_status': 'ADOPT_COMPLETE'})
@@ -823,6 +1203,13 @@ class TestStackAdopt(TestStack):
                 return_value=('ADOPT_FAILED',
                               'Stack my_stack ADOPT_FAILED'))
     def test_stack_adopt_wait_fail(self, mock_poll):
+        """
+        Wait for stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '--adopt-file', self.adopt_file, '--wait']
         self.stack_client.get.return_value = stacks.Stack(
             None, {'stack_status': 'ADOPT_FAILED'})
@@ -831,6 +1218,12 @@ class TestStackAdopt(TestStack):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
     def test_stack_adopt_with_adopt_files(self):
+        """
+        Test stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         # Make sure when we adopt with files in adopt script, we will load
         # those files as part of input when calling adopt.
         arglist = ['my_stack', '--adopt-file', self.adopt_with_files]
@@ -852,11 +1245,23 @@ class TestStackExport(TestStack):
     response = dict(zip(columns, data))
 
     def setUp(self):
+        """
+        Set the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackExport, self).setUp()
         self.cmd = stack.ExportStack(self.app, None)
         self.stack_client.export.return_value = self.response
 
     def test_stack_export(self):
+        """
+        Export stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -869,6 +1274,13 @@ class TestStackExport(TestStack):
 
     @mock.patch('heatclient.osc.v1.stack.open', create=True)
     def test_stack_export_output_file(self, mock_open):
+        """
+        Open stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_open: (todo): write your description
+        """
         arglist = ['my_stack', '--output-file', 'file.json']
         mock_open.return_value = mock.MagicMock(spec=io.IOBase)
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -888,11 +1300,23 @@ class TestStackAbandon(TestStack):
     response = dict(zip(columns, data))
 
     def setUp(self):
+        """
+        Set stack stackonbandon stack
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackAbandon, self).setUp()
         self.cmd = stack.AbandonStack(self.app, None)
         self.stack_client.abandon.return_value = self.response
 
     def test_stack_abandon(self):
+        """
+        Test stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -904,6 +1328,12 @@ class TestStackAbandon(TestStack):
             self.assertIn(datum, data)
 
     def test_stack_abandon_not_found(self):
+        """
+        Test for stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.abandon.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -912,6 +1342,13 @@ class TestStackAbandon(TestStack):
 
     @mock.patch('heatclient.osc.v1.stack.open', create=True)
     def test_stack_abandon_output_file(self, mock_open):
+        """
+        Abandon stack stack.
+
+        Args:
+            self: (todo): write your description
+            mock_open: (todo): write your description
+        """
         arglist = ['my_stack', '--output-file', 'file.json']
         mock_open.return_value = mock.MagicMock(spec=io.IOBase)
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -925,6 +1362,13 @@ class TestStackAbandon(TestStack):
     @mock.patch('heatclient.osc.v1.stack.open', create=True,
                 side_effect=IOError)
     def test_stack_abandon_output_file_error(self, mock_open):
+        """
+        Abandon stack stack - stack.
+
+        Args:
+            self: (todo): write your description
+            mock_open: (todo): write your description
+        """
         arglist = ['my_stack', '--output-file', 'file.json']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -945,11 +1389,23 @@ class TestStackOutputShow(TestStack):
     }
 
     def setUp(self):
+        """
+        Set the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackOutputShow, self).setUp()
         self.cmd = stack.OutputShowStack(self.app, None)
         self.stack_client.get.return_value = stacks.Stack(None, self.response)
 
     def test_stack_output_show_no_output(self):
+        """
+        Show stack stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -959,6 +1415,12 @@ class TestStackOutputShow(TestStack):
                          str(error))
 
     def test_stack_output_show_output_and_all(self):
+        """
+        Show stack stack stack stack output.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'output1', '--all']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -968,6 +1430,12 @@ class TestStackOutputShow(TestStack):
                          str(error))
 
     def test_stack_output_show_all(self):
+        """
+        Show stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--all']
         parsed_args = self.check_parser(self.cmd, arglist, [])
 
@@ -977,6 +1445,12 @@ class TestStackOutputShow(TestStack):
         self.assertEqual(['output1', 'output2'], columns)
 
     def test_stack_output_show_output(self):
+        """
+        Show stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'output1']
         self.stack_client.output_show.return_value = {
             'output': self.outputs[0]}
@@ -989,6 +1463,12 @@ class TestStackOutputShow(TestStack):
         self.assertEqual(('output1', 'value1'), outputs)
 
     def test_stack_output_show_not_found(self):
+        """
+        Show stack stack stack stack output.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--all']
         self.stack_client.get.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -998,6 +1478,12 @@ class TestStackOutputShow(TestStack):
         self.assertEqual('Stack not found: my_stack', str(error))
 
     def test_stack_output_show_output_error(self):
+        """
+        Show the stack stack stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'output2']
         self.stack_client.output_show.return_value = {
             'output': self.outputs[1]}
@@ -1009,6 +1495,12 @@ class TestStackOutputShow(TestStack):
         self.stack_client.output_show.assert_called_with('my_stack', 'output2')
 
     def test_stack_output_show_bad_output(self):
+        """
+        Show stack stack stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'output3']
         self.stack_client.output_show.side_effect = heat_exc.HTTPNotFound
         self.stack_client.get.side_effect = heat_exc.HTTPNotFound
@@ -1021,6 +1513,12 @@ class TestStackOutputShow(TestStack):
         self.stack_client.output_show.assert_called_with('my_stack', 'output3')
 
     def test_stack_output_show_old_api(self):
+        """
+        Show stack stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'output1']
         self.stack_client.output_show.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1042,12 +1540,24 @@ class TestStackOutputList(TestStack):
     }
 
     def setUp(self):
+        """
+        Set the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackOutputList, self).setUp()
         self.cmd = stack.OutputListStack(self.app, None)
         self.stack_client.get = mock.MagicMock(
             return_value=stacks.Stack(None, self.response))
 
     def test_stack_output_list(self):
+        """
+        Test stack stack stack output
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.output_list.return_value = self.response
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1058,6 +1568,12 @@ class TestStackOutputList(TestStack):
         self.stack_client.output_list.assert_called_with('my_stack')
 
     def test_stack_output_list_not_found(self):
+        """
+        Test stack stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.output_list.side_effect = heat_exc.HTTPNotFound
         self.stack_client.get.side_effect = heat_exc.HTTPNotFound
@@ -1068,6 +1584,12 @@ class TestStackOutputList(TestStack):
         self.assertEqual('Stack not found: my_stack', str(error))
 
     def test_stack_output_list_old_api(self):
+        """
+        List stack stack stack output.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.output_list.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1084,10 +1606,22 @@ class TestStackTemplateShow(TestStack):
               'parameters', 'resources', 'outputs']
 
     def setUp(self):
+        """
+        Sets the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackTemplateShow, self).setUp()
         self.cmd = stack.TemplateShowStack(self.app, None)
 
     def test_stack_template_show_full_template(self):
+        """
+        Show stack stack stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.template.return_value = yaml.load(
             inline_templates.FULL_TEMPLATE,
@@ -1100,6 +1634,12 @@ class TestStackTemplateShow(TestStack):
             self.assertIn(f, columns)
 
     def test_stack_template_show_short_template(self):
+        """
+        Show the stack stack
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.template.return_value = yaml.load(
             inline_templates.SHORT_TEMPLATE,
@@ -1112,6 +1652,12 @@ class TestStackTemplateShow(TestStack):
             self.assertIn(f, columns)
 
     def test_stack_template_show_not_found(self):
+        """
+        Show stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack']
         self.stack_client.template.side_effect = heat_exc.HTTPNotFound
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1133,12 +1679,28 @@ class _TestStackCheckBase(object):
                'Updated Time']
 
     def _setUp(self, cmd, action, action_name=None):
+        """
+        Set a command on command.
+
+        Args:
+            self: (todo): write your description
+            cmd: (str): write your description
+            action: (str): write your description
+            action_name: (str): write your description
+        """
         self.cmd = cmd
         self.action = action
         self.action_name = action_name
         self.mock_client.stacks.get.return_value = self.stack
 
     def _test_stack_action(self, get_call_count=1):
+        """
+        Test stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            get_call_count: (todo): write your description
+        """
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
@@ -1150,6 +1712,13 @@ class _TestStackCheckBase(object):
         self.assertEqual(1, len(rows))
 
     def _test_stack_action_multi(self, get_call_count=2):
+        """
+        Test stack stack stack stack - stack stack - up.
+
+        Args:
+            self: (todo): write your description
+            get_call_count: (todo): write your description
+        """
         arglist = ['my_stack1', 'my_stack2']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         columns, rows = self.cmd.take_action(parsed_args)
@@ -1164,6 +1733,14 @@ class _TestStackCheckBase(object):
     @mock.patch('heatclient.common.event_utils.poll_for_events')
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def _test_stack_action_wait(self, ge, mock_poll):
+        """
+        Test stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '--wait']
         mock_poll.return_value = (
             '%s_COMPLETE' % self.action_name,
@@ -1179,6 +1756,14 @@ class _TestStackCheckBase(object):
     @mock.patch('heatclient.common.event_utils.poll_for_events')
     @mock.patch('heatclient.common.event_utils.get_events', return_value=[])
     def _test_stack_action_wait_error(self, ge, mock_poll):
+        """
+        Test stack stack stack actions.
+
+        Args:
+            self: (todo): write your description
+            ge: (todo): write your description
+            mock_poll: (todo): write your description
+        """
         arglist = ['my_stack', '--wait']
         mock_poll.return_value = (
             '%s_FAILED' % self.action_name,
@@ -1192,6 +1777,12 @@ class _TestStackCheckBase(object):
                          str(error))
 
     def _test_stack_action_exception(self):
+        """
+        Test if the stack command.
+
+        Args:
+            self: (todo): write your description
+        """
         self.action.side_effect = heat_exc.HTTPNotFound
         arglist = ['my_stack']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1205,6 +1796,12 @@ class _TestStackCheckBase(object):
 class TestStackSuspend(_TestStackCheckBase, TestStack):
 
     def setUp(self):
+        """
+        Sets the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackSuspend, self).setUp()
         self._setUp(
             stack.SuspendStack(self.app, None),
@@ -1213,24 +1810,60 @@ class TestStackSuspend(_TestStackCheckBase, TestStack):
         )
 
     def test_stack_suspend(self):
+        """
+        Test if the test test stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action()
 
     def test_stack_suspend_multi(self):
+        """
+        Test stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_multi()
 
     def test_stack_suspend_wait(self):
+        """
+        Todo_stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait()
 
     def test_stack_suspend_wait_error(self):
+        """
+        Test if the current stack stacksusp.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait_error()
 
     def test_stack_suspend_exception(self):
+        """
+        Test if the stack traceback to call
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_exception()
 
 
 class TestStackResume(_TestStackCheckBase, TestStack):
 
     def setUp(self):
+        """
+        Set up the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackResume, self).setUp()
         self._setUp(
             stack.ResumeStack(self.app, None),
@@ -1239,18 +1872,48 @@ class TestStackResume(_TestStackCheckBase, TestStack):
         )
 
     def test_stack_resume(self):
+        """
+        Resume the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action()
 
     def test_stack_resume_multi(self):
+        """
+        Resume multiple stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_multi()
 
     def test_stack_resume_wait(self):
+        """
+        Resume the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait()
 
     def test_stack_resume_wait_error(self):
+        """
+        Resume the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait_error()
 
     def test_stack_resume_exception(self):
+        """
+        Resume the stack traceback.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_exception()
 
 
@@ -1265,6 +1928,12 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
     })
 
     def setUp(self):
+        """
+        Set the current stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackCancel, self).setUp()
         self._setUp(
             stack.CancelStack(self.app, None),
@@ -1275,9 +1944,22 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
             self.stack_update_in_progress)
 
     def test_stack_cancel(self):
+        """
+        Cancel the test stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action(2)
 
     def _test_stack_cancel_no_rollback(self, call_count):
+        """
+        Test for back - rollback stack.
+
+        Args:
+            self: (todo): write your description
+            call_count: (todo): write your description
+        """
         self.action = self.mock_client.actions.cancel_without_rollback
         arglist = ['my_stack', '--no-rollback']
         parsed_args = self.check_parser(self.cmd, arglist, [])
@@ -1290,21 +1972,57 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
         self.assertEqual(1, len(rows))
 
     def test_stack_cancel_no_rollback(self):
+        """
+        Cancel the rollback.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_cancel_no_rollback(2)
 
     def test_stack_cancel_multi(self):
+        """
+        Cancel multiple test stack stack actions.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_multi(4)
 
     def test_stack_cancel_wait(self):
+        """
+        Cancel the test stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait()
 
     def test_stack_cancel_wait_error(self):
+        """
+        Cancel the current stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait_error()
 
     def test_stack_cancel_exception(self):
+        """
+        Test if the stack trace.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_exception()
 
     def test_stack_cancel_unsupported_state(self):
+        """
+        Cancel stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack.stack_status = "CREATE_COMPLETE"
         self.mock_client.stacks.get.return_value = self.stack
         error = self.assertRaises(exc.CommandError,
@@ -1315,6 +2033,12 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
                          str(error))
 
     def test_stack_cancel_create_in_progress(self):
+        """
+        Cancel stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.stack.stack_status = "CREATE_IN_PROGRESS"
         self.mock_client.stacks.get.return_value = self.stack
         error = self.assertRaises(exc.CommandError,
@@ -1329,6 +2053,12 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
 class TestStackCheck(_TestStackCheckBase, TestStack):
 
     def setUp(self):
+        """
+        Sets the stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackCheck, self).setUp()
         self._setUp(
             stack.CheckStack(self.app, None),
@@ -1337,18 +2067,48 @@ class TestStackCheck(_TestStackCheckBase, TestStack):
         )
 
     def test_stack_check(self):
+        """
+        Check if the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action()
 
     def test_stack_check_multi(self):
+        """
+        Check if multiple stack stack stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_multi()
 
     def test_stack_check_wait(self):
+        """
+        Test if the test stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait()
 
     def test_stack_check_wait_error(self):
+        """
+        Check if the test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_wait_error()
 
     def test_stack_check_exception(self):
+        """
+        Check if the exception stack stack traceback.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_stack_action_exception()
 
 
@@ -1404,6 +2164,12 @@ class TestStackHookPoll(TestStack):
             )
 
     def setUp(self):
+        """
+        Set the stack of the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackHookPoll, self).setUp()
         self.cmd = stack.StackHookPoll(self.app, None)
         self.mock_client.stacks.get.return_value = self.stack
@@ -1411,6 +2177,12 @@ class TestStackHookPoll(TestStack):
         self.mock_client.resources.list.return_value = [self.resource]
 
     def test_hook_poll(self):
+        """
+        Poll the main loop.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_columns = ['Resource Name'] + self.columns
         expected_rows = [self.row1]
         arglist = ['my_stack']
@@ -1420,6 +2192,12 @@ class TestStackHookPoll(TestStack):
         self.assertEqual(expected_columns, columns)
 
     def test_hook_poll_nested(self):
+        """
+        Poll the main main main loop.
+
+        Args:
+            self: (todo): write your description
+        """
         expected_columns = ['Resource Name'] + self.columns + ['Stack Name']
         expected_rows = [self.row1 + ('my_stack',)]
         arglist = ['my_stack', '--nested-depth=10']
@@ -1429,6 +2207,12 @@ class TestStackHookPoll(TestStack):
         self.assertEqual(expected_columns, columns)
 
     def test_hook_poll_nested_invalid(self):
+        """
+        Run a command - command command is run.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', '--nested-depth=ugly']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
@@ -1449,12 +2233,24 @@ class TestStackHookClear(TestStack):
     })
 
     def setUp(self):
+        """
+        Set the stack stack stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestStackHookClear, self).setUp()
         self.cmd = stack.StackHookClear(self.app, None)
         self.mock_client.stacks.get.return_value = self.stack
         self.mock_client.resources.list.return_value = [self.resource]
 
     def test_hook_clear(self):
+        """
+        Clears the hook hooks.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'resource']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -1464,6 +2260,12 @@ class TestStackHookClear(TestStack):
             stack_id='my_stack')
 
     def test_hook_clear_pre_create(self):
+        """
+        Clear hook pre - pre - hook hook.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'resource', '--pre-create']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -1473,6 +2275,12 @@ class TestStackHookClear(TestStack):
             stack_id='my_stack')
 
     def test_hook_clear_pre_update(self):
+        """
+        Clears pre - hook
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'resource', '--pre-update']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -1482,6 +2290,12 @@ class TestStackHookClear(TestStack):
             stack_id='my_stack')
 
     def test_hook_clear_pre_delete(self):
+        """
+        Clear pre - hook hook pre - pre - pre - hook hook.
+
+        Args:
+            self: (todo): write your description
+        """
         arglist = ['my_stack', 'resource', '--pre-delete']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
@@ -1500,10 +2314,22 @@ class TestEnvironmentStackShow(TestStack):
     }
 
     def setUp(self):
+        """
+        Sets the application stack.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestEnvironmentStackShow, self).setUp()
         self.cmd = stack.EnvironmentShowStack(self.app, None)
 
     def test_stack_environment_show(self):
+        """
+        Show environment environment environment stack
+
+        Args:
+            self: (todo): write your description
+        """
         # Test
         columns, outputs = self._test_stack_environment_show(self.SAMPLE_ENV)
 
@@ -1512,6 +2338,12 @@ class TestEnvironmentStackShow(TestStack):
                           {'p1': 'v_default'}], outputs)
 
     def test_stack_environment_show_no_parameters(self):
+        """
+        Show the environment environment environment environment.
+
+        Args:
+            self: (todo): write your description
+        """
         # Setup
         sample_env = copy.deepcopy(self.SAMPLE_ENV)
         sample_env['parameters'] = {}
@@ -1524,6 +2356,12 @@ class TestEnvironmentStackShow(TestStack):
                           {'p1': 'v_default'}], outputs)
 
     def test_stack_environment_show_no_registry(self):
+        """
+        : return : py : meth.
+
+        Args:
+            self: (todo): write your description
+        """
         # Setup
         sample_env = copy.deepcopy(self.SAMPLE_ENV)
         sample_env['resource_registry'] = {'resources': {}}
@@ -1536,6 +2374,12 @@ class TestEnvironmentStackShow(TestStack):
                           {'p1': 'v_default'}], outputs)
 
     def test_stack_environment_show_no_param_defaults(self):
+        """
+        Show the environment environment environment environment environment environment.
+
+        Args:
+            self: (todo): write your description
+        """
         # Setup
         sample_env = copy.deepcopy(self.SAMPLE_ENV)
         sample_env['parameter_defaults'] = {}
@@ -1548,6 +2392,13 @@ class TestEnvironmentStackShow(TestStack):
                          outputs)
 
     def _test_stack_environment_show(self, env):
+        """
+        Test stack stack stack stack.
+
+        Args:
+            self: (todo): write your description
+            env: (todo): write your description
+        """
         self.stack_client.environment = mock.MagicMock(
             return_value=env
         )

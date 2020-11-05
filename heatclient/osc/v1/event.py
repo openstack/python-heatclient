@@ -31,6 +31,13 @@ class ShowEvent(command.ShowOne):
     log = logging.getLogger(__name__ + '.ShowEvent')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command line.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowEvent, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -51,6 +58,13 @@ class ShowEvent(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action and returns a dict of actions.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -88,13 +102,32 @@ class ListEvent(command.Lister):
 
     @property
     def formatter_default(self):
+        """
+        Return the default formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'log'
 
     @property
     def formatter_namespace(self):
+        """
+        Formats the namespace.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'heatclient.event.formatter.list'
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListEvent, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -152,6 +185,13 @@ class ListEvent(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a single action and call.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -243,8 +283,25 @@ class LogFormatter(base.ListFormatter):
     """A formatter which prints event objects in a log style"""
 
     def add_argument_group(self, parser):
+        """
+        Add an argparse argument group.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         pass
 
     def emit_list(self, column_names, data, stdout, parsed_args):
+        """
+        Emit a list of events.
+
+        Args:
+            self: (todo): write your description
+            column_names: (str): write your description
+            data: (list): write your description
+            stdout: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         stdout.write(heat_utils.event_log_formatter(data))
         stdout.write('\n')

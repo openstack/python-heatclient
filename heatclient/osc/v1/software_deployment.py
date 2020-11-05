@@ -33,6 +33,13 @@ class CreateDeployment(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + '.CreateDeployment')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for this script.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(CreateDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'name',
@@ -96,6 +103,13 @@ class CreateDeployment(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -136,6 +150,13 @@ class DeleteDeployment(command.Command):
     log = logging.getLogger(__name__ + '.DeleteDeployment')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for this parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(DeleteDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'deployment',
@@ -146,6 +167,13 @@ class DeleteDeployment(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         hc = self.app.client_manager.orchestration
         failure_count = 0
@@ -185,6 +213,13 @@ class ListDeployment(command.Lister):
     log = logging.getLogger(__name__ + '.ListDeployment')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListDeployment, self).get_parser(prog_name)
         parser.add_argument(
             '--server',
@@ -199,6 +234,13 @@ class ListDeployment(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -206,6 +248,12 @@ class ListDeployment(command.Lister):
 
 
 def _list_deployment(heat_client, args=None):
+    """
+    List deployments.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     kwargs = {'server_id': args.server} if args.server else {}
     columns = ['id', 'config_id', 'server_id', 'action', 'status']
     if args.long:
@@ -225,6 +273,13 @@ class ShowDeployment(command.ShowOne):
     log = logging.getLogger(__name__ + ".ShowSoftwareDeployment")
 
     def get_parser(self, prog_name):
+        """
+        Creates the argument parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'deployment',
@@ -239,6 +294,13 @@ class ShowDeployment(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action and return action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -272,6 +334,13 @@ class ShowMetadataDeployment(command.Command):
     log = logging.getLogger(__name__ + '.ShowMetadataDeployment')
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser object for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowMetadataDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'server',
@@ -281,6 +350,13 @@ class ShowMetadataDeployment(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
         heat_client = self.app.client_manager.orchestration
         md = heat_client.software_deployments.metadata(
@@ -294,6 +370,13 @@ class ShowOutputDeployment(command.Command):
     log = logging.getLogger(__name__ + '.ShowOutputDeployment')
 
     def get_parser(self, prog_name):
+        """
+        Create an argparse.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowOutputDeployment, self).get_parser(prog_name)
         parser.add_argument(
             'deployment',
@@ -322,6 +405,13 @@ class ShowOutputDeployment(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a specific action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration

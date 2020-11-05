@@ -14,6 +14,12 @@ from oslo_utils import importutils
 
 
 def Client(version, *args, **kwargs):
+    """
+    Construct a client class.
+
+    Args:
+        version: (tuple): write your description
+    """
     module = importutils.import_versioned_module('heatclient',
                                                  version, 'client')
     client_class = getattr(module, 'Client')

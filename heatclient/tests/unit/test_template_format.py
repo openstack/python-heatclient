@@ -33,6 +33,12 @@ class YamlParseExceptions(testtools.TestCase):
     ]
 
     def test_parse_to_value_exception(self):
+        """
+        Parse a yaml document.
+
+        Args:
+            self: (todo): write your description
+        """
         text = 'not important'
 
         with mock.patch.object(yaml, 'load') as yaml_loader:
@@ -42,6 +48,12 @@ class YamlParseExceptions(testtools.TestCase):
                               template_format.parse, text)
 
     def test_parse_no_version_format(self):
+        """
+        : param yaml format : py : func : test_parse.
+
+        Args:
+            self: (todo): write your description
+        """
         yaml = ''
         self.assertRaises(ValueError, template_format.parse, yaml)
         yaml2 = '''Parameters: {}
@@ -55,6 +67,12 @@ Outputs: {}
 class DetailedYAMLParseExceptions(testtools.TestCase):
 
     def test_parse_to_value_exception(self):
+        """
+        Convert the test value to the test.
+
+        Args:
+            self: (todo): write your description
+        """
         yaml = """not important
 but very:
   - incorrect

@@ -21,6 +21,15 @@ import six
 class RawFormat(command.ShowOne):
 
     def produce_output(self, parsed_args, column_names, data):
+        """
+        Emits the output.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+            column_names: (list): write your description
+            data: (array): write your description
+        """
         if data is None:
             return
 
@@ -32,6 +41,12 @@ class JsonFormat(RawFormat):
 
     @property
     def formatter_default(self):
+        """
+        Return the default formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'json'
 
 
@@ -39,6 +54,12 @@ class YamlFormat(RawFormat):
 
     @property
     def formatter_default(self):
+        """
+        Return the default formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'yaml'
 
 
@@ -46,6 +67,12 @@ class ShellFormat(RawFormat):
 
     @property
     def formatter_default(self):
+        """
+        Return the default formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'shell'
 
 
@@ -53,6 +80,12 @@ class ValueFormat(RawFormat):
 
     @property
     def formatter_default(self):
+        """
+        Return the default formatter.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'value'
 
 

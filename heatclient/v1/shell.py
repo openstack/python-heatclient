@@ -36,6 +36,13 @@ logger = logging.getLogger(__name__)
 
 
 def show_deprecated(deprecated, recommended):
+    """
+    Show deprecated deprecated deprecated deprecated.
+
+    Args:
+        deprecated: (bool): write your description
+        recommended: (todo): write your description
+    """
     logger.warning('"%(old)s" is deprecated, '
                    'please use "%(new)s" instead',
                    {'old': deprecated,
@@ -745,6 +752,12 @@ def do_output_show(hc, args):  # noqa: C901
     show_deprecated('heat output-show', 'openstack stack output show')
 
     def resolve_output(output_key):
+        """
+        Resolve the output.
+
+        Args:
+            output_key: (str): write your description
+        """
         try:
             output = hc.stacks.output_show(args.id, output_key)
         except exc.HTTPNotFound:
@@ -766,6 +779,12 @@ def do_output_show(hc, args):  # noqa: C901
         return output
 
     def show_output(output):
+        """
+        Show the output of the command.
+
+        Args:
+            output: (str): write your description
+        """
         if 'output_error' in output['output']:
             msg = _("Output error: %s") % output['output']['output_error']
             raise exc.CommandError(msg)
@@ -1745,6 +1764,13 @@ def do_template_function_list(hc, args):
 
 
 def _do_stack_show(hc, fields):
+    """
+    Pretty print information
+
+    Args:
+        hc: (array): write your description
+        fields: (list): write your description
+    """
     try:
         stack = hc.stacks.get(**fields)
     except exc.HTTPNotFound:

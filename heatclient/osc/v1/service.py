@@ -25,10 +25,24 @@ class ListService(command.Lister):
     log = logging.getLogger(__name__ + ".ListService")
 
     def get_parser(self, prog_name):
+        """
+        Returns a parser for the given service.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListService, self).get_parser(prog_name)
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration

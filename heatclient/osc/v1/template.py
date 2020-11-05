@@ -32,6 +32,13 @@ class VersionList(command.Lister):
     log = logging.getLogger(__name__ + '.VersionList')
 
     def take_action(self, parsed_args):
+        """
+        Take a dictionary of an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -41,6 +48,12 @@ class VersionList(command.Lister):
             versions[1].aliases
 
             def format_alias(aliases):
+                """
+                Format the alias.
+
+                Args:
+                    aliases: (list): write your description
+                """
                 return ','.join(aliases)
 
             fields = ['Version', 'Type', 'Aliases']
@@ -62,6 +75,13 @@ class FunctionList(command.Lister):
     log = logging.getLogger(__name__ + '.FunctionList')
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(FunctionList, self).get_parser(prog_name)
         parser.add_argument(
             'template_version',
@@ -78,6 +98,13 @@ class FunctionList(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
 
         client = self.app.client_manager.orchestration
@@ -103,6 +130,13 @@ class Validate(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".Validate")
 
     def get_parser(self, prog_name):
+        """
+        Creates a parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(Validate, self).get_parser(prog_name)
         parser.add_argument(
             '-e', '--environment',
@@ -143,6 +177,13 @@ class Validate(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take an action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug("take_action(%s)", parsed_args)
 
         heat_client = self.app.client_manager.orchestration
@@ -150,6 +191,12 @@ class Validate(format_utils.YamlFormat):
 
 
 def _validate(heat_client, args):
+    """
+    Validate template.
+
+    Args:
+        heat_client: (todo): write your description
+    """
     tpl_files, template = template_utils.process_template_path(
         args.template,
         object_request=http.authenticated_fetcher(heat_client),

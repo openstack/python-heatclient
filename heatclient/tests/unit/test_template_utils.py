@@ -32,10 +32,25 @@ class ShellEnvironmentTest(testtools.TestCase):
     template_a = b'{"heat_template_version": "2013-05-23"}'
 
     def collect_links(self, env, content, url, env_base_url=''):
+        """
+        Collect links. link links.
+
+        Args:
+            self: (todo): write your description
+            env: (todo): write your description
+            content: (str): write your description
+            url: (str): write your description
+            env_base_url: (str): write your description
+        """
         jenv = yaml.safe_load(env)
         files = {}
         if url:
             def side_effect(args):
+                """
+                Return the effect effect of the effect.
+
+                Args:
+                """
                 if url == args:
                     return six.BytesIO(content)
             with mock.patch('six.moves.urllib.request.urlopen') as mock_url:
@@ -49,6 +64,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_ignore_env_keys(self, mock_url):
+        """
+        Returns a dictionary of environment keys for the environment.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         env_file = '/home/my/dir/env.yaml'
         env = b'''
         resource_registry:
@@ -69,6 +91,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_file(self, mock_url):
+        """
+        Runs the environment.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file = '/home/my/dir/env.yaml'
         env = b'''
@@ -94,6 +123,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_relative_file(self, mock_url):
+        """
+        Test the environment file.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
@@ -128,6 +164,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         ])
 
     def test_process_multiple_environment_files_container(self):
+        """
+        Test for process files in process.
+
+        Args:
+            self: (todo): write your description
+        """
 
         env_list_tracker = []
         env_paths = ['/home/my/dir/env.yaml']
@@ -141,6 +183,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_relative_file_up(self, mock_url):
+        """
+        Runs the environment environment environment for the environment.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
@@ -176,6 +225,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_url(self, mock_url):
+        """
+        Generate environment environment.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         env = b'''
         resource_registry:
             "OS::Thingy": "a.yaml"
@@ -199,6 +255,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_empty_file(self, mock_url):
+        """
+        Returns a dictionary of the empty environment.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file = '/home/my/dir/env.yaml'
         env = b''
@@ -212,12 +275,25 @@ class ShellEnvironmentTest(testtools.TestCase):
         mock_url.assert_called_with('file://%s' % env_file)
 
     def test_no_process_environment_and_files(self):
+        """
+        Runs the environment files in - place.
+
+        Args:
+            self: (todo): write your description
+        """
         files, env = template_utils.process_environment_and_files()
         self.assertEqual({}, env)
         self.assertEqual({}, files)
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_multiple_environments_and_files(self, mock_url):
+        """
+        Test for environments of the mock files.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file1 = '/home/my/dir/env1.yaml'
         env_file2 = '/home/my/dir/env2.yaml'
@@ -269,6 +345,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_multiple_environments_default_resources(self, mock_url):
+        """
+        Generate multiple resources.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file1 = '/home/my/dir/env1.yaml'
         env_file2 = '/home/my/dir/env2.yaml'
@@ -337,11 +420,23 @@ class ShellEnvironmentTest(testtools.TestCase):
         ], any_order=True)
 
     def test_no_process_multiple_environments_and_files(self):
+        """
+        Test for process files and process process files.
+
+        Args:
+            self: (todo): write your description
+        """
         files, env = template_utils.process_multiple_environments_and_files()
         self.assertEqual({}, env)
         self.assertEqual({}, files)
 
     def test_process_multiple_environments_and_files_from_object(self):
+        """
+        Test for files and directories.
+
+        Args:
+            self: (todo): write your description
+        """
 
         env_object = 'http://no.where/path/to/env.yaml'
         env1 = b'''
@@ -354,9 +449,22 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.object_requested = False
 
         def env_path_is_object(object_url):
+            """
+            Return true if object is an object path object.
+
+            Args:
+                object_url: (str): write your description
+            """
             return True
 
         def object_request(method, object_url):
+            """
+            Decorator for an object.
+
+            Args:
+                method: (str): write your description
+                object_url: (str): write your description
+            """
             self.object_requested = True
             self.assertEqual('GET', method)
             self.assertTrue(object_url.startswith("http://no.where/path/to/"))
@@ -380,6 +488,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_multiple_environments_and_files_tracker(self, mock_url):
+        """
+        Generate multiple files and files.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         # Setup
         env_file1 = '/home/my/dir/env1.yaml'
 
@@ -421,6 +536,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_environment_relative_file_tracker(self, mock_url):
+        """
+        Generate a wsgi.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
@@ -462,6 +584,13 @@ class ShellEnvironmentTest(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_process_multiple_environments_empty_registry(self, mock_url):
+        """
+        Test if the mock files.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         # Setup
         env_file1 = '/home/my/dir/env1.yaml'
         env_file2 = '/home/my/dir/env2.yaml'
@@ -506,6 +635,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         ])
 
     def test_global_files(self):
+        """
+        Collect all files in the test files
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'file:///home/b/a.yaml'
         env = '''
         resource_registry:
@@ -514,6 +649,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url)
 
     def test_nested_files(self):
+        """
+        Collect all the files that have a list of the test.
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'file:///home/b/a.yaml'
         env = '''
         resource_registry:
@@ -524,6 +665,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url)
 
     def test_http_url(self):
+        """
+        Collect the test url.
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'http://no.where/container/a.yaml'
         env = '''
         resource_registry:
@@ -532,6 +679,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url)
 
     def test_with_base_url(self):
+        """
+        Add the test links to the page.
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'ftp://no.where/container/a.yaml'
         env = '''
         resource_registry:
@@ -543,6 +696,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url)
 
     def test_with_built_in_provider(self):
+        """
+        Test for built - in - builtin links
+
+        Args:
+            self: (todo): write your description
+        """
         env = '''
         resource_registry:
           resources:
@@ -552,6 +711,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, None)
 
     def test_with_env_file_base_url_file(self):
+        """
+        Collects the test files. git file.
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'file:///tmp/foo/a.yaml'
         env = '''
         resource_registry:
@@ -563,6 +728,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url, env_base_url)
 
     def test_with_env_file_base_url_http(self):
+        """
+        Add a file with_with_env.
+
+        Args:
+            self: (todo): write your description
+        """
         url = 'http://no.where/path/to/a.yaml'
         env = '''
         resource_registry:
@@ -574,6 +745,12 @@ class ShellEnvironmentTest(testtools.TestCase):
         self.collect_links(env, self.template_a, url, env_base_url)
 
     def test_unsupported_protocol(self):
+        """
+        Test for unsupported unsupported.
+
+        Args:
+            self: (todo): write your description
+        """
         env = '''
         resource_registry:
           "OS::Thingy": "sftp://no.where/dev/null/a.yaml"
@@ -589,6 +766,12 @@ class ShellEnvironmentTest(testtools.TestCase):
 class TestGetTemplateContents(testtools.TestCase):
 
     def test_get_template_contents_file(self):
+        """
+        Get the contents of a template file.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.NamedTemporaryFile() as tmpl_file:
             tmpl = (b'{"AWSTemplateFormatVersion" : "2010-09-09",'
                     b' "foo": "bar"}')
@@ -602,6 +785,12 @@ class TestGetTemplateContents(testtools.TestCase):
             self.assertEqual({}, files)
 
     def test_get_template_contents_file_empty(self):
+        """
+        Get the contents of a template file.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.NamedTemporaryFile() as tmpl_file:
 
             ex = self.assertRaises(
@@ -613,6 +802,12 @@ class TestGetTemplateContents(testtools.TestCase):
                 str(ex))
 
     def test_get_template_file_nonextant(self):
+        """
+        Get the template file for the template file.
+
+        Args:
+            self: (todo): write your description
+        """
         nonextant_file = '/template/dummy/file/path/and/name.yaml'
         ex = self.assertRaises(
             error.URLError,
@@ -624,6 +819,12 @@ class TestGetTemplateContents(testtools.TestCase):
             str(ex))
 
     def test_get_template_contents_file_none(self):
+        """
+        Check if the contents of the template file.
+
+        Args:
+            self: (todo): write your description
+        """
         ex = self.assertRaises(
             exc.CommandError,
             template_utils.get_template_contents)
@@ -633,12 +834,24 @@ class TestGetTemplateContents(testtools.TestCase):
             str(ex))
 
     def test_get_template_contents_file_none_existing(self):
+        """
+        Ensures that the template file exists in the template.
+
+        Args:
+            self: (todo): write your description
+        """
         files, tmpl_parsed = template_utils.get_template_contents(
             existing=True)
         self.assertIsNone(tmpl_parsed)
         self.assertEqual({}, files)
 
     def test_get_template_contents_parse_error(self):
+        """
+        Get the contents of the template file as a string.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.NamedTemporaryFile() as tmpl_file:
 
             tmpl = b'{"foo": "bar"'
@@ -656,6 +869,13 @@ class TestGetTemplateContents(testtools.TestCase):
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_get_template_contents_url(self, mock_url):
+        """
+        Returns the url of the template.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         tmpl = b'{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
         mock_url.return_value = six.BytesIO(tmpl)
@@ -668,12 +888,25 @@ class TestGetTemplateContents(testtools.TestCase):
         mock_url.assert_called_with(url)
 
     def test_get_template_contents_object(self):
+        """
+        Return the contents of this object as a string.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl = '{"AWSTemplateFormatVersion" : "2010-09-09", "foo": "bar"}'
         url = 'http://no.where/path/to/a.yaml'
 
         self.object_requested = False
 
         def object_request(method, object_url):
+            """
+            Decorator for the given request.
+
+            Args:
+                method: (str): write your description
+                object_url: (str): write your description
+            """
             self.object_requested = True
             self.assertEqual('GET', method)
             self.assertEqual('http://no.where/path/to/a.yaml', object_url)
@@ -689,6 +922,12 @@ class TestGetTemplateContents(testtools.TestCase):
         self.assertTrue(self.object_requested)
 
     def test_get_nested_stack_template_contents_object(self):
+        """
+        Get the contents of the object as a string.
+
+        Args:
+            self: (todo): write your description
+        """
         tmpl = ('{"heat_template_version": "2016-04-08",'
                 '"resources": {'
                 '"FooBar": {'
@@ -698,6 +937,13 @@ class TestGetTemplateContents(testtools.TestCase):
         self.object_requested = False
 
         def object_request(method, object_url):
+            """
+            Determine request.
+
+            Args:
+                method: (str): write your description
+                object_url: (str): write your description
+            """
             self.object_requested = True
             self.assertEqual('GET', method)
             self.assertTrue(object_url.startswith("http://no.where/path/to/"))
@@ -715,6 +961,14 @@ class TestGetTemplateContents(testtools.TestCase):
         self.assertTrue(self.object_requested)
 
     def check_non_utf8_content(self, filename, content):
+        """
+        Check the content of url.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            content: (str): write your description
+        """
         base_url = 'file:///tmp'
         url = '%s/%s' % (base_url, filename)
         template = {'resources':
@@ -737,6 +991,12 @@ class TestGetTemplateContents(testtools.TestCase):
             mock_url.assert_called_with(url)
 
     def test_get_zip_content(self):
+        """
+        Get the content of the zip file.
+
+        Args:
+            self: (todo): write your description
+        """
         filename = 'heat.zip'
         content = b'''\
 UEsDBAoAAAAAAEZZWkRbOAuBBQAAAAUAAAAIABwAaGVhdC50eHRVVAkAAxRbDVNYh\
@@ -757,6 +1017,12 @@ ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
             filename=filename, content=content)
 
     def test_get_utf16_content(self):
+        """
+        Gets the content of the content.
+
+        Args:
+            self: (todo): write your description
+        """
         filename = 'heat.utf16'
         content = b'//4tTkhTCgA=\n'
         # utf6 has '\0' in stream
@@ -772,6 +1038,12 @@ ABOkDAABQSwUGAAAAAAEAAQBOAAAARwAAAAAA\n'''
         self.check_non_utf8_content(filename=filename, content=content)
 
     def test_get_gb18030_content(self):
+        """
+        Gets the rgb content.
+
+        Args:
+            self: (todo): write your description
+        """
         filename = 'heat.gb18030'
         content = b'1tDO5wo=\n'
         # gb18030 has no '\0' in stream
@@ -812,6 +1084,13 @@ resources:
     '''
 
     def test_hot_template(self, mock_url):
+        """
+        Create a hot_template template.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
 
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
@@ -860,6 +1139,13 @@ resources:
         ], any_order=True)
 
     def test_hot_template_outputs(self, mock_url):
+        """
+        Test for hot -_template_output.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
         foo_url = 'file:///home/my/dir/foo.yaml'
@@ -880,6 +1166,13 @@ outputs:\n\
         ])
 
     def test_hot_template_same_file(self, mock_url):
+        """
+        Downloads the hot hot hot_url with the template.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file://%s' % tmpl_file
         foo_url = 'file:///home/my/dir/foo.yaml'
@@ -937,10 +1230,22 @@ parameters:
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_hot_template(self, mock_url):
+        """
+        Test for yaml template
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
 
         def side_effect(args):
+            """
+            The side effect for a side.
+
+            Args:
+            """
             if url == args:
                 return six.BytesIO(self.hot_template)
             if 'file:///home/my/dir/foo.yaml' == args:
@@ -1015,12 +1320,24 @@ parameters:
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_hot_template(self, mock_url):
+        """
+        Test for yaml template.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         tmpl_file = '/home/my/dir/template.yaml'
         url = 'file:///home/my/dir/template.yaml'
         foo_url = 'file:///home/my/dir/foo.yaml'
         bar_url = 'file:///home/my/dir/bar.yaml'
 
         def side_effect(args):
+            """
+            Parameters ---------- effect.
+
+            Args:
+            """
             if url == args:
                 return six.BytesIO(self.hot_template)
             if foo_url == args:
@@ -1114,6 +1431,13 @@ parameters:
 
     @mock.patch('six.moves.urllib.request.urlopen')
     def test_env_nested_includes(self, mock_url):
+        """
+        Test if the environment contains the environment variables.
+
+        Args:
+            self: (todo): write your description
+            mock_url: (todo): write your description
+        """
         env_file = '/home/my/dir/env.yaml'
         env_url = 'file:///home/my/dir/env.yaml'
         env = b'''
@@ -1129,6 +1453,11 @@ parameters:
         three_url = u'file:///home/my/dir/spam/three.yaml'
 
         def side_effect(args):
+            """
+            Return the effect.
+
+            Args:
+            """
             if env_url == args:
                 return six.BytesIO(env)
             if template_url == args:

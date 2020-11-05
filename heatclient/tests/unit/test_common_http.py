@@ -30,6 +30,13 @@ from heatclient.tests.unit import fakes
 class HttpClientTest(testtools.TestCase):
 
     def test_http_raw_request(self, mock_request):
+        """
+        Make a raw http request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         headers = {'Content-Type': 'application/octet-stream',
                    'User-Agent': 'python-heatclient'}
 
@@ -48,6 +55,13 @@ class HttpClientTest(testtools.TestCase):
                                         headers=headers)
 
     def test_token_or_credentials(self, mock_request):
+        """
+        Authenticate using oauth 2. 0 credentials.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -87,6 +101,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_include_pass(self, mock_request):
+        """
+        Authenticates a user with authentication
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -128,6 +149,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_not_include_pass(self, mock_request):
+        """
+        Test if the http request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         fake500 = fakes.FakeHTTPResponse(
             500, 'ERROR',
@@ -149,6 +177,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_region_name(self, mock_request):
+        """
+        Get the region name. region name.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         fake200 = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -171,6 +206,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_json_request(self, mock_request):
+        """
+        Make a json request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         mock_request.return_value = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -216,6 +258,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_json_request_w_req_body(self, mock_request):
+        """
+        Return json - json - rpc request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         mock_request.return_value = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -234,6 +283,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_json_request_non_json_resp_cont_type(self, mock_request):
+        """
+        Makes a json - rpc request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200i
         mock_request.return_value = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -253,6 +309,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_json_request_invalid_json(self, mock_request):
+        """
+        Make a json - rpc request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 200
         mock_request.return_value = fakes.FakeHTTPResponse(
             200, 'OK',
@@ -272,6 +335,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_manual_redirect_delete(self, mock_request):
+        """
+        Delete redirect redirect to redirect to the redirect url.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
@@ -300,6 +370,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_http_manual_redirect_post(self, mock_request):
+        """
+        Manage the redirect redirect redirect redirect to the user.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
@@ -328,6 +405,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_http_manual_redirect_put(self, mock_request):
+        """
+        Manage redirect to redirect to the redirect.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
@@ -356,6 +440,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_http_manual_redirect_put_uppercase(self, mock_request):
+        """
+        Manage redirect redirect to the redirect redirect redirect url.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.side_effect = [
             fakes.FakeHTTPResponse(
                 302, 'Found',
@@ -384,6 +475,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_http_manual_redirect_error_without_location(self, mock_request):
+        """
+        Redirect to the redirect redirect to the redirect to the redirect to a redirect redirect to.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.return_value = fakes.FakeHTTPResponse(
             302, 'Found',
             {},
@@ -399,6 +497,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_json_request_redirect(self, mock_request):
+        """
+        Perform a http request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record the 302
         mock_request.side_effect = [
             fakes.FakeHTTPResponse(
@@ -428,6 +533,13 @@ class HttpClientTest(testtools.TestCase):
         ])
 
     def test_http_404_json_request(self, mock_request):
+        """
+        Make a json request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 404
         mock_request.return_value = fakes.FakeHTTPResponse(
             404, 'OK', {'content-type': 'application/json'},
@@ -444,6 +556,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_http_300_json_request(self, mock_request):
+        """
+        Make a json - rpc request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         # Record a 300
         mock_request.return_value = fakes.FakeHTTPResponse(
             300, 'OK', {'content-type': 'application/json'},
@@ -461,6 +580,13 @@ class HttpClientTest(testtools.TestCase):
                      'User-Agent': 'python-heatclient'})
 
     def test_fake_json_request(self, mock_request):
+        """
+        Perform a json request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         headers = {'User-Agent': 'python-heatclient'}
         mock_request.side_effect = [socket.gaierror]
         client = http.HTTPClient('fake://example.com:8004')
@@ -472,6 +598,13 @@ class HttpClientTest(testtools.TestCase):
                                         headers=headers)
 
     def test_debug_curl_command(self, mock_request):
+        """
+        Send debug command.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         with mock.patch('logging.Logger.debug') as mock_logging_debug:
 
             ssl_connection_params = {'ca_file': 'TEST_CA',
@@ -492,6 +625,13 @@ class HttpClientTest(testtools.TestCase):
             )
 
     def test_http_request_socket_error(self, mock_request):
+        """
+        Test for http socket socket.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         headers = {'User-Agent': 'python-heatclient'}
         mock_request.side_effect = [socket.error]
 
@@ -503,6 +643,13 @@ class HttpClientTest(testtools.TestCase):
                                         headers=headers)
 
     def test_http_request_socket_timeout(self, mock_request):
+        """
+        Test for http request.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         headers = {'User-Agent': 'python-heatclient'}
         mock_request.side_effect = [socket.timeout]
 
@@ -514,6 +661,13 @@ class HttpClientTest(testtools.TestCase):
                                         headers=headers)
 
     def test_http_request_specify_timeout(self, mock_request):
+        """
+        Return a dictionary with a request specification.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         mock_request.return_value = fakes.FakeHTTPResponse(
             200, 'OK',
             {'content-type': 'application/json'},
@@ -530,6 +684,13 @@ class HttpClientTest(testtools.TestCase):
             timeout=float(123))
 
     def test_get_system_ca_file(self, mock_request):
+        """
+        Get ca ca ca ca ca ca.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         chosen = '/etc/ssl/certs/ca-certificates.crt'
         with mock.patch('os.path.exists') as mock_os:
             mock_os.return_value = chosen
@@ -538,10 +699,24 @@ class HttpClientTest(testtools.TestCase):
             mock_os.assert_called_once_with(chosen)
 
     def test_insecure_verify_cert_None(self, mock_request):
+        """
+        Test if the certificate is valid.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         client = http.HTTPClient('https://foo', insecure=True)
         self.assertFalse(client.verify_cert)
 
     def test_passed_cert_to_verify_cert(self, mock_request):
+        """
+        Test if a certificate.
+
+        Args:
+            self: (todo): write your description
+            mock_request: (todo): write your description
+        """
         client = http.HTTPClient('https://foo', ca_file="NOWHERE")
         self.assertEqual("NOWHERE", client.verify_cert)
 
@@ -552,6 +727,14 @@ class HttpClientTest(testtools.TestCase):
 
     @mock.patch('logging.Logger.debug', return_value=None)
     def test_curl_log_i18n_headers(self, mock_log, mock_request):
+        """
+        : return : http : // www. github.
+
+        Args:
+            self: (todo): write your description
+            mock_log: (todo): write your description
+            mock_request: (todo): write your description
+        """
         kwargs = {'headers': {'Key': b'foo\xe3\x8a\x8e'}}
 
         client = http.HTTPClient('http://somewhere')
@@ -562,11 +745,23 @@ class HttpClientTest(testtools.TestCase):
 
 class SessionClientTest(testtools.TestCase):
     def setUp(self):
+        """
+        Initialize the client.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SessionClientTest, self).setUp()
         self.request = mock.patch.object(adapter.LegacyJsonAdapter,
                                          'request').start()
 
     def test_session_simple_request(self):
+        """
+        Perform simple simple simple simple simple simple simple session.
+
+        Args:
+            self: (todo): write your description
+        """
         resp = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -581,6 +776,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual('', ''.join([x for x in response.content]))
 
     def test_session_json_request(self):
+        """
+        Makes a http request.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -596,6 +797,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual({'some': 'body'}, resp.json())
 
     def test_404_error_response(self):
+        """
+        Test that the httperror.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             404,
             'FAIL',
@@ -611,6 +818,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertIsNotNone(six.text_type(e))
 
     def test_redirect_302_location(self):
+        """
+        Redirect to redirect to the redirect to the user.
+
+        Args:
+            self: (todo): write your description
+        """
         fake1 = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -643,6 +856,12 @@ class SessionClientTest(testtools.TestCase):
                               'redirect': True}, call[1])
 
     def test_302_location_no_endpoint(self):
+        """
+        Makes a location of the current location.
+
+        Args:
+            self: (todo): write your description
+        """
         fake1 = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -675,6 +894,12 @@ class SessionClientTest(testtools.TestCase):
                               'redirect': True}, call[1])
 
     def test_redirect_302_no_location(self):
+        """
+        Redirect to redirect to a redirect url.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -690,6 +915,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual("Location not returned with 302", six.text_type(e))
 
     def test_no_redirect_302_no_location(self):
+        """
+        Redirect to redirect to the redirect to a redirect to.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             302,
             'OK',
@@ -704,6 +935,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(fake, client.request('', 'GET'))
 
     def test_300_error_response(self):
+        """
+        Test if the response for an error.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             300,
             'FAIL',
@@ -719,6 +956,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertIsNotNone(six.text_type(e))
 
     def test_504_error_response(self):
+        """
+        Returns a hqualresponse.
+
+        Args:
+            self: (todo): write your description
+        """
         # for 504 we don't have specific exception type
         fake = fakes.FakeHTTPResponse(
             504,
@@ -735,6 +978,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(504, e.code)
 
     def test_kwargs(self):
+        """
+        Get kwargs for the kwargs.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -759,6 +1008,13 @@ class SessionClientTest(testtools.TestCase):
 
     @mock.patch.object(jsonutils, 'dumps')
     def test_kwargs_with_files(self, mock_dumps):
+        """
+        Test for kwargs.
+
+        Args:
+            self: (todo): write your description
+            mock_dumps: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -783,6 +1039,12 @@ class SessionClientTest(testtools.TestCase):
         self.assertEqual(200, resp.status_code)
 
     def test_methods(self):
+        """
+        Return a dictionary methods.
+
+        Args:
+            self: (todo): write your description
+        """
         fake = fakes.FakeHTTPResponse(
             200,
             'OK',
@@ -799,5 +1061,11 @@ class SessionClientTest(testtools.TestCase):
             self.assertEqual(200, resp.status_code)
 
     def test_credentials_headers(self):
+        """
+        Return a http session.
+
+        Args:
+            self: (todo): write your description
+        """
         client = http.SessionClient(mock.ANY)
         self.assertEqual({}, client.credentials_headers())

@@ -61,6 +61,18 @@ def get_template_contents(template_file=None, template_url=None,
                           template_object=None, object_request=None,
                           files=None, existing=False,
                           fetch_child=True):
+    """
+    Retrieves template contents.
+
+    Args:
+        template_file: (str): write your description
+        template_url: (str): write your description
+        template_object: (str): write your description
+        object_request: (todo): write your description
+        files: (str): write your description
+        existing: (str): write your description
+        fetch_child: (str): write your description
+    """
 
     is_object = False
     # Transform a bare file path to a file:// URL.
@@ -110,8 +122,25 @@ def get_template_contents(template_file=None, template_url=None,
 
 def resolve_template_get_files(template, files, template_base_url,
                                is_object=False, object_request=None):
+    """
+    Resolve a list of files.
+
+    Args:
+        template: (str): write your description
+        files: (str): write your description
+        template_base_url: (str): write your description
+        is_object: (todo): write your description
+        object_request: (todo): write your description
+    """
 
     def ignore_if(key, value):
+        """
+        Determine if key is not ignored
+
+        Args:
+            key: (str): write your description
+            value: (str): write your description
+        """
         if key != 'get_file' and key != 'type':
             return True
         if not isinstance(value, six.string_types):
@@ -122,6 +151,12 @@ def resolve_template_get_files(template, files, template_base_url,
         return False
 
     def recurse_if(value):
+        """
+        Recursively recursively recursively.
+
+        Args:
+            value: (todo): write your description
+        """
         return isinstance(value, (dict, list))
 
     get_file_contents(template, files, template_base_url,
@@ -129,6 +164,12 @@ def resolve_template_get_files(template, files, template_base_url,
 
 
 def is_template(file_content):
+    """
+    Determine file is a template.
+
+    Args:
+        file_content: (str): write your description
+    """
     try:
         if isinstance(file_content, six.binary_type):
             file_content = file_content.decode('utf-8')
@@ -141,6 +182,18 @@ def is_template(file_content):
 def get_file_contents(from_data, files, base_url=None,
                       ignore_if=None, recurse_if=None,
                       is_object=False, object_request=None):
+    """
+    Retrieve a file contents.
+
+    Args:
+        from_data: (dict): write your description
+        files: (str): write your description
+        base_url: (str): write your description
+        ignore_if: (str): write your description
+        recurse_if: (str): write your description
+        is_object: (str): write your description
+        object_request: (str): write your description
+    """
 
     if recurse_if and recurse_if(from_data):
         if isinstance(from_data, dict):
@@ -354,6 +407,13 @@ def resolve_environment_urls(resource_registry, files, env_base_url,
     base_url = rr.get('base_url', env_base_url)
 
     def ignore_if(key, value):
+        """
+        Determine if the value
+
+        Args:
+            key: (str): write your description
+            value: (todo): write your description
+        """
         if key == 'base_url':
             return True
         if isinstance(value, dict):

@@ -30,8 +30,18 @@ _ = _translators.primary
 
 
 def get_available_languages():
+    """
+    Return available languages.
+
+    Args:
+    """
     return oslo_i18n.get_available_languages('heatclient')
 
 
 def enable_lazy():
+    """
+    Set lazy :: 0.
+
+    Args:
+    """
     return oslo_i18n.enable_lazy()

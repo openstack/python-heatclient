@@ -29,6 +29,16 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 def mock_sc(group=None, config=None, options=None,
             inputs=None, outputs=None):
+    """
+    .. versionadded :: 2019. 2. 0
+
+    Args:
+        group: (array): write your description
+        config: (todo): write your description
+        options: (dict): write your description
+        inputs: (array): write your description
+        outputs: (todo): write your description
+    """
     return software_configs.SoftwareConfig(None, {
         'group': group,
         'config': config,
@@ -216,6 +226,12 @@ class DerivedConfigTest(testtools.TestCase):
     ]
 
     def test_build_derived_config_params(self):
+        """
+        Builds a new workerconfig_config
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             self.assertEqual(
                 self.result,
@@ -238,6 +254,13 @@ class TempURLSignalTest(testtools.TestCase):
 
     @mock.patch.object(swiftclient.client, 'Connection')
     def test_create_swift_client(self, sc_conn):
+        """
+        Creates an swift client.
+
+        Args:
+            self: (todo): write your description
+            sc_conn: (todo): write your description
+        """
         auth = mock.MagicMock()
         auth.get_token.return_value = '1234'
         auth.get_endpoint.return_value = 'http://192.0.2.1:8080'
@@ -282,6 +305,12 @@ class TempURLSignalTest(testtools.TestCase):
             sc_conn.call_args)
 
     def test_create_temp_url(self):
+        """
+        Create a temporary temporary url.
+
+        Args:
+            self: (todo): write your description
+        """
         swift_client = mock.MagicMock()
         swift_client.url = ("http://fake-host.com:8080/v1/AUTH_demo")
         swift_client.head_account = mock.Mock(return_value={
@@ -301,11 +330,23 @@ class TempURLSignalTest(testtools.TestCase):
         self.assertTrue(timeout < 2147483647)
 
     def test_get_temp_url_no_account_key(self):
+        """
+        Get a temporary account account.
+
+        Args:
+            self: (todo): write your description
+        """
         swift_client = mock.MagicMock()
         swift_client.url = ("http://fake-host.com:8080/v1/AUTH_demo")
         head_account = {}
 
         def post_account(data):
+            """
+            Post account data
+
+            Args:
+                data: (array): write your description
+            """
             head_account.update(data)
 
         swift_client.head_account = mock.Mock(return_value=head_account)
@@ -316,12 +357,24 @@ class TempURLSignalTest(testtools.TestCase):
         self.assertIn('x-account-meta-temp-url-key', head_account)
 
     def test_build_signal_id_no_signal(self):
+        """
+        Builds a running build id to be used for a running process.
+
+        Args:
+            self: (todo): write your description
+        """
         hc = mock.MagicMock()
         args = mock.MagicMock()
         args.signal_transport = 'NO_SIGNAL'
         self.assertIsNone(deployment_utils.build_signal_id(hc, args))
 
     def test_build_signal_id_no_client_auth(self):
+        """
+        Builds a client id of a running.
+
+        Args:
+            self: (todo): write your description
+        """
         hc = mock.MagicMock()
         args = mock.MagicMock()
         args.os_no_client_auth = True
@@ -336,6 +389,14 @@ class TempURLSignalTest(testtools.TestCase):
     @mock.patch.object(deployment_utils, 'create_temp_url')
     @mock.patch.object(deployment_utils, 'create_swift_client')
     def test_build_signal_id(self, csc, ctu):
+        """
+        Deploy a mock id.
+
+        Args:
+            self: (todo): write your description
+            csc: (todo): write your description
+            ctu: (todo): write your description
+        """
         hc = mock.MagicMock()
         args = mock.MagicMock()
         args.name = 'foo'

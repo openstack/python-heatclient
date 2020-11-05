@@ -32,6 +32,13 @@ class ListSnapshot(command.Lister):
     log = logging.getLogger(__name__ + ".ListSnapshot")
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser for the parser.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ListSnapshot, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -41,11 +48,26 @@ class ListSnapshot(command.Lister):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a snapshot.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._list_snapshot(heat_client, parsed_args)
 
     def _list_snapshot(self, heat_client, parsed_args):
+        """
+        List snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+            heat_client: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         fields = {'stack_id': parsed_args.stack}
         try:
             snapshots = heat_client.stacks.snapshot_list(**fields)
@@ -67,6 +89,13 @@ class ShowSnapshot(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ShowSnapshot")
 
     def get_parser(self, prog_name):
+        """
+        Creates the parser for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(ShowSnapshot, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -81,12 +110,28 @@ class ShowSnapshot(format_utils.YamlFormat):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a snapshot of this cluster.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._show_snapshot(heat_client, parsed_args.stack,
                                    parsed_args.snapshot)
 
     def _show_snapshot(self, heat_client, stack_id, snapshot_id):
+        """
+        Returns information about a snapshot.
+
+        Args:
+            self: (todo): write your description
+            heat_client: (todo): write your description
+            stack_id: (str): write your description
+            snapshot_id: (str): write your description
+        """
         try:
             data = heat_client.stacks.snapshot_show(stack_id, snapshot_id)
         except heat_exc.HTTPNotFound:
@@ -106,6 +151,13 @@ class RestoreSnapshot(command.Command):
     log = logging.getLogger(__name__ + ".RestoreSnapshot")
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser for the command line arguments.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(RestoreSnapshot, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -120,11 +172,26 @@ class RestoreSnapshot(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a snapshot action.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         return self._restore_snapshot(heat_client, parsed_args)
 
     def _restore_snapshot(self, heat_client, parsed_args):
+        """
+        Restore a snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+            heat_client: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         fields = {'stack_id': parsed_args.stack,
                   'snapshot_id': parsed_args.snapshot}
         try:
@@ -142,6 +209,13 @@ class CreateSnapshot(command.ShowOne):
     log = logging.getLogger(__name__ + ".CreateSnapshot")
 
     def get_parser(self, prog_name):
+        """
+        Create a parser for the command line.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(CreateSnapshot, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -156,6 +230,13 @@ class CreateSnapshot(command.ShowOne):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a snapshot of a snapshot.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
 
@@ -182,6 +263,13 @@ class DeleteSnapshot(command.Command):
     log = logging.getLogger(__name__ + ".DeleteSnapshot")
 
     def get_parser(self, prog_name):
+        """
+        Returns the parser for the command.
+
+        Args:
+            self: (todo): write your description
+            prog_name: (str): write your description
+        """
         parser = super(DeleteSnapshot, self).get_parser(prog_name)
         parser.add_argument(
             'stack',
@@ -201,6 +289,13 @@ class DeleteSnapshot(command.Command):
         return parser
 
     def take_action(self, parsed_args):
+        """
+        Take a command.
+
+        Args:
+            self: (todo): write your description
+            parsed_args: (todo): write your description
+        """
         self.log.debug('take_action(%s)', parsed_args)
         heat_client = self.app.client_manager.orchestration
         msg = ('User did not confirm snapshot delete '
