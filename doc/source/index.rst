@@ -108,14 +108,12 @@ Man Pages
     man/heat
 
 
-============
-Contributing
-============
+For Contributors
+================
 
-Code is mirrored `on GitHub`_. Submit bugs to the python-heatclient project on
-`Launchpad`_. Submit code to the openstack/python-heatclient project using
-`Gerrit`_.
+* If you are a new contributor to python-heatclient please refer: :doc:`contributor/contributing`
 
-.. _on GitHub: https://github.com/openstack/python-heatclient
-.. _Launchpad: https://launchpad.net/python-heatclient
-.. _Gerrit: https://docs.openstack.org/infra/manual/developers.html#development-workflow
+  .. toctree::
+     :hidden:
+
+     contributor/contributing
