@@ -10,9 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import fnmatch
 import logging
-
-from oslo_utils import fnmatch
 
 from heatclient._i18n import _
 from heatclient import exc
