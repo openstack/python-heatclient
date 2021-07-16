@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import collections
+from collections import abc
 from oslo_serialization import jsonutils
 import six
 from six.moves.urllib import error
@@ -203,10 +203,10 @@ def deep_update(old, new):
         old = {}
 
     for k, v in new.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, abc.Mapping):
             r = deep_update(old.get(k, {}), v)
             old[k] = r
-        elif v is None and isinstance(old.get(k), collections.Mapping):
+        elif v is None and isinstance(old.get(k), abc.Mapping):
             # Don't override empty data, to work around yaml syntax issue
             pass
         else:
