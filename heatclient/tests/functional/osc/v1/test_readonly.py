@@ -91,7 +91,7 @@ class SimpleReadOnlyOpenStackClientTest(base.OpenStackClientTestBase):
     def test_openstack_resource_type_show(self):
         rsrc_schema = self.openstack('orchestration resource type show '
                                      'OS::Heat::RandomString')
-        self.assertIsInstance(yaml.load(rsrc_schema), dict)
+        self.assertIsInstance(yaml.safe_load(rsrc_schema), dict)
 
     def _template_validate(self, templ_name, parms):
         heat_template_path = self.get_template_path(templ_name)
