@@ -18,8 +18,7 @@ import logging
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
-import six
-from six.moves.urllib import request
+from urllib import request
 import yaml
 
 from heatclient._i18n import _
@@ -181,8 +180,8 @@ def _create_config(heat_client, args):
 
     config['name'] = args.name
     sc = heat_client.software_configs.create(**config).to_dict()
-    rows = list(six.itervalues(sc))
-    columns = list(six.iterkeys(sc))
+    rows = list(sc.values())
+    columns = list(sc.keys())
     return columns, rows
 
 

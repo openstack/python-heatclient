@@ -24,8 +24,7 @@ import copy
 
 from oslo_utils import reflection
 from oslo_utils import strutils
-import six
-from six.moves.urllib import parse
+from urllib import parse
 
 from heatclient._i18n import _
 from heatclient import exc as exceptions
@@ -207,8 +206,7 @@ class BaseManager(HookableMixin):
         return self.client.delete(url)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ManagerWithFind(BaseManager):
+class ManagerWithFind(BaseManager, metaclass=abc.ABCMeta):
     """Manager with additional `find()`/`findall()` methods."""
 
     @abc.abstractmethod

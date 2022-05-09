@@ -145,7 +145,7 @@ class TestCreateConfig(TestConfig):
         self.mock_client.software_configs.create.assert_called_with(
             **properties)
 
-    @mock.patch('six.moves.urllib.request.urlopen')
+    @mock.patch('urllib.request.urlopen')
     def test_config_create_config_file(self, urlopen):
         properties = {
             'config': 'config',
@@ -172,7 +172,7 @@ class TestCreateConfig(TestConfig):
         self.mock_client.software_configs.create.assert_called_with(
             **properties)
 
-    @mock.patch('six.moves.urllib.request.urlopen')
+    @mock.patch('urllib.request.urlopen')
     def test_config_create_definition_file(self, urlopen):
         definition = {
             'inputs': [

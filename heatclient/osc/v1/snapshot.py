@@ -20,7 +20,6 @@ from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
-import six
 
 from heatclient.common import format_utils
 from heatclient import exc as heat_exc
@@ -95,8 +94,8 @@ class ShowSnapshot(format_utils.YamlFormat):
                                    % {'snapshot_id': snapshot_id,
                                       'stack_id': stack_id})
 
-        rows = list(six.itervalues(data))
-        columns = list(six.iterkeys(data))
+        rows = list(data.values())
+        columns = list(data.keys())
         return columns, rows
 
 

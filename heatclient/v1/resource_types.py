@@ -12,8 +12,7 @@
 #    under the License.
 
 from oslo_utils import encodeutils
-import six
-from six.moves.urllib import parse
+from urllib import parse
 
 from heatclient.common import base
 from heatclient.common import utils
@@ -21,7 +20,7 @@ from heatclient.common import utils
 
 class ResourceType(base.Resource):
     def __repr__(self):
-        if isinstance(self._info, six.string_types):
+        if isinstance(self._info, str):
             return "<ResourceType %s>" % self._info
         else:
             return "<ResourceType %s>" % self._info.get('resource_type')
@@ -30,7 +29,7 @@ class ResourceType(base.Resource):
         return self.manager.data(self, **kwargs)
 
     def _add_details(self, info):
-        if isinstance(info, six.string_types):
+        if isinstance(info, str):
             self.resource_type = info
         elif isinstance(info, dict):
             self.resource_type = info.get('resource_type')

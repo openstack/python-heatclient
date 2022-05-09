@@ -12,8 +12,8 @@
 
 from unittest import mock
 
+import io
 from osc_lib import exceptions as exc
-import six
 
 from heatclient import exc as heat_exc
 from heatclient.osc.v1 import snapshot
@@ -160,7 +160,7 @@ class TestSnapshotDelete(TestStack):
             self.cmd.take_action,
             parsed_args)
 
-    @mock.patch('sys.stdin', spec=six.StringIO)
+    @mock.patch('sys.stdin', spec=io.StringIO)
     def test_snapshot_delete_prompt(self, mock_stdin):
         arglist = ['my_stack', 'snapshot_id']
         mock_stdin.isatty.return_value = True
@@ -173,7 +173,7 @@ class TestSnapshotDelete(TestStack):
         self.stack_client.snapshot_delete.assert_called_with('my_stack',
                                                              'snapshot_id')
 
-    @mock.patch('sys.stdin', spec=six.StringIO)
+    @mock.patch('sys.stdin', spec=io.StringIO)
     def test_snapshot_delete_prompt_no(self, mock_stdin):
         arglist = ['my_stack', 'snapshot_id']
         mock_stdin.isatty.return_value = True

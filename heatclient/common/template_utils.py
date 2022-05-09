@@ -15,10 +15,9 @@
 
 from collections import abc
 from oslo_serialization import jsonutils
-import six
-from six.moves.urllib import error
-from six.moves.urllib import parse
-from six.moves.urllib import request
+from urllib import error
+from urllib import parse
+from urllib import request
 
 from heatclient._i18n import _
 from heatclient.common import environment_format
@@ -92,7 +91,7 @@ def get_template_contents(template_file=None, template_url=None,
                                % template_url)
 
     try:
-        if isinstance(tpl, six.binary_type):
+        if isinstance(tpl, bytes):
             tpl = tpl.decode('utf-8')
         template = template_format.parse(tpl)
     except ValueError as e:
@@ -114,7 +113,7 @@ def resolve_template_get_files(template, files, template_base_url,
     def ignore_if(key, value):
         if key != 'get_file' and key != 'type':
             return True
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             return True
         if (key == 'type' and
                 not value.endswith(('.yaml', '.template'))):
@@ -130,7 +129,7 @@ def resolve_template_get_files(template, files, template_base_url,
 
 def is_template(file_content):
     try:
-        if isinstance(file_content, six.binary_type):
+        if isinstance(file_content, bytes):
             file_content = file_content.decode('utf-8')
         template_format.parse(file_content)
     except (ValueError, TypeError):
@@ -144,7 +143,7 @@ def get_file_contents(from_data, files, base_url=None,
 
     if recurse_if and recurse_if(from_data):
         if isinstance(from_data, dict):
-            recurse_data = six.itervalues(from_data)
+            recurse_data = from_data.values()
         else:
             recurse_data = from_data
         for value in recurse_data:

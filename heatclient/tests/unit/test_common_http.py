@@ -15,9 +15,9 @@
 import socket
 from unittest import mock
 
+import io
 from keystoneauth1 import adapter
 from oslo_serialization import jsonutils
-import six
 import testtools
 
 from heatclient.common import http
@@ -608,7 +608,7 @@ class SessionClientTest(testtools.TestCase):
         e = self.assertRaises(exc.HTTPNotFound,
                               client.request, '', 'GET')
         # Assert that the raised exception can be converted to string
-        self.assertIsNotNone(six.text_type(e))
+        self.assertIsNotNone(str(e))
 
     def test_redirect_302_location(self):
         fake1 = fakes.FakeHTTPResponse(
@@ -687,7 +687,7 @@ class SessionClientTest(testtools.TestCase):
                                     auth=mock.ANY)
         e = self.assertRaises(exc.InvalidEndpoint,
                               client.request, '', 'GET', redirect=True)
-        self.assertEqual("Location not returned with 302", six.text_type(e))
+        self.assertEqual("Location not returned with 302", str(e))
 
     def test_no_redirect_302_no_location(self):
         fake = fakes.FakeHTTPResponse(
@@ -716,7 +716,7 @@ class SessionClientTest(testtools.TestCase):
         e = self.assertRaises(exc.HTTPMultipleChoices,
                               client.request, '', 'GET')
         # Assert that the raised exception can be converted to string
-        self.assertIsNotNone(six.text_type(e))
+        self.assertIsNotNone(str(e))
 
     def test_504_error_response(self):
         # for 504 we don't have specific exception type
@@ -766,7 +766,7 @@ class SessionClientTest(testtools.TestCase):
             {}
         )
         mock_dumps.return_value = "{'files': test}}"
-        data = six.BytesIO(b'test')
+        data = io.BytesIO(b'test')
         kwargs = {'endpoint_override': 'http://no.where/',
                   'data': {'files': data}}
         client = http.SessionClient(mock.ANY)

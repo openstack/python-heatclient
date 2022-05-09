@@ -305,7 +305,7 @@ class TestResourceSignal(TestResource):
         self.assertEqual('Should only specify one of data or data-file',
                          str(error))
 
-    @mock.patch('six.moves.urllib.request.urlopen')
+    @mock.patch('urllib.request.urlopen')
     def test_resource_signal_file(self, urlopen):
         data = mock.Mock()
         data.read.side_effect = ['{"message":"Content"}']

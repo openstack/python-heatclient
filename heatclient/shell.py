@@ -22,7 +22,6 @@ from keystoneauth1.identity import generic
 from keystoneauth1 import session as kssession
 from oslo_utils import encodeutils
 from oslo_utils import importutils
-import six
 
 import heatclient
 from heatclient._i18n import _
@@ -610,7 +609,7 @@ def main(args=None):
         if '--debug' in args or '-d' in args:
             raise
         else:
-            print(encodeutils.safe_encode(six.text_type(e)), file=sys.stderr)
+            print(encodeutils.safe_encode(str(e)), file=sys.stderr)
         sys.exit(1)
 
 
