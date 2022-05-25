@@ -80,6 +80,7 @@ class ListConfig(command.Lister):
         parser.add_argument(
             '--limit',
             metavar='<limit>',
+            type=int,
             help=_('Limit the number of configs returned')
         )
         parser.add_argument(
