@@ -24,8 +24,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import importutils
 import requests
-import six
-from six.moves.urllib import parse
+from urllib import parse
 
 from heatclient._i18n import _
 from heatclient.common import utils
@@ -151,7 +150,7 @@ class HTTPClient(object):
         dump.append('')
         if resp.content:
             content = resp.content
-            if isinstance(content, six.binary_type):
+            if isinstance(content, bytes):
                 content = content.decode()
             dump.extend([content, ''])
         LOG.debug('\n'.join(dump))

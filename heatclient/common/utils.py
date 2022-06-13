@@ -22,10 +22,9 @@ import uuid
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import prettytable
-import six
-from six.moves.urllib import error
-from six.moves.urllib import parse
-from six.moves.urllib import request
+from urllib import error
+from urllib import parse
+from urllib import request
 import yaml
 
 from heatclient._i18n import _
@@ -123,10 +122,7 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
                 row.append(data)
         pt.add_row(row)
 
-    if six.PY3:
-        print(encodeutils.safe_encode(pt.get_string(**kwargs)).decode())
-    else:
-        print(encodeutils.safe_encode(pt.get_string(**kwargs)))
+    print(encodeutils.safe_encode(pt.get_string(**kwargs)).decode())
 
 
 def link_formatter(links):
@@ -286,10 +282,7 @@ def print_update_list(lst, fields, formatters=None):
 
         pt.add_row(row)
 
-    if six.PY3:
-        print(encodeutils.safe_encode(pt.get_string()).decode())
-    else:
-        print(encodeutils.safe_encode(pt.get_string()))
+    print(encodeutils.safe_encode(pt.get_string()).decode())
 
 
 def find_resource(manager, name_or_id):

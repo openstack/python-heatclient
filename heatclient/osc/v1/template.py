@@ -16,7 +16,6 @@ import logging
 
 from osc_lib.command import command
 from osc_lib import utils
-import six
 
 from heatclient._i18n import _
 from heatclient.common import format_utils
@@ -181,6 +180,6 @@ def _validate(heat_client, args):
         fields['files_container'] = args.files_container
 
     validation = heat_client.stacks.validate(**fields)
-    data = list(six.itervalues(validation))
-    columns = list(six.iterkeys(validation))
+    data = list(validation.values())
+    columns = list(validation.keys())
     return columns, data

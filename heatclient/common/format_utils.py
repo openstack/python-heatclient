@@ -15,7 +15,6 @@
 import sys
 
 from osc_lib.command import command
-import six
 
 
 class RawFormat(command.ShowOne):
@@ -63,7 +62,7 @@ def indent_and_truncate(txt, spaces=0, truncate=False, truncate_limit=10,
     """
     if txt is None:
         return
-    lines = six.text_type(txt).splitlines()
+    lines = str(txt).splitlines()
     if truncate and len(lines) > truncate_limit:
         lines = lines[-truncate_limit:]
         if truncate_prefix is not None:

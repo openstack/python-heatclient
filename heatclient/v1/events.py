@@ -15,7 +15,7 @@
 
 import collections
 from oslo_utils import encodeutils
-from six.moves.urllib import parse
+from urllib import parse
 
 from heatclient.common import base
 from heatclient.common import utils

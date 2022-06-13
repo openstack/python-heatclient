@@ -18,8 +18,7 @@ import sys
 
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
-import six
-from six.moves.urllib import request
+from urllib import request
 import yaml
 
 from heatclient._i18n import _
@@ -306,7 +305,7 @@ def do_stack_delete(hc, args):
 
     try:
         if not args.yes and sys.stdin.isatty():
-            prompt_response = six.moves.input(
+            prompt_response = input(
                 _("Are you sure you want to delete this stack(s) [y/N]? ")
             ).lower()
             if not prompt_response.startswith('y'):
@@ -542,7 +541,7 @@ def do_stack_update(hc, args):
         try:
             rollback = strutils.bool_from_string(args.rollback, strict=True)
         except ValueError as ex:
-            raise exc.CommandError(six.text_type(ex))
+            raise exc.CommandError(str(ex))
         else:
             fields['disable_rollback'] = not(rollback)
     # TODO(pshchelo): remove the following 'else' clause after deprecation
@@ -1067,7 +1066,7 @@ def do_resource_signal(hc, args):
         data_url = utils.normalise_file_path_to_url(data_file)
         data = request.urlopen(data_url).read()
     if data:
-        if isinstance(data, six.binary_type):
+        if isinstance(data, bytes):
             data = data.decode('utf-8')
         try:
             data = jsonutils.loads(data)

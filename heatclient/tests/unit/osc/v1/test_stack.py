@@ -17,7 +17,6 @@ from unittest import mock
 
 from osc_lib import exceptions as exc
 from osc_lib import utils
-import six
 import testscenarios
 import yaml
 
@@ -274,7 +273,7 @@ class TestStackUpdate(TestStack):
 
         ex = self.assertRaises(exc.CommandError, self.cmd.take_action,
                                parsed_args)
-        self.assertEqual("--rollback invalid value: foo", six.text_type(ex))
+        self.assertEqual("--rollback invalid value: foo", str(ex))
 
     def test_stack_update_parameters(self):
         template_path = ('/'.join(self.template_path.split('/')[:-1]) +
@@ -720,7 +719,7 @@ class TestStackDelete(TestStack):
         self.stack_client.delete.assert_any_call('stack3')
         self.assertEqual('Unable to delete 1 of the 3 stacks.', str(error))
 
-    @mock.patch('sys.stdin', spec=six.StringIO)
+    @mock.patch('sys.stdin', spec=io.StringIO)
     def test_stack_delete_prompt(self, mock_stdin):
         arglist = ['my_stack']
         mock_stdin.isatty.return_value = True
@@ -732,7 +731,7 @@ class TestStackDelete(TestStack):
         mock_stdin.readline.assert_called_with()
         self.stack_client.delete.assert_called_with('my_stack')
 
-    @mock.patch('sys.stdin', spec=six.StringIO)
+    @mock.patch('sys.stdin', spec=io.StringIO)
     def test_stack_delete_prompt_no(self, mock_stdin):
         arglist = ['my_stack']
         mock_stdin.isatty.return_value = True

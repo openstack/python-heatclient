@@ -20,8 +20,7 @@ from osc_lib import exceptions as exc
 from osc_lib.i18n import _
 from osc_lib import utils
 from oslo_serialization import jsonutils
-import six
-from six.moves.urllib import request
+from urllib import request
 
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
@@ -184,8 +183,8 @@ def _resource_metadata(heat_client, args):
                                {'stack': args.stack,
                                 'resource': args.resource})
 
-    data = list(six.itervalues(metadata))
-    columns = list(six.iterkeys(metadata))
+    data = list(metadata.values())
+    columns = list(metadata.keys())
     return columns, data
 
 

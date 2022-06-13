@@ -12,8 +12,8 @@
 #
 #   Copyright 2015 IBM Corp.
 
+import io
 import json
-import six
 import yaml
 
 from heatclient.common import format_utils
@@ -128,7 +128,7 @@ abcde
                 truncate_postfix='truncated'))
 
     def test_print_software_deployment_output(self):
-        out = six.StringIO()
+        out = io.StringIO()
         format_utils.print_software_deployment_output(
             {'deploy_stdout': ''}, out=out, name='deploy_stdout')
         self.assertEqual(
@@ -137,7 +137,7 @@ abcde
         ov = {'deploy_stdout': '', 'deploy_stderr': '1\n2\n3\n4\n5\n6\n7\n8\n9'
                                                     '\n10\n11',
               'deploy_status_code': 0}
-        out = six.StringIO()
+        out = io.StringIO()
         format_utils.print_software_deployment_output(ov, out=out,
                                                       name='deploy_stderr')
         self.assertEqual(
@@ -156,7 +156,7 @@ abcde
     11
     (truncated, view all with --long)
 ''', out.getvalue())
-        out = six.StringIO()
+        out = io.StringIO()
         format_utils.print_software_deployment_output(ov, out=out,
                                                       name='deploy_stderr',
                                                       long=True)

@@ -12,7 +12,6 @@
 
 import os
 
-import six
 from tempest.lib.cli import base
 from tempest.lib.cli import output_parser
 from tempest.lib import exceptions as tempest_exc
@@ -48,7 +47,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
         obj = {}
         items = self.parser.listing(output)
         for item in items:
-            obj[item['Field']] = six.text_type(item['Value'])
+            obj[item['Field']] = str(item['Value'])
         return dict((self._key_name(k), v) for k, v in obj.items())
 
     def _key_name(self, key):
@@ -86,7 +85,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
                 self.openstack(cmd)
             except tempest_exc.CommandFailed as e:
                 msg = "Stack not found: %s" % id
-                if msg in six.text_type(e.stdout):
+                if msg in str(e.stdout):
                     return
                 raise
 

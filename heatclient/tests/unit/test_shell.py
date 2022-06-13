@@ -18,15 +18,15 @@ from unittest import mock
 import uuid
 
 import fixtures
+import io
 from keystoneauth1 import fixture as keystone_fixture
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from requests_mock.contrib import fixture as rm_fixture
-import six
-from six.moves.urllib import parse
-from six.moves.urllib import request
 import testscenarios
 import testtools
+from urllib import parse
+from urllib import request
 import yaml
 
 from heatclient._i18n import _
@@ -411,7 +411,7 @@ class ShellBase(TestCase):
     def shell(self, argstr):
         orig = sys.stdout
         try:
-            sys.stdout = six.StringIO()
+            sys.stdout = io.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
             self.subcommands = _shell.subcommands.keys()
@@ -525,7 +525,7 @@ class ShellTestNoMoxBase(TestCase):
     def shell(self, argstr):
         orig = sys.stdout
         try:
-            sys.stdout = six.StringIO()
+            sys.stdout = io.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
             self.subcommands = _shell.subcommands.keys()
@@ -1356,7 +1356,7 @@ class ShellTestUserPass(ShellBase):
 
     def test_stack_create_url(self):
         self.register_keystone_auth_fixture()
-        url_content = six.StringIO(
+        url_content = io.StringIO(
             '{"AWSTemplateFormatVersion" : "2010-09-09"}')
         self.useFixture(fixtures.MockPatchObject(request, 'urlopen',
                                                  return_value=url_content))
@@ -2003,7 +2003,7 @@ class ShellTestUserPass(ShellBase):
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
-    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    @mock.patch('sys.stdin', new_callable=io.StringIO)
     def test_stack_delete_prompt_with_tty(self, ms):
         self.register_keystone_auth_fixture()
         mock_stdin = mock.Mock()
@@ -2027,7 +2027,7 @@ class ShellTestUserPass(ShellBase):
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
-    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    @mock.patch('sys.stdin', new_callable=io.StringIO)
     def test_stack_delete_prompt_with_tty_y(self, ms):
         self.register_keystone_auth_fixture()
         mock_stdin = mock.Mock()
@@ -2161,7 +2161,7 @@ class ShellTestUserPass(ShellBase):
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
-    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    @mock.patch('sys.stdin', new_callable=io.StringIO)
     def test_snapshot_delete_prompt_with_tty(self, ms):
         self.register_keystone_auth_fixture()
         resp_dict = {"snapshot": {
@@ -2191,7 +2191,7 @@ class ShellTestUserPass(ShellBase):
 
     # the main thing this @mock.patch is doing here is keeping
     # sys.stdin untouched for later tests
-    @mock.patch('sys.stdin', new_callable=six.StringIO)
+    @mock.patch('sys.stdin', new_callable=io.StringIO)
     def test_snapshot_delete_prompt_with_tty_y(self, ms):
         self.register_keystone_auth_fixture()
         resp_dict = {"snapshot": {
@@ -2479,7 +2479,7 @@ class ShellTestUserPass(ShellBase):
             exc.CommandError, self.shell,
             'output-show teststack/1 output1')
         self.assertIn('The Referenced Attribute (0 PublicIP) is incorrect.',
-                      six.text_type(error))
+                      str(error))
 
 
 class ShellTestActions(ShellBase):
@@ -3550,8 +3550,8 @@ class ShellTestConfig(ShellBase):
         }}
 
         output = [
-            six.StringIO(yaml.safe_dump(definition, indent=2)),
-            six.StringIO('the config script'),
+            io.StringIO(yaml.safe_dump(definition, indent=2)),
+            io.StringIO('the config script'),
         ]
         self.useFixture(fixtures.MockPatchObject(request, 'urlopen',
                                                  side_effect=output))
@@ -4084,7 +4084,7 @@ class MockShellBase(TestCase):
     def shell(self, argstr):
         orig = sys.stdout
         try:
-            sys.stdout = six.StringIO()
+            sys.stdout = io.StringIO()
             _shell = heatclient.shell.HeatShell()
             _shell.main(argstr.split())
             self.subcommands = _shell.subcommands.keys()

@@ -18,7 +18,6 @@ import logging
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib.i18n import _
-import six
 
 from heatclient.common import format_utils
 from heatclient.common import utils as heat_utils
@@ -80,8 +79,8 @@ def _show_resourcetype(heat_client, parsed_args):
         raise exc.CommandError(
             _('Resource type not found: %s') % parsed_args.resource_type)
 
-    rows = list(six.itervalues(data))
-    columns = list(six.iterkeys(data))
+    rows = list(data.values())
+    columns = list(data.keys())
     return columns, rows
 
 

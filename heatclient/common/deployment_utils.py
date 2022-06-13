@@ -13,10 +13,9 @@
 import copy
 import uuid
 
-import six
-from six.moves.urllib import parse as urlparse
 from swiftclient import client as sc
 from swiftclient import utils as swiftclient_utils
+from urllib import parse as urlparse
 
 from heatclient._i18n import _
 from heatclient import exc
@@ -102,7 +101,7 @@ def create_temp_url(swift_client, name, timeout, container=None):
     key_header = 'x-account-meta-temp-url-key'
     if key_header not in swift_client.head_account():
         swift_client.post_account({
-            key_header: six.text_type(uuid.uuid4())[:32]})
+            key_header: str(uuid.uuid4())[:32]})
 
     key = swift_client.head_account()[key_header]
     project_path = swift_client.url.split('/')[-1]

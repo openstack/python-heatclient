@@ -17,7 +17,6 @@ import logging
 
 from osc_lib.command import command
 from osc_lib import utils
-import six
 
 from heatclient.common import utils as heat_utils
 
@@ -41,6 +40,6 @@ class BuildInfo(command.ShowOne):
             'api': heat_utils.json_formatter,
             'engine': heat_utils.json_formatter,
         }
-        columns = sorted(list(six.iterkeys(result)))
+        columns = sorted(list(result.keys()))
         return columns, utils.get_dict_properties(result, columns,
                                                   formatters=formatters)

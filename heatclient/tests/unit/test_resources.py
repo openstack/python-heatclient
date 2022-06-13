@@ -14,8 +14,8 @@
 
 from unittest import mock
 
-from six.moves.urllib import parse
 import testtools
+from urllib import parse
 
 from heatclient.common import utils
 from heatclient.v1 import resources

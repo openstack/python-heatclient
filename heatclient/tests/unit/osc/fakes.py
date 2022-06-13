@@ -16,7 +16,6 @@
 import json
 
 import requests
-import six
 
 
 class FakeStdout(object):
@@ -41,5 +40,5 @@ class FakeResponse(requests.Response):
 
         self.headers.update(headers)
         self._content = json.dumps(data)
-        if not isinstance(self._content, six.binary_type):
+        if not isinstance(self._content, bytes):
             self._content = self._content.encode()

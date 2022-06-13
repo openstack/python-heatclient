@@ -20,8 +20,7 @@ from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
 from oslo_serialization import jsonutils
-import six
-from six.moves.urllib import request
+from urllib import request
 import yaml
 
 from heatclient._i18n import _
@@ -733,7 +732,7 @@ class DeleteStack(command.Command):
 
         try:
             if not parsed_args.yes and sys.stdin.isatty():
-                prompt_response = six.moves.input(
+                prompt_response = input(
                     _("Are you sure you want to delete this stack(s) [y/N]? ")
                 ).lower()
                 if not prompt_response.startswith('y'):
@@ -919,8 +918,8 @@ class AbandonStack(format_utils.JsonFormat):
             except IOError as e:
                 raise exc.CommandError(str(e))
 
-        data = list(six.itervalues(stack))
-        columns = list(six.iterkeys(stack))
+        data = list(stack.values())
+        columns = list(stack.keys())
         return columns, data
 
 
@@ -963,8 +962,8 @@ class ExportStack(format_utils.JsonFormat):
             except IOError as e:
                 raise exc.CommandError(str(e))
 
-        data = list(six.itervalues(data_info))
-        columns = list(six.iterkeys(data_info))
+        data = list(data_info.values())
+        columns = list(data_info.keys())
         return columns, data
 
 

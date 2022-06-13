@@ -12,7 +12,6 @@
 
 from unittest import mock
 
-import six
 import testscenarios
 import testtools
 import yaml
@@ -106,4 +105,4 @@ but very:
   - incorrect
 """
         ex = self.assertRaises(ValueError, environment_format.parse, yaml)
-        self.assertIn('but very:\n            ^', six.text_type(ex))
+        self.assertIn('but very:\n            ^', str(ex))

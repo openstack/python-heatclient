@@ -14,7 +14,7 @@
 import json
 import os
 
-import six
+import io
 
 from heatclient.common import resource_formatter
 from heatclient.osc.v1 import resource
@@ -94,7 +94,7 @@ OS::Heat::RandomString" ];
             self.resources.append(v1_resources.Resource(None, r))
 
     def test_resource_list(self):
-        out = six.StringIO()
+        out = io.StringIO()
         formatter = resource_formatter.ResourceDotFormatter()
         formatter.emit_list(None, self.resources, out, None)
 

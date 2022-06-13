@@ -13,7 +13,6 @@
 
 from unittest import mock
 
-import six
 import swiftclient.client
 import testscenarios
 import testtools
@@ -231,7 +230,7 @@ class DerivedConfigTest(testtools.TestCase):
             if not self.result_error:
                 raise e
             self.assertIsInstance(e, self.result_error)
-            self.assertEqual(self.result_error_msg, six.text_type(e))
+            self.assertEqual(self.result_error_msg, str(e))
 
 
 class TempURLSignalTest(testtools.TestCase):
@@ -331,7 +330,7 @@ class TempURLSignalTest(testtools.TestCase):
         self.assertEqual((
             'Cannot use --os-no-client-auth, auth required to create '
             'a Swift TempURL.'),
-            six.text_type(e))
+            str(e))
 
     @mock.patch.object(deployment_utils, 'create_temp_url')
     @mock.patch.object(deployment_utils, 'create_swift_client')
