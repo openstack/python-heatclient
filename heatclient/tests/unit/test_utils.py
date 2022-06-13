@@ -15,6 +15,7 @@
 
 import os
 from unittest import mock
+from urllib import request
 
 import testtools
 
@@ -386,7 +387,7 @@ class TestURLFunctions(testtools.TestCase):
 
     def test_normalise_file_path_to_url_relative(self):
         self.assertEqual(
-            'file://%s/foo' % os.getcwd(),
+            'file://' + request.pathname2url('%s/foo' % os.getcwd()),
             utils.normalise_file_path_to_url(
                 'foo'))
 
