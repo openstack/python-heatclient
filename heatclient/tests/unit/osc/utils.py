@@ -46,16 +46,6 @@ class TestCase(testtools.TestCase):
                 msg = 'method %s should not have been called' % m
             self.fail(msg)
 
-    # 2.6 doesn't have the assert dict equals so make sure that it exists
-    if tuple(sys.version_info)[0:2] < (2, 7):
-
-        def assertIsInstance(self, obj, cls, msg=None):
-            """self.assertTrue(isinstance(obj, cls)), with a nicer message"""
-
-            if not isinstance(obj, cls):
-                standardMsg = '%s is not an instance of %r' % (obj, cls)
-                self.fail(self._formatMessage(msg, standardMsg))
-
 
 class TestCommand(TestCase):
     """Test cliff command classes"""
