@@ -292,7 +292,7 @@ class TempURLSignalTest(testtools.TestCase):
         url = deployment_utils.create_temp_url(swift_client, 'bar', 60)
         self.assertFalse(swift_client.post_account.called)
         regexp = (r"http://fake-host.com:8080/v1/AUTH_demo/bar-%s"
-                  r"/%s\?temp_url_sig=[0-9a-f]{40}&"
+                  r"/%s\?temp_url_sig=[0-9a-f]{40,64}&"
                   r"temp_url_expires=[0-9]{10}" % (uuid_pattern, uuid_pattern))
         self.assertThat(url, matchers.MatchesRegex(regexp))
 
