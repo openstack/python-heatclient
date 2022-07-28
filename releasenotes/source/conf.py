@@ -64,9 +64,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Python-heatclient releasenotes'
-copyright = u'2017, Heat team'
-author = u'Heat team'
+project = 'Python-heatclient releasenotes'
+copyright = '2017, Heat team'
+author = 'Heat team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -146,8 +146,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'Python-heatclientreleasenotes.tex',
-     u'Python-heatclient releasenotes Documentation',
-     u'Heat team', 'manual'),
+     'Python-heatclient releasenotes Documentation',
+     'Heat team', 'manual'),
 ]
 
 
@@ -157,7 +157,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'python-heatclientreleasenotes',
-     u'Python-heatclient releasenotes Documentation',
+     'Python-heatclient releasenotes Documentation',
      [author], 1)
 ]
 
@@ -169,7 +169,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'Python-heatclientreleasenotes',
-     u'Python-heatclient releasenotes Documentation',
+     'Python-heatclient releasenotes Documentation',
      author, 'Python-heatclientreleasenotes',
      'One line description of project.',
      'Miscellaneous'),

@@ -187,7 +187,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual])
 latex_documents = [
     ('index', 'python-heatclient.tex', 'python-heatclient Documentation',
-     u'OpenStack Foundation', 'manual'),
+     'OpenStack Foundation', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,8 +217,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('man/heat', 'heat',
-     u'Command line access to the heat project.',
-     [u'Heat Developers'], 1),
+     'Command line access to the heat project.',
+     ['Heat Developers'], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -231,8 +231,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'Heat', u'Heat Documentation',
-     u'Heat Developers', 'Heat', 'One line description of project.',
+    ('index', 'Heat', 'Heat Documentation',
+     'Heat Developers', 'Heat', 'One line description of project.',
      'Miscellaneous'),
 ]
 
