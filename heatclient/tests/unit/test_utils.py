@@ -122,21 +122,21 @@ class ShellTest(testtools.TestCase):
 
     def test_resource_nested_identifier(self):
         rsrc_info = {'resource_name': 'aresource',
-                     'links': [{'href': u'http://foo/name/id/resources/0',
-                                'rel': u'self'},
-                               {'href': u'http://foo/name/id',
-                                'rel': u'stack'},
-                               {'href': u'http://foo/n_name/n_id',
-                                'rel': u'nested'}]}
+                     'links': [{'href': 'http://foo/name/id/resources/0',
+                                'rel': 'self'},
+                               {'href': 'http://foo/name/id',
+                                'rel': 'stack'},
+                               {'href': 'http://foo/n_name/n_id',
+                                'rel': 'nested'}]}
         rsrc = hc_res.Resource(manager=None, info=rsrc_info)
         self.assertEqual('n_name/n_id', utils.resource_nested_identifier(rsrc))
 
     def test_resource_nested_identifier_none(self):
         rsrc_info = {'resource_name': 'aresource',
-                     'links': [{'href': u'http://foo/name/id/resources/0',
-                                'rel': u'self'},
-                               {'href': u'http://foo/name/id',
-                                'rel': u'stack'}]}
+                     'links': [{'href': 'http://foo/name/id/resources/0',
+                                'rel': 'self'},
+                               {'href': 'http://foo/name/id',
+                                'rel': 'stack'}]}
         rsrc = hc_res.Resource(manager=None, info=rsrc_info)
         self.assertIsNone(utils.resource_nested_identifier(rsrc))
 
@@ -145,7 +145,7 @@ class ShellTest(testtools.TestCase):
         self.assertEqual('{}', utils.json_formatter({}))
         self.assertEqual('{\n  "foo": "bar"\n}',
                          utils.json_formatter({"foo": "bar"}))
-        self.assertEqual(u'{\n  "Uni": "test\u2665"\n}',
+        self.assertEqual('{\n  "Uni": "test\u2665"\n}',
                          utils.json_formatter({"Uni": u"test\u2665"}))
 
     def test_yaml_formatter(self):

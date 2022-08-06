@@ -282,7 +282,7 @@ class TestResourceSignal(TestResource):
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.resource_client.signal.assert_called_with(**{
-            'data': {u'message': u'Content'},
+            'data': {'message': 'Content'},
             'stack_id': 'my_stack',
             'resource_name': 'my_resource'
         })
@@ -315,7 +315,7 @@ class TestResourceSignal(TestResource):
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
         self.resource_client.signal.assert_called_with(**{
-            'data': {u'message': u'Content'},
+            'data': {'message': 'Content'},
             'stack_id': 'my_stack',
             'resource_name': 'my_resource'
         })

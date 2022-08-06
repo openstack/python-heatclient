@@ -94,7 +94,7 @@ class ResourceManagerTest(testtools.TestCase):
 
     def test_get_with_unicode_resource_name(self):
         fields = {'stack_id': 'teststack',
-                  'resource_name': u'\u5de5\u4f5c'}
+                  'resource_name': '\u5de5\u4f5c'}
         expect = ('GET',
                   '/stacks/teststack/abcd1234/resources'
                   '/%E5%B7%A5%E4%BD%9C')

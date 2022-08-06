@@ -41,7 +41,7 @@ class EventManagerTest(testtools.TestCase):
 
     def test_list_event_with_unicode_resource_name(self):
         stack_id = 'teststack',
-        resource_name = u'\u5de5\u4f5c'
+        resource_name = '\u5de5\u4f5c'
         manager = events.EventManager(None)
         with mock.patch('heatclient.v1.events.EventManager._resolve_stack_id')\
                 as mock_re:
@@ -130,7 +130,7 @@ class EventManagerTest(testtools.TestCase):
     @mock.patch('heatclient.common.utils.get_response_body')
     def test_get_event_with_unicode_resource_name(self, mock_utils, mock_re):
         fields = {'stack_id': 'teststack',
-                  'resource_name': u'\u5de5\u4f5c',
+                  'resource_name': '\u5de5\u4f5c',
                   'event_id': '1'}
 
         class FakeAPI(object):

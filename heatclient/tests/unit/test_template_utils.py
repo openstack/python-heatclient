@@ -61,9 +61,9 @@ class ShellEnvironmentTest(testtools.TestCase):
         _, env_dict = template_utils.process_environment_and_files(
             env_file)
         self.assertEqual(
-            {u'resource_registry': {u'resources': {
-                u'bar': {u'hooks': u'pre_create',
-                         u'restricted_actions': u'replace'}}}},
+            {'resource_registry': {'resources': {
+                'bar': {'hooks': 'pre_create',
+                        'restricted_actions': 'replace'}}}},
             env_dict)
         mock_url.assert_called_with('file://%s' % env_file)
 
@@ -942,22 +942,22 @@ parameters:
             json.loads(files.get('file:///home/my/dir/spam/egg.yaml')))
 
         self.assertEqual({
-            u'heat_template_version': u'2013-05-23',
-            u'parameters': {
-                u'param1': {
-                    u'type': u'string'
+            'heat_template_version': '2013-05-23',
+            'parameters': {
+                'param1': {
+                    'type': 'string'
                 }
             },
-            u'resources': {
-                u'resource1': {
-                    u'type': u'file:///home/my/dir/foo.yaml',
-                    u'properties': {u'foo': u'bar'}
+            'resources': {
+                'resource1': {
+                    'type': 'file:///home/my/dir/foo.yaml',
+                    'properties': {'foo': 'bar'}
                 },
-                u'resource2': {
-                    u'type': u'OS::Heat::ResourceGroup',
-                    u'properties': {
-                        u'resource_def': {
-                            u'type': u'file:///home/my/dir/spam/egg.yaml'
+                'resource2': {
+                    'type': 'OS::Heat::ResourceGroup',
+                    'properties': {
+                        'resource_def': {
+                            'type': 'file:///home/my/dir/spam/egg.yaml'
                         }
                     }
                 }
@@ -1018,13 +1018,13 @@ parameters:
                          json.loads(files.get('file:///home/my/dir/bar.yaml')))
 
         self.assertEqual({
-            u'heat_template_version': u'2013-05-23',
-            u'resources': {
-                u'foo': {
-                    u'type': u'OS::Type1',
-                    u'properties': {
-                        u'config': {
-                            u'get_file': u'file:///home/my/dir/bar.yaml'
+            'heat_template_version': '2013-05-23',
+            'resources': {
+                'foo': {
+                    'type': 'OS::Type1',
+                    'properties': {
+                        'config': {
+                            'get_file': 'file:///home/my/dir/bar.yaml'
                         }
                     }
                 }
@@ -1032,13 +1032,13 @@ parameters:
         }, json.loads(files.get('file:///home/my/dir/foo.yaml')))
 
         self.assertEqual({
-            u'heat_template_version': u'2013-05-23',
-            u'resources': {
-                u'resource1': {
-                    u'type': u'OS::Heat::Stack',
-                    u'properties': {
-                        u'template': {
-                            u'get_file': u'file:///home/my/dir/foo.yaml'
+            'heat_template_version': '2013-05-23',
+            'resources': {
+                'resource1': {
+                    'type': 'OS::Heat::Stack',
+                    'properties': {
+                        'template': {
+                            'get_file': 'file:///home/my/dir/foo.yaml'
                         }
                     }
                 }
@@ -1102,13 +1102,13 @@ parameters:
         resource_registry:
           "OS::Thingy": template.yaml
         '''
-        template_url = u'file:///home/my/dir/template.yaml'
-        foo_url = u'file:///home/my/dir/foo.yaml'
-        egg_url = u'file:///home/my/dir/spam/egg.yaml'
-        ham_url = u'file:///home/my/dir/spam/ham.yaml'
-        one_url = u'file:///home/my/dir/spam/one.yaml'
-        two_url = u'file:///home/my/dir/spam/two.yaml'
-        three_url = u'file:///home/my/dir/spam/three.yaml'
+        template_url = 'file:///home/my/dir/template.yaml'
+        foo_url = 'file:///home/my/dir/foo.yaml'
+        egg_url = 'file:///home/my/dir/spam/egg.yaml'
+        ham_url = 'file:///home/my/dir/spam/ham.yaml'
+        one_url = 'file:///home/my/dir/spam/one.yaml'
+        two_url = 'file:///home/my/dir/spam/two.yaml'
+        three_url = 'file:///home/my/dir/spam/three.yaml'
 
         def side_effect(args):
             if env_url == args:
@@ -1138,19 +1138,19 @@ parameters:
             env_dict)
 
         self.assertEqual({
-            u'heat_template_version': u'2013-05-23',
-            u'parameters': {u'param1': {u'type': u'string'}},
-            u'resources': {
-                u'resource1': {
-                    u'properties': {u'foo': u'bar'},
-                    u'type': foo_url
+            'heat_template_version': '2013-05-23',
+            'parameters': {'param1': {'type': 'string'}},
+            'resources': {
+                'resource1': {
+                    'properties': {'foo': 'bar'},
+                    'type': foo_url
                 },
-                u'resource2': {
-                    u'type': u'OS::Heat::ResourceGroup',
-                    u'properties': {
-                        u'resource_def': {
-                            u'type': egg_url},
-                        u'with': {u'get_file': ham_url}
+                'resource2': {
+                    'type': 'OS::Heat::ResourceGroup',
+                    'properties': {
+                        'resource_def': {
+                            'type': egg_url},
+                        'with': {'get_file': ham_url}
                     }
                 }
             }
@@ -1159,17 +1159,17 @@ parameters:
         self.assertEqual(yaml.safe_load(self.foo_template.decode('utf-8')),
                          json.loads(files.get(foo_url)))
         self.assertEqual({
-            u'heat_template_version': u'2013-05-23',
-            u'parameters': {u'param1': {u'type': u'string'}},
-            u'resources': {
-                u'resource1': {
-                    u'properties': {u'foo': u'bar'},
-                    u'type': one_url},
-                u'resource2': {
-                    u'type': u'OS::Heat::ResourceGroup',
-                    u'properties': {
-                        u'resource_def': {u'type': two_url},
-                        u'with': {u'get_file': three_url}
+            'heat_template_version': '2013-05-23',
+            'parameters': {'param1': {'type': 'string'}},
+            'resources': {
+                'resource1': {
+                    'properties': {'foo': 'bar'},
+                    'type': one_url},
+                'resource2': {
+                    'type': 'OS::Heat::ResourceGroup',
+                    'properties': {
+                        'resource_def': {'type': two_url},
+                        'with': {'get_file': three_url}
                     }
                 }
             }

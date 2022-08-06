@@ -872,7 +872,7 @@ class ShellTestUserPass(ShellBase):
             "stack_name": "teststack",
             "stack_status": 'CREATE_COMPLETE',
             "creation_time": "2012-10-25T01:58:47Z",
-            "tags": [u'tag1', u'tag2']
+            "tags": ['tag1', 'tag2']
         }}
         self.mock_request_get('/stacks/teststack/1', resp_dict)
 
@@ -996,7 +996,7 @@ class ShellTestUserPass(ShellBase):
             '  "AWSTemplateFormatVersion": "2010-09-09"',
             '  "Outputs": {}',
             '  "Parameters": {}',
-            u'  "Description": "test\u2665"',
+            '  "Description": "test\u2665"',
             '  "Resources": {}',
             '}'
         ]
@@ -2424,7 +2424,7 @@ class ShellTestUserPass(ShellBase):
             'output_value',
             'description',
             'output2',
-            "[u'output', u'value', u'2']",
+            "['output', 'value', '2']",
             'test output 2',
         ]
         for r in required:
@@ -2470,7 +2470,7 @@ class ShellTestUserPass(ShellBase):
 
         self._output_fake_response('output_uni')
         list_text = self.shell('output-show teststack/1 output_uni')
-        self.assertEqual(u'test\u2665\n', list_text)
+        self.assertEqual('test\u2665\n', list_text)
 
     def test_output_show_error(self):
         self.register_keystone_auth_fixture()
@@ -3672,7 +3672,7 @@ class ShellTestDeployment(ShellBase):
             'id': 'abcd'}}
 
         deploy_data = {'action': 'UPDATE',
-                       'config_id': u'abcd',
+                       'config_id': 'abcd',
                        'server_id': 'inst01',
                        'status': 'IN_PROGRESS',
                        'tenant_id': 'asdf'}
