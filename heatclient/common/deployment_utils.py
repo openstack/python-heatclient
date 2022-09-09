@@ -119,7 +119,9 @@ def build_signal_id(hc, args):
     if args.signal_transport != 'TEMP_URL_SIGNAL':
         return
 
-    if args.os_no_client_auth:
+    # NOTE(pas-ha) only heatclient has os-no-client-auth arg,
+    # osc plugin does not have it
+    if getattr(args, 'os_no_client_auth', False):
         raise exc.CommandError(_(
             'Cannot use --os-no-client-auth, auth required to create '
             'a Swift TempURL.'))
