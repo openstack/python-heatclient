@@ -141,7 +141,7 @@ abcde
         format_utils.print_software_deployment_output(ov, out=out,
                                                       name='deploy_stderr')
         self.assertEqual(
-            u'''\
+            '''\
   deploy_stderr: |
     ...
     2
@@ -161,7 +161,7 @@ abcde
                                                       name='deploy_stderr',
                                                       long=True)
         self.assertEqual(
-            u'''\
+            '''\
   deploy_stderr: |
     1
     2
