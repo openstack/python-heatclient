@@ -1699,7 +1699,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--existing' % template_file)
 
         required = [
@@ -1731,7 +1731,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--parameters="KeyPairName=updated_key" '
             '--existing' % template_file)
 
@@ -1767,7 +1767,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--existing '
             '--clear-parameter=InstanceType '
             '--clear-parameter=DBUsername '
@@ -1807,7 +1807,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--existing '
             '--parameters="KeyPairName=updated_key" '
             '--clear-parameter=InstanceType '
@@ -1873,7 +1873,7 @@ class ShellTestUserPass(ShellBase):
         update_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--existing '
             '--parameters="KeyPairName=updated_key" '
             '--tags=tag1,tag2 ' % template_file)
@@ -1942,7 +1942,7 @@ class ShellTestUserPass(ShellBase):
         update_preview_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--parameters="KeyPairName=updated_key" '
             '--dry-run ' % template_file)
 
@@ -1963,7 +1963,7 @@ class ShellTestUserPass(ShellBase):
         update_preview_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--show-nested '
             '--parameters="KeyPairName=updated_key" '
             '--dry-run ' % template_file)
@@ -1985,7 +1985,7 @@ class ShellTestUserPass(ShellBase):
         update_preview_text = self.shell(
             'stack-update teststack2/2 '
             '--template-file=%s '
-            '--enable-rollback '
+            '--rollback on '
             '--existing '
             '--parameters="KeyPairName=updated_key" '
             '--dry-run ' % template_file)
