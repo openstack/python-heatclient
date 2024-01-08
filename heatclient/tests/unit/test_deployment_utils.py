@@ -17,6 +17,7 @@ import swiftclient.client
 import testscenarios
 import testtools
 from testtools import matchers
+import time
 
 from heatclient.common import deployment_utils
 from heatclient import exc
@@ -297,7 +298,7 @@ class TempURLSignalTest(testtools.TestCase):
         self.assertThat(url, matchers.MatchesRegex(regexp))
 
         timeout = int(url.split('=')[-1])
-        self.assertTrue(timeout < 2147483647)
+        self.assertTrue(timeout < time.time() + 2*365*24*60*60)
 
     def test_get_temp_url_no_account_key(self):
         swift_client = mock.MagicMock()
