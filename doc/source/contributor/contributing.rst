@@ -22,18 +22,18 @@ Please refer the `python-heatclient Core Team
 
 New Feature Planning
 ~~~~~~~~~~~~~~~~~~~~
-python-heatclient features are tracked on `Storyboard <https://storyboard.openstack.org/#!/project/openstack/heat>`_.
+python-heatclient features are tracked on `Storyboard <https://storyboard.openstack.org/#!/project/openstack/python-heatclient>`_.
 Please specify the reported story with `python-heatclient`.
 
 Task Tracking
 ~~~~~~~~~~~~~
-We track our tasks in `Storyboard <https://storyboard.openstack.org/#!/project/openstack/heat>`_.
+We track our tasks in `Storyboard <https://storyboard.openstack.org/#!/project/openstack/python-heatclient>`_.
 Please specify the reported story with `python-heatclient`.
 
 Reporting a Bug
 ~~~~~~~~~~~~~~~
 You found an issue and want to make sure we are aware of it? You can do so on
-`Storyboard <https://storyboard.openstack.org/#!/project/openstack/heat>`_.
+`Storyboard <https://storyboard.openstack.org/#!/project/openstack/python-heatclient>`_.
 Please specify the reported story with `python-heatclient`.
 
 Getting Your Patch Merged
