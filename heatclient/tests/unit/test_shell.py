@@ -1051,7 +1051,7 @@ class ShellTestUserPass(ShellBase):
             "resources": {'1': {'name': 'r1'}},
             "creation_time": "2012-10-25T01:58:47Z",
             "timeout_mins": timeout,
-            "disable_rollback": not(enable_rollback),
+            "disable_rollback": not enable_rollback,
             "tags": tags
         }}
         self.mock_request_post('/stacks/preview', resp_dict,
@@ -2729,11 +2729,9 @@ class ShellTestEventsNested(ShellBase):
     def test_shell_nested_depth_invalid_value(self):
         self.register_keystone_auth_fixture()
         stack_id = 'teststack/1'
-        resource_name = 'aResource'
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'event-list {0} --nested-depth Z'.format(
-                stack_id, resource_name))
+            'event-list {0} --nested-depth Z'.format(stack_id))
         self.assertIn('--nested-depth invalid value Z', str(error))
 
     def test_shell_nested_depth_zero(self):

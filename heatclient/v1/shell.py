@@ -113,7 +113,7 @@ def do_stack_create(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'disable_rollback': not(args.enable_rollback),
+        'disable_rollback': not args.enable_rollback,
         'parameters': utils.format_all_parameters(args.parameters,
                                                   args.parameter_file,
                                                   args.template_file,
@@ -201,7 +201,7 @@ def do_stack_adopt(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'disable_rollback': not(args.enable_rollback),
+        'disable_rollback': not args.enable_rollback,
         'adopt_stack_data': adopt_data,
         'parameters': utils.format_parameters(args.parameters),
         'files': files,
@@ -262,7 +262,7 @@ def do_stack_preview(hc, args):
 
     fields = {
         'stack_name': args.name,
-        'disable_rollback': not(args.enable_rollback),
+        'disable_rollback': not args.enable_rollback,
         'timeout_mins': args.timeout,
         'parameters': utils.format_all_parameters(args.parameters,
                                                   args.parameter_file,
@@ -543,7 +543,7 @@ def do_stack_update(hc, args):
         except ValueError as ex:
             raise exc.CommandError(str(ex))
         else:
-            fields['disable_rollback'] = not(rollback)
+            fields['disable_rollback'] = not rollback
     # TODO(pshchelo): remove the following 'else' clause after deprecation
     # period of --enable-rollback switch and assign -r shortcut to --rollback
     else:

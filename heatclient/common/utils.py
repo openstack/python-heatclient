@@ -126,17 +126,17 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
 
 
 def link_formatter(links):
-    def format_link(l):
-        if 'rel' in l:
-            return "%s (%s)" % (l.get('href', ''), l.get('rel', ''))
+    def format_link(link):
+        if 'rel' in link:
+            return "%s (%s)" % (link.get('href', ''), link.get('rel', ''))
         else:
-            return "%s" % (l.get('href', ''))
-    return '\n'.join(format_link(l) for l in links or [])
+            return "%s" % (link.get('href', ''))
+    return '\n'.join(format_link(link) for link in links or [])
 
 
 def resource_nested_identifier(rsrc):
-    nested_link = [l for l in rsrc.links or []
-                   if l.get('rel') == 'nested']
+    nested_link = [link for link in rsrc.links or []
+                   if link.get('rel') == 'nested']
     if nested_link:
         nested_href = nested_link[0].get('href')
         nested_identifier = nested_href.split("/")[-2:]
@@ -204,11 +204,11 @@ class EventLogContext(object):
         def get_stack_id():
             if getattr(event, 'stack_id', None) is not None:
                 return event.stack_id
-            for l in getattr(event, 'links', []):
-                if l.get('rel') == 'stack':
-                    if 'href' not in l:
+            for link in getattr(event, 'links', []):
+                if link.get('rel') == 'stack':
+                    if 'href' not in link:
                         return None
-                    stack_link = l['href']
+                    stack_link = link['href']
                     return stack_link.split('/')[-1]
 
         stack_id = get_stack_id()

@@ -61,7 +61,7 @@ def get_hook_events(hc, stack_id, event_args, nested_depth=0,
             resource_event_map[(e.stack_name, e.resource_name)] = e
         elif e.resource_status_reason == hook_clear_event_reason:
             if resource_event_map.get(stack_resource):
-                del(resource_event_map[(e.stack_name, e.resource_name)])
+                del resource_event_map[(e.stack_name, e.resource_name)]
     return list(resource_event_map.values())
 
 
@@ -84,9 +84,9 @@ def get_events(hc, stack_id, event_args, nested_depth=0,
         return events
 
     first_links = getattr(events[0], 'links', [])
-    root_stack_link = [l for l in first_links
-                       if l.get('rel') == 'root_stack']
-    if root_stack_link:
+    root_stack_links = [link for link in first_links
+                        if link.get('rel') == 'root_stack']
+    if root_stack_links:
         # response has a root_stack link, indicating this is an API which
         # supports nested_depth
         return events
@@ -152,8 +152,8 @@ def _get_nested_events(hc, nested_depth, stack_id, event_args):
 
 
 def _get_stack_name_from_links(event):
-    links = dict((l.get('rel'),
-                  l.get('href')) for l in getattr(event, 'links', []))
+    links = {link.get('rel'): link.get('href')
+             for link in getattr(event, 'links', [])}
     href = links.get('stack')
     if not href:
         return
@@ -197,8 +197,8 @@ def poll_for_events(hc, stack_name, action=None, poll_period=5, marker=None,
             return False
 
         phys_id = getattr(event, 'physical_resource_id', '')
-        links = dict((l.get('rel'),
-                      l.get('href')) for l in getattr(event, 'links', []))
+        links = {link.get('rel'): link.get('href')
+                 for link in getattr(event, 'links', [])}
         stack_id = links.get('stack', phys_id).rsplit('/', 1)[-1]
         return stack_id == phys_id
 

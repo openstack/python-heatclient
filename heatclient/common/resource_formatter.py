@@ -21,7 +21,7 @@ class ResourceDotInfo(object):
 
     def __init__(self, res):
         self.resource = res
-        links = {l['rel']: l['href'] for l in res.links}
+        links = {link['rel']: link['href'] for link in res.links}
         self.nested_dot_id = self.dot_id(links.get('nested'), 'stack')
         self.stack_dot_id = self.dot_id(links.get('stack'), 'stack')
         self.res_dot_id = self.dot_id(links.get('self'))

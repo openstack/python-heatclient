@@ -64,26 +64,26 @@ class ListStackFailures(command.Command):
     def _append_failed_resources(self, failures, resources, resource_path):
         """Recursively build list of failed resources."""
         appended = False
-        for r in resources:
-            if not r.resource_status.endswith('FAILED'):
+        for rsc in resources:
+            if not rsc.resource_status.endswith('FAILED'):
                 continue
             # determine if this resources is a nested stack
-            links_rel = list([l['rel'] for l in r.links])
+            links_rel = list([link['rel'] for link in rsc.links])
             is_nested = 'nested' in links_rel
             nested_appended = False
             next_resource_path = list(resource_path)
-            next_resource_path.append(r.resource_name)
+            next_resource_path.append(rsc.resource_name)
             if is_nested:
                 try:
                     nested_resources = self.heat_client.resources.list(
-                        r.physical_resource_id)
+                        rsc.physical_resource_id)
                     nested_appended = self._append_failed_resources(
                         failures, nested_resources, next_resource_path)
                 except exc.HTTPNotFound:
                     # there is a failed resource but no stack
                     pass
             if not nested_appended:
-                failures['.'.join(next_resource_path)] = r
+                failures['.'.join(next_resource_path)] = rsc
             appended = True
         return appended
 

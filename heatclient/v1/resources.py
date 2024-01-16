@@ -40,9 +40,9 @@ class Resource(base.Resource):
     def stack_name(self):
         if not hasattr(self, 'links'):
             return
-        for l in self.links:
-            if l['rel'] == 'stack':
-                return l['href'].split('/')[-2]
+        for link in self.links:
+            if link['rel'] == 'stack':
+                return link['href'].split('/')[-2]
 
 
 class ResourceManager(stacks.StackChildManager):
