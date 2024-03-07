@@ -7,6 +7,7 @@ Welcome to Python-heatclient releasenotes's documentation!
    :caption: Contents:
 
    unreleased
+   2024.1
    2023.2
    2023.1
    zed
