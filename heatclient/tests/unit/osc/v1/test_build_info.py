@@ -27,7 +27,7 @@ class TestBuildInfo(orchestration_fakes.TestOrchestrationv1):
     }
 
     def setUp(self):
-        super(TestBuildInfo, self).setUp()
+        super().setUp()
         self.cmd = osc_build_info.BuildInfo(self.app, None)
         self.mock_client = self.app.client_manager.orchestration
         self.mock_client.build_info.build_info = mock.Mock(

@@ -23,7 +23,7 @@ class OpenStackClientStackTest(base.OpenStackClientTestBase):
     """
 
     def setUp(self):
-        super(OpenStackClientStackTest, self).setUp()
+        super().setUp()
         self.stack_name = utils.rand_name(name='test-stack')
 
     def _stack_create_minimal(self, from_url=False):

@@ -61,7 +61,7 @@ class EventManager(stacks.StackChildManager):
             url = '/stacks/%s/events' % stack_id
         else:
             stack_id = self._resolve_stack_id(stack_id)
-            url = '/stacks/%s/resources/%s/events' % (
+            url = '/stacks/{}/resources/{}/events'.format(
                 parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(resource_name)))
         if params:
@@ -79,7 +79,7 @@ class EventManager(stacks.StackChildManager):
         :param event_id: ID of event to get the details for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s/events/%s' % (
+        url_str = '/stacks/{}/resources/{}/events/{}'.format(
                   parse.quote(stack_id),
                   parse.quote(encodeutils.safe_encode(resource_name)),
                   parse.quote(event_id, ''))

@@ -21,7 +21,7 @@ from heatclient.v1 import software_deployments
 class SoftwareDeploymentTest(testtools.TestCase):
 
     def setUp(self):
-        super(SoftwareDeploymentTest, self).setUp()
+        super().setUp()
         deployment_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.deployment = software_deployments.SoftwareDeployment(
             mock.MagicMock(), info={'id': deployment_id})
@@ -48,7 +48,7 @@ class SoftwareDeploymentTest(testtools.TestCase):
 class SoftwareDeploymentManagerTest(testtools.TestCase):
 
     def setUp(self):
-        super(SoftwareDeploymentManagerTest, self).setUp()
+        super().setUp()
         self.manager = software_deployments.SoftwareDeploymentManager(
             mock.MagicMock())
 

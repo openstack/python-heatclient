@@ -24,7 +24,7 @@ from heatclient.v1 import resources as v1_resources
 
 class TestResource(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestResource, self).setUp()
+        super().setUp()
         self.resource_client = self.app.client_manager.orchestration.resources
 
 
@@ -49,7 +49,7 @@ class TestStackResourceShow(TestResource):
     }
 
     def setUp(self):
-        super(TestStackResourceShow, self).setUp()
+        super().setUp()
         self.cmd = resource.ResourceShow(self.app, None)
         self.resource_client.get.return_value = v1_resources.Resource(
             None, self.response)
@@ -117,7 +117,7 @@ class TestStackResourceList(TestResource):
             'CREATE_COMPLETE', '2016-02-01T20:20:53']
 
     def setUp(self):
-        super(TestStackResourceList, self).setUp()
+        super().setUp()
         self.cmd = resource.ResourceList(self.app, None)
         self.resource_client.list.return_value = [
             v1_resources.Resource(None, self.response)]
@@ -218,7 +218,7 @@ class TestStackResourceList(TestResource):
 class TestResourceMetadata(TestResource):
 
     def setUp(self):
-        super(TestResourceMetadata, self).setUp()
+        super().setUp()
         self.cmd = resource.ResourceMetadata(self.app, None)
         self.resource_client.metadata.return_value = {}
 
@@ -254,7 +254,7 @@ class TestResourceMetadata(TestResource):
 class TestResourceSignal(TestResource):
 
     def setUp(self):
-        super(TestResourceSignal, self).setUp()
+        super().setUp()
         self.cmd = resource.ResourceSignal(self.app, None)
 
     def test_resource_signal(self):
@@ -323,7 +323,7 @@ class TestResourceSignal(TestResource):
 
 class TestResourceMarkUnhealthy(TestResource):
     def setUp(self):
-        super(TestResourceMarkUnhealthy, self).setUp()
+        super().setUp()
         self.cmd = resource.ResourceMarkUnhealthy(self.app, None)
         self.resource_client.mark_unhealthy = mock.Mock()
 

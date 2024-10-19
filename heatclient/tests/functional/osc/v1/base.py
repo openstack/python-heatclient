@@ -21,7 +21,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
     """Command line client base functions."""
 
     def setUp(self):
-        super(OpenStackClientTestBase, self).setUp()
+        super().setUp()
         self.parser = output_parser
 
     def _get_clients(self):
@@ -48,7 +48,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
         items = self.parser.listing(output)
         for item in items:
             obj[item['Field']] = str(item['Value'])
-        return dict((self._key_name(k), v) for k, v in obj.items())
+        return {self._key_name(k): v for k, v in obj.items()}
 
     def _key_name(self, key):
         return key.lower().replace(' ', '_')
@@ -60,7 +60,7 @@ class OpenStackClientTestBase(base.ClientTestBase):
             if item['ID'] == id:
                 obj = item
                 break
-        return dict((self._key_name(k), v) for k, v in obj.items())
+        return {self._key_name(k): v for k, v in obj.items()}
 
     def _stack_create(self, name, template, parameters=[], wait=True):
         cmd = 'stack create ' + name

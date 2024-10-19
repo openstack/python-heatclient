@@ -26,7 +26,7 @@ from heatclient.v1 import stacks
 from heatclient.v1 import template_versions
 
 
-class Client(object):
+class Client:
     """Client for the Heat v1 API.
 
     :param string endpoint: A user-supplied endpoint URL for the heat

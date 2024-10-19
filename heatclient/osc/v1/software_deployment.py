@@ -33,7 +33,7 @@ class CreateDeployment(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + '.CreateDeployment')
 
     def get_parser(self, prog_name):
-        parser = super(CreateDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'name',
             metavar='<deployment-name>',
@@ -136,7 +136,7 @@ class DeleteDeployment(command.Command):
     log = logging.getLogger(__name__ + '.DeleteDeployment')
 
     def get_parser(self, prog_name):
-        parser = super(DeleteDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'deployment',
             metavar='<deployment>',
@@ -185,7 +185,7 @@ class ListDeployment(command.Lister):
     log = logging.getLogger(__name__ + '.ListDeployment')
 
     def get_parser(self, prog_name):
-        parser = super(ListDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '--server',
             metavar='<server>',
@@ -225,7 +225,7 @@ class ShowDeployment(command.ShowOne):
     log = logging.getLogger(__name__ + ".ShowSoftwareDeployment")
 
     def get_parser(self, prog_name):
-        parser = super(ShowDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'deployment',
             metavar='<deployment>',
@@ -272,7 +272,7 @@ class ShowMetadataDeployment(command.Command):
     log = logging.getLogger(__name__ + '.ShowMetadataDeployment')
 
     def get_parser(self, prog_name):
-        parser = super(ShowMetadataDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'server',
             metavar='<server>',
@@ -294,7 +294,7 @@ class ShowOutputDeployment(command.Command):
     log = logging.getLogger(__name__ + '.ShowOutputDeployment')
 
     def get_parser(self, prog_name):
-        parser = super(ShowOutputDeployment, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'deployment',
             metavar='<deployment>',

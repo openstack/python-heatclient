@@ -32,7 +32,7 @@ class ListStackFailures(command.Command):
                              long=parsed_args.long)
 
     def get_parser(self, prog_name):
-        parser = super(ListStackFailures, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',

@@ -106,7 +106,7 @@ class EventManagerTest(testtools.TestCase):
                   'resource_name': 'testresource',
                   'event_id': '1'}
 
-        class FakeAPI(object):
+        class FakeAPI:
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):
@@ -133,7 +133,7 @@ class EventManagerTest(testtools.TestCase):
                   'resource_name': '\u5de5\u4f5c',
                   'event_id': '1'}
 
-        class FakeAPI(object):
+        class FakeAPI:
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):

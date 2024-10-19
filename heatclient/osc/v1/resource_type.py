@@ -30,8 +30,7 @@ class ResourceTypeShow(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ResourceTypeShow")
 
     def get_parser(self, prog_name):
-        parser = super(ResourceTypeShow,
-                       self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'resource_type',
             metavar='<resource-type>',
@@ -90,8 +89,7 @@ class ResourceTypeList(command.Lister):
     log = logging.getLogger(__name__ + '.ResourceTypeList')
 
     def get_parser(self, prog_name):
-        parser = super(ResourceTypeList,
-                       self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '--filter',
             dest='filter',

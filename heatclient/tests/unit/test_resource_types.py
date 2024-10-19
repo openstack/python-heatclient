@@ -23,7 +23,7 @@ class ResourceTypeManagerTest(testtools.TestCase):
 
     def _base_test(self, expect, key):
 
-        class FakeAPI(object):
+        class FakeAPI:
             """Fake API and ensure request url is correct."""
 
             def get(self, *args, **kwargs):
@@ -60,11 +60,11 @@ class ResourceTypeManagerTest(testtools.TestCase):
         key = 'resource_types'
         expect = ('GET', '/resource_types')
 
-        class FakeResponse(object):
+        class FakeResponse:
             def json(self):
                 return {key: {}}
 
-        class FakeClient(object):
+        class FakeClient:
             def get(self, *args, **kwargs):
                 assert ('GET', args[0]) == expect
                 return FakeResponse()

@@ -84,7 +84,7 @@ OS::Heat::RandomString" ];
 '''
 
     def setUp(self):
-        super(TestStackResourceListDotFormat, self).setUp()
+        super().setUp()
         self.resource_client = self.app.client_manager.orchestration.resources
         self.cmd = resource.ResourceList(self.app, None)
         with open(self.response_path) as f:

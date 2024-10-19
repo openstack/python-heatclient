@@ -146,7 +146,7 @@ class ShellTest(testtools.TestCase):
         self.assertEqual('{\n  "foo": "bar"\n}',
                          utils.json_formatter({"foo": "bar"}))
         self.assertEqual('{\n  "Uni": "test\u2665"\n}',
-                         utils.json_formatter({"Uni": u"test\u2665"}))
+                         utils.json_formatter({"Uni": "test\u2665"}))
 
     def test_yaml_formatter(self):
         self.assertEqual('null\n...\n', utils.yaml_formatter(None))
@@ -162,8 +162,8 @@ class ShellTest(testtools.TestCase):
         self.assertEqual(
             'one two three four five six seven eight nine ten eleven\ntwelve',
             utils.text_wrap_formatter(
-                ('one two three four five six seven '
-                 'eight nine ten eleven twelve')))
+                'one two three four five six seven '
+                'eight nine ten eleven twelve'))
 
     def test_newline_list_formatter(self):
         self.assertEqual('', utils.newline_list_formatter(None))
@@ -380,7 +380,7 @@ class ShellTestParameterFiles(testtools.TestCase):
 class TestURLFunctions(testtools.TestCase):
 
     def setUp(self):
-        super(TestURLFunctions, self).setUp()
+        super().setUp()
         self.m = mock.MagicMock()
 
         self.addCleanup(self.m.UnsetStubs)

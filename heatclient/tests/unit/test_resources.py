@@ -21,7 +21,7 @@ from heatclient.common import utils
 from heatclient.v1 import resources
 
 
-class FakeAPI(object):
+class FakeAPI:
     """Fake API and ensure request url is correct."""
 
     def __init__(self, expect, key):
@@ -105,11 +105,11 @@ class ResourceManagerTest(testtools.TestCase):
     def _test_list(self, fields, expect):
         key = 'resources'
 
-        class FakeResponse(object):
+        class FakeResponse:
             def json(self):
                 return {key: {}}
 
-        class FakeClient(object):
+        class FakeClient:
             def get(self, *args, **kwargs):
                 assert args[0] == expect
                 return FakeResponse()
@@ -161,7 +161,7 @@ class ResourceManagerTest(testtools.TestCase):
         expect = ('GET', '/resource_types/testresource/template')
         key = None
 
-        class FakeAPI(object):
+        class FakeAPI:
             """Fake API and ensure request url is correct."""
 
             def get(self, *args, **kwargs):

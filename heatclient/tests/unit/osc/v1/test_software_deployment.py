@@ -25,7 +25,7 @@ from heatclient.v1 import software_deployments
 
 class TestDeployment(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestDeployment, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.config_client = self.mock_client.software_configs
         self.sd_client = self.mock_client.software_deployments
@@ -108,7 +108,7 @@ class TestDeploymentCreate(TestDeployment):
     }
 
     def setUp(self):
-        super(TestDeploymentCreate, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.CreateDeployment(self.app, None)
         self.config_client.create.return_value = \
             software_configs.SoftwareConfig(None, self.config)
@@ -220,7 +220,7 @@ class TestDeploymentCreate(TestDeployment):
 class TestDeploymentDelete(TestDeployment):
 
     def setUp(self):
-        super(TestDeploymentDelete, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.DeleteDeployment(self.app, None)
 
     def test_deployment_delete_success(self):
@@ -284,7 +284,7 @@ class TestDeploymentList(TestDeployment):
     }
 
     def setUp(self):
-        super(TestDeploymentList, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.ListDeployment(self.app, None)
         self.sd_client.list = mock.MagicMock(return_value=[self.data])
 
@@ -332,7 +332,7 @@ class TestDeploymentShow(TestDeployment):
     }}
 
     def setUp(self):
-        super(TestDeploymentShow, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.ShowDeployment(self.app, None)
 
     def test_deployment_show(self):
@@ -378,7 +378,7 @@ class TestDeploymentShow(TestDeployment):
 class TestDeploymentMetadataShow(TestDeployment):
 
     def setUp(self):
-        super(TestDeploymentMetadataShow, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.ShowMetadataDeployment(self.app, None)
         self.sd_client.metadata.return_value = {}
 
@@ -406,7 +406,7 @@ class TestDeploymentOutputShow(TestDeployment):
     }
 
     def setUp(self):
-        super(TestDeploymentOutputShow, self).setUp()
+        super().setUp()
         self.cmd = software_deployment.ShowOutputDeployment(self.app, None)
 
     def test_deployment_output_show(self):

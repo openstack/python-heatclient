@@ -93,8 +93,8 @@ def build_derived_config_params(action, source, name, input_values,
 
 def create_temp_url(swift_client, name, timeout, container=None):
 
-    container = container or '%(name)s-%(uuid)s' % {
-        'name': name, 'uuid': uuid.uuid4()}
+    container = container or '{name}-{uuid}'.format(
+        name=name, uuid=uuid.uuid4())
     object_name = str(uuid.uuid4())
 
     swift_client.put_container(container)
@@ -105,12 +105,12 @@ def create_temp_url(swift_client, name, timeout, container=None):
 
     key = swift_client.head_account()[key_header]
     project_path = swift_client.url.split('/')[-1]
-    path = '/v1/%s/%s/%s' % (project_path, container, object_name)
+    path = '/v1/{}/{}/{}'.format(project_path, container, object_name)
     timeout_secs = timeout * 60
     tempurl = swiftclient_utils.generate_temp_url(path, timeout_secs, key,
                                                   'PUT')
     sw_url = urlparse.urlparse(swift_client.url)
-    put_url = '%s://%s%s' % (sw_url.scheme, sw_url.netloc, tempurl)
+    put_url = '{}://{}{}'.format(sw_url.scheme, sw_url.netloc, tempurl)
     swift_client.put_object(container, object_name, '')
     return put_url
 

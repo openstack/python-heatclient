@@ -68,7 +68,7 @@ def get_system_ca_file():
     LOG.warning("System ca file could not be found.")
 
 
-class HTTPClient(object):
+class HTTPClient:
 
     def __init__(self, endpoint, **kwargs):
         self.endpoint = endpoint
@@ -146,7 +146,7 @@ class HTTPClient(object):
     def log_http_response(resp):
         status = (resp.raw.version / 10.0, resp.status_code, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
-        dump.extend(['%s: %s' % (k, v) for k, v in resp.headers.items()])
+        dump.extend(['{}: {}'.format(k, v) for k, v in resp.headers.items()])
         dump.append('')
         if resp.content:
             content = resp.content
@@ -216,7 +216,7 @@ class HTTPClient(object):
             message = (_("Error finding address for %(url)s: %(e)s") %
                        {'url': self.endpoint_url + url, 'e': e})
             raise exc.InvalidEndpoint(message=message)
-        except (socket.error, socket.timeout) as e:
+        except (OSError, socket.timeout) as e:
             endpoint = self.endpoint
             message = (_("Error communicating with %(endpoint)s %(e)s") %
                        {'endpoint': endpoint, 'e': e})
@@ -313,7 +313,7 @@ class SessionClient(adapter.LegacyJsonAdapter):
         if 'data' in kwargs:
             kwargs['data'] = jsonutils.dumps(kwargs['data'])
 
-        resp, body = super(SessionClient, self).request(
+        resp, body = super().request(
             url, method,
             raise_exc=False,
             **kwargs)

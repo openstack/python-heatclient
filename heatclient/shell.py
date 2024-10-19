@@ -32,7 +32,7 @@ from heatclient import exc
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 
 
-class HeatShell(object):
+class HeatShell:
 
     def _append_global_identity_args(self, parser):
         # FIXME(gyee): these are global identity (Keystone) arguments which
@@ -592,8 +592,8 @@ class HeatShell(object):
 class HelpFormatter(argparse.HelpFormatter):
     def start_section(self, heading):
         # Title-case the headings
-        heading = '%s%s' % (heading[0].upper(), heading[1:])
-        super(HelpFormatter, self).start_section(heading)
+        heading = '{}{}'.format(heading[0].upper(), heading[1:])
+        super().start_section(heading)
 
 
 def main(args=None):

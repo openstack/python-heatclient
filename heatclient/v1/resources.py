@@ -77,7 +77,7 @@ class ResourceManager(stacks.StackChildManager):
         :param with_attr: Attributes to show
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s' % (
+        url_str = '/stacks/{}/resources/{}'.format(
                   parse.quote(stack_id),
                   parse.quote(encodeutils.safe_encode(resource_name)))
         if with_attr:
@@ -95,7 +95,7 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to get metadata for
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s/metadata' % (
+        url_str = '/stacks/{}/resources/{}/metadata'.format(
                   parse.quote(stack_id),
                   parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.get(url_str)
@@ -109,7 +109,7 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_name: ID of resource to send signal to
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s/signal' % (
+        url_str = '/stacks/{}/resources/{}/signal'.format(
                   parse.quote(stack_id),
                   parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.post(url_str, data=data)
@@ -126,7 +126,7 @@ class ResourceManager(stacks.StackChildManager):
         :param resource_status_reason: Reason for resource status change.
         """
         stack_id = self._resolve_stack_id(stack_id)
-        url_str = '/stacks/%s/resources/%s' % (
+        url_str = '/stacks/{}/resources/{}'.format(
                   parse.quote(stack_id),
                   parse.quote(encodeutils.safe_encode(resource_name)))
         resp = self.client.patch(

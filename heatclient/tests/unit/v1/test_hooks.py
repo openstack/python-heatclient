@@ -21,7 +21,7 @@ import heatclient.v1.shell as shell
 
 class TestHooks(testtools.TestCase):
     def setUp(self):
-        super(TestHooks, self).setUp()
+        super().setUp()
         self.client = mock.Mock()
         nested_stack = mock.Mock()
         self.client.resources.get = mock.Mock(name='thingy',

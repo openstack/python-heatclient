@@ -24,7 +24,7 @@ from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 class ListStackFailuresTest(orchestration_fakes.TestOrchestrationv1):
 
     def setUp(self):
-        super(ListStackFailuresTest, self).setUp()
+        super().setUp()
         self.cmd = stack_failures.ListStackFailures(self.app, None)
         self.cmd.heat_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks

@@ -31,7 +31,7 @@ class ListSnapshot(command.Lister):
     log = logging.getLogger(__name__ + ".ListSnapshot")
 
     def get_parser(self, prog_name):
-        parser = super(ListSnapshot, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -66,7 +66,7 @@ class ShowSnapshot(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ShowSnapshot")
 
     def get_parser(self, prog_name):
-        parser = super(ShowSnapshot, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -105,7 +105,7 @@ class RestoreSnapshot(command.Command):
     log = logging.getLogger(__name__ + ".RestoreSnapshot")
 
     def get_parser(self, prog_name):
-        parser = super(RestoreSnapshot, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -141,7 +141,7 @@ class CreateSnapshot(command.ShowOne):
     log = logging.getLogger(__name__ + ".CreateSnapshot")
 
     def get_parser(self, prog_name):
-        parser = super(CreateSnapshot, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -181,7 +181,7 @@ class DeleteSnapshot(command.Command):
     log = logging.getLogger(__name__ + ".DeleteSnapshot")
 
     def get_parser(self, prog_name):
-        parser = super(DeleteSnapshot, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',

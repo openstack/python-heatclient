@@ -49,7 +49,7 @@ class TestServiceList(orchestration_fakes.TestOrchestrationv1):
                'Topic', 'Updated At', 'Status']
 
     def setUp(self):
-        super(TestServiceList, self).setUp()
+        super().setUp()
         self.cmd = osc_service.ListService(self.app, None)
         self.mock_client = self.app.client_manager.orchestration
         self.mock_client.services.list.return_value = self.response

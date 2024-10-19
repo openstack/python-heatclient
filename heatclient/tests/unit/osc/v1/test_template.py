@@ -22,7 +22,7 @@ from heatclient.v1 import template_versions
 
 class TestTemplate(fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestTemplate, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.template_versions = self.mock_client.template_versions
 
@@ -70,7 +70,7 @@ class TestTemplateFunctionList(TestTemplate):
     ]
 
     def setUp(self):
-        super(TestTemplateFunctionList, self).setUp()
+        super().setUp()
         self.tv1 = template_versions.TemplateVersion(None, self.defaults[0])
         self.tv2 = template_versions.TemplateVersion(None, self.defaults[1])
         self.tv_with_cf = template_versions.TemplateVersion(
@@ -122,7 +122,7 @@ class TestTemplateValidate(TestTemplate):
     }
 
     def setUp(self):
-        super(TestTemplateValidate, self).setUp()
+        super().setUp()
         self.stack_client = self.app.client_manager.orchestration.stacks
         self.stack_client.validate = mock.MagicMock(return_value={})
         self.cmd = template.Validate(self.app, None)

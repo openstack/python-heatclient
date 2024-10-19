@@ -20,11 +20,11 @@ from heatclient.v1 import actions
 class ActionManagerTest(testtools.TestCase):
 
     def setUp(self):
-        super(ActionManagerTest, self).setUp()
+        super().setUp()
 
     def _base_test(self, expect_args, expect_kwargs):
 
-        class FakeAPI(object):
+        class FakeAPI:
             """Fake API and ensure request url is correct."""
 
             def json_request(self, *args, **kwargs):

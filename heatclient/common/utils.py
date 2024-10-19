@@ -128,7 +128,7 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
 def link_formatter(links):
     def format_link(link):
         if 'rel' in link:
-            return "%s (%s)" % (link.get('href', ''), link.get('rel', ''))
+            return "{} ({})".format(link.get('href', ''), link.get('rel', ''))
         else:
             return "%s" % (link.get('href', ''))
     return '\n'.join(format_link(link) for link in links or [])
@@ -174,7 +174,7 @@ def print_dict(d, formatters=None):
     print(pt.get_string(sortby='Property'))
 
 
-class EventLogContext(object):
+class EventLogContext:
 
     def __init__(self):
         # key is a stack id or the name of the nested stack, value is a tuple

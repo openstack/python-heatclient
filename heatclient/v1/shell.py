@@ -363,7 +363,7 @@ def do_stack_abandon(hc, args):
             try:
                 with open(args.output_file, "w") as f:
                     f.write(result)
-            except IOError as err:
+            except OSError as err:
                 print(result)
                 raise exc.CommandError(str(err))
         else:

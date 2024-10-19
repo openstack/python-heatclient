@@ -34,7 +34,7 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 class TestStack(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestStack, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks
 
@@ -54,7 +54,7 @@ class TestStackCreate(TestStack):
     }
 
     def setUp(self):
-        super(TestStackCreate, self).setUp()
+        super().setUp()
         self.cmd = stack.CreateStack(self.app, None)
         self.stack_client.create.return_value = {'stack': {'id': '1234'}}
         self.stack_client.get.return_value = {
@@ -203,7 +203,7 @@ class TestStackUpdate(TestStack):
     }
 
     def setUp(self):
-        super(TestStackUpdate, self).setUp()
+        super().setUp()
         self.cmd = stack.UpdateStack(self.app, None)
         self.stack_client.update.return_value = {'stack': {'id': '1234'}}
         self.stack_client.preview_update.return_value = {
@@ -443,7 +443,7 @@ class TestStackShow(TestStack):
     }
 
     def setUp(self):
-        super(TestStackShow, self).setUp()
+        super().setUp()
         self.cmd = stack.ShowStack(self.app, None)
         self.stack_client.get.return_value = stacks.Stack(
             None, self.get_response)
@@ -507,7 +507,7 @@ class TestStackList(TestStack):
     data_with_project['project'] = 'test_project'
 
     def setUp(self):
-        super(TestStackList, self).setUp()
+        super().setUp()
         self.cmd = stack.ListStack(self.app, None)
         self.stack_client.list.return_value = [stacks.Stack(None, self.data)]
         utils.get_dict_properties = mock.MagicMock(return_value='')
@@ -649,7 +649,7 @@ class TestStackList(TestStack):
 class TestStackDelete(TestStack):
 
     def setUp(self):
-        super(TestStackDelete, self).setUp()
+        super().setUp()
         self.cmd = stack.DeleteStack(self.app, None)
         self.stack_client.get.side_effect = heat_exc.HTTPNotFound
 
@@ -749,9 +749,9 @@ class TestStackAdopt(TestStack):
     adopt_file = 'heatclient/tests/test_templates/adopt.json'
     adopt_with_files = ('heatclient/tests/test_templates/adopt_with_file.json')
 
-    with open(adopt_file, 'r') as f:
+    with open(adopt_file) as f:
         adopt_data = f.read()
-    with open(adopt_with_files, 'r') as f:
+    with open(adopt_with_files) as f:
         adopt_with_files_data = f.read()
 
     defaults = {
@@ -777,7 +777,7 @@ class TestStackAdopt(TestStack):
     }
 
     def setUp(self):
-        super(TestStackAdopt, self).setUp()
+        super().setUp()
         self.cmd = stack.AdoptStack(self.app, None)
         self.stack_client.create.return_value = {'stack': {'id': '1234'}}
 
@@ -851,7 +851,7 @@ class TestStackExport(TestStack):
     response = dict(zip(columns, data))
 
     def setUp(self):
-        super(TestStackExport, self).setUp()
+        super().setUp()
         self.cmd = stack.ExportStack(self.app, None)
         self.stack_client.export.return_value = self.response
 
@@ -887,7 +887,7 @@ class TestStackAbandon(TestStack):
     response = dict(zip(columns, data))
 
     def setUp(self):
-        super(TestStackAbandon, self).setUp()
+        super().setUp()
         self.cmd = stack.AbandonStack(self.app, None)
         self.stack_client.abandon.return_value = self.response
 
@@ -944,7 +944,7 @@ class TestStackOutputShow(TestStack):
     }
 
     def setUp(self):
-        super(TestStackOutputShow, self).setUp()
+        super().setUp()
         self.cmd = stack.OutputShowStack(self.app, None)
         self.stack_client.get.return_value = stacks.Stack(None, self.response)
 
@@ -1041,7 +1041,7 @@ class TestStackOutputList(TestStack):
     }
 
     def setUp(self):
-        super(TestStackOutputList, self).setUp()
+        super().setUp()
         self.cmd = stack.OutputListStack(self.app, None)
         self.stack_client.get = mock.MagicMock(
             return_value=stacks.Stack(None, self.response))
@@ -1083,7 +1083,7 @@ class TestStackTemplateShow(TestStack):
               'parameters', 'resources', 'outputs']
 
     def setUp(self):
-        super(TestStackTemplateShow, self).setUp()
+        super().setUp()
         self.cmd = stack.TemplateShowStack(self.app, None)
 
     def test_stack_template_show_full_template(self):
@@ -1118,7 +1118,7 @@ class TestStackTemplateShow(TestStack):
         self.assertRaises(exc.CommandError, self.cmd.take_action, parsed_args)
 
 
-class _TestStackCheckBase(object):
+class _TestStackCheckBase:
 
     stack = stacks.Stack(None, {
         "id": '1234',
@@ -1204,7 +1204,7 @@ class _TestStackCheckBase(object):
 class TestStackSuspend(_TestStackCheckBase, TestStack):
 
     def setUp(self):
-        super(TestStackSuspend, self).setUp()
+        super().setUp()
         self._setUp(
             stack.SuspendStack(self.app, None),
             self.mock_client.actions.suspend,
@@ -1230,7 +1230,7 @@ class TestStackSuspend(_TestStackCheckBase, TestStack):
 class TestStackResume(_TestStackCheckBase, TestStack):
 
     def setUp(self):
-        super(TestStackResume, self).setUp()
+        super().setUp()
         self._setUp(
             stack.ResumeStack(self.app, None),
             self.mock_client.actions.resume,
@@ -1264,7 +1264,7 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
     })
 
     def setUp(self):
-        super(TestStackCancel, self).setUp()
+        super().setUp()
         self._setUp(
             stack.CancelStack(self.app, None),
             self.mock_client.actions.cancel_update,
@@ -1328,7 +1328,7 @@ class TestStackCancel(_TestStackCheckBase, TestStack):
 class TestStackCheck(_TestStackCheckBase, TestStack):
 
     def setUp(self):
-        super(TestStackCheck, self).setUp()
+        super().setUp()
         self._setUp(
             stack.CheckStack(self.app, None),
             self.mock_client.actions.check,
@@ -1403,7 +1403,7 @@ class TestStackHookPoll(TestStack):
             )
 
     def setUp(self):
-        super(TestStackHookPoll, self).setUp()
+        super().setUp()
         self.cmd = stack.StackHookPoll(self.app, None)
         self.mock_client.stacks.get.return_value = self.stack
         self.mock_client.events.list.return_value = [self.event0, self.event1]
@@ -1448,7 +1448,7 @@ class TestStackHookClear(TestStack):
     })
 
     def setUp(self):
-        super(TestStackHookClear, self).setUp()
+        super().setUp()
         self.cmd = stack.StackHookClear(self.app, None)
         self.mock_client.stacks.get.return_value = self.stack
         self.mock_client.resources.list.return_value = [self.resource]
@@ -1499,7 +1499,7 @@ class TestEnvironmentStackShow(TestStack):
     }
 
     def setUp(self):
-        super(TestEnvironmentStackShow, self).setUp()
+        super().setUp()
         self.cmd = stack.EnvironmentShowStack(self.app, None)
 
     def test_stack_environment_show(self):
