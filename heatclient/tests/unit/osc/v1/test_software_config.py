@@ -83,7 +83,7 @@ class TestListConfig(TestConfig):
         arglist = ['--limit', '3']
         parsed_args = self.check_parser(self.cmd, arglist, [])
         self.cmd.take_action(parsed_args)
-        self.mock_client.software_configs.list.assert_called_with(limit='3')
+        self.mock_client.software_configs.list.assert_called_with(limit=3)
 
     def test_config_list_marker(self):
         arglist = ['--marker', 'id123']

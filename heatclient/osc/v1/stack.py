@@ -537,6 +537,7 @@ class ListStack(command.Lister):
         parser.add_argument(
             '--limit',
             metavar='<limit>',
+            type=int,
             help=_('The number of stacks returned')
         )
         parser.add_argument(
