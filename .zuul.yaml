@@ -10,6 +10,7 @@
       devstack_plugins:
         heat: https://opendev.org/openstack/heat
     irrelevant-files:
+      - ^\.gitreview$
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
       - ^doc/.*$
