@@ -57,8 +57,10 @@ class TestTemplateVersionList(TestTemplate):
         columns, data = self.cmd.take_action(parsed_args)
 
         self.assertEqual(['Version', 'Type', 'Aliases'], columns)
-        self.assertEqual([('HOT123', 'hot', 'releasex'),
-                          ('CFN456', 'cfn', 'releasey')], list(data))
+        self.assertEqual([
+            ('HOT123', 'hot', template.ListColumn(['releasex'])),
+            ('CFN456', 'cfn', template.ListColumn(['releasey']))
+        ], list(data))
 
 
 class TestTemplateFunctionList(TestTemplate):

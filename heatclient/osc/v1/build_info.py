@@ -18,7 +18,7 @@ import logging
 from osc_lib.command import command
 from osc_lib import utils
 
-from heatclient.common import utils as heat_utils
+from heatclient.osc.v1 import common
 
 
 class BuildInfo(command.ShowOne):
@@ -37,8 +37,8 @@ class BuildInfo(command.ShowOne):
         result = heat_client.build_info.build_info()
 
         formatters = {
-            'api': heat_utils.json_formatter,
-            'engine': heat_utils.json_formatter,
+            'api': common.JsonColumn,
+            'engine': common.JsonColumn,
         }
         columns = sorted(list(result.keys()))
         return columns, utils.get_dict_properties(result, columns,

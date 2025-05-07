@@ -14,6 +14,7 @@
 from unittest import mock
 
 from heatclient.osc.v1 import build_info as osc_build_info
+from heatclient.osc.v1 import common
 from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 
 
@@ -39,6 +40,7 @@ class TestBuildInfo(orchestration_fakes.TestOrchestrationv1):
         columns, data = self.cmd.take_action(parsed_args)
         self.mock_client.build_info.build_info.assert_called_with()
         self.assertEqual(['api', 'engine'], columns)
-        self.assertEqual(['{\n  "revision": "{api_build_revision}"\n}',
-                          '{\n  "revision": "{engine_build_revision}"\n}'],
-                         list(data))
+        self.assertEqual([
+            common.JsonColumn({"revision": "{api_build_revision}"}),
+            common.JsonColumn({"revision": "{engine_build_revision}"})
+        ], list(data))

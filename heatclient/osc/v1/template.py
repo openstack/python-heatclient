@@ -14,6 +14,7 @@
 
 import logging
 
+from cliff import columns
 from osc_lib.command import command
 from osc_lib import utils
 
@@ -23,6 +24,11 @@ from heatclient.common import http
 from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc
+
+
+class ListColumn(columns.FormattableColumn):
+    def human_readable(self):
+        return ','.join(self._value)
 
 
 class VersionList(command.Lister):
@@ -39,11 +45,8 @@ class VersionList(command.Lister):
         try:
             versions[1].aliases
 
-            def format_alias(aliases):
-                return ','.join(aliases)
-
             fields = ['Version', 'Type', 'Aliases']
-            formatters = {'Aliases': format_alias}
+            formatters = {'Aliases': ListColumn}
         except AttributeError:
             fields = ['Version', 'Type']
             formatters = None

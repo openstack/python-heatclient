@@ -31,6 +31,7 @@ from heatclient.common import http
 from heatclient.common import template_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc as heat_exc
+from heatclient.osc.v1 import common
 
 
 class CreateStack(command.ShowOne):
@@ -180,13 +181,13 @@ class CreateStack(command.ShowOne):
             stack = client.stacks.preview(**fields)
 
             formatters = {
-                'description': heat_utils.text_wrap_formatter,
-                'template_description': heat_utils.text_wrap_formatter,
-                'stack_status_reason': heat_utils.text_wrap_formatter,
-                'parameters': heat_utils.json_formatter,
-                'outputs': heat_utils.json_formatter,
-                'resources': heat_utils.json_formatter,
-                'links': heat_utils.link_formatter,
+                'description': common.TextWrapColumn,
+                'template_description': common.TextWrapColumn,
+                'stack_status_reason': common.TextWrapColumn,
+                'parameters': common.JsonColumn,
+                'outputs': common.JsonColumn,
+                'resources': common.JsonColumn,
+                'links': common.LinkColumn,
             }
 
             columns = []
@@ -386,7 +387,7 @@ class UpdateStack(command.ShowOne):
                       'resource_identity']
 
             columns = sorted(changes.get("resource_changes", {}).keys())
-            data = [heat_utils.json_formatter(changes["resource_changes"][key])
+            data = [common.JsonColumn(changes["resource_changes"][key])
                     for key in columns]
 
             return columns, data
@@ -478,9 +479,9 @@ def _show_stack(heat_client, stack_id, format='', short=False,
         formatters = {}
         complex_formatter = None
         if format in 'table':
-            complex_formatter = heat_utils.yaml_formatter
+            complex_formatter = common.YamlColumn
         elif format in ('shell', 'value', 'html'):
-            complex_formatter = heat_utils.json_formatter
+            complex_formatter = common.JsonColumn
         if complex_formatter:
             formatters['parameters'] = complex_formatter
             formatters['outputs'] = complex_formatter
@@ -1019,7 +1020,7 @@ class OutputShowStack(command.ShowOne):
             values = []
             for output in outputs:
                 columns.append(output['output_key'])
-                values.append(heat_utils.json_formatter(output))
+                values.append(common.JsonColumn(output))
 
             return columns, values
 

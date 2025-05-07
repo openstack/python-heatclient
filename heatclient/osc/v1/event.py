@@ -23,6 +23,7 @@ from heatclient._i18n import _
 from heatclient.common import event_utils
 from heatclient.common import utils as heat_utils
 from heatclient import exc
+from heatclient.osc.v1 import common
 
 
 class ShowEvent(command.ShowOne):
@@ -69,8 +70,8 @@ class ShowEvent(command.ShowOne):
             raise exc.CommandError(str(ex))
 
         formatters = {
-            'links': heat_utils.link_formatter,
-            'resource_properties': heat_utils.json_formatter
+            'links': common.LinkColumn,
+            'resource_properties': common.JsonColumn
         }
 
         columns = []
