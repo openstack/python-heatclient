@@ -16,6 +16,7 @@
 import logging
 import sys
 
+from openstackclient.identity import common as identity_common
 from osc_lib.command import command
 from osc_lib import exceptions as exc
 from osc_lib import utils
@@ -523,6 +524,13 @@ class ListStack(command.Lister):
             action='append'
         )
         parser.add_argument(
+            '--project',
+            dest='project',
+            metavar='<project>',
+            help=_('Filter stacks by project (name or ID) (admin only)'),
+        )
+        identity_common.add_project_domain_option_to_parser(parser)
+        parser.add_argument(
             '--tags',
             metavar='<tag1,tag2...>',
             help=_('List of tags to filter by. Can be combined with '
@@ -575,7 +583,16 @@ class ListStack(command.Lister):
         self.log.debug("take_action(%s)", parsed_args)
 
         client = self.app.client_manager.orchestration
-        return _list(client, args=parsed_args)
+        identity_client = self.app.client_manager.identity
+
+        project_id = None
+        if parsed_args.project:
+            project_id = identity_common.find_project(
+                identity_client,
+                parsed_args.project,
+                parsed_args.project_domain).id
+
+        return _list(client, args=parsed_args, project_id=project_id)
 
 
 class EnvironmentShowStack(format_utils.YamlFormat):
@@ -639,7 +656,7 @@ class ListFileStack(format_utils.YamlFormat):
         return ['files'], [files]
 
 
-def _list(client, args=None):
+def _list(client, args=None, project_id=None):
     kwargs = {}
     columns = [
         'ID',
@@ -687,6 +704,9 @@ def _list(client, args=None):
 
         if args.deleted:
             columns.append('Deletion Time')
+
+        if project_id:
+            kwargs['tenant'] = project_id
 
     data = client.stacks.list(**kwargs)
     data = list(data)

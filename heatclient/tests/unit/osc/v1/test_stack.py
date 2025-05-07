@@ -37,6 +37,8 @@ class TestStack(orchestration_fakes.TestOrchestrationv1):
         super(TestStack, self).setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks
+        self.projects_mock = self.app.client_manager.identity.projects
+        self.projects_mock.reset_mock()
 
 
 class TestStackCreate(TestStack):
@@ -575,6 +577,19 @@ class TestStackList(TestStack):
 
         self.stack_client.list.assert_called_with(**kwargs)
         self.assertEqual(cols, columns)
+
+    def test_stack_list_filter_project(self):
+        kwargs = copy.deepcopy(self.defaults)
+        project_id = '123456'
+        self.projects_mock.get.return_value = (
+            mock.MagicMock(id=project_id))
+        kwargs['tenant'] = project_id
+        arglist = ['--project', project_id]
+        parsed_args = self.check_parser(self.cmd, arglist, [])
+
+        columns, data = self.cmd.take_action(parsed_args)
+
+        self.stack_client.list.assert_called_with(**kwargs)
 
     def test_stack_list_long(self):
         self.stack_client.list.return_value = [

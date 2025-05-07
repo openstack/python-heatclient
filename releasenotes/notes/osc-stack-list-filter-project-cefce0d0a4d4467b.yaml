@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added ``--project`` filter to ``stack list`` command in the OSC plugin.
