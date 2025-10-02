@@ -24,14 +24,14 @@ from heatclient.v1 import software_configs
 
 class TestConfig(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestConfig, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
 
 
 class TestDeleteConfig(TestConfig):
 
     def setUp(self):
-        super(TestDeleteConfig, self).setUp()
+        super().setUp()
         self.cmd = software_config.DeleteConfig(self.app, None)
         self.mock_delete = self.mock_client.software_configs.delete
 
@@ -68,7 +68,7 @@ class TestDeleteConfig(TestConfig):
 class TestListConfig(TestConfig):
 
     def setUp(self):
-        super(TestListConfig, self).setUp()
+        super().setUp()
         self.cmd = software_config.ListConfig(self.app, None)
         self.mock_client.software_configs.list.return_value = [
             software_configs.SoftwareConfig(None, {})]
@@ -96,7 +96,7 @@ class TestListConfig(TestConfig):
 class TestCreateConfig(TestConfig):
 
     def setUp(self):
-        super(TestCreateConfig, self).setUp()
+        super().setUp()
         self.cmd = software_config.CreateConfig(self.app, None)
         self.mock_client.software_configs.create.return_value = \
             software_configs.SoftwareConfig(None, {})
@@ -235,7 +235,7 @@ class TestConfigShow(TestConfig):
     response = dict(zip(columns, data))
 
     def setUp(self):
-        super(TestConfigShow, self).setUp()
+        super().setUp()
         self.cmd = software_config.ShowConfig(self.app, None)
         self.mock_client.software_configs.get.return_value = \
             software_configs.SoftwareConfig(None, self.response)

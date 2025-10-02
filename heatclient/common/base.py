@@ -48,7 +48,7 @@ def getid(obj):
 
 
 # TODO(aababilov): call run_hooks() in HookableMixin's child classes
-class HookableMixin(object):
+class HookableMixin:
     """Mixin so classes can register and run hooks."""
     _hooks_map = {}
 
@@ -92,7 +92,7 @@ class BaseManager(HookableMixin):
 
         :param client: instance of BaseClient descendant for HTTP requests
         """
-        super(BaseManager, self).__init__()
+        super().__init__()
         self.client = client
 
     def _list(self, url, response_key=None, obj_class=None, json=None):
@@ -279,13 +279,12 @@ class CrudManager(BaseManager):
         :param base_url: if provided, the generated URL will be appended to it
         """
         url = base_url if base_url is not None else ''
-
-        url += '/%s' % self.collection_key
+        url = '/'.join([url, self.collection_key])
 
         # do we have a specific entity?
-        entity_id = kwargs.get('%s_id' % self.key)
+        entity_id = kwargs.get('{}_id'.format(self.key))
         if entity_id is not None:
-            url += '/%s' % entity_id
+            url = '/'.join([url, entity_id])
 
         return url
 
@@ -297,7 +296,7 @@ class CrudManager(BaseManager):
             else:
                 if isinstance(ref, Resource):
                     kwargs.pop(key)
-                    kwargs['%s_id' % key] = getid(ref)
+                    kwargs['{}_id'.firmat(key)] = getid(ref)
         return kwargs
 
     def create(self, **kwargs):
@@ -323,12 +322,13 @@ class CrudManager(BaseManager):
         :param base_url: if provided, the generated URL will be appended to it
         """
         kwargs = self._filter_kwargs(kwargs)
+        query = '?{}'.format(parse.urlencode(kwargs)) if kwargs else ''
 
         return self._list(
-            '%(base_url)s%(query)s' % {
-                'base_url': self.build_url(base_url=base_url, **kwargs),
-                'query': '?%s' % parse.urlencode(kwargs) if kwargs else '',
-            },
+            '{base_url}{query}'.format(
+                base_url=self.build_url(base_url=base_url, **kwargs),
+                query=query,
+            ),
             self.collection_key)
 
     def put(self, base_url=None, **kwargs):
@@ -343,7 +343,7 @@ class CrudManager(BaseManager):
     def update(self, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
         params = kwargs.copy()
-        params.pop('%s_id' % self.key)
+        params.pop('{}_id'.format(self.key))
 
         return self._patch(
             self.build_url(**kwargs),
@@ -362,12 +362,13 @@ class CrudManager(BaseManager):
         :param base_url: if provided, the generated URL will be appended to it
         """
         kwargs = self._filter_kwargs(kwargs)
+        query = '?{}'.format(parse.urlencode(kwargs)) if kwargs else ''
 
         rl = self._list(
-            '%(base_url)s%(query)s' % {
-                'base_url': self.build_url(base_url=base_url, **kwargs),
-                'query': '?%s' % parse.urlencode(kwargs) if kwargs else '',
-            },
+            '{base_url}{query}'.format(
+                base_url=self.build_url(base_url=base_url, **kwargs),
+                query=query,
+            ),
             self.collection_key)
         num = len(rl)
 
@@ -390,7 +391,7 @@ class Extension(HookableMixin):
     manager_class = None
 
     def __init__(self, name, module):
-        super(Extension, self).__init__()
+        super().__init__()
         self.name = name
         self.module = module
         self._parse_extension_module()
@@ -408,10 +409,10 @@ class Extension(HookableMixin):
                     pass
 
     def __repr__(self):
-        return "<Extension '%s'>" % self.name
+        return "<Extension '{}'>".format(self.name)
 
 
-class Resource(object):
+class Resource:
     """Base class for OpenStack resources (tenant, user, etc.).
 
     This is pretty much just a bag for attributes.
@@ -435,9 +436,9 @@ class Resource(object):
         reprkeys = sorted(k
                           for k in self.__dict__
                           if k[0] != '_' and k != 'manager')
-        info = ", ".join("%s=%s" % (k, getattr(self, k)) for k in reprkeys)
+        info = ", ".join("{}={}".format(k, getattr(self, k)) for k in reprkeys)
         class_name = reflection.get_class_name(self, fully_qualified=False)
-        return "<%s %s>" % (class_name, info)
+        return "<{} {}>".format(class_name, info)
 
     @property
     def human_id(self):

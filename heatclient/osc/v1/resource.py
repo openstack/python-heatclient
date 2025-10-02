@@ -33,7 +33,7 @@ class ResourceShow(command.ShowOne):
     log = logging.getLogger(__name__ + '.ResourceShowStack')
 
     def get_parser(self, prog_name):
-        parser = super(ResourceShow, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -80,7 +80,7 @@ class ResourceList(command.Lister):
         return 'heatclient.resource.formatter.list'
 
     def get_parser(self, prog_name):
-        parser = super(ResourceList, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -153,7 +153,7 @@ class ResourceMetadata(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + ".ResourceMetadata")
 
     def get_parser(self, prog_name):
-        parser = super(ResourceMetadata, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -194,7 +194,7 @@ class ResourceSignal(command.Command):
     log = logging.getLogger(__name__ + ".ResourceSignal")
 
     def get_parser(self, prog_name):
-        parser = super(ResourceSignal, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -261,7 +261,7 @@ class ResourceMarkUnhealthy(command.Command):
     log = logging.getLogger(__name__ + ".ResourceMarkUnhealthy")
 
     def get_parser(self, prog_name):
-        parser = super(ResourceMarkUnhealthy, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',

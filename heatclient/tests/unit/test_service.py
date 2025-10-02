@@ -21,14 +21,14 @@ from heatclient.v1 import services
 
 class ManageServiceTest(testtools.TestCase):
     def setUp(self):
-        super(ManageServiceTest, self).setUp()
+        super().setUp()
 
     def test_service_list(self):
-        class FakeResponse(object):
+        class FakeResponse:
             def json(self):
                 return {'services': []}
 
-        class FakeClient(object):
+        class FakeClient:
             def get(self, *args, **kwargs):
                 assert args[0] == ('/services')
                 return FakeResponse()
@@ -37,7 +37,7 @@ class ManageServiceTest(testtools.TestCase):
         self.assertEqual([], manager.list())
 
     def test_service_list_403(self):
-        class FakeClient403(object):
+        class FakeClient403:
 
             def get(self, *args, **kwargs):
                 assert args[0] == ('/services')
@@ -48,7 +48,7 @@ class ManageServiceTest(testtools.TestCase):
                           manager.list)
 
     def test_service_list_503(self):
-        class FakeClient503(object):
+        class FakeClient503:
             def get(self, *args, **kwargs):
                 assert args[0] == ('/services')
                 raise exc.HTTPServiceUnavailable()

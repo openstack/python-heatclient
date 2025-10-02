@@ -65,7 +65,7 @@ class ResourceTypeManager(base.BaseManager):
         :param resource_type: name of the resource type to get the details for
         :param with_description: return result with description or not
         """
-        url_str = '/%s/%s' % (
+        url_str = '/{}/{}'.format(
                   self.KEY,
                   parse.quote(encodeutils.safe_encode(resource_type)))
         resp = self.client.get(url_str,
@@ -74,7 +74,7 @@ class ResourceTypeManager(base.BaseManager):
         return body
 
     def generate_template(self, resource_type, template_type='cfn'):
-        url_str = '/%s/%s/template' % (
+        url_str = '/{}/{}/template'.format(
                   self.KEY,
                   parse.quote(encodeutils.safe_encode(resource_type)))
         if template_type:

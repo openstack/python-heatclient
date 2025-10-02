@@ -34,7 +34,7 @@ class DeleteConfig(command.Command):
     log = logging.getLogger(__name__ + ".DeleteConfig")
 
     def get_parser(self, prog_name):
-        parser = super(DeleteConfig, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'config',
             metavar='<config>',
@@ -76,7 +76,7 @@ class ListConfig(command.Lister):
     log = logging.getLogger(__name__ + ".ListConfig")
 
     def get_parser(self, prog_name):
-        parser = super(ListConfig, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '--limit',
             metavar='<limit>',
@@ -114,7 +114,7 @@ class CreateConfig(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + ".CreateConfig")
 
     def get_parser(self, prog_name):
-        parser = super(CreateConfig, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'name',
             metavar='<config-name>',
@@ -192,7 +192,7 @@ class ShowConfig(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".ShowConfig")
 
     def get_parser(self, prog_name):
-        parser = super(ShowConfig, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'config',
             metavar='<config>',

@@ -32,7 +32,7 @@ class ShowEvent(command.ShowOne):
     log = logging.getLogger(__name__ + '.ShowEvent')
 
     def get_parser(self, prog_name):
-        parser = super(ShowEvent, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -96,7 +96,7 @@ class ListEvent(command.Lister):
         return 'heatclient.event.formatter.list'
 
     def get_parser(self, prog_name):
-        parser = super(ListEvent, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',

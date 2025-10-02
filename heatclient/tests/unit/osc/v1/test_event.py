@@ -27,7 +27,7 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 class TestEvent(fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestEvent, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.event_client = self.app.client_manager.orchestration.events
         self.stack_client = self.app.client_manager.orchestration.stacks
@@ -56,7 +56,7 @@ class TestEventShow(TestEvent):
     }
 
     def setUp(self):
-        super(TestEventShow, self).setUp()
+        super().setUp()
         self.cmd = event.ShowEvent(self.app, None)
 
     def test_event_show(self):
@@ -108,7 +108,7 @@ class TestEventList(TestEvent):
               'resource_status_reason', 'event_time', 'physical_resource_id',
               'logical_resource_id']
 
-    class MockEvent(object):
+    class MockEvent:
 
         data = {
             'event_time': '2015-11-13T10:02:17',
@@ -129,7 +129,7 @@ class TestEventList(TestEvent):
                 raise AttributeError
 
     def setUp(self):
-        super(TestEventList, self).setUp()
+        super().setUp()
         self.cmd = event.ListEvent(self.app, None)
         self.event = self.MockEvent()
         self.event_client.list.return_value = [self.event]

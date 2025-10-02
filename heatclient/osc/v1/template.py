@@ -64,7 +64,7 @@ class FunctionList(command.Lister):
     log = logging.getLogger(__name__ + '.FunctionList')
 
     def get_parser(self, prog_name):
-        parser = super(FunctionList, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'template_version',
             metavar='<template-version>',
@@ -105,7 +105,7 @@ class Validate(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + ".Validate")
 
     def get_parser(self, prog_name):
-        parser = super(Validate, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',

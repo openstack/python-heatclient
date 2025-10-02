@@ -17,7 +17,7 @@ import hashlib
 from cliff.formatters import base
 
 
-class ResourceDotInfo(object):
+class ResourceDotInfo:
 
     def __init__(self, res):
         self.resource = res
@@ -34,7 +34,7 @@ class ResourceDotInfo(object):
         if not prefix:
             prefix = 'r'
         hash_object = hashlib.sha256(url.encode('utf-8'))
-        return '%s_%s' % (prefix, hash_object.hexdigest()[:20])
+        return '{}_{}'.format(prefix, hash_object.hexdigest()[:20])
 
 
 class ResourceDotFormatter(base.ListFormatter):
@@ -46,7 +46,7 @@ class ResourceDotFormatter(base.ListFormatter):
         writer.write()
 
 
-class ResourceDotWriter(object):
+class ResourceDotWriter:
 
     def __init__(self, data, stdout):
         self.resources_by_stack = collections.defaultdict(

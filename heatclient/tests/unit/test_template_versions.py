@@ -19,17 +19,17 @@ from heatclient.v1 import template_versions
 class TemplateVersionManagerTest(testtools.TestCase):
 
     def setUp(self):
-        super(TemplateVersionManagerTest, self).setUp()
+        super().setUp()
 
     def test_list_versions(self):
         expect = ('GET', '/template_versions')
 
-        class FakeResponse(object):
+        class FakeResponse:
             def json(self):
                 return {'template_versions': [{'version': '2013-05-23',
                                                'type': 'hot'}]}
 
-        class FakeClient(object):
+        class FakeClient:
             def get(self, *args, **kwargs):
                 assert ('GET', args[0]) == expect
                 return FakeResponse()
@@ -43,11 +43,11 @@ class TemplateVersionManagerTest(testtools.TestCase):
         expect = ('GET', '/template_versions/heat_template_version.2015-04-30'
                          '/functions')
 
-        class FakeResponse(object):
+        class FakeResponse:
             def json(self):
                 return {'template_functions': [{'function': 'get_attr'}]}
 
-        class FakeClient(object):
+        class FakeClient:
             def get(self, *args, **kwargs):
                 assert ('GET', args[0]) == expect
                 return FakeResponse()

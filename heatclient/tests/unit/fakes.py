@@ -14,11 +14,11 @@
 from oslo_serialization import jsonutils
 
 
-class FakeRaw(object):
+class FakeRaw:
     version = 110
 
 
-class FakeHTTPResponse(object):
+class FakeHTTPResponse:
 
     version = 1.1
 

@@ -22,14 +22,14 @@ from heatclient.tests.unit.osc.v1 import fakes as orchestration_fakes
 
 class TestStack(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestStack, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
         self.stack_client = self.app.client_manager.orchestration.stacks
 
 
 class TestListSnapshot(TestStack):
     def setUp(self):
-        super(TestListSnapshot, self).setUp()
+        super().setUp()
         self.cmd = snapshot.ListSnapshot(self.app, None)
         self.stack_client.snapshot_list.return_value = {'snapshots': []}
 
@@ -54,7 +54,7 @@ class TestListSnapshot(TestStack):
 
 class TestSnapshotShow(TestStack):
     def setUp(self):
-        super(TestSnapshotShow, self).setUp()
+        super().setUp()
         self.cmd = snapshot.ShowSnapshot(self.app, None)
 
     def test_snapshot_show(self):
@@ -77,7 +77,7 @@ class TestSnapshotShow(TestStack):
 
 class TestRestoreSnapshot(TestStack):
     def setUp(self):
-        super(TestRestoreSnapshot, self).setUp()
+        super().setUp()
         self.cmd = snapshot.RestoreSnapshot(self.app, None)
 
     def test_snapshot_restore(self):
@@ -110,7 +110,7 @@ class TestSnapshotCreate(TestStack):
     }
 
     def setUp(self):
-        super(TestSnapshotCreate, self).setUp()
+        super().setUp()
         self.cmd = snapshot.CreateSnapshot(self.app, None)
 
     def test_snapshot_create(self):
@@ -141,7 +141,7 @@ class TestSnapshotCreate(TestStack):
 
 class TestSnapshotDelete(TestStack):
     def setUp(self):
-        super(TestSnapshotDelete, self).setUp()
+        super().setUp()
         self.cmd = snapshot.DeleteSnapshot(self.app, None)
 
     def test_snapshot_delete(self):

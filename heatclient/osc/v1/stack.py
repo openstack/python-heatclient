@@ -41,7 +41,7 @@ class CreateStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.CreateStack')
 
     def get_parser(self, prog_name):
-        parser = super(CreateStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
@@ -219,7 +219,7 @@ class UpdateStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.UpdateStack')
 
     def get_parser(self, prog_name):
-        parser = super(UpdateStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '-t', '--template', metavar='<template>',
             help=_('Path to the template')
@@ -423,7 +423,7 @@ class ShowStack(command.ShowOne):
     log = logging.getLogger(__name__ + ".ShowStack")
 
     def get_parser(self, prog_name):
-        parser = super(ShowStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -499,7 +499,7 @@ class ListStack(command.Lister):
     log = logging.getLogger(__name__ + '.ListStack')
 
     def get_parser(self, prog_name):
-        parser = super(ListStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             '--deleted',
             action='store_true',
@@ -601,7 +601,7 @@ class EnvironmentShowStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(EnvironmentShowStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<NAME or ID>',
@@ -634,7 +634,7 @@ class ListFileStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(ListFileStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<NAME or ID>',
@@ -728,7 +728,7 @@ class DeleteStack(command.Command):
     log = logging.getLogger(__name__ + ".DeleteStack")
 
     def get_parser(self, prog_name):
-        parser = super(DeleteStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -822,7 +822,7 @@ class AdoptStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.AdoptStack')
 
     def get_parser(self, prog_name):
-        parser = super(AdoptStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'name',
             metavar='<stack-name>',
@@ -907,7 +907,7 @@ class AbandonStack(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + '.AbandonStack')
 
     def get_parser(self, prog_name):
-        parser = super(AbandonStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -937,7 +937,7 @@ class AbandonStack(format_utils.JsonFormat):
                 with open(parsed_args.output_file, 'w') as f:
                     f.write(jsonutils.dumps(stack, indent=2))
                     return [], None
-            except IOError as e:
+            except OSError as e:
                 raise exc.CommandError(str(e))
 
         data = list(stack.values())
@@ -951,7 +951,7 @@ class ExportStack(format_utils.JsonFormat):
     log = logging.getLogger(__name__ + '.ExportStack')
 
     def get_parser(self, prog_name):
-        parser = super(ExportStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -981,7 +981,7 @@ class ExportStack(format_utils.JsonFormat):
                 with open(parsed_args.output_file, 'w') as f:
                     f.write(jsonutils.dumps(data_info, indent=2))
                     return [], None
-            except IOError as e:
+            except OSError as e:
                 raise exc.CommandError(str(e))
 
         data = list(data_info.values())
@@ -995,7 +995,7 @@ class OutputShowStack(command.ShowOne):
     log = logging.getLogger(__name__ + '.OutputShowStack')
 
     def get_parser(self, prog_name):
-        parser = super(OutputShowStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -1075,7 +1075,7 @@ class OutputListStack(command.Lister):
     log = logging.getLogger(__name__ + '.OutputListStack')
 
     def get_parser(self, prog_name):
-        parser = super(OutputListStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -1112,7 +1112,7 @@ class TemplateShowStack(format_utils.YamlFormat):
     log = logging.getLogger(__name__ + '.TemplateShowStack')
 
     def get_parser(self, prog_name):
-        parser = super(TemplateShowStack, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -1140,7 +1140,7 @@ class StackActionBase(command.Lister):
     log = logging.getLogger(__name__ + '.StackActionBase')
 
     def _get_parser(self, prog_name, stack_help, wait_help):
-        parser = super(StackActionBase, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -1341,7 +1341,7 @@ class StackHookPoll(command.Lister):
     log = logging.getLogger(__name__ + '.StackHookPoll')
 
     def get_parser(self, prog_name):
-        parser = super(StackHookPoll, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',
@@ -1410,7 +1410,7 @@ class StackHookClear(command.Command):
     log = logging.getLogger(__name__ + '.StackHookClear')
 
     def get_parser(self, prog_name):
-        parser = super(StackHookClear, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument(
             'stack',
             metavar='<stack>',

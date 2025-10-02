@@ -26,7 +26,7 @@ def mock_stack(manager, stack_name, stack_id):
         "id": stack_id,
         "stack_name": stack_name,
         "links": [{
-            "href": "http://192.0.2.1:8004/v1/1234/stacks/%s/%s" % (
+            "href": "http://192.0.2.1:8004/v1/1234/stacks/{}/{}".format(
                 stack_name, stack_id),
             "rel": "self"}],
         "description": "No description",
@@ -54,7 +54,7 @@ class StackStatusActionTest(testtools.TestCase):
     ])
 
     def test_status_action(self):
-        stack_status = '%s_%s' % (self.action, self.status)
+        stack_status = '{}_{}'.format(self.action, self.status)
         stack = mock_stack(None, 'stack_1', 'abcd1234')
         stack.stack_status = stack_status
         self.assertEqual(self.action, stack.action)
@@ -346,7 +346,7 @@ class StackManagerPaginationTest(testtools.TestCase):
 class StackManagerValidateTest(testtools.TestCase):
 
     def setUp(self):
-        super(StackManagerValidateTest, self).setUp()
+        super().setUp()
 
         self.mock_response = mock.MagicMock()
         self.mock_response.json.return_value = {'result': 'fake_response'}

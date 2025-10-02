@@ -46,7 +46,7 @@ class HTTPException(BaseException):
     code = 'N/A'
 
     def __init__(self, message=None, code=None):
-        super(HTTPException, self).__init__(message)
+        super().__init__(message)
         try:
             self.error = jsonutils.loads(message)
             if 'error' not in self.error:

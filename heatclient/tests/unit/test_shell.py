@@ -69,7 +69,7 @@ class TestCase(testtools.TestCase):
     tokenid = uuid.uuid4().hex
 
     def setUp(self):
-        super(TestCase, self).setUp()
+        super().setUp()
         self.requests = self.useFixture(rm_fixture.Fixture())
         # httpretty doesn't work as expected if http proxy environmen
         # variable is set.
@@ -192,7 +192,7 @@ class TestCase(testtools.TestCase):
              "logical_resource_id": "myDeployment",
              "physical_resource_id": "bce15ec4-8919-4a02-8a90-680960fb3731",
              "resource_name": rn,
-             "resource_status": "%s_%s" % (action, final_state),
+             "resource_status": "{}_{}".format(action, final_state),
              "resource_status_reason": "state changed"}]}
 
         if resource_name is None:
@@ -227,7 +227,7 @@ class TestCase(testtools.TestCase):
                  "logical_resource_id": "aResource",
                  "physical_resource_id": 'foo3',
                  "resource_name": stack_name,
-                 "resource_status": "%s_%s" % (action, final_state),
+                 "resource_status": "{}_{}".format(action, final_state),
                  "resource_status_reason": "state changed"})
 
         return resp_dict
@@ -320,7 +320,7 @@ class ShellParamValidationTest(TestCase):
 
         if self.with_tmpl:
             template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-            cmd = '%s --template-file=%s ' % (self.command, template_file)
+            cmd = '{} --template-file={} '.format(self.command, template_file)
 
         self.shell_error(cmd, self.err, exception=exc.CommandError)
 
@@ -379,7 +379,7 @@ class ShellBase(TestCase):
     (JSON, RAW, SESSION) = ('json', 'raw', 'session')
 
     def setUp(self):
-        super(ShellBase, self).setUp()
+        super().setUp()
         self._calls = {self.JSON: [], self.RAW: [], self.SESSION: []}
         self._results = {self.JSON: [], self.RAW: [], self.SESSION: []}
         self.useFixture(fixtures.MockPatchObject(
@@ -406,7 +406,7 @@ class ShellBase(TestCase):
         http.HTTPClient.json_request.assert_has_calls(self._calls[self.JSON])
         http.HTTPClient.raw_request.assert_has_calls(self._calls[self.RAW])
         http.SessionClient.request.assert_has_calls(self._calls[self.SESSION])
-        super(ShellBase, self).tearDown()
+        super().tearDown()
 
     def shell(self, argstr):
         orig = sys.stdout
@@ -509,7 +509,7 @@ class ShellTestNoMoxBase(TestCase):
     # NOTE(dhu):  This class is reserved for no Mox usage.  Instead,
     # use requests_mock to expose errors from json_request.
     def setUp(self):
-        super(ShellTestNoMoxBase, self).setUp()
+        super().setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
@@ -614,7 +614,7 @@ class ShellTestNoMoxV3(ShellTestNoMox):
 class ShellTestEndpointType(TestCase):
 
     def setUp(self):
-        super(ShellTestEndpointType, self).setUp()
+        super().setUp()
         self.useFixture(fixtures.MockPatchObject(http,
                                                  '_construct_http_client'))
         self.useFixture(fixtures.MockPatchObject(heatclient.v1.shell,
@@ -687,7 +687,7 @@ class ShellTestEndpointType(TestCase):
 class ShellTestCommon(ShellBase):
 
     def setUp(self):
-        super(ShellTestCommon, self).setUp()
+        super().setUp()
         self.client = http.SessionClient
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
@@ -754,7 +754,7 @@ class ShellTestCommon(ShellBase):
 class ShellTestUserPass(ShellBase):
 
     def setUp(self):
-        super(ShellTestUserPass, self).setUp()
+        super().setUp()
         if self.client is None:
             self.client = http.SessionClient
         self._set_fake_env()
@@ -932,7 +932,7 @@ class ShellTestUserPass(ShellBase):
                 "description": "test output 2",
             },
             {
-                "output_value": u"test\u2665",
+                "output_value": "test\u2665",
                 "output_key": "output_uni",
                 "description": "test output unicode",
             },
@@ -983,7 +983,7 @@ class ShellTestUserPass(ShellBase):
     def test_template_show_cfn_unicode(self):
         self.register_keystone_auth_fixture()
         resp_dict = {"AWSTemplateFormatVersion": "2010-09-09",
-                     "Description": u"test\u2665",
+                     "Description": "test\u2665",
                      "Outputs": {},
                      "Resources": {},
                      "Parameters": {}}
@@ -2485,7 +2485,7 @@ class ShellTestUserPass(ShellBase):
 class ShellTestActions(ShellBase):
 
     def setUp(self):
-        super(ShellTestActions, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_stack_cancel_update(self):
@@ -2576,7 +2576,7 @@ class ShellTestActions(ShellBase):
 class ShellTestEvents(ShellBase):
 
     def setUp(self):
-        super(ShellTestEvents, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     scenarios = [
@@ -2597,13 +2597,13 @@ class ShellTestEvents(ShellBase):
         stack_id = 'teststack/1'
         resource_name = 'testresource/1'
         self.mock_request_get(
-            '/stacks/%s/resources/%s/events?sort_dir=asc' % (
+            '/stacks/{}/resources/{}/events?sort_dir=asc'.format(
                 parse.quote(stack_id),
                 parse.quote(encodeutils.safe_encode(
                     resource_name))),
             resp_dict)
 
-        event_list_text = self.shell('event-list {0} --resource {1}'.format(
+        event_list_text = self.shell('event-list {} --resource {}'.format(
                                      stack_id, resource_name))
 
         required = [
@@ -2636,7 +2636,7 @@ class ShellTestEvents(ShellBase):
         self.mock_request_get('/stacks/%s/events?sort_dir=asc' % stack_id,
                               resp_dict)
 
-        event_list_text = self.shell('event-list {0} --format log'.format(
+        event_list_text = self.shell('event-list {} --format log'.format(
             stack_id))
 
         expected = ('2013-12-05 14:14:31 [aResource]: '
@@ -2678,7 +2678,7 @@ class ShellTestEvents(ShellBase):
             ),
             resp_dict)
 
-        event_list_text = self.shell('event-show {0} {1} {2}'.format(
+        event_list_text = self.shell('event-show {} {} {}'.format(
                                      stack_id, resource_name,
                                      self.event_id_one))
 
@@ -2711,7 +2711,7 @@ class ShellTestEvents(ShellBase):
 
 class ShellTestEventsNested(ShellBase):
     def setUp(self):
-        super(ShellTestEventsNested, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def test_shell_nested_depth_invalid_xor(self):
@@ -2721,7 +2721,7 @@ class ShellTestEventsNested(ShellBase):
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'event-list {0} --resource {1} --nested-depth 5'.format(
+            'event-list {} --resource {} --nested-depth 5'.format(
                 stack_id, resource_name))
         self.assertIn('--nested-depth cannot be specified with --resource',
                       str(error))
@@ -2731,7 +2731,7 @@ class ShellTestEventsNested(ShellBase):
         stack_id = 'teststack/1'
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'event-list {0} --nested-depth Z'.format(stack_id))
+            'event-list {} --nested-depth Z'.format(stack_id))
         self.assertIn('--nested-depth invalid value Z', str(error))
 
     def test_shell_nested_depth_zero(self):
@@ -2946,7 +2946,7 @@ class ShellTestEventsNested(ShellBase):
 
 class ShellTestHookFunctions(ShellBase):
     def setUp(self):
-        super(ShellTestHookFunctions, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _stub_stack_response(self, stack_id, action='CREATE',
@@ -2955,7 +2955,7 @@ class ShellTestHookFunctions(ShellBase):
         resp_dict = {"stack": {
             "id": stack_id.split("/")[1],
             "stack_name": stack_id.split("/")[0],
-            "stack_status": '%s_%s' % (action, status),
+            "stack_status": '{}_{}'.format(action, status),
             "creation_time": "2014-01-06T16:14:00Z",
         }}
         self.mock_request_get('/stacks/teststack/1', resp_dict)
@@ -3091,7 +3091,7 @@ class ShellTestHookFunctions(ShellBase):
 class ShellTestResources(ShellBase):
 
     def setUp(self):
-        super(ShellTestResources, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _test_resource_list(self, with_resource_name):
@@ -3113,7 +3113,7 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
 
-        resource_list_text = self.shell('resource-list {0}'.format(stack_id))
+        resource_list_text = self.shell('resource-list {}'.format(stack_id))
 
         required = [
             'physical_resource_id',
@@ -3147,7 +3147,7 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
 
-        resource_list_text = self.shell('resource-list {0}'.format(stack_id))
+        resource_list_text = self.shell('resource-list {}'.format(stack_id))
 
         self.assertEqual('''\
 +---------------+----------------------+---------------+-----------------+\
@@ -3174,10 +3174,10 @@ class ShellTestResources(ShellBase):
             }],
         }]}
         stack_id = 'teststack/1'
-        self.mock_request_get('/stacks/%s/resources?%s' % (
+        self.mock_request_get('/stacks/{}/resources?{}'.format(
             stack_id, query_args), resp_dict)
 
-        shell_cmd = 'resource-list %s %s' % (stack_id, cmd_args)
+        shell_cmd = 'resource-list {} {}'.format(stack_id, cmd_args)
 
         resource_list_text = self.shell(shell_cmd)
 
@@ -3234,7 +3234,7 @@ class ShellTestResources(ShellBase):
             ), resp_dict)
 
         resource_show_text = self.shell(
-            'resource-show {0} {1} --with-attr attr_a '
+            'resource-show {} {} --with-attr attr_a '
             '--with-attr attr_b'.format(
                 stack_id, resource_name))
 
@@ -3297,7 +3297,7 @@ class ShellTestResources(ShellBase):
         )
 
         text = self.shell(
-            'resource-signal {0} {1}'.format(stack_id, resource_name))
+            'resource-signal {} {}'.format(stack_id, resource_name))
         self.assertEqual("", text)
 
     def test_resource_signal_no_json(self):
@@ -3307,7 +3307,7 @@ class ShellTestResources(ShellBase):
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'resource-signal {0} {1} -D [2'.format(
+            'resource-signal {} {} -D [2'.format(
                 stack_id, resource_name))
         self.assertIn('Data should be in JSON format', str(error))
 
@@ -3318,7 +3318,7 @@ class ShellTestResources(ShellBase):
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'resource-signal {0} {1} -D "message"'.format(
+            'resource-signal {} {} -D "message"'.format(
                 stack_id, resource_name))
         self.assertEqual('Data should be a JSON dict', str(error))
 
@@ -3329,7 +3329,7 @@ class ShellTestResources(ShellBase):
 
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'resource-signal {0} {1} -D "message" -f foo'.format(
+            'resource-signal {} {} -D "message" -f foo'.format(
                 stack_id, resource_name))
         self.assertEqual('Can only specify one of data and data-file',
                          str(error))
@@ -3353,7 +3353,7 @@ class ShellTestResources(ShellBase):
             data_file.write(b'{"message":"Content"}')
             data_file.flush()
             text = self.shell(
-                'resource-signal {0} {1} -f {2}'.format(
+                'resource-signal {} {} -f {}'.format(
                     stack_id, resource_name, data_file.name))
             self.assertEqual("", text)
 
@@ -3374,7 +3374,7 @@ class ShellTestResources(ShellBase):
                   'resource_status_reason': 'Any'})
 
         text = self.shell(
-            'resource-mark-unhealthy {0} {1} Any'.format(
+            'resource-mark-unhealthy {} {} Any'.format(
                 stack_id, resource_name))
         self.assertEqual("", text)
 
@@ -3395,7 +3395,7 @@ class ShellTestResources(ShellBase):
                   'resource_status_reason': 'Any'})
 
         text = self.shell(
-            'resource-mark-unhealthy --reset {0} {1} Any'.format(
+            'resource-mark-unhealthy --reset {} {} Any'.format(
                 stack_id, resource_name))
         self.assertEqual("", text)
 
@@ -3416,14 +3416,14 @@ class ShellTestResources(ShellBase):
                   'resource_status_reason': ''})
 
         text = self.shell(
-            'resource-mark-unhealthy {0} {1}'.format(
+            'resource-mark-unhealthy {} {}'.format(
                 stack_id, resource_name))
         self.assertEqual("", text)
 
 
 class ShellTestResourceTypes(ShellBase):
     def setUp(self):
-        super(ShellTestResourceTypes, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
     def test_resource_type_template_yaml(self):
@@ -3476,7 +3476,7 @@ class ShellTestResourceTypes(ShellBase):
 class ShellTestConfig(ShellBase):
 
     def setUp(self):
-        super(ShellTestConfig, self).setUp()
+        super().setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
@@ -3621,7 +3621,7 @@ class ShellTestConfig(ShellBase):
 class ShellTestDeployment(ShellBase):
 
     def setUp(self):
-        super(ShellTestDeployment, self).setUp()
+        super().setUp()
         self.client = http.SessionClient
         self._set_fake_env()
 
@@ -3928,7 +3928,7 @@ class ShellTestDeployment(ShellBase):
 class ShellTestBuildInfo(ShellBase):
 
     def setUp(self):
-        super(ShellTestBuildInfo, self).setUp()
+        super().setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
@@ -3963,7 +3963,7 @@ class ShellTestToken(ShellTestUserPass):
     # Rerun all ShellTestUserPass test with token auth
     def setUp(self):
         self.token = 'a_token'
-        super(ShellTestToken, self).setUp()
+        super().setUp()
 
     def _set_fake_env(self):
         fake_env = {
@@ -3986,10 +3986,10 @@ class ShellTestUserPassKeystoneV3(ShellTestUserPass):
         self.set_fake_env(FAKE_ENV_KEYSTONE_V3)
 
 
-class StandaloneTokenMixin(object):
+class StandaloneTokenMixin:
     def setUp(self):
         self.token = 'a_token'
-        super(StandaloneTokenMixin, self).setUp()
+        super().setUp()
         self.client = http.HTTPClient
 
     def _set_fake_env(self):
@@ -4067,7 +4067,7 @@ class ShellTestStandaloneTokenArgs(StandaloneTokenMixin, ShellTestNoMoxBase):
 class MockShellBase(TestCase):
 
     def setUp(self):
-        super(MockShellBase, self).setUp()
+        super().setUp()
         self.jreq_mock = self.patch(
             'heatclient.common.http.HTTPClient.json_request')
         self.session_jreq_mock = self.patch(
@@ -4100,7 +4100,7 @@ class MockShellBase(TestCase):
 class MockShellTestUserPass(MockShellBase):
 
     def setUp(self):
-        super(MockShellTestUserPass, self).setUp()
+        super().setUp()
         self._set_fake_env()
 
     def _set_fake_env(self):
@@ -4174,7 +4174,7 @@ class MockShellTestToken(MockShellTestUserPass):
     # Rerun all ShellTestUserPass test with token auth
     def setUp(self):
         self.token = 'a_token'
-        super(MockShellTestToken, self).setUp()
+        super().setUp()
 
     def _set_fake_env(self):
         fake_env = {
@@ -4203,7 +4203,7 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
     # specify --os-no-client-auth, a token and Heat endpoint
     def setUp(self):
         self.token = 'a_token'
-        super(MockShellTestStandaloneToken, self).setUp()
+        super().setUp()
 
     def _set_fake_env(self):
         fake_env = {
@@ -4224,7 +4224,7 @@ class MockShellTestStandaloneToken(MockShellTestUserPass):
 class ShellTestManageService(ShellBase):
 
     def setUp(self):
-        super(ShellTestManageService, self).setUp()
+        super().setUp()
         self.set_fake_env(FAKE_ENV_KEYSTONE_V2)
 
     def _set_fake_env(self):

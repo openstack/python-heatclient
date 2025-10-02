@@ -251,8 +251,8 @@ def wait_for_events(ws, stack_name, out=None):
         event = events_mod.Event(None, data['payload'], True)
         # Keep compatibility with the HTTP API
         event.event_time = data['timestamp']
-        event.resource_status = '%s_%s' % (event.resource_action,
-                                           event.resource_status)
+        event.resource_status = '{}_{}'.format(event.resource_action,
+                                               event.resource_status)
         events_log = utils.event_log_formatter([event], event_log_context)
         out.write(events_log)
         out.write('\n')
@@ -261,4 +261,4 @@ def wait_for_events(ws, stack_name, out=None):
             if stack_status in ('COMPLETE', 'FAILED'):
                 msg = msg_template % dict(
                     name=stack_name, status=event.resource_status)
-                return '%s_%s' % (event.resource_action, stack_status), msg
+                return '{}_{}'.format(event.resource_action, stack_status), msg

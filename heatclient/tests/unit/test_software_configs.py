@@ -21,7 +21,7 @@ from heatclient.v1 import software_configs
 class SoftwareConfigTest(testtools.TestCase):
 
     def setUp(self):
-        super(SoftwareConfigTest, self).setUp()
+        super().setUp()
         config_id = 'bca6871d-86c0-4aff-b792-58a1f6947b57'
         self.config = software_configs.SoftwareConfig(mock.MagicMock(),
                                                       info={'id': config_id})
@@ -45,7 +45,7 @@ class SoftwareConfigTest(testtools.TestCase):
 class SoftwareConfigManagerTest(testtools.TestCase):
 
     def setUp(self):
-        super(SoftwareConfigManagerTest, self).setUp()
+        super().setUp()
         self.manager = software_configs.SoftwareConfigManager(mock.MagicMock())
 
     def test_list(self):

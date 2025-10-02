@@ -91,7 +91,7 @@ class Stack(base.Resource):
 
     @property
     def identifier(self):
-        return '%s/%s' % (self.stack_name, self.id)
+        return '{}/{}'.format(self.stack_name, self.id)
 
 
 class StackChildManager(base.BaseManager):
@@ -245,8 +245,8 @@ class StackManager(StackChildManager):
 
     def snapshot_show(self, stack_id, snapshot_id):
         stack_identifier = self._resolve_stack_id(stack_id)
-        resp = self.client.get('/stacks/%s/snapshots/%s' % (stack_identifier,
-                                                            snapshot_id))
+        resp = self.client.get('/stacks/{}/snapshots/{}'.format(
+            stack_identifier, snapshot_id))
         body = utils.get_response_body(resp)
         return body
 
@@ -278,10 +278,10 @@ class StackManager(StackChildManager):
 
     def output_show(self, stack_id, output_key):
         stack_identifier = self._resolve_stack_id(stack_id)
-        resp = self.client.get('/stacks/%(id)s/outputs/%(key)s' % {
-            'id': stack_identifier,
-            'key': output_key
-        })
+        resp = self.client.get('/stacks/{id}/outputs/{key}'.format(
+            id=stack_identifier,
+            key=output_key
+        ))
         body = utils.get_response_body(resp)
         return body
 

@@ -24,7 +24,7 @@ from heatclient.v1 import build_info
 
 class BuildInfoManagerTest(testtools.TestCase):
     def setUp(self):
-        super(BuildInfoManagerTest, self).setUp()
+        super().setUp()
         self.client = mock.Mock()
         self.client.get.return_value = fakes.FakeHTTPResponse(
             200,

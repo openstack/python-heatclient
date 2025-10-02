@@ -18,7 +18,7 @@ import json
 import requests
 
 
-class FakeStdout(object):
+class FakeStdout:
     def __init__(self):
         self.content = []
 
@@ -34,7 +34,7 @@ class FakeStdout(object):
 
 class FakeResponse(requests.Response):
     def __init__(self, headers={}, status_code=200, data=None, encoding=None):
-        super(FakeResponse, self).__init__()
+        super().__init__()
 
         self.status_code = status_code
 

@@ -21,14 +21,14 @@ from heatclient.v1 import resource_types
 
 class TestResourceType(orchestration_fakes.TestOrchestrationv1):
     def setUp(self):
-        super(TestResourceType, self).setUp()
+        super().setUp()
         self.mock_client = self.app.client_manager.orchestration
 
 
 class TestResourceTypeShow(TestResourceType):
 
     def setUp(self):
-        super(TestResourceTypeShow, self).setUp()
+        super().setUp()
         self.cmd = resource_type.ResourceTypeShow(self.app, None)
         self.mock_client.resource_types.get.return_value = {}
         self.mock_client.resource_types.generate_template.return_value = {}
@@ -130,7 +130,7 @@ class TestTypeList(TestResourceType):
     ]
 
     def setUp(self):
-        super(TestTypeList, self).setUp()
+        super().setUp()
         self.cmd = resource_type.ResourceTypeList(self.app, None)
         self.mock_client.resource_types.list.return_value = self.list_response
 
