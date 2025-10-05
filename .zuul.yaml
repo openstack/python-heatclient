@@ -11,6 +11,7 @@
         heat: https://opendev.org/openstack/heat
     irrelevant-files:
       - ^\.gitreview$
+      - ^\.pre-commit-config\.yaml$
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
       - ^doc/.*$
