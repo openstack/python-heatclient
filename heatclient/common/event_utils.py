@@ -261,4 +261,4 @@ def wait_for_events(ws, stack_name, out=None):
             if stack_status in ('COMPLETE', 'FAILED'):
                 msg = msg_template % dict(
                     name=stack_name, status=event.resource_status)
-                return '{}_{}'.format(event.resource_action, stack_status), msg
+                return f'{event.resource_action}_{stack_status}', msg

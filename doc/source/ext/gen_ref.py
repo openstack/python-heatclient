@@ -24,7 +24,7 @@ def gen_ref(ver, title, names):
     refdir = os.path.join(BASE_DIR, "ref")
     pkg = "heatclient"
     if ver:
-        pkg = "{}.{}".format(pkg, ver)
+        pkg = f"{pkg}.{ver}"
         refdir = os.path.join(refdir, ver)
     if not os.path.exists(refdir):
         os.makedirs(refdir)

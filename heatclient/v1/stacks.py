@@ -91,7 +91,7 @@ class Stack(base.Resource):
 
     @property
     def identifier(self):
-        return '{}/{}'.format(self.stack_name, self.id)
+        return f'{self.stack_name}/{self.id}'
 
 
 class StackChildManager(base.BaseManager):
