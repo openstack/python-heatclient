@@ -716,7 +716,7 @@ class TestGetTemplateContents(testtools.TestCase):
 
     def check_non_utf8_content(self, filename, content):
         base_url = 'file:///tmp'
-        url = '{}/{}'.format(base_url, filename)
+        url = f'{base_url}/{filename}'
         template = {'resources':
                     {'one_init':
                      {'type': 'OS::Heat::CloudConfig',

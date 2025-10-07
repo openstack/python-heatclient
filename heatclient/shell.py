@@ -592,7 +592,7 @@ class HeatShell:
 class HelpFormatter(argparse.HelpFormatter):
     def start_section(self, heading):
         # Title-case the headings
-        heading = '{}{}'.format(heading[0].upper(), heading[1:])
+        heading = f'{heading[0].upper()}{heading[1:]}'
         super().start_section(heading)
 
 

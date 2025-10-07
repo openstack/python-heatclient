@@ -282,7 +282,7 @@ class CrudManager(BaseManager):
         url = '/'.join([url, self.collection_key])
 
         # do we have a specific entity?
-        entity_id = kwargs.get('{}_id'.format(self.key))
+        entity_id = kwargs.get(f'{self.key}_id')
         if entity_id is not None:
             url = '/'.join([url, entity_id])
 
@@ -322,7 +322,7 @@ class CrudManager(BaseManager):
         :param base_url: if provided, the generated URL will be appended to it
         """
         kwargs = self._filter_kwargs(kwargs)
-        query = '?{}'.format(parse.urlencode(kwargs)) if kwargs else ''
+        query = f'?{parse.urlencode(kwargs)}' if kwargs else ''
 
         return self._list(
             '{base_url}{query}'.format(
@@ -343,7 +343,7 @@ class CrudManager(BaseManager):
     def update(self, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
         params = kwargs.copy()
-        params.pop('{}_id'.format(self.key))
+        params.pop(f'{self.key}_id')
 
         return self._patch(
             self.build_url(**kwargs),
@@ -362,7 +362,7 @@ class CrudManager(BaseManager):
         :param base_url: if provided, the generated URL will be appended to it
         """
         kwargs = self._filter_kwargs(kwargs)
-        query = '?{}'.format(parse.urlencode(kwargs)) if kwargs else ''
+        query = f'?{parse.urlencode(kwargs)}' if kwargs else ''
 
         rl = self._list(
             '{base_url}{query}'.format(
@@ -409,7 +409,7 @@ class Extension(HookableMixin):
                     pass
 
     def __repr__(self):
-        return "<Extension '{}'>".format(self.name)
+        return f"<Extension '{self.name}'>"
 
 
 class Resource:
@@ -436,9 +436,9 @@ class Resource:
         reprkeys = sorted(k
                           for k in self.__dict__
                           if k[0] != '_' and k != 'manager')
-        info = ", ".join("{}={}".format(k, getattr(self, k)) for k in reprkeys)
+        info = ", ".join(f"{k}={getattr(self, k)}" for k in reprkeys)
         class_name = reflection.get_class_name(self, fully_qualified=False)
-        return "<{} {}>".format(class_name, info)
+        return f"<{class_name} {info}>"
 
     @property
     def human_id(self):

@@ -54,7 +54,7 @@ class StackStatusActionTest(testtools.TestCase):
     ])
 
     def test_status_action(self):
-        stack_status = '{}_{}'.format(self.action, self.status)
+        stack_status = f'{self.action}_{self.status}'
         stack = mock_stack(None, 'stack_1', 'abcd1234')
         stack.stack_status = stack_status
         self.assertEqual(self.action, stack.action)

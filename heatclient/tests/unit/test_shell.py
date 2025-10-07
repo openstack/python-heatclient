@@ -192,7 +192,7 @@ class TestCase(testtools.TestCase):
              "logical_resource_id": "myDeployment",
              "physical_resource_id": "bce15ec4-8919-4a02-8a90-680960fb3731",
              "resource_name": rn,
-             "resource_status": "{}_{}".format(action, final_state),
+             "resource_status": f"{action}_{final_state}",
              "resource_status_reason": "state changed"}]}
 
         if resource_name is None:
@@ -227,7 +227,7 @@ class TestCase(testtools.TestCase):
                  "logical_resource_id": "aResource",
                  "physical_resource_id": 'foo3',
                  "resource_name": stack_name,
-                 "resource_status": "{}_{}".format(action, final_state),
+                 "resource_status": f"{action}_{final_state}",
                  "resource_status_reason": "state changed"})
 
         return resp_dict
@@ -320,7 +320,7 @@ class ShellParamValidationTest(TestCase):
 
         if self.with_tmpl:
             template_file = os.path.join(TEST_VAR_DIR, 'minimal.template')
-            cmd = '{} --template-file={} '.format(self.command, template_file)
+            cmd = f'{self.command} --template-file={template_file} '
 
         self.shell_error(cmd, self.err, exception=exc.CommandError)
 
@@ -2731,7 +2731,7 @@ class ShellTestEventsNested(ShellBase):
         stack_id = 'teststack/1'
         error = self.assertRaises(
             exc.CommandError, self.shell,
-            'event-list {} --nested-depth Z'.format(stack_id))
+            f'event-list {stack_id} --nested-depth Z')
         self.assertIn('--nested-depth invalid value Z', str(error))
 
     def test_shell_nested_depth_zero(self):
@@ -2955,7 +2955,7 @@ class ShellTestHookFunctions(ShellBase):
         resp_dict = {"stack": {
             "id": stack_id.split("/")[1],
             "stack_name": stack_id.split("/")[0],
-            "stack_status": '{}_{}'.format(action, status),
+            "stack_status": f'{action}_{status}',
             "creation_time": "2014-01-06T16:14:00Z",
         }}
         self.mock_request_get('/stacks/teststack/1', resp_dict)
@@ -3113,7 +3113,7 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
 
-        resource_list_text = self.shell('resource-list {}'.format(stack_id))
+        resource_list_text = self.shell(f'resource-list {stack_id}')
 
         required = [
             'physical_resource_id',
@@ -3147,7 +3147,7 @@ class ShellTestResources(ShellBase):
         stack_id = 'teststack/1'
         self.mock_request_get('/stacks/%s/resources' % stack_id, resp_dict)
 
-        resource_list_text = self.shell('resource-list {}'.format(stack_id))
+        resource_list_text = self.shell(f'resource-list {stack_id}')
 
         self.assertEqual('''\
 +---------------+----------------------+---------------+-----------------+\
@@ -3177,7 +3177,7 @@ class ShellTestResources(ShellBase):
         self.mock_request_get('/stacks/{}/resources?{}'.format(
             stack_id, query_args), resp_dict)
 
-        shell_cmd = 'resource-list {} {}'.format(stack_id, cmd_args)
+        shell_cmd = f'resource-list {stack_id} {cmd_args}'
 
         resource_list_text = self.shell(shell_cmd)
 
@@ -3297,7 +3297,7 @@ class ShellTestResources(ShellBase):
         )
 
         text = self.shell(
-            'resource-signal {} {}'.format(stack_id, resource_name))
+            f'resource-signal {stack_id} {resource_name}')
         self.assertEqual("", text)
 
     def test_resource_signal_no_json(self):

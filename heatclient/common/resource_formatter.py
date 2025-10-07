@@ -34,7 +34,7 @@ class ResourceDotInfo:
         if not prefix:
             prefix = 'r'
         hash_object = hashlib.sha256(url.encode('utf-8'))
-        return '{}_{}'.format(prefix, hash_object.hexdigest()[:20])
+        return f'{prefix}_{hash_object.hexdigest()[:20]}'
 
 
 class ResourceDotFormatter(base.ListFormatter):
