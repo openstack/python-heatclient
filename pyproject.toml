@@ -1,3 +1,110 @@
 [build-system]
 requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "python-heatclient"
+description = "OpenStack Orchestration API Client Library"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = "Apache-2.0"
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.11"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Environment :: OpenStack",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/python-heatclient"
+Repository = "https://opendev.org/openstack/python-heatclient"
+
+[tool.setuptools.packages.find]
+include = ["heatclient"]
+
+[project.scripts]
+heat = "heatclient.shell:main"
+
+[project.entry-points."openstack.cli.extension"]
+orchestration = "heatclient.osc.plugin"
+
+[project.entry-points."openstack.orchestration.v1"]
+orchestration_build_info = "heatclient.osc.v1.build_info:BuildInfo"
+orchestration_service_list = "heatclient.osc.v1.service:ListService"
+orchestration_template_function_list = "heatclient.osc.v1.template:FunctionList"
+orchestration_template_validate = "heatclient.osc.v1.template:Validate"
+orchestration_template_version_list = "heatclient.osc.v1.template:VersionList"
+orchestration_resource_type_list = "heatclient.osc.v1.resource_type:ResourceTypeList"
+orchestration_resource_type_show = "heatclient.osc.v1.resource_type:ResourceTypeShow"
+software_config_create = "heatclient.osc.v1.software_config:CreateConfig"
+software_config_delete = "heatclient.osc.v1.software_config:DeleteConfig"
+software_config_list = "heatclient.osc.v1.software_config:ListConfig"
+software_config_show = "heatclient.osc.v1.software_config:ShowConfig"
+software_deployment_create = "heatclient.osc.v1.software_deployment:CreateDeployment"
+software_deployment_delete = "heatclient.osc.v1.software_deployment:DeleteDeployment"
+software_deployment_list = "heatclient.osc.v1.software_deployment:ListDeployment"
+software_deployment_metadata_show = "heatclient.osc.v1.software_deployment:ShowMetadataDeployment"
+software_deployment_output_show = "heatclient.osc.v1.software_deployment:ShowOutputDeployment"
+software_deployment_show = "heatclient.osc.v1.software_deployment:ShowDeployment"
+stack_abandon = "heatclient.osc.v1.stack:AbandonStack"
+stack_export = "heatclient.osc.v1.stack:ExportStack"
+stack_adopt = "heatclient.osc.v1.stack:AdoptStack"
+stack_cancel = "heatclient.osc.v1.stack:CancelStack"
+stack_check = "heatclient.osc.v1.stack:CheckStack"
+stack_create = "heatclient.osc.v1.stack:CreateStack"
+stack_delete = "heatclient.osc.v1.stack:DeleteStack"
+stack_event_list = "heatclient.osc.v1.event:ListEvent"
+stack_event_show = "heatclient.osc.v1.event:ShowEvent"
+stack_environment_show = "heatclient.osc.v1.stack:EnvironmentShowStack"
+stack_failures_list = "heatclient.osc.v1.stack_failures:ListStackFailures"
+stack_file_list = "heatclient.osc.v1.stack:ListFileStack"
+stack_hook_clear = "heatclient.osc.v1.stack:StackHookClear"
+stack_hook_poll = "heatclient.osc.v1.stack:StackHookPoll"
+stack_list = "heatclient.osc.v1.stack:ListStack"
+stack_output_list = "heatclient.osc.v1.stack:OutputListStack"
+stack_output_show = "heatclient.osc.v1.stack:OutputShowStack"
+stack_resource_list = "heatclient.osc.v1.resource:ResourceList"
+stack_resource_mark_unhealthy = "heatclient.osc.v1.resource:ResourceMarkUnhealthy"
+stack_resource_metadata = "heatclient.osc.v1.resource:ResourceMetadata"
+stack_resource_show = "heatclient.osc.v1.resource:ResourceShow"
+stack_resource_signal = "heatclient.osc.v1.resource:ResourceSignal"
+stack_resume = "heatclient.osc.v1.stack:ResumeStack"
+stack_show = "heatclient.osc.v1.stack:ShowStack"
+stack_snapshot_create = "heatclient.osc.v1.snapshot:CreateSnapshot"
+stack_snapshot_delete = "heatclient.osc.v1.snapshot:DeleteSnapshot"
+stack_snapshot_list = "heatclient.osc.v1.snapshot:ListSnapshot"
+stack_snapshot_restore = "heatclient.osc.v1.snapshot:RestoreSnapshot"
+stack_snapshot_show = "heatclient.osc.v1.snapshot:ShowSnapshot"
+stack_suspend = "heatclient.osc.v1.stack:SuspendStack"
+stack_template_show = "heatclient.osc.v1.stack:TemplateShowStack"
+stack_update = "heatclient.osc.v1.stack:UpdateStack"
+
+[project.entry-points."heatclient.event.formatter.list"]
+log = "heatclient.osc.v1.event:LogFormatter"
+table = "cliff.formatters.table:TableFormatter"
+csv = "cliff.formatters.commaseparated:CSVLister"
+value = "cliff.formatters.value:ValueFormatter"
+yaml = "cliff.formatters.yaml_format:YAMLFormatter"
+json = "cliff.formatters.json_format:JSONFormatter"
+
+[project.entry-points."heatclient.resource.formatter.list"]
+dot = "heatclient.common.resource_formatter:ResourceDotFormatter"
+table = "cliff.formatters.table:TableFormatter"
+csv = "cliff.formatters.commaseparated:CSVLister"
+value = "cliff.formatters.value:ValueFormatter"
+yaml = "cliff.formatters.yaml_format:YAMLFormatter"
+json = "cliff.formatters.json_format:JSONFormatter"
