@@ -251,11 +251,13 @@ class UpdateStack(command.ShowOne):
         )
         parser.add_argument(
             '--rollback', metavar='<value>',
+            default='keep',
+            choices=['enabled', 'disabled', 'keep'],
             help=_('Set rollback on update failure. '
                    'Value "enabled" sets rollback to enabled. '
                    'Value "disabled" sets rollback to disabled. '
                    'Value "keep" uses the value of existing stack to be '
-                   'updated (default)')
+                   'updated.')
         )
         parser.add_argument(
             '--dry-run', action="store_true",
@@ -370,13 +372,8 @@ class UpdateStack(command.ShowOne):
         if parsed_args.clear_parameter:
             fields['clear_parameters'] = list(parsed_args.clear_parameter)
 
-        if parsed_args.rollback:
-            rollback = parsed_args.rollback.strip().lower()
-            if rollback not in ('enabled', 'disabled', 'keep'):
-                msg = _('--rollback invalid value: %s') % parsed_args.rollback
-                raise exc.CommandError(msg)
-            if rollback != 'keep':
-                fields['disable_rollback'] = rollback == 'disabled'
+        if parsed_args.rollback != 'keep':
+            fields['disable_rollback'] = (parsed_args.rollback == 'disabled')
 
         if parsed_args.dry_run:
             if parsed_args.show_nested:
