@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``heat stack-update`` command no longer supports
+    the ``--enable-rollback`` option. Use the ``--rollback`` option instead.

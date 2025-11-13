@@ -449,12 +449,6 @@ def do_stack_show(hc, args):
 @utils.arg('-t', '--timeout', metavar='<TIMEOUT>',
            type=int,
            help=_('Stack update timeout in minutes.'))
-@utils.arg('-r', '--enable-rollback', default=False, action="store_true",
-           help=_('DEPRECATED! Use %(arg)s argument instead. '
-                  'Enable rollback on stack update failure. '
-                  'NOTE: default behavior is now to use the rollback value '
-                  'of existing stack.')
-           % {'arg': '--rollback'})
 @utils.arg('--rollback', default=None, metavar='<VALUE>',
            help=_('Set rollback on update failure. '
                   'Values %(true)s  set rollback to enabled. '
@@ -544,11 +538,6 @@ def do_stack_update(hc, args):
             raise exc.CommandError(str(ex))
         else:
             fields['disable_rollback'] = not rollback
-    # TODO(pshchelo): remove the following 'else' clause after deprecation
-    # period of --enable-rollback switch and assign -r shortcut to --rollback
-    else:
-        if args.enable_rollback:
-            fields['disable_rollback'] = False
 
     if args.dry_run is True:
         if args.show_nested:
