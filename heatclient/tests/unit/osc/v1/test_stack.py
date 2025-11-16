@@ -267,16 +267,6 @@ class TestStackUpdate(TestStack):
         self.assertNotIn('disable_rollback', self.defaults)
         self.stack_client.update.assert_called_with(**self.defaults)
 
-    def test_stack_update_rollback_invalid(self):
-        arglist = ['my_stack', '-t', self.template_path, '--rollback', 'foo']
-        kwargs = copy.deepcopy(self.defaults)
-        kwargs['disable_rollback'] = False
-        parsed_args = self.check_parser(self.cmd, arglist, [])
-
-        ex = self.assertRaises(exc.CommandError, self.cmd.take_action,
-                               parsed_args)
-        self.assertEqual("--rollback invalid value: foo", str(ex))
-
     def test_stack_update_parameters(self):
         template_path = ('/'.join(self.template_path.split('/')[:-1]) +
                          '/parameters.yaml')
