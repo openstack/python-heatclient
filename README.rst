@@ -1,15 +1,10 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/python-heatclient.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
 =================
 python-heatclient
 =================
+
+.. image:: https://governance.openstack.org/tc/badges/python-heatclient.svg
+
+.. Change things from this point on
 
 .. image:: https://img.shields.io/pypi/v/python-heatclient.svg
     :target: https://pypi.org/project/python-heatclient/
