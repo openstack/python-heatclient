@@ -298,7 +298,7 @@ class TempURLSignalTest(testtools.TestCase):
         self.assertThat(url, matchers.MatchesRegex(regexp))
 
         timeout = int(url.split('=')[-1])
-        self.assertTrue(timeout < time.time() + 2*365*24*60*60)
+        self.assertLess(timeout, time.time() + 2*365*24*60*60)
 
     def test_get_temp_url_no_account_key(self):
         swift_client = mock.MagicMock()
