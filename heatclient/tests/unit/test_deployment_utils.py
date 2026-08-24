@@ -278,7 +278,7 @@ class TempURLSignalTest(testtools.TestCase):
                 authurl=None,
                 user='user',
                 preauthurl='http://192.0.2.1:8080',
-                auth_version='2.0'),
+                auth_version='3'),
             sc_conn.call_args)
 
     def test_create_temp_url(self):
