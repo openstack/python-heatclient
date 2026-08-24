@@ -138,7 +138,7 @@ def create_swift_client(auth, session, args):
                                  region_name=args.os_region_name)
     project_name = args.os_project_name or args.os_tenant_name
     swift_args = {
-        'auth_version': '2.0',
+        'auth_version': '3',
         'tenant_name': project_name,
         'user': args.os_username,
         'key': None,
