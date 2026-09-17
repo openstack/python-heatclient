@@ -34,7 +34,7 @@ Homepage = "https://docs.openstack.org/python-heatclient"
 Repository = "https://opendev.org/openstack/python-heatclient"
 
 [tool.setuptools.packages.find]
-include = ["heatclient"]
+include = ["heatclient*"]
 
 [project.scripts]
 heat = "heatclient.shell:main"
